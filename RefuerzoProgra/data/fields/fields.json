@@ -1,0 +1,377 @@
+{
+  "id": "fields",
+  "title": "Campos",
+  "icon": "📦",
+  "documentation": {
+    "sections": [
+      {
+        "id": "what-is-field",
+        "title": "¿Qué es un Campo?",
+        "type": "definition",
+        "content": "Un campo (field) es una <strong>variable que pertenece a una clase</strong> y almacena su estado. Cada instancia (objeto) de la clase tiene su propia copia de los campos de instancia. Define el <em>qué tiene</em> un objeto."
+      },
+      {
+        "id": "analogy",
+        "title": "🎮 Analogía con Unity",
+        "type": "analogy",
+        "content": "Piensa en un Enemy: tiene <strong>Health</strong> (cuánta vida le queda), <strong>Speed</strong> (qué tan rápido se mueve), <strong>Name</strong> (cómo se llama). Esas son sus propiedades — sus campos. El Goblin1 tiene Health=100 y el Goblin2 tiene Health=75: cada objeto tiene <em>su propia copia</em> del campo Health."
+      },
+      {
+        "id": "syntax",
+        "title": "Declaración de Campos",
+        "type": "code",
+        "content": "public class Enemy\n{\n    // Campo público (visible en el Inspector de Unity)\n    public int Health = 100;\n\n    // Campo privado con nombre convención _camelCase\n    private float _speed = 3.5f;\n\n    // Campo con [SerializeField] (privado pero visible en Inspector)\n    [SerializeField]\n    private string _name = \"Goblin\";\n\n    // Campo de solo lectura (se asigna solo en el constructor)\n    public readonly int Id;\n\n    // Campo constante (valor fijo en compilación, ALL_CAPS por convención)\n    public const int MAX_HEALTH = 200;\n\n    // Campo estático (compartido entre TODOS los objetos Enemy)\n    public static int TotalEnemies = 0;\n}"
+      },
+      {
+        "id": "conventions",
+        "title": "Convenciones de Nombres",
+        "type": "list",
+        "items": [
+          "<code>public int Health</code> — Campos públicos: PascalCase",
+          "<code>private int _health</code> — Campos privados: _camelCase (prefijo guión bajo)",
+          "<code>public const int MAX_HP = 100</code> — Constantes: ALL_CAPS",
+          "<code>[SerializeField] private float _speed</code> — Privado visible en Inspector"
+        ]
+      },
+      {
+        "id": "field-vs-property",
+        "title": "Campo vs Propiedad",
+        "type": "note",
+        "content": "Un campo es una variable directa. Una <strong>propiedad</strong> usa getters/setters para controlar el acceso: <code>public int Health { get; private set; }</code>. Las propiedades permiten validar datos, hacer la escritura privada, y son la forma recomendada de exponer datos en C# moderno."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "fld_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es un campo (field) en una clase de C#?",
+      "options": [
+        "Una función que pertenece a la clase y define su comportamiento",
+        "Una variable que pertenece a la clase y almacena su estado o datos",
+        "Un parámetro que recibe un método cuando se le llama",
+        "Un bloque de código especial que se ejecuta al crear el objeto",
+        "Un tipo de dato especial definido por el propio framework de .NET"
+      ],
+      "correctIndex": 1,
+      "explanation": "Un campo es una variable que pertenece a la clase. Almacena el estado del objeto: su salud, su nombre, su velocidad, etc. A diferencia de las variables locales (que viven dentro de un método), los campos viven durante toda la vida del objeto."
+    },
+    {
+      "id": "fld_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia principal entre un campo y una propiedad en C#?",
+      "options": [
+        "Los campos pueden ser públicos, pero las propiedades nunca pueden serlo",
+        "Las propiedades tienen getters/setters que controlan el acceso; los campos son variables directas",
+        "Los campos son siempre de solo lectura y las propiedades siempre modificables",
+        "Las propiedades existen en Unity pero los campos son solo de C# puro",
+        "No hay diferencia práctica; son exactamente lo mismo en todos los contextos"
+      ],
+      "correctIndex": 1,
+      "explanation": "Los campos son variables directas. Las propiedades usan get/set para controlar el acceso: puedes validar datos, hacer solo-lectura desde fuera, o ejecutar lógica extra. Ej: 'public int Health { get; private set; }' permite leer Health desde fuera pero solo modificarlo desde dentro de la clase."
+    },
+    {
+      "id": "fld_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué convención de nombres se usa para campos PRIVADOS en C# según las guías de estilo de .NET?",
+      "options": [
+        "camelCase sin prefijo: miVariable",
+        "PascalCase: MiVariable",
+        "_camelCase con guión bajo como prefijo: _miVariable",
+        "ALL_CAPS con guiones bajos: MI_VARIABLE",
+        "snake_case: mi_variable"
+      ],
+      "correctIndex": 2,
+      "explanation": "La convención estándar de .NET para campos privados es _camelCase: prefijo con guión bajo seguido de nombre en camelCase. Ejemplos: '_health', '_speed', '_playerName'. Esto los distingue visualmente de los parámetros de métodos y variables locales."
+    },
+    {
+      "id": "fld_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace la palabra 'readonly' en un campo?",
+      "options": [
+        "Hace que el campo solo pueda leerse desde dentro de la misma clase",
+        "Hace que el campo solo pueda asignarse en la declaración o en el constructor, no después",
+        "Hace que el campo sea visible en el Inspector de Unity aunque sea privado",
+        "Hace que el campo no pueda contener el valor null",
+        "Hace que el campo sea compartido entre todas las instancias de la clase"
+      ],
+      "correctIndex": 1,
+      "explanation": "Un campo 'readonly' solo puede asignarse cuando se declara o dentro del constructor. Después de que el constructor termina, el campo ya no puede cambiar. Es más flexible que 'const' porque su valor puede calcularse en tiempo de ejecución (en el constructor)."
+    },
+    {
+      "id": "fld_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la diferencia entre 'const' y 'readonly' en C#?",
+      "options": [
+        "No hay diferencia, son completamente equivalentes en todos los escenarios",
+        "'const' se evalúa en compilación y nunca cambia; 'readonly' puede asignarse en el constructor en tiempo de ejecución",
+        "'const' se usa solo para textos (string) y 'readonly' para tipos numéricos",
+        "'readonly' solo puede usarse dentro de clases estáticas en C#",
+        "'const' es más rápido en Unity porque se optimiza en la compilación IL2CPP"
+      ],
+      "correctIndex": 1,
+      "explanation": "'const' debe conocerse en tiempo de compilación: 'public const int MAX_HP = 100;' — el valor se incrusta directamente en el código compilado. 'readonly' puede calcularse en runtime pero dentro del constructor: 'public readonly int Id;' puede asignarse con un ID generado dinámicamente en el constructor."
+    },
+    {
+      "id": "fld_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿qué hace el atributo [SerializeField] sobre un campo privado?",
+      "options": [
+        "Hace que el campo sea accesible desde cualquier script del proyecto",
+        "Hace que el campo privado sea visible y editable en el Inspector de Unity",
+        "Hace que el campo se guarde automáticamente al salir de Unity",
+        "Hace que el campo no pueda modificarse desde el código en tiempo de ejecución",
+        "Hace que el campo se inicialice antes que el método Awake()"
+      ],
+      "correctIndex": 1,
+      "explanation": "[SerializeField] le indica a Unity que serialice un campo privado y lo muestre en el Inspector. Esto es mejor práctica que hacerlo público: mantienes el campo privado (encapsulación) pero lo puedes editar desde el Editor. Es la forma recomendada de exponer datos en Unity sin romper la encapsulación."
+    },
+    {
+      "id": "fld_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es un campo estático (static field)?",
+      "options": [
+        "Un campo que no puede modificarse después de ser inicializado",
+        "Un campo que pertenece a la CLASE (no a las instancias) y se comparte entre todos los objetos",
+        "Un campo que solo existe mientras el GameObject está activo en escena",
+        "Un campo que se inicializa automáticamente a cero sin necesidad de asignarlo",
+        "Un campo que solo puede ser de un tipo primitivo como int o float"
+      ],
+      "correctIndex": 1,
+      "explanation": "Un campo 'static' pertenece a la CLASE, no a los objetos. Solo existe una copia del campo, compartida por todas las instancias. Ejemplo: 'public static int TotalEnemies = 0;' — todos los objetos Enemy comparten este contador. Se accede con 'Enemy.TotalEnemies', no con una instancia."
+    },
+    {
+      "id": "fld_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes 'public int Health = 100;' en la clase Enemy. Si creas 3 objetos Enemy distintos, ¿cuántas veces existe el campo 'Health' en memoria?",
+      "options": [
+        "1 vez — es compartido entre todas las instancias como cualquier campo",
+        "3 veces — una copia independiente por cada instancia creada con 'new'",
+        "0 veces — los campos no ocupan memoria real, solo en el código fuente",
+        "100 veces — tantas como indica su valor inicial",
+        "Depende del modificador de acceso que tenga el campo"
+      ],
+      "correctIndex": 1,
+      "explanation": "Los campos de instancia (no estáticos) tienen UNA COPIA POR OBJETO. Con 3 objetos Enemy, existen 3 campos Health independientes en memoria. Goblin1 puede tener Health=100, Goblin2 Health=75, Goblin3 Health=50. Los campos estáticos sí serían compartidos (solo 1 copia)."
+    },
+    {
+      "id": "fld_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta clase de Unity:",
+      "code": "public class Player : MonoBehaviour\n{\n    private int _health;\n    private string _name;\n    public float Speed;\n    [SerializeField] private float _jumpForce;\n}",
+      "question": "¿Cuántos campos (fields) tiene esta clase?",
+      "target": "_health",
+      "acceptedAnswers": ["4", "cuatro", "4 campos", "cuatro campos"],
+      "hints": [
+        "Cuenta todas las variables declaradas dentro de la clase pero FUERA de cualquier método",
+        "Los modificadores de acceso (public, private) no afectan al conteo — solo el tipo de declaración",
+        "Cuenta: _health, _name, Speed, _jumpForce"
+      ],
+      "explanation": "La clase tiene <strong>4 campos</strong>: <code>_health</code> (private int), <code>_name</code> (private string), <code>Speed</code> (public float) y <code>_jumpForce</code> (private float con [SerializeField]). Todos son variables declaradas a nivel de clase, no dentro de métodos."
+    },
+    {
+      "id": "fld_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee esta clase:",
+      "code": "public class GameConfig\n{\n    public const int MAX_PLAYERS = 4;\n    public const float GRAVITY_MULTIPLIER = 1.5f;\n    public const string GAME_VERSION = \"1.0.0\";\n}",
+      "question": "¿Qué tipo especial de campos son 'MAX_PLAYERS', 'GRAVITY_MULTIPLIER' y 'GAME_VERSION'?",
+      "target": "MAX_PLAYERS",
+      "acceptedAnswers": [
+        "constantes", "campos constantes", "const", "campos const",
+        "campos constantes de solo lectura", "valores constantes"
+      ],
+      "hints": [
+        "Hay una palabra reservada extra en cada declaración, después del modificador de acceso",
+        "Estos campos no pueden cambiar en absoluto — ni en el constructor ni en ningún otro lugar",
+        "La convención de nombres ALL_CAPS los identifica visualmente"
+      ],
+      "explanation": "Son <strong>campos constantes</strong> (const). La palabra <code>const</code> indica que el valor se fija en tiempo de compilación y nunca puede cambiar. Por convención se nombran en ALL_CAPS. Son implícitamente <code>static</code> — se accede con <code>GameConfig.MAX_PLAYERS</code>."
+    },
+    {
+      "id": "fld_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta clase:",
+      "code": "public class ScoreManager : MonoBehaviour\n{\n    public static int TotalScore = 0;\n    public static int HighScore = 0;\n    private int _currentLevelScore;\n}",
+      "question": "¿Cuál de los campos pertenece a la CLASE y no a las instancias individuales?",
+      "target": "TotalScore",
+      "acceptedAnswers": [
+        "TotalScore y HighScore", "TotalScore", "HighScore",
+        "los estáticos", "static fields", "los campos estáticos",
+        "TotalScore y HighScore (ambos estáticos)"
+      ],
+      "hints": [
+        "Busca la palabra clave que indica que el campo es de la clase, no del objeto",
+        "Los campos que pertenecen a la clase (no al objeto) tienen la palabra 'static'",
+        "Con 'static', todos los objetos ScoreManager comparten el MISMO valor del campo"
+      ],
+      "explanation": "<strong>TotalScore y HighScore</strong> son campos estáticos — pertenecen a la CLASE ScoreManager, no a los objetos. Solo hay una copia de cada uno en memoria, compartida por todos. Se accede con <code>ScoreManager.TotalScore</code>. El campo <code>_currentLevelScore</code> es de instancia (cada objeto tiene su propia copia)."
+    },
+    {
+      "id": "fld_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script de Unity:",
+      "code": "public class Enemy : MonoBehaviour\n{\n    [SerializeField]\n    private float _speed = 3.5f;\n\n    [SerializeField]\n    private int _health = 100;\n\n    public string Name;\n}",
+      "question": "¿Qué hace el atributo '[SerializeField]' sobre los campos '_speed' y '_health'?",
+      "target": "[SerializeField]",
+      "acceptedAnswers": [
+        "los hace visibles en el inspector",
+        "los muestra en el inspector de unity",
+        "los serializa para el inspector",
+        "permite editarlos en el inspector",
+        "inspector",
+        "los hace editables en el editor"
+      ],
+      "hints": [
+        "Los campos privados normalmente son invisibles para el Editor de Unity",
+        "Este atributo le dice a Unity que incluya el campo en el proceso de serialización",
+        "El resultado es que puedes ver y editar el valor desde el panel Inspector de Unity"
+      ],
+      "explanation": "<code>[SerializeField]</code> hace que los campos privados sean <strong>visibles y editables en el Inspector de Unity</strong>. Esto es mejor práctica que hacerlos públicos porque mantiene la encapsulación: el código externo no puede acceder directamente a <code>_speed</code> o <code>_health</code>, pero el diseñador puede ajustar los valores desde el Editor."
+    },
+    {
+      "id": "fld_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa esta clase:",
+      "code": "public class Bullet : MonoBehaviour\n{\n    public readonly float Damage;\n    public readonly float Speed;\n\n    public Bullet(float damage, float speed)\n    {\n        Damage = damage;\n        Speed = speed;\n    }\n\n    void Update()\n    {\n        // Damage = 50f; // ← Esto causaría un ERROR de compilación\n    }\n}",
+      "question": "¿En qué lugar(es) puede asignarse el campo 'Damage' dado que es 'readonly'?",
+      "target": "readonly",
+      "acceptedAnswers": [
+        "solo en el constructor", "en el constructor", "en la declaración o el constructor",
+        "en el constructor o al declararse", "constructor",
+        "en la inicialización o constructor"
+      ],
+      "hints": [
+        "El comentario en Update() te da una pista: ¿por qué daría error ahí?",
+        "'readonly' permite asignación solo durante la creación del objeto",
+        "Solo hay dos momentos donde se puede asignar: cuando se declara la variable, o en el..."
+      ],
+      "explanation": "Un campo <code>readonly</code> solo puede asignarse <strong>en la declaración o en el constructor</strong>. Una vez que el constructor termina, el campo ya no puede cambiar. Es más flexible que <code>const</code> porque el valor puede calcularse dinámicamente en el constructor."
+    },
+    {
+      "id": "fld_id_006",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código:",
+      "code": "public class Character\n{\n    private string _name;\n    private int _level = 1;\n    private float _health = 100f;\n    private bool _isAlive = true;\n\n    public void SetName(string name)\n    {\n        string upperName = name.ToUpper(); // ← variable LOCAL\n        _name = upperName;\n    }\n}",
+      "question": "¿En qué se diferencia '_name', '_level', '_health' e '_isAlive' de 'upperName'?",
+      "target": "_name",
+      "acceptedAnswers": [
+        "son campos", "son campos de la clase", "son variables de instancia",
+        "pertenecen a la clase", "son miembros de la clase",
+        "viven durante toda la vida del objeto"
+      ],
+      "hints": [
+        "Fíjate dónde está declarada cada variable: ¿dentro o fuera de los métodos?",
+        "'upperName' solo existe mientras se ejecuta el método SetName",
+        "Las variables declaradas directamente en el cuerpo de la clase (no en métodos) se llaman..."
+      ],
+      "explanation": "<code>_name</code>, <code>_level</code>, <code>_health</code> e <code>_isAlive</code> son <strong>campos de la clase</strong> — existen durante toda la vida del objeto. <code>upperName</code> es una variable <em>local</em> — solo existe mientras se ejecuta el método <code>SetName()</code>. Los campos se declaran directamente en el cuerpo de la clase, no dentro de métodos."
+    },
+    {
+      "id": "fld_cw_001",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Declara un campo privado de tipo int llamado '_health' con valor inicial 100.",
+      "expectedAnswer": "private int _health = 100;",
+      "alternateAnswers": ["private int _health=100;"],
+      "placeholder": "Escribe la declaración del campo...",
+      "hints": [
+        "El modificador de acceso para un campo privado es 'private', luego el tipo, luego el nombre con _ prefijo",
+        "La sintaxis es: [modificador] [tipo] [_nombre] = [valor];"
+      ],
+      "explanation": "La declaración es <code>private int _health = 100;</code>. Sigue la convención estándar de .NET: campos privados con prefijo guión bajo y camelCase. El valor inicial 100 se asigna directamente en la declaración."
+    },
+    {
+      "id": "fld_cw_002",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Declara un campo estático público de tipo int llamado 'Score' con valor inicial 0.",
+      "expectedAnswer": "public static int Score = 0;",
+      "alternateAnswers": ["public static int Score=0;"],
+      "placeholder": "Escribe la declaración...",
+      "hints": [
+        "Para un campo estático público, el orden es: public → static → tipo → nombre",
+        "La palabra 'static' va después del modificador de acceso y antes del tipo"
+      ],
+      "explanation": "La declaración es <code>public static int Score = 0;</code>. El campo <code>static</code> pertenece a la clase, no a las instancias. Se accede con el nombre de la clase: <code>ScoreManager.Score</code>. PascalCase para campos públicos."
+    },
+    {
+      "id": "fld_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para declarar un campo cuyo valor se fija en tiempo de compilación y nunca cambia:",
+      "codeTemplate": "public __________ float PI = 3.14159f;",
+      "expectedAnswer": "const",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": [
+        "Este tipo de campo se evalúa en tiempo de compilación, no de ejecución",
+        "Viene del latín 'constans' — algo que no cambia"
+      ],
+      "explanation": "La palabra <code>const</code> crea una constante. Su valor se fija en compilación y NUNCA puede cambiar. Los campos <code>const</code> son implícitamente <code>static</code>. Por convención se nombran en ALL_CAPS: <code>public const float MAX_SPEED = 20f;</code>."
+    },
+    {
+      "id": "fld_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para que el campo 'Id' solo pueda asignarse en el constructor:",
+      "codeTemplate": "public __________ int Id;",
+      "expectedAnswer": "readonly",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": [
+        "Este campo puede asignarse en el constructor pero no después",
+        "Literalmente significa 'solo para leer' después de la construcción"
+      ],
+      "explanation": "La palabra <code>readonly</code> permite asignar el campo solo en la declaración o en el constructor. Después del constructor, el campo es inmutable. Es más flexible que <code>const</code> porque el valor puede calcularse en runtime: <code>public readonly int Id = GenerateId();</code>."
+    },
+    {
+      "id": "fld_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el atributo de Unity que hace visible un campo privado en el Inspector (en su propia línea).",
+      "expectedAnswer": "[SerializeField]",
+      "alternateAnswers": ["[serializefield]", "[Serializefield]"],
+      "placeholder": "Escribe el atributo...",
+      "hints": [
+        "Los atributos en C# se escriben entre corchetes [ ]",
+        "El nombre viene de 'serialize' (serializar) y 'field' (campo)"
+      ],
+      "explanation": "El atributo <code>[SerializeField]</code> le indica a Unity que incluya el campo privado en la serialización y lo muestre en el Inspector. Se coloca en la línea anterior al campo: <code>[SerializeField] private float _speed = 5f;</code>."
+    },
+    {
+      "id": "fld_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el modificador de acceso para que este campo sea privado pero visible en el Inspector de Unity:",
+      "codeTemplate": "[SerializeField]\n__________ float _speed = 5f;",
+      "expectedAnswer": "private",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el modificador de acceso...",
+      "hints": [
+        "[SerializeField] se combina con el modificador que oculta el campo del código externo",
+        "El modificador que hace que el campo solo sea accesible desde dentro de la misma clase es..."
+      ],
+      "explanation": "Se usa <code>private</code>. La combinación <code>[SerializeField] private float _speed</code> es la mejor práctica en Unity: el campo es privado para el código (encapsulación), pero Unity lo serializa y muestra en el Inspector. Mejor que hacerlo <code>public</code> innecesariamente."
+    }
+  ]
+}

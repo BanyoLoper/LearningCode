@@ -1,0 +1,365 @@
+{
+  "id": "methods",
+  "title": "Métodos",
+  "icon": "⚙️",
+  "documentation": {
+    "sections": [
+      {
+        "id": "what-is-method",
+        "title": "¿Qué es un Método?",
+        "type": "definition",
+        "content": "Un método es un <strong>bloque de código reutilizable</strong> que define el comportamiento de una clase — el <em>qué puede hacer</em> un objeto. Se declara dentro de la clase y puede recibir datos (parámetros) y devolver un resultado."
+      },
+      {
+        "id": "analogy",
+        "title": "🎮 Analogía con Unity",
+        "type": "analogy",
+        "content": "Si los campos son los <em>stats</em> de tu personaje (vida, velocidad, daño), los métodos son sus <em>acciones</em>: <strong>Jump()</strong>, <strong>Attack()</strong>, <strong>TakeDamage(int amount)</strong>. Los métodos de Unity como <strong>Start()</strong> y <strong>Update()</strong> son métodos que tu clase hereda de MonoBehaviour y que el motor llama automáticamente."
+      },
+      {
+        "id": "anatomy",
+        "title": "Anatomía de un Método",
+        "type": "code",
+        "content": "//  [modificador] [tipo_retorno] [Nombre]([parámetros])\npublic      float        CalculateDamage(float base, float multiplier)\n{\n    return base * multiplier;  // valor de retorno\n}\n\n// Método que no retorna nada (void)\npublic void TakeDamage(int amount)\n{\n    _health -= amount;\n    if (_health <= 0) Die();\n}\n\n// Método estático (de la clase, no del objeto)\npublic static int GetMaxLevel()\n{\n    return 99;\n}"
+      },
+      {
+        "id": "params-vs-args",
+        "title": "Parámetros vs Argumentos",
+        "type": "note",
+        "content": "<strong>Parámetros</strong>: las variables en la <em>declaración</em> del método (<code>void Attack(int damage)</code> — aquí <code>damage</code> es el parámetro). <strong>Argumentos</strong>: los valores reales que pasas al <em>llamarlo</em> (<code>enemy.Attack(50)</code> — aquí <code>50</code> es el argumento)."
+      },
+      {
+        "id": "overloading",
+        "title": "Sobrecarga de Métodos",
+        "type": "code",
+        "content": "// Puedes tener métodos con el mismo nombre si difieren en sus parámetros\npublic void TakeDamage(int amount) { _health -= amount; }\npublic void TakeDamage(float amount) { _health -= (int)amount; }\npublic void TakeDamage(int amount, bool ignoreArmor) { /* ... */ }\n\n// Unity usa esto internamente (ej: Debug.Log tiene múltiples versiones)"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "mth_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es un método en una clase de C#?",
+      "options": [
+        "Una variable que almacena el estado del objeto como su vida o velocidad",
+        "Un bloque de código reutilizable que define el comportamiento o acciones de una clase",
+        "Un tipo de dato especial definido por el propio C# para operaciones matemáticas",
+        "Una propiedad que encapsula un campo para controlar su acceso",
+        "Un archivo externo con instrucciones que Unity importa automáticamente"
+      ],
+      "correctIndex": 1,
+      "explanation": "Un método es un bloque de código que define qué puede HACER una clase. Mientras los campos almacenan el estado (qué ES el objeto), los métodos definen el comportamiento (qué HACE el objeto). Ejemplos: Jump(), TakeDamage(), GetScore()."
+    },
+    {
+      "id": "mth_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia entre 'parámetro' y 'argumento'?",
+      "options": [
+        "Son sinónimos — no hay ninguna diferencia entre ellos",
+        "El parámetro es la variable en la declaración del método; el argumento es el valor que se pasa al llamarlo",
+        "El argumento está en la declaración del método y el parámetro en la llamada",
+        "Los parámetros solo pueden usarse en métodos estáticos de C#",
+        "Los argumentos solo pueden ser tipos primitivos como int, float o bool"
+      ],
+      "correctIndex": 1,
+      "explanation": "Parámetro: la variable en la DECLARACIÓN — 'void Attack(int damage)' → 'damage' es el parámetro. Argumento: el valor real al LLAMAR — 'enemy.Attack(50)' → '50' es el argumento. Un truco para recordarlo: los parámetros son los 'huecos', los argumentos son los 'rellenos'."
+    },
+    {
+      "id": "mth_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué significa que un método tenga el tipo de retorno 'void'?",
+      "options": [
+        "Que el método no puede recibir ningún parámetro",
+        "Que el método no devuelve ningún valor al código que lo llamó",
+        "Que el método puede devolver cualquier tipo de valor",
+        "Que el método solo puede llamarse desde métodos privados",
+        "Que el método se ejecuta en un hilo separado del juego"
+      ],
+      "correctIndex": 1,
+      "explanation": "'void' significa 'vacío' — el método no retorna nada. En Unity, la mayoría de los métodos de comportamiento son void: 'void Update()', 'void Start()', 'void OnCollisionEnter()'. Cuando necesitas que un método dé un resultado, usas un tipo concreto: 'int GetScore()', 'bool IsAlive()', 'Vector3 GetDirection()'."
+    },
+    {
+      "id": "mth_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es la sobrecarga (overloading) de métodos?",
+      "options": [
+        "Hacer que un método herede el comportamiento de otro método de la clase padre",
+        "Definir múltiples métodos con el mismo nombre pero diferentes parámetros",
+        "Llamar al mismo método más de una vez en el mismo frame del juego",
+        "Usar una variable global dentro de varios métodos a la vez",
+        "Hacer que un método llame recursivamente a sí mismo hasta terminar"
+      ],
+      "correctIndex": 1,
+      "explanation": "La sobrecarga permite varios métodos con el mismo nombre siempre que difieran en sus parámetros (tipo o cantidad). Ej: 'void Move(float speed)', 'void Move(Vector3 direction)', 'void Move(float speed, bool sprint)'. Unity lo usa mucho internamente: Debug.Log tiene versiones para diferentes tipos de datos."
+    },
+    {
+      "id": "mth_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿en qué métodos de MonoBehaviour es recomendable inicializar variables y obtener referencias a componentes?",
+      "options": [
+        "Update() y FixedUpdate() — porque se llaman en cada frame",
+        "OnEnable() y OnDisable() — porque controlan la activación",
+        "Start() o Awake() — porque se llaman solo una vez al inicio",
+        "OnDestroy() — porque es cuando más recursos están disponibles",
+        "LateUpdate() — porque se ejecuta al final del ciclo del motor"
+      ],
+      "correctIndex": 2,
+      "explanation": "Start() y Awake() son perfectos para inicialización: se llaman solo una vez. Awake() se llama antes que Start() y antes de que el objeto esté activo — ideal para referencias internas. Start() se llama cuando el objeto ya está activo — ideal para referencias a otros objetos. NUNCA inicialices en Update() (se llama 60+ veces por segundo)."
+    },
+    {
+      "id": "mth_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es un método estático (static method)?",
+      "options": [
+        "Un método que no puede recibir parámetros de ningún tipo",
+        "Un método que pertenece a la CLASE y puede llamarse sin crear un objeto primero",
+        "Un método que solo puede llamarse una única vez durante la ejecución",
+        "Un método que no puede devolver valores ni modificar el estado",
+        "Un método que se llama automáticamente cuando el programa arranca"
+      ],
+      "correctIndex": 1,
+      "explanation": "Un método 'static' pertenece a la clase, no a los objetos. Se llama con el nombre de la clase: 'Mathf.Abs(-5f)', 'Debug.Log(\"hola\")', 'Vector3.Distance(a, b)'. No tienes que crear una instancia — por eso es útil para utilidades. El inconveniente: no puede acceder a campos de instancia (porque no hay instancia)."
+    },
+    {
+      "id": "mth_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de los siguientes es un ejemplo CORRECTO de llamada a un método estático en C#?",
+      "options": [
+        "new MiClase().MetodoEstatico()",
+        "MiClase.MetodoEstatico()",
+        "static.MetodoEstatico()",
+        "MiClase::MetodoEstatico()",
+        "MiClase->MetodoEstatico()"
+      ],
+      "correctIndex": 1,
+      "explanation": "Los métodos estáticos se llaman con 'NombreClase.NombreMetodo()'. Ejemplos reales en Unity: 'Mathf.Clamp(valor, 0, 100)', 'Debug.Log(\"mensaje\")', 'Input.GetAxis(\"Horizontal\")'. La notación '::' es de C++, '->' también de C++, y crear una instancia para llamar un método estático funciona pero es mala práctica."
+    },
+    {
+      "id": "mth_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué elementos componen la firma (signature) de un método?",
+      "options": [
+        "Solo el nombre del método — es el único elemento que lo identifica",
+        "La documentación XML que describe qué hace el método",
+        "El nombre del método y sus parámetros (tipo y orden)",
+        "Solo el tipo de retorno y el nombre de la clase que lo contiene",
+        "El número exacto de veces que se llama durante la ejecución"
+      ],
+      "correctIndex": 2,
+      "explanation": "La firma de un método es su nombre + sus parámetros (tipos y orden). Ejemplo: la firma de 'public float CalculateDamage(float base, float multiplier)' es 'CalculateDamage(float, float)'. La firma es lo que distingue métodos sobrecargados: 'Attack()' y 'Attack(int damage)' tienen firmas distintas aunque mismo nombre."
+    },
+    {
+      "id": "mth_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta clase de Unity:",
+      "code": "public class Enemy : MonoBehaviour\n{\n    private int _health = 100;\n\n    public void TakeDamage(int amount)\n    {\n        _health -= amount;\n        if (_health <= 0)\n            Destroy(gameObject);\n    }\n}",
+      "question": "¿Qué es 'TakeDamage' en este código?",
+      "target": "TakeDamage",
+      "acceptedAnswers": [
+        "método", "un método", "method",
+        "función", "función miembro", "método de instancia"
+      ],
+      "hints": [
+        "Fíjate en lo que aparece antes de 'TakeDamage': un modificador de acceso y algo más",
+        "Tiene un cuerpo entre llaves { } y recibe parámetros entre paréntesis ( )",
+        "Las acciones o comportamientos de una clase se implementan en..."
+      ],
+      "explanation": "'TakeDamage' es un <strong>método</strong>. Los métodos definen el comportamiento de la clase. Se reconocen porque tienen paréntesis () con o sin parámetros y un cuerpo entre llaves {}. Este método recibe un 'amount' (daño) y reduce la vida del enemigo."
+    },
+    {
+      "id": "mth_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta clase de utilidades:",
+      "code": "public static class MathUtils\n{\n    public static float Lerp(float a, float b, float t)\n    {\n        return a + (b - a) * t;\n    }\n\n    public static float Clamp(float value, float min, float max)\n    {\n        return Mathf.Clamp(value, min, max);\n    }\n}",
+      "question": "¿Qué tipo especial de métodos son 'Lerp' y 'Clamp' en esta clase?",
+      "target": "Lerp",
+      "acceptedAnswers": [
+        "métodos estáticos", "static methods", "estáticos", "static",
+        "métodos de clase", "métodos estáticos de clase"
+      ],
+      "hints": [
+        "Hay una palabra clave extra en la declaración, entre 'public' y el tipo de retorno",
+        "Estos métodos pueden llamarse sin crear un objeto: MathUtils.Lerp(0, 10, 0.5f)",
+        "La palabra que los identifica empieza con 's' y también la usa la clase contenedora"
+      ],
+      "explanation": "'Lerp' y 'Clamp' son <strong>métodos estáticos</strong>. La palabra <code>static</code> en su declaración indica que pertenecen a la clase, no a instancias. Se llaman directamente: <code>MathUtils.Lerp(0, 10, 0.5f)</code>. Unity tiene muchas clases de utilidades con métodos estáticos: Mathf, Physics, Debug, Input."
+    },
+    {
+      "id": "mth_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta clase:",
+      "code": "public class Player\n{\n    private int _health = 100;\n\n    public int GetHealth() { return _health; }\n\n    public void SetHealth(int value) { _health = value; }\n    public void SetHealth(float value) { _health = (int)value; }\n    public void SetHealth(int value, int max) { _health = Mathf.Min(value, max); }\n}",
+      "question": "¿Qué técnica de POO se aplica con los tres métodos 'SetHealth'?",
+      "target": "SetHealth",
+      "acceptedAnswers": [
+        "sobrecarga", "overloading", "method overloading",
+        "sobrecarga de métodos", "polimorfismo de métodos"
+      ],
+      "hints": [
+        "Los tres métodos tienen el mismo nombre pero difieren en sus parámetros",
+        "Esta técnica permite múltiples versiones de un método con el mismo nombre",
+        "En inglés esta técnica se llama 'method overloading'"
+      ],
+      "explanation": "Se aplica <strong>sobrecarga de métodos</strong> (method overloading). C# permite varios métodos con el mismo nombre si tienen parámetros distintos (diferente tipo, cantidad u orden). El compilador elige cuál versión llamar según los argumentos que pasas: <code>SetHealth(100)</code> usa la versión int, <code>SetHealth(75.5f)</code> usa la versión float."
+    },
+    {
+      "id": "mth_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este código:",
+      "code": "public class Character\n{\n    private int _health = 100;\n\n    public bool IsAlive()\n    {\n        return _health > 0;\n    }\n\n    public bool HasFullHealth()\n    {\n        return _health >= 100;\n    }\n}",
+      "question": "¿Qué tipo de dato retornan los métodos 'IsAlive' y 'HasFullHealth'?",
+      "target": "bool",
+      "acceptedAnswers": [
+        "bool", "boolean", "booleano",
+        "bool (true o false)", "verdadero o falso", "true/false"
+      ],
+      "hints": [
+        "Fíjate en la palabra que aparece justo antes del nombre del método",
+        "Este tipo de dato solo puede tener dos valores: verdadero o falso",
+        "En C# el tipo que representa verdadero/falso se llama..."
+      ],
+      "explanation": "Los métodos retornan <code>bool</code> (booleano). La palabra <code>bool</code> antes del nombre del método indica el tipo de retorno. Un bool solo puede ser <code>true</code> o <code>false</code>. La expresión <code>_health > 0</code> ya devuelve un bool — por eso se puede usar directamente con <code>return</code>."
+    },
+    {
+      "id": "mth_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método:",
+      "code": "public class Weapon\n{\n    public float CalculateDamage(float baseDamage, float critMultiplier, bool isCritical)\n    {\n        if (isCritical)\n            return baseDamage * critMultiplier;\n        return baseDamage;\n    }\n}",
+      "question": "¿Cuántos parámetros tiene el método 'CalculateDamage'?",
+      "target": "CalculateDamage",
+      "acceptedAnswers": ["3", "tres", "3 parámetros", "tres parámetros"],
+      "hints": [
+        "Los parámetros son las variables dentro de los paréntesis en la declaración del método",
+        "Están separados por comas — cuenta cuántas hay",
+        "Hay un float, otro float, y un bool"
+      ],
+      "explanation": "'CalculateDamage' tiene <strong>3 parámetros</strong>: <code>float baseDamage</code>, <code>float critMultiplier</code>, y <code>bool isCritical</code>. Los parámetros son las 'entradas' del método — le dicen qué datos necesita para hacer su trabajo."
+    },
+    {
+      "id": "mth_id_006",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Observa esta llamada a un método:",
+      "code": "// Declaración:\npublic void TakeDamage(int amount)\n{\n    _health -= amount;\n}\n\n// Llamada:\nenemy.TakeDamage(50);",
+      "question": "En la línea 'enemy.TakeDamage(50)', ¿qué es el valor '50'?",
+      "target": "50",
+      "acceptedAnswers": [
+        "argumento", "un argumento", "argument",
+        "valor del argumento", "el argumento pasado al método"
+      ],
+      "hints": [
+        "¿Es el 50 parte de la declaración del método o de su llamada?",
+        "El valor real que pasas cuando LLAMAS al método tiene un nombre específico",
+        "La variable en la declaración se llama 'parámetro'; el valor al llamar se llama..."
+      ],
+      "explanation": "El <code>50</code> es un <strong>argumento</strong>. Es el valor concreto que pasamos cuando LLAMAMOS al método. La variable <code>amount</code> en la declaración es el <em>parámetro</em>. Al llamar <code>TakeDamage(50)</code>, el argumento 50 se copia en el parámetro <code>amount</code> dentro del método."
+    },
+    {
+      "id": "mth_cw_001",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración de un método público que no retorna nada, llamado 'Jump' (sin parámetros, sin cuerpo).",
+      "expectedAnswer": "public void Jump()",
+      "alternateAnswers": ["public void Jump( )"],
+      "placeholder": "Escribe la declaración del método...",
+      "hints": [
+        "El orden es: [modificador] [tipo_retorno] [Nombre]([parámetros])",
+        "Un método que no retorna nada usa 'void' como tipo de retorno"
+      ],
+      "explanation": "La declaración es <code>public void Jump()</code>. Componentes: <code>public</code> (accesible desde fuera), <code>void</code> (no retorna valor), <code>Jump</code> (nombre en PascalCase), <code>()</code> (sin parámetros)."
+    },
+    {
+      "id": "mth_cw_002",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Declara un método público que retorna un entero (int), llamado 'GetScore', sin parámetros.",
+      "expectedAnswer": "public int GetScore()",
+      "alternateAnswers": ["public int GetScore( )"],
+      "placeholder": "Escribe la declaración...",
+      "hints": [
+        "Cambia 'void' por el tipo que quieres retornar — en este caso un entero",
+        "Los métodos que retornan algo usan el tipo de dato (int, float, string, etc.) en lugar de void"
+      ],
+      "explanation": "La declaración es <code>public int GetScore()</code>. Al usar <code>int</code> como tipo de retorno, el método DEBE incluir al menos un <code>return [valor_entero];</code> en su cuerpo. Ejemplo: <code>public int GetScore() { return _score; }</code>."
+    },
+    {
+      "id": "mth_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la palabra clave que falta para que el método devuelva el valor de '_health':",
+      "codeTemplate": "public int GetHealth() { __________ _health; }",
+      "expectedAnswer": "return",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": [
+        "Para enviar un valor de vuelta al código que llamó al método, usas esta palabra clave",
+        "Es la misma palabra que en inglés significa 'regresar' o 'devolver'"
+      ],
+      "explanation": "La palabra <code>return</code> termina el método y devuelve el valor al código que lo llamó. Todo método que no sea <code>void</code> DEBE tener un <code>return</code>. El valor después de return debe ser del mismo tipo que el tipo de retorno declarado."
+    },
+    {
+      "id": "mth_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Declara un método estático público que retorna un string, llamado 'GetVersion', sin parámetros.",
+      "expectedAnswer": "public static string GetVersion()",
+      "alternateAnswers": ["public static string GetVersion( )"],
+      "placeholder": "Escribe la declaración completa...",
+      "hints": [
+        "Un método estático tiene la palabra 'static' entre el modificador de acceso y el tipo de retorno",
+        "El orden es: public → static → tipo_retorno → Nombre()"
+      ],
+      "explanation": "La declaración es <code>public static string GetVersion()</code>. La palabra <code>static</code> va después del modificador de acceso. Los métodos estáticos no pueden acceder a campos de instancia — solo a campos <code>static</code>. Se llaman con el nombre de la clase: <code>MiClase.GetVersion()</code>."
+    },
+    {
+      "id": "mth_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para llamar al método 'Initialize' en el objeto 'player':",
+      "codeTemplate": "__________.Initialize();",
+      "expectedAnswer": "player",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del objeto...",
+      "hints": [
+        "Para llamar a un método de un objeto, usas el nombre del objeto seguido de punto y el nombre del método",
+        "El objeto sobre el que quieres llamar Initialize() se llama 'player'"
+      ],
+      "explanation": "Se escribe <code>player.Initialize();</code>. Para llamar métodos de instancia (no estáticos) se usa el operador punto: <code>[nombre_objeto].[NombreMetodo]([argumentos])</code>. Es como decirle al objeto: 'tú, player, ejecuta tu método Initialize'."
+    },
+    {
+      "id": "mth_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el tipo del parámetro para que el método TakeDamage reciba un número entero:",
+      "codeTemplate": "public void TakeDamage(__________ damage)",
+      "expectedAnswer": "int",
+      "alternateAnswers": ["Int32", "System.Int32"],
+      "placeholder": "Escribe el tipo del parámetro...",
+      "hints": [
+        "El daño es un número entero (sin decimales)",
+        "El tipo de dato primitivo de C# para números enteros es..."
+      ],
+      "explanation": "El tipo es <code>int</code>. La declaración completa: <code>public void TakeDamage(int damage)</code>. El parámetro <code>damage</code> de tipo <code>int</code> permite pasar valores como 50, 100, etc. Si necesitaras decimales usarías <code>float</code>."
+    }
+  ]
+}

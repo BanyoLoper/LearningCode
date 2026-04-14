@@ -1,0 +1,47 @@
+{
+  "title": "POO en C# para Unity",
+  "subtitle": "Refuerzo de Programación Orientada a Objetos",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "classes",
+      "title": "Clases",
+      "icon": "🏗️",
+      "description": "El plano que define la estructura de tus objetos",
+      "dataFile": "data/classes/classes.json",
+      "color": "#4CAF50",
+      "unlockRequirement": null,
+      "correctAnswersToUnlockNext": 5
+    },
+    {
+      "id": "objects",
+      "title": "Objetos",
+      "icon": "🎮",
+      "description": "Instancias concretas de tus clases en memoria",
+      "dataFile": "data/objects/objects.json",
+      "color": "#2196F3",
+      "unlockRequirement": "classes",
+      "correctAnswersToUnlockNext": 5
+    },
+    {
+      "id": "fields",
+      "title": "Campos",
+      "icon": "📦",
+      "description": "Variables que pertenecen a una clase y definen su estado",
+      "dataFile": "data/fields/fields.json",
+      "color": "#FF9800",
+      "unlockRequirement": "objects",
+      "correctAnswersToUnlockNext": 5
+    },
+    {
+      "id": "methods",
+      "title": "Métodos",
+      "icon": "⚙️",
+      "description": "Funciones que definen el comportamiento de una clase",
+      "dataFile": "data/methods/methods.json",
+      "color": "#9C27B0",
+      "unlockRequirement": "fields",
+      "correctAnswersToUnlockNext": null
+    }
+  ]
+}

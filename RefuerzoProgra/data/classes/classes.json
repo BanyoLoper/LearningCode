@@ -1,0 +1,358 @@
+{
+  "id": "classes",
+  "title": "Clases",
+  "icon": "🏗️",
+  "documentation": {
+    "sections": [
+      {
+        "id": "what-is-class",
+        "title": "¿Qué es una Clase?",
+        "type": "definition",
+        "content": "Una clase es un <strong>plano o plantilla</strong> que define la estructura y el comportamiento de los objetos creados a partir de ella. Define qué <em>datos</em> tendrá (campos) y qué <em>acciones</em> puede realizar (métodos)."
+      },
+      {
+        "id": "analogy",
+        "title": "🎮 Analogía con Unity",
+        "type": "analogy",
+        "content": "Imagina que necesitas 50 enemigos en tu juego. La <strong>clase Enemy</strong> es como un <em>prefab</em> en Unity: es el plano que describe cómo será cada enemigo. El prefab no es un enemigo real en la escena — para eso tienes que <em>instanciarlo</em> (arrastrarlo a la escena o con <code>Instantiate()</code>). Cada goblin que ves en pantalla es una <strong>instancia</strong> de esa clase."
+      },
+      {
+        "id": "syntax",
+        "title": "Sintaxis Básica",
+        "type": "code",
+        "content": "// Clase básica de C#\npublic class Enemy\n{\n    public int Health = 100;\n    public string Name = \"Goblin\";\n\n    public void Attack()\n    {\n        Debug.Log($\"{Name} ataca!\");\n    }\n}\n\n// Script de Unity (hereda de MonoBehaviour)\npublic class PlayerController : MonoBehaviour\n{\n    void Start() { }\n    void Update() { }\n}"
+      },
+      {
+        "id": "special-classes",
+        "title": "Tipos Especiales de Clases",
+        "type": "list",
+        "items": [
+          "<code>public class</code> — Clase estándar: instanciable y heredable",
+          "<code>public abstract class</code> — No puede instanciarse directamente; sirve como base para otras clases",
+          "<code>public static class</code> — No puede instanciarse; todos sus miembros son estáticos (ej: GameManager, MathUtils)",
+          "<code>public sealed class</code> — No puede ser heredada por ninguna otra clase (ej: patrón Singleton)"
+        ]
+      },
+      {
+        "id": "unity-note",
+        "title": "📌 Nota para Unity",
+        "type": "note",
+        "content": "No todos los scripts necesitan heredar de <code>MonoBehaviour</code>. Para datos puros sin lógica de Unity, usa clases normales. Agrega <code>[System.Serializable]</code> si quieres que esa clase aparezca en el Inspector."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "cls_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es una clase en C#?",
+      "options": [
+        "Un plano o plantilla que define la estructura y comportamiento de los objetos",
+        "Una instancia específica creada en memoria durante la ejecución del programa",
+        "Un método especial que se ejecuta automáticamente al iniciar el programa",
+        "Una variable que puede almacenar múltiples valores del mismo tipo",
+        "Un archivo de configuración que Unity lee al iniciar la escena"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una clase es un plano o plantilla — no es un objeto en sí misma, sino la definición de cómo serán los objetos. Es como el plano de una casa: el plano no es la casa, pero define exactamente cómo construirla."
+    },
+    {
+      "id": "cls_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En Unity tienes 50 goblins en tu escena. ¿Cuál de estos conceptos representa mejor una CLASE?",
+      "options": [
+        "Cada uno de los 50 goblins que aparecen y se mueven en pantalla",
+        "El prefab 'Goblin' que defines una sola vez y del que salen todos los goblins",
+        "La escena donde aparecen los goblins",
+        "El componente Transform adjunto a cada goblin",
+        "El número de puntos de vida que tiene cada goblin"
+      ],
+      "correctIndex": 1,
+      "explanation": "La CLASE es el prefab — el plano que define cómo será cada goblin. Los 50 goblins en pantalla son los OBJETOS (instancias) creados a partir de esa clase. Una clase puede generar infinitos objetos."
+    },
+    {
+      "id": "cls_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre 'class' y 'struct' en C#?",
+      "options": [
+        "Las clases son tipos por referencia; los structs son tipos por valor",
+        "Las clases son tipos por valor; los structs son tipos por referencia",
+        "Las clases pueden tener métodos pero los structs no pueden",
+        "Las clases se usan para números y los structs para texto",
+        "No hay diferencia práctica; son totalmente intercambiables"
+      ],
+      "correctIndex": 0,
+      "explanation": "Las clases son tipos por referencia: la variable guarda una dirección de memoria, no el valor directamente. Los structs son tipos por valor: la variable guarda el dato directamente. En Unity, Vector3 y Quaternion son structs; MonoBehaviour y ScriptableObject son clases."
+    },
+    {
+      "id": "cls_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace la palabra reservada 'static' en una CLASE (no en un miembro)?",
+      "options": [
+        "Hace que la clase no pueda ser heredada por otras clases",
+        "Hace que solo pueda existir una instancia de la clase a la vez",
+        "Hace que la clase no pueda instanciarse y que todos sus miembros sean estáticos",
+        "Hace que los objetos de esa clase no puedan modificarse en tiempo de ejecución",
+        "Hace que la clase se inicialice automáticamente al arrancar la aplicación"
+      ],
+      "correctIndex": 2,
+      "explanation": "Una clase 'static' no puede instanciarse con 'new' y TODOS sus miembros deben ser estáticos. Es útil para managers o utilidades que no necesitan estado de objeto (ej: 'public static class GameUtils { }')."
+    },
+    {
+      "id": "cls_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirve la palabra reservada 'abstract' aplicada a una clase?",
+      "options": [
+        "Para indicar que la clase no puede ser heredada por otras clases",
+        "Para definir una clase base que no puede instanciarse directamente, solo heredarse",
+        "Para indicar que la clase es de solo lectura y sus datos no cambian",
+        "Para indicar que la clase no tiene un constructor definido",
+        "Para hacer que la clase sea invisible desde otros namespaces del proyecto"
+      ],
+      "correctIndex": 1,
+      "explanation": "Una clase 'abstract' no puede crearse con 'new' directamente — solo puede usarse como clase base. Sirve para definir una plantilla común que todas las clases hijas deben implementar. Ej: 'public abstract class Character' que obliga a Enemy y Player a implementar 'Attack()'."
+    },
+    {
+      "id": "cls_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace 'sealed' en una declaración de clase?",
+      "options": [
+        "Hace que los campos privados de la clase no puedan modificarse",
+        "Hace que la clase solo pueda usarse dentro del mismo archivo",
+        "Hace que ninguna otra clase pueda heredar de ella",
+        "Hace que la clase no pueda tener métodos públicos",
+        "Hace que la clase se serialice automáticamente en Unity"
+      ],
+      "correctIndex": 2,
+      "explanation": "Una clase 'sealed' no puede ser clase base. Ninguna otra clase puede heredar de ella. En Unity se usa comúnmente para implementar el patrón Singleton: 'public sealed class GameManager' garantiza que nadie hereda de tu singleton y rompe la lógica."
+    },
+    {
+      "id": "cls_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué modificador de acceso debe tener una clase para poder usarla desde cualquier otro script en Unity?",
+      "options": [
+        "private — solo accesible dentro del mismo archivo",
+        "protected — solo accesible desde clases derivadas",
+        "internal — solo accesible dentro del mismo ensamblado",
+        "public — accesible desde cualquier lugar del proyecto",
+        "sealed — accesible solo desde clases selladas"
+      ],
+      "correctIndex": 3,
+      "explanation": "El modificador 'public' hace que la clase sea accesible desde cualquier parte del proyecto. Si omites el modificador en C#, la clase es 'internal' por defecto (solo dentro del mismo ensamblado/DLL). En Unity casi siempre querrás 'public' para tus scripts."
+    },
+    {
+      "id": "cls_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es una clase POCO (Plain Old CLR Object) en C#?",
+      "options": [
+        "Una clase que hereda de MonoBehaviour para funcionar en Unity",
+        "Una clase abstracta con al menos un método sin implementar",
+        "Una clase simple que solo contiene datos, sin herencia especial ni lógica compleja",
+        "Una clase que implementa múltiples interfaces de Unity",
+        "Una clase estática que solo tiene métodos de utilidad"
+      ],
+      "correctIndex": 2,
+      "explanation": "Un POCO es una clase 'limpia': sin herencia de clases especiales del framework, sin atributos complejos, solo datos y quizás métodos simples. En Unity se usan POCOs para representar datos del juego (ej: clase 'PlayerData' con nombre, nivel, puntuación) sin necesitar MonoBehaviour."
+    },
+    {
+      "id": "cls_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa el siguiente código de C# para Unity:",
+      "code": "public class Spaceship : MonoBehaviour\n{\n    public float speed = 10f;\n\n    void Update()\n    {\n        transform.Translate(Vector3.forward * speed * Time.deltaTime);\n    }\n}",
+      "question": "¿Qué es 'Spaceship' en este código?",
+      "target": "Spaceship",
+      "acceptedAnswers": ["clase", "class", "una clase", "declaración de clase", "nombre de clase"],
+      "hints": [
+        "Fíjate en las palabras que aparecen JUSTO ANTES del término 'Spaceship'",
+        "La palabra reservada que precede a 'Spaceship' es la que define de qué tipo es",
+        "En C#, la palabra reservada 'class' indica que estamos declarando..."
+      ],
+      "explanation": "'Spaceship' es el <strong>nombre de una clase</strong>. La palabra reservada <code>class</code> antes del nombre indica que estamos declarando una clase. Además, esta clase hereda de <code>MonoBehaviour</code> (el <code>: MonoBehaviour</code>), lo que la convierte en un componente de Unity."
+    },
+    {
+      "id": "cls_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento de código:",
+      "code": "public abstract class Character\n{\n    public int Health { get; set; }\n    public abstract void Attack();\n    public abstract void TakeDamage(int amount);\n}",
+      "question": "¿Qué tipo especial de clase es 'Character'?",
+      "target": "Character",
+      "acceptedAnswers": ["clase abstracta", "abstract class", "abstracta", "abstract", "clase base abstracta"],
+      "hints": [
+        "Hay una palabra extra entre 'public' y 'class' que modifica el tipo de clase",
+        "Este tipo de clase NO puede instanciarse directamente con 'new'",
+        "La palabra que lo define comienza con la letra 'a' y significa 'sin concreción'"
+      ],
+      "explanation": "'Character' es una <strong>clase abstracta</strong>. La palabra <code>abstract</code> antes de <code>class</code> indica que: (1) no puede instanciarse con <code>new Character()</code>, y (2) puede contener métodos abstractos que las clases hijas DEBEN implementar. Es perfecta como base para Enemy, Player, NPC, etc."
+    },
+    {
+      "id": "cls_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta clase de Unity:",
+      "code": "public static class AudioManager\n{\n    public static float MasterVolume = 1.0f;\n\n    public static void PlaySound(string clipName)\n    {\n        // reproducir sonido\n    }\n}",
+      "question": "¿Qué tipo especial de clase es 'AudioManager'?",
+      "target": "AudioManager",
+      "acceptedAnswers": ["clase estática", "static class", "estática", "static", "clase estática no instanciable"],
+      "hints": [
+        "Hay una palabra entre 'public' y 'class' que indica el tipo especial",
+        "No puedes hacer 'new AudioManager()' con este tipo de clase",
+        "La palabra clave empieza con 's' y todos sus miembros deben compartir esa misma característica"
+      ],
+      "explanation": "'AudioManager' es una <strong>clase estática</strong>. Con <code>static</code> entre <code>public</code> y <code>class</code>: (1) no puede instanciarse con <code>new</code>, y (2) todos sus miembros deben ser <code>static</code>. Se accede directamente con el nombre de la clase: <code>AudioManager.PlaySound(\"jump\")</code>."
+    },
+    {
+      "id": "cls_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee el siguiente código con atención:",
+      "code": "public sealed class GameSingleton\n{\n    private static GameSingleton _instance;\n\n    public static GameSingleton Instance\n    {\n        get\n        {\n            if (_instance == null)\n                _instance = new GameSingleton();\n            return _instance;\n        }\n    }\n\n    private GameSingleton() { }\n}",
+      "question": "¿Qué característica especial tiene la clase 'GameSingleton' por la palabra 'sealed'?",
+      "target": "sealed",
+      "acceptedAnswers": [
+        "no puede heredarse", "no puede ser heredada", "sellada", "sealed", "no permite herencia",
+        "ninguna clase puede heredar de ella", "no tiene clases hijas"
+      ],
+      "hints": [
+        "La palabra 'sealed' literalmente significa 'sellada' o 'cerrada'",
+        "Esta palabra afecta la relación de la clase con otras clases que podrían querer extenderla",
+        "Si intentas escribir 'class MiClase : GameSingleton', el compilador te dará un error porque..."
+      ],
+      "explanation": "La palabra <code>sealed</code> hace que <strong>ninguna clase pueda heredar de GameSingleton</strong>. Si alguien intentara escribir <code>class MiManager : GameSingleton</code>, el compilador lanzaría un error. Esto protege patrones como el Singleton de ser rotos por herencia."
+    },
+    {
+      "id": "cls_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Mira este script de Unity:",
+      "code": "using UnityEngine;\n\npublic class EnemyAI : MonoBehaviour\n{\n    public float detectionRadius = 5f;\n\n    void Update()\n    {\n        Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius);\n        foreach (var hit in hits)\n        {\n            // lógica de detección\n        }\n    }\n}",
+      "question": "¿De qué clase hereda 'EnemyAI'?",
+      "target": "MonoBehaviour",
+      "acceptedAnswers": ["monobehaviour", "MonoBehaviour", "monobehavior", "MonoBehavior"],
+      "hints": [
+        "Busca el símbolo ':' después del nombre de la clase — indica herencia",
+        "La clase de la que hereda es el nombre que aparece después de ':'",
+        "Es la clase base de todos los scripts de Unity que se adjuntan a GameObjects"
+      ],
+      "explanation": "'EnemyAI' hereda de <strong>MonoBehaviour</strong>. El símbolo <code>:</code> en C# indica herencia. Al heredar de MonoBehaviour, EnemyAI puede usar <code>Start()</code>, <code>Update()</code>, <code>transform</code>, <code>GetComponent()</code> y todos los métodos del ciclo de vida de Unity."
+    },
+    {
+      "id": "cls_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa esta estructura de código:",
+      "code": "public class Inventory\n{\n    private List<Item> _items = new List<Item>();\n\n    public class Item\n    {\n        public string Name;\n        public int Value;\n        public ItemType Type;\n\n        public enum ItemType { Weapon, Armor, Consumable }\n    }\n}",
+      "question": "La clase 'Item' dentro de 'Inventory' recibe el nombre especial de clase...",
+      "target": "Item",
+      "acceptedAnswers": ["clase anidada", "nested class", "anidada", "nested", "inner class", "clase interna"],
+      "hints": [
+        "La clase 'Item' está físicamente dentro de otra clase — ¿cómo se llama ese patrón?",
+        "Cuando una clase está declarada dentro del cuerpo de otra clase se le llama...",
+        "En inglés se llama 'nested class' — ¿cómo se diría en español?"
+      ],
+      "explanation": "'Item' es una <strong>clase anidada</strong> (nested class). Está declarada dentro del cuerpo de la clase 'Inventory'. Tiene sentido anidarla porque Item solo existe en el contexto de un Inventory. Se accede desde fuera como <code>Inventory.Item</code>."
+    },
+    {
+      "id": "cls_cw_001",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea de declaración de una clase pública llamada 'Bullet' (solo la declaración, sin el cuerpo).",
+      "expectedAnswer": "public class Bullet",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "Primero va el modificador de acceso 'public', luego la palabra reservada 'class', luego el nombre",
+        "La sintaxis es: [modificador] class [NombreClase]"
+      ],
+      "explanation": "Para declarar una clase pública en C# se escribe: <code>public class NombreClase</code>. El modificador <code>public</code> la hace accesible desde cualquier parte. El nombre por convención usa PascalCase (primera letra de cada palabra en mayúscula)."
+    },
+    {
+      "id": "cls_cw_002",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Declara una clase estática pública llamada 'SoundUtils'. Escribe solo la línea de declaración.",
+      "expectedAnswer": "public static class SoundUtils",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "Una clase estática necesita la palabra 'static' entre el modificador de acceso y 'class'",
+        "El orden es: public → static → class → NombreClase"
+      ],
+      "explanation": "Para declarar una clase estática: <code>public static class SoundUtils</code>. La palabra <code>static</code> va entre el modificador de acceso y <code>class</code>. Una clase estática no puede instanciarse con <code>new</code> y todos sus miembros deben ser <code>static</code>."
+    },
+    {
+      "id": "cls_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa la palabra que falta para que 'Character' sea una clase que no pueda instanciarse directamente:",
+      "codeTemplate": "public __________ class Character",
+      "expectedAnswer": "abstract",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra que falta...",
+      "hints": [
+        "Este tipo de clase solo puede usarse como clase base para otras clases",
+        "La palabra viene del latín y significa 'sin forma concreta'"
+      ],
+      "explanation": "La palabra <code>abstract</code> hace que la clase no pueda instanciarse directamente. Debes escribir clases que hereden de ella. Es perfecta para definir contratos comunes: <code>public abstract class Character { public abstract void Attack(); }</code>."
+    },
+    {
+      "id": "cls_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para que 'PlayerController' herede de la clase base de scripts de Unity:",
+      "codeTemplate": "public class PlayerController : __________",
+      "expectedAnswer": "MonoBehaviour",
+      "alternateAnswers": ["monobehaviour", "MonoBehavior", "monobehavior"],
+      "placeholder": "Escribe el nombre de la clase...",
+      "hints": [
+        "Es la clase base de todos los scripts que se adjuntan a GameObjects en Unity",
+        "Su nombre combina 'Mono' (runtime de .NET usado por Unity) y 'Behaviour' (comportamiento)"
+      ],
+      "explanation": "Los scripts de Unity heredan de <code>MonoBehaviour</code>. Esta herencia da acceso a <code>Start()</code>, <code>Update()</code>, <code>transform</code>, <code>gameObject</code> y toda la API de Unity. Sin esta herencia, el script no puede adjuntarse a un GameObject."
+    },
+    {
+      "id": "cls_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Declara una clase sellada pública llamada 'AppController'. Escribe solo la línea de declaración.",
+      "expectedAnswer": "public sealed class AppController",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "Una clase sellada usa la palabra 'sealed' entre el modificador de acceso y 'class'",
+        "El orden es: public → sealed → class → NombreClase"
+      ],
+      "explanation": "Para una clase sellada: <code>public sealed class AppController</code>. La palabra <code>sealed</code> impide que otras clases hereden de AppController. Es útil en patrones como Singleton donde necesitas que la clase no pueda ser extendida."
+    },
+    {
+      "id": "cls_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el modificador de acceso que falta para que 'Enemy' sea visible desde cualquier script:",
+      "codeTemplate": "__________ class Enemy : Character",
+      "expectedAnswer": "public",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el modificador...",
+      "hints": [
+        "Hay 4 modificadores de acceso principales: private, protected, internal, public",
+        "El que da acceso desde CUALQUIER parte del proyecto es..."
+      ],
+      "explanation": "El modificador <code>public</code> hace la clase accesible desde cualquier parte del proyecto. Sin modificador, la clase sería <code>internal</code> por defecto (solo visible dentro del mismo ensamblado/DLL). En Unity casi siempre usamos <code>public</code> para las clases de scripts."
+    }
+  ]
+}

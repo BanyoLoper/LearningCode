@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POO en C# para Unity — Refuerzo</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- SweetAlert2 for unlock notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══ Header ═══════════════════════════════════════════════════════════ -->
+  <header id="app-header">
+    <div class="header-left">
+      <h1>🎮 POO en C# para Unity</h1>
+    </div>
+    <div class="header-center">
+      <div id="overall-progress-bar" title="Progreso general del curso">
+        <div id="overall-progress-fill"></div>
+      </div>
+      <span id="overall-progress-text">Cargando…</span>
+    </div>
+    <div class="header-right">
+      <button id="btn-reset" title="Reiniciar todo el progreso">↺ Reset</button>
+    </div>
+  </header>
+
+  <!-- ═══ Main Layout ═══════════════════════════════════════════════════════ -->
+  <main id="app-main">
+
+    <!-- Left: Section Navigator -->
+    <aside id="sidebar" aria-label="Navegación de secciones">
+      <h2>Secciones</h2>
+      <nav id="sections-nav" role="navigation" aria-label="Secciones del curso">
+        <!-- Populated dynamically by SidebarManager -->
+      </nav>
+    </aside>
+
+    <!-- Center: Evaluation -->
+    <section id="evaluation-panel" aria-label="Panel de evaluación">
+      <!-- Active question -->
+      <div id="current-question-container" aria-live="polite">
+        <!-- Populated by EvaluationPanel -->
+      </div>
+      <!-- History of answered questions this session -->
+      <div id="topic-questions-container" aria-label="Preguntas respondidas">
+        <!-- Populated by EvaluationPanel -->
+      </div>
+    </section>
+
+    <!-- Right: Documentation -->
+    <aside id="documentation-panel" aria-label="Documentación del curso">
+      <h2>📚 Documentación</h2>
+      <div id="documentation-content">
+        <p class="doc-placeholder">
+          Responde preguntas correctamente para desbloquear la documentación de cada sección.
+        </p>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ═══ Loading Overlay ═══════════════════════════════════════════════════ -->
+  <div id="loading-overlay" role="status" aria-label="Cargando curso">
+    <div class="loading-spinner"></div>
+    <p>Cargando curso…</p>
+  </div>
+
+  <!-- App entry point — type="module" enables ES6 imports -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>

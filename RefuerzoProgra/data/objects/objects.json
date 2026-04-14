@@ -1,0 +1,369 @@
+{
+  "id": "objects",
+  "title": "Objetos",
+  "icon": "🎮",
+  "documentation": {
+    "sections": [
+      {
+        "id": "what-is-object",
+        "title": "¿Qué es un Objeto?",
+        "type": "definition",
+        "content": "Un objeto es una <strong>instancia concreta de una clase</strong>, creada en memoria durante la ejecución del programa. Mientras la clase es el plano, el objeto es la construcción real. Cada objeto tiene su propio espacio en memoria y sus propios valores de datos."
+      },
+      {
+        "id": "analogy",
+        "title": "🎮 Analogía con Unity",
+        "type": "analogy",
+        "content": "Si la clase <strong>Enemy</strong> es el prefab, entonces cada goblin que aparece en tu escena es un <strong>objeto</strong>. Goblin1 tiene 100 HP y está en la posición (2, 0, 5). Goblin2 tiene 80 HP y está en (−3, 0, 7). Ambos son instancias de la misma clase Enemy, pero cada uno tiene <em>sus propios datos</em> independientes."
+      },
+      {
+        "id": "instantiation",
+        "title": "Creando Objetos con 'new'",
+        "type": "code",
+        "content": "// Sintaxis: Tipo nombreVariable = new Tipo(argumentos);\nEnemy goblin = new Enemy();\nPlayer hero = new Player(\"Arthas\", 100);\n\n// En Unity con GetComponent\nRigidbody rb = GetComponent<Rigidbody>();\n\n// Con Instantiate (clonar un prefab)\nGameObject enemyObj = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);"
+      },
+      {
+        "id": "reference-types",
+        "title": "Objetos y Referencias",
+        "type": "note",
+        "content": "En C#, las clases son <strong>tipos por referencia</strong>. Cuando asignas un objeto a otra variable, ambas variables apuntan al <em>mismo objeto en memoria</em> — no se hace una copia. Si modificas el objeto a través de una variable, el cambio se ve también desde la otra variable."
+      },
+      {
+        "id": "null",
+        "title": "El Valor null",
+        "type": "code",
+        "content": "// Una variable de tipo clase que no apunta a ningún objeto vale null\nEnemy target = null;\n\n// Siempre verifica antes de usar un objeto que podría ser null\nif (target != null)\n{\n    target.TakeDamage(50);\n}\n\n// En C# moderno también puedes usar el operador null-conditional:\ntarget?.TakeDamage(50); // Solo llama si target no es null"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "obj_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es un objeto en Programación Orientada a Objetos?",
+      "options": [
+        "Una instancia concreta de una clase, creada en memoria durante la ejecución",
+        "El código fuente escrito en el archivo .cs de C#",
+        "Una función que agrupa instrucciones reutilizables",
+        "Un archivo del proyecto que contiene configuración de Unity",
+        "Una variable local declarada dentro de un método"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un objeto es la instancia real de una clase. La clase define el molde; el objeto es lo que se crea a partir de ese molde. Ocupa espacio en memoria, tiene sus propios datos y puede ejecutar los métodos definidos en su clase."
+    },
+    {
+      "id": "obj_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cómo se crea un objeto de una clase en C#?",
+      "options": [
+        "Usando la palabra reservada 'class' seguida del nombre",
+        "Usando la palabra reservada 'new' seguida del nombre de la clase y paréntesis",
+        "Usando la palabra reservada 'create' seguida del tipo",
+        "Simplemente declarando una variable del tipo de la clase sin más",
+        "Usando la palabra reservada 'instance' del framework de .NET"
+      ],
+      "correctIndex": 1,
+      "explanation": "En C# se usa 'new' para instanciar una clase: 'Enemy goblin = new Enemy();'. La palabra 'new' reserva espacio en el heap de memoria, llama al constructor y devuelve una referencia al nuevo objeto."
+    },
+    {
+      "id": "obj_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado el código: 'Enemy goblin = new Enemy();' ¿Qué representa la variable 'goblin'?",
+      "options": [
+        "La definición de la clase Enemy",
+        "El tipo de dato 'Enemy'",
+        "Un objeto (instancia) de la clase Enemy creado en memoria",
+        "El nombre del método constructor de Enemy",
+        "Una copia del código fuente de la clase Enemy"
+      ],
+      "correctIndex": 2,
+      "explanation": "'goblin' es una variable que contiene una referencia a un objeto de tipo Enemy. El objeto fue creado en memoria con 'new Enemy()' y 'goblin' apunta a él. Es como una etiqueta que dice: 'aquí está mi goblin en memoria'."
+    },
+    {
+      "id": "obj_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es el constructor de una clase?",
+      "options": [
+        "Un método que destruye el objeto y libera su memoria automáticamente",
+        "Un método especial con el mismo nombre de la clase que se ejecuta al crear un objeto con 'new'",
+        "Una variable que almacena los datos iniciales del objeto",
+        "Un método que duplica o clona el objeto en otra área de memoria",
+        "Una función que valida los datos antes de guardarlos en el objeto"
+      ],
+      "correctIndex": 1,
+      "explanation": "El constructor es un método especial que se llama automáticamente cuando creas un objeto con 'new'. Tiene el mismo nombre que la clase y no tiene tipo de retorno. Se usa para inicializar el objeto: 'public Enemy(string name, int health) { Name = name; Health = health; }'."
+    },
+    {
+      "id": "obj_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Ejecutas: 'Enemy a = new Enemy(); Enemy b = a;' ¿Qué ocurre?",
+      "options": [
+        "Se crea una copia completa del objeto, ahora existen dos objetos Enemy distintos",
+        "Ambas variables 'a' y 'b' apuntan al mismo objeto en memoria",
+        "La variable 'b' obtiene una foto de los valores de 'a' en ese instante",
+        "Ocurre un error de compilación porque no puedes asignar objetos a otras variables",
+        "Se duplica el objeto en una nueva área del heap de memoria"
+      ],
+      "correctIndex": 1,
+      "explanation": "Las clases en C# son tipos por referencia. Al escribir 'b = a', no se copia el objeto — ambas variables apuntan al MISMO objeto en memoria. Si haces 'a.Health = 50', entonces 'b.Health' también será 50. Para hacer una copia real necesitas implementar un método Clone() o un constructor de copia."
+    },
+    {
+      "id": "obj_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué valor tiene una variable de tipo clase que se declaró pero no se inicializó?",
+      "options": [
+        "0 (cero)",
+        "\"\" (string vacío)",
+        "false",
+        "null (sin referencia a ningún objeto)",
+        "undefined (valor especial de C#)"
+      ],
+      "correctIndex": 3,
+      "explanation": "En C#, las variables de tipo clase (tipos por referencia) no inicializadas tienen el valor 'null'. Null significa que la variable no apunta a ningún objeto en memoria. Intentar usar un objeto null genera una NullReferenceException — uno de los errores más comunes en Unity."
+    },
+    {
+      "id": "obj_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, cuando escribes 'Rigidbody rb = GetComponent<Rigidbody>();', ¿qué obtienes?",
+      "options": [
+        "La definición de la clase Rigidbody del framework de Unity",
+        "Un objeto (instancia) del componente Rigidbody adjunto al GameObject actual",
+        "Solo el nombre del componente como un string",
+        "Una copia del componente Rigidbody separada del GameObject",
+        "El tipo de datos 'Rigidbody' para usarlo en casting"
+      ],
+      "correctIndex": 1,
+      "explanation": "GetComponent<Rigidbody>() devuelve una referencia al objeto Rigidbody que ya existe en el GameObject. No crea un nuevo objeto — obtiene el que ya está ahí. Es como decir: 'dame la referencia al componente Rigidbody de este objeto para poder usarlo'."
+    },
+    {
+      "id": "obj_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuántos objetos distintos puede crear una sola clase?",
+      "options": [
+        "Solo uno — las clases son únicas por naturaleza",
+        "Máximo 10 objetos por clase",
+        "Exactamente el número que el programador codifique explícitamente",
+        "Tantos como la memoria del sistema permita",
+        "Depende del modificador de acceso (public, private, etc.)"
+      ],
+      "correctIndex": 3,
+      "explanation": "Una clase puede generar tantos objetos como la memoria permita. No hay límite en el número de instancias de una clase (excepto la memoria disponible). En Unity puedes instanciar cientos de enemigos, balas, partículas, todos a partir de la misma clase."
+    },
+    {
+      "id": "obj_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta línea de código:",
+      "code": "Enemy goblin = new Enemy(\"Goblin King\", 200);",
+      "question": "¿Qué operación específica se realiza en esta línea?",
+      "target": "new Enemy",
+      "acceptedAnswers": [
+        "instanciación", "instanciar", "crear objeto", "creación de objeto",
+        "crear una instancia", "instanciar la clase", "new"
+      ],
+      "hints": [
+        "La palabra clave 'new' es la que desencadena esta operación",
+        "Esta operación reserva memoria y llama al constructor de la clase",
+        "El resultado es un objeto concreto en memoria — el acto de 'dar vida' a la clase se llama..."
+      ],
+      "explanation": "Esta línea realiza una <strong>instanciación</strong>: el operador <code>new</code> reserva espacio en memoria, llama al constructor <code>Enemy(\"Goblin King\", 200)</code> y retorna una referencia al nuevo objeto. La variable <code>goblin</code> guarda esa referencia."
+    },
+    {
+      "id": "obj_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa estas dos líneas:",
+      "code": "Player hero = new Player();\nhero.Health = 100;\n\nPlayer villain = hero;\nvillain.Health = 50;\n\n// ¿Cuánto vale hero.Health ahora?",
+      "question": "¿Qué relación existe entre 'hero' y 'villain' después de 'Player villain = hero'?",
+      "target": "villain",
+      "acceptedAnswers": [
+        "referencia", "una referencia", "referencia al mismo objeto",
+        "apuntan al mismo objeto", "alias", "misma referencia", "mismo objeto"
+      ],
+      "hints": [
+        "Las clases en C# son tipos por referencia, no tipos por valor",
+        "Al asignar 'villain = hero' no se copia el objeto, solo se copia...",
+        "Después de esta asignación, si cambias villain.Health a 50, ¿hero.Health vale 100 o 50?"
+      ],
+      "explanation": "'villain' es una <strong>referencia al mismo objeto</strong> que 'hero'. No se creó un nuevo Player. Ambas variables apuntan al mismo espacio en memoria. Por eso, cuando cambias <code>villain.Health = 50</code>, también cambia <code>hero.Health</code> — ¡son el mismo objeto! Health quedaría en 50."
+    },
+    {
+      "id": "obj_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este código de Unity:",
+      "code": "void Update()\n{\n    if (target != null)\n    {\n        target.TakeDamage(10f);\n        MoveTowards(target.transform.position);\n    }\n}",
+      "question": "¿Qué comprueba la condición 'target != null'?",
+      "target": "target != null",
+      "acceptedAnswers": [
+        "que no es nulo", "que no es null", "null check", "verificación nula",
+        "que el objeto existe", "que target existe", "que target tiene un objeto asignado"
+      ],
+      "hints": [
+        "El valor 'null' en C# significa que la variable no apunta a ningún objeto",
+        "Si no hiciéramos esta comprobación y target fuera null, Unity lanzaría un error llamado...",
+        "Esta comprobación protege el código de un 'NullReferenceException'"
+      ],
+      "explanation": "La condición <code>target != null</code> es un <strong>null check</strong>: verifica que la variable 'target' apunta a un objeto real en memoria. Si target fuera null e intentáramos llamar <code>target.TakeDamage()</code>, Unity lanzaría una <code>NullReferenceException</code>. Siempre valida antes de usar referencias que podrían ser nulas."
+    },
+    {
+      "id": "obj_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de Unity:",
+      "code": "public class BulletSpawner : MonoBehaviour\n{\n    public GameObject bulletPrefab;\n\n    void FireBullet()\n    {\n        GameObject bullet = Instantiate(bulletPrefab, transform.position, transform.rotation);\n        Rigidbody rb = bullet.GetComponent<Rigidbody>();\n        rb.AddForce(transform.forward * 500f);\n    }\n}",
+      "question": "¿Cuántos objetos se CREAN (con new o Instantiate) en el método 'FireBullet'?",
+      "target": "Instantiate",
+      "acceptedAnswers": ["1", "uno", "un objeto", "solo uno", "uno (el bullet)"],
+      "hints": [
+        "Cuenta las veces que aparece 'new' o 'Instantiate' — estas son las creaciones de objetos",
+        "GetComponent() obtiene una referencia a algo que ya existe, no crea nada nuevo",
+        "Instantiate() en Unity es equivalente a 'new' para GameObjects"
+      ],
+      "explanation": "Se crea <strong>1 objeto</strong>: la línea con <code>Instantiate(bulletPrefab, ...)</code>. La línea <code>bullet.GetComponent&lt;Rigidbody&gt;()</code> NO crea un nuevo objeto — solo obtiene una referencia al Rigidbody que ya existe en el prefab clonado. <code>Instantiate</code> es la versión de Unity de 'new' para GameObjects/Prefabs."
+    },
+    {
+      "id": "obj_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta clase y su uso:",
+      "code": "public class Bullet\n{\n    public float Speed;\n    public float Damage;\n\n    public Bullet(float speed, float damage)\n    {\n        Speed = speed;\n        Damage = damage;\n    }\n}\n\n// Uso:\nBullet b = new Bullet(15f, 25f);",
+      "question": "En la última línea, ¿qué método especial de Bullet se está invocando?",
+      "target": "Bullet(15f, 25f)",
+      "acceptedAnswers": [
+        "constructor", "el constructor", "constructor de Bullet",
+        "Bullet()", "el constructor de la clase"
+      ],
+      "hints": [
+        "Este método especial se llama automáticamente cuando usas 'new'",
+        "Tiene el mismo nombre que la clase",
+        "Su propósito es inicializar el objeto recién creado"
+      ],
+      "explanation": "Se está invocando el <strong>constructor</strong> de Bullet. El constructor es el método que se llama automáticamente con <code>new</code> — tiene el mismo nombre que la clase y no tiene tipo de retorno. En este caso recibe speed=15f y damage=25f para inicializar el objeto."
+    },
+    {
+      "id": "obj_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento:",
+      "code": "Enemy boss = new Enemy();\nboss.Health = 1000;\nboss.Name = \"Dark Dragon\";\nboss.Speed = 3.5f;",
+      "question": "En las líneas 2, 3 y 4, ¿qué tipo de miembros del objeto 'boss' se están accediendo?",
+      "target": "boss.Health",
+      "acceptedAnswers": [
+        "campos", "fields", "variables de instancia", "atributos",
+        "propiedades", "campos o propiedades", "miembros"
+      ],
+      "hints": [
+        "Usando el operador punto (.) se accede a los miembros del objeto",
+        "Estos miembros almacenan el estado del objeto — sus datos",
+        "En C# a las variables que pertenecen a una clase se les llama..."
+      ],
+      "explanation": "Se están accediendo los <strong>campos</strong> (fields) del objeto boss. Los campos son las variables que pertenecen a la clase y definen el estado del objeto. Usando el operador <code>.</code> (punto) accedemos a los miembros del objeto: <code>boss.Health</code>, <code>boss.Name</code>, <code>boss.Speed</code>."
+    },
+    {
+      "id": "obj_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa la palabra que falta para instanciar la clase Enemy:",
+      "codeTemplate": "Enemy dragon = __________ Enemy();",
+      "expectedAnswer": "new",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra que falta...",
+      "hints": [
+        "Esta palabra reservada de C# indica que se está creando un nuevo objeto en memoria",
+        "Es una de las palabras más usadas en POO"
+      ],
+      "explanation": "La palabra <code>new</code> es el operador de instanciación en C#. Indica al runtime que: (1) reserve memoria en el heap para el objeto, (2) llame al constructor de la clase, y (3) devuelva una referencia al nuevo objeto."
+    },
+    {
+      "id": "obj_cw_002",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea completa que declara e instancia un objeto de tipo 'Weapon' llamado 'sword' (constructor sin parámetros).",
+      "expectedAnswer": "Weapon sword = new Weapon();",
+      "alternateAnswers": ["Weapon sword = new Weapon() ;"],
+      "placeholder": "Escribe la línea completa...",
+      "hints": [
+        "La sintaxis es: [Tipo] [nombre] = new [Tipo]();",
+        "El tipo es 'Weapon', el nombre es 'sword', y el constructor no tiene argumentos"
+      ],
+      "explanation": "La línea completa es <code>Weapon sword = new Weapon();</code>. Componentes: (1) <code>Weapon</code> es el tipo, (2) <code>sword</code> es el nombre de la variable/referencia, (3) <code>new Weapon()</code> crea el objeto llamando al constructor."
+    },
+    {
+      "id": "obj_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el operador que falta para verificar que 'enemy' NO sea nulo antes de llamar a TakeDamage:",
+      "codeTemplate": "if (enemy __________ null) { enemy.TakeDamage(50); }",
+      "expectedAnswer": "!=",
+      "alternateAnswers": ["!= "],
+      "placeholder": "Escribe el operador...",
+      "hints": [
+        "El operador que significa 'no es igual a' en C# es...",
+        "Quieres ejecutar el código solo si enemy NO es null — necesitas el operador de desigualdad"
+      ],
+      "explanation": "El operador <code>!=</code> significa 'no es igual a'. La condición <code>enemy != null</code> es true cuando enemy sí apunta a un objeto. Este patrón se llama 'null check' y previene la temida NullReferenceException en Unity."
+    },
+    {
+      "id": "obj_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para declarar una variable 'target' de tipo Enemy que no apunta a ningún objeto:",
+      "codeTemplate": "Enemy target = __________;",
+      "expectedAnswer": "null",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el valor...",
+      "hints": [
+        "Este valor especial indica 'sin objeto asignado' o 'sin referencia'",
+        "Es una palabra reservada de C# que representa la ausencia de un objeto"
+      ],
+      "explanation": "El valor <code>null</code> indica que la variable no apunta a ningún objeto en memoria. Es el valor por defecto de las variables de tipo clase no inicializadas. Asignar <code>null</code> explícitamente es útil para indicar 'todavía no tengo un target' o 'limpiar' una referencia."
+    },
+    {
+      "id": "obj_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea que obtiene el componente Rigidbody del GameObject actual en Unity (usando GetComponent).",
+      "expectedAnswer": "Rigidbody rb = GetComponent<Rigidbody>();",
+      "alternateAnswers": [
+        "Rigidbody rb = GetComponent<Rigidbody>() ;",
+        "var rb = GetComponent<Rigidbody>();"
+      ],
+      "placeholder": "Escribe la línea...",
+      "hints": [
+        "El método de Unity para obtener componentes se llama GetComponent con el tipo entre < >",
+        "La variable resultado es de tipo Rigidbody, y se suele llamar 'rb'"
+      ],
+      "explanation": "La línea es <code>Rigidbody rb = GetComponent&lt;Rigidbody&gt;();</code>. GetComponent&lt;T&gt;() busca en el GameObject actual un componente del tipo T y devuelve una referencia. No crea un nuevo objeto — obtiene el que ya existe."
+    },
+    {
+      "id": "obj_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para crear un vector 3D en el origen (todos ceros) usando el constructor de Vector3:",
+      "codeTemplate": "Vector3 origin = new Vector3(__________, __________, __________);",
+      "expectedAnswer": "0, 0, 0",
+      "alternateAnswers": ["0f, 0f, 0f", "0.0f, 0.0f, 0.0f", "0,0,0"],
+      "placeholder": "Escribe los tres valores separados por comas...",
+      "hints": [
+        "Vector3 recibe tres parámetros: X, Y, Z",
+        "Para el origen, todos los componentes son cero"
+      ],
+      "explanation": "<code>new Vector3(0, 0, 0)</code> crea un vector en el origen. Alternativamente puedes usar la propiedad estática <code>Vector3.zero</code> que hace lo mismo. En Unity, Vector3 es un struct (no una clase), pero su instanciación con <code>new</code> funciona igual."
+    }
+  ]
+}
