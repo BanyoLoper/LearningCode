@@ -231,7 +231,10 @@
         "los serializa para el inspector",
         "permite editarlos en el inspector",
         "inspector",
-        "los hace editables en el editor"
+        "los hace editables en el editor",
+        "los muestra en el inspector",
+        "se ven en el inspector",
+        "se pueden ver en el inspector"
       ],
       "hints": [
         "Los campos privados normalmente son invisibles para el Editor de Unity",
@@ -266,7 +269,7 @@
       "difficulty": 1,
       "preamble": "Analiza este código:",
       "code": "public class Character\n{\n    private string _name;\n    private int _level = 1;\n    private float _health = 100f;\n    private bool _isAlive = true;\n\n    public void SetName(string name)\n    {\n        string upperName = name.ToUpper(); // ← variable LOCAL\n        _name = upperName;\n    }\n}",
-      "question": "¿En qué se diferencia '_name', '_level', '_health' e '_isAlive' de 'upperName'?",
+      "question": "¿Qué son '_name', '_level', '_health' e '_isAlive', a diferencia de 'upperName'?",
       "target": "_name",
       "acceptedAnswers": [
         "son campos", "son campos de la clase", "son variables de instancia",
