@@ -1,3 +1,5 @@
+import { formatText } from '../core/TextFormatter.js';
+
 /**
  * MultipleChoiceHandler — Renders and validates multiple-choice questions.
  * Single Responsibility: only knows how to handle this question type.
@@ -12,7 +14,7 @@ export class MultipleChoiceHandler {
   render(question, container, onSubmit) {
     container.innerHTML = `
       <div class="question-badge mc-badge">Opción Múltiple</div>
-      <p class="question-text">${question.question}</p>
+      <p class="question-text">${formatText(question.question)}</p>
       <div class="options-list" role="radiogroup">
         ${question.options.map((opt, i) => `
           <label class="option-item" data-index="${i}">

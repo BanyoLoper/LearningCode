@@ -1,3 +1,5 @@
+import { formatText } from '../core/TextFormatter.js';
+
 /**
  * CodeWritingHandler — Renders "write code" and "complete the blank" questions.
  * Two subtypes:
@@ -10,7 +12,7 @@ export class CodeWritingHandler {
 
     container.innerHTML = `
       <div class="question-badge cw-badge">${isComplete ? 'Completar Código' : 'Escribir Código'}</div>
-      <p class="question-text">${question.instruction}</p>
+      <p class="question-text">${formatText(question.instruction)}</p>
       ${isComplete ? this.#renderTemplate(question.codeTemplate) : ''}
       <div class="input-row code-input-row">
         <input

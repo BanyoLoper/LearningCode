@@ -1,10 +1,9 @@
 /**
- * CourseEngine — The central state machine and orchestrator.
- * Coordinates data loading, progress tracking, unlock checks, and UI updates.
- * All business logic lives here; UI managers only receive display commands.
+ * CourseEngine — Central state machine and orchestrator.
+ * Bug fixes v2: double-session recording fixed by resetting counters after endSession.
+ * New: Master Quest mode, group exam support, group-aware rendering.
  */
 export class CourseEngine {
-  // Dependencies (injected via constructor — Dependency Inversion Principle)
   #loader;
   #tracker;
   #unlockManager;
@@ -12,16 +11,16 @@ export class CourseEngine {
   #docPanel;
   #sidebar;
 
-  // Runtime state
   #courseData = null;
-  #loadedSections = new Map();   // sectionId → section JSON data
+  #loadedSections = new Map();
   #activeSectionId = null;
   #sessionCorrect = 0;
   #sessionTotal = 0;
-  #questionPool = [];            // All questions for active section
-  #usedIds = new Set();          // Question IDs used this session
+  #questionPool = [];
+  #usedIds = new Set();
   #currentQuestion = null;
-  #wrongAttempts = 0;            // Wrong attempts for current question
+  #wrongAttempts = 0;
+  #isMasterQuest = false;
 
   constructor({ dataLoader, progressTracker, unlockManager, evaluationPanel, documentationPanel, sidebarManager }) {
     this.#loader = dataLoader;
@@ -32,20 +31,21 @@ export class CourseEngine {
     this.#sidebar = sidebarManager;
   }
 
-  /** Bootstrap the course. Call once on app start. */
   async init() {
     this.#courseData = await this.#loader.loadCourse();
     this.#unlockManager.setCourseData(this.#courseData);
 
-    // Load documentation for already-unlocked sections
+    // Preload docs for already-unlocked sections
     const unlocked = this.#unlockManager.getUnlockedSections();
     for (const sec of unlocked) {
-      await this.#ensureSectionLoaded(sec);
-      this.#docPanel.addSection(sec, this.#loadedSections.get(sec.id));
+      if (!sec.isExam) {
+        await this.#ensureSectionLoaded(sec);
+        const data = this.#loadedSections.get(sec.id);
+        if (data?.documentation) this.#docPanel.addSection(sec, data);
+      }
     }
 
-    // Start with the first unlocked section
-    const firstSection = unlocked[0];
+    const firstSection = unlocked.find(s => !s.isExam);
     if (firstSection) {
       await this.#startSection(firstSection.id);
     } else {
@@ -55,38 +55,32 @@ export class CourseEngine {
     this.#renderSidebar();
   }
 
-  /** Called when the user clicks a section in the sidebar. */
   async selectSection(sectionId) {
     if (!this.#unlockManager.isUnlocked(sectionId)) return;
-
-    // Save current session before switching
     this.#endSession();
-
     await this.#startSection(sectionId);
     this.#sidebar.setActive(sectionId);
   }
 
-  /**
-   * Called by the EvaluationPanel when the user submits an answer.
-   * @param {*} answer
-   */
-  handleAnswer(answer) {
-    if (!this.#currentQuestion) return;
-    const q = this.#currentQuestion;
-    const handler = this.#getHandler(q.type);
-    const { correct } = handler.validate(answer, q);
-
-    if (correct) {
-      this.#onCorrect(answer);
-    } else {
-      this.#onWrong(answer);
-    }
+  /** Starts a Master Quest session — all questions in the pool in one run. */
+  async startMasterQuest(sectionId) {
+    if (!this.#unlockManager.isUnlocked(sectionId)) return;
+    this.#endSession();
+    this.#isMasterQuest = true;
+    await this.#startSection(sectionId, { masterQuest: true });
+    this.#sidebar.setActive(sectionId);
   }
 
-  // ─── Private helpers ─────────────────────────────────────────────────────────
+  handleAnswer(answer) {
+    if (!this.#currentQuestion) return;
+    const { correct } = this.#validateAnswer(answer, this.#currentQuestion);
+    correct ? this.#onCorrect(answer) : this.#onWrong(answer);
+  }
 
-  async #startSection(sectionId) {
-    const sec = this.#courseData.sections.find(s => s.id === sectionId);
+  // ─── Private ─────────────────────────────────────────────────────────────────
+
+  async #startSection(sectionId, { masterQuest = false } = {}) {
+    const sec = this.#getAllSectionConfigs().find(s => s.id === sectionId);
     if (!sec) return;
 
     await this.#ensureSectionLoaded(sec);
@@ -96,32 +90,29 @@ export class CourseEngine {
     this.#sessionTotal = 0;
     this.#usedIds = new Set();
     this.#wrongAttempts = 0;
+    this.#isMasterQuest = masterQuest;
 
     this.#evalPanel.clear();
+
+    const secData = this.#loadedSections.get(sectionId);
+    const totalQ = secData?.questions?.length ?? 0;
+
     this.#evalPanel.showMessage(`
-      <div class="section-start-card">
+      <div class="section-start-card" style="--section-color:${sec.color ?? '#58a6ff'}">
         <span class="section-start-icon">${sec.icon}</span>
         <h2>${sec.title}</h2>
         <p>${sec.description}</p>
+        ${masterQuest ? `<div class="master-quest-banner">⚔️ Master Quest — ${totalQ} preguntas</div>` : ''}
       </div>
     `);
 
-    // Small delay for UX then load first question
     setTimeout(() => this.#nextQuestion(), 800);
   }
 
   #nextQuestion() {
     const q = this.#pickQuestion();
     if (!q) {
-      this.#evalPanel.showMessage(`
-        <div class="section-complete">
-          <div class="complete-icon">🎉</div>
-          <h2>¡Sección completada!</h2>
-          <p>Has respondido todas las preguntas disponibles en esta sección.</p>
-          <p>Puedes seguir repasando otras secciones desde el menú lateral.</p>
-        </div>
-      `);
-      this.#endSession();
+      this.#onSectionComplete();
       return;
     }
     this.#currentQuestion = q;
@@ -130,37 +121,54 @@ export class CourseEngine {
     this.#evalPanel.renderQuestion(q, answer => this.handleAnswer(answer));
   }
 
+  #onSectionComplete() {
+    const legendary = this.#isMasterQuest && this.#sessionCorrect === this.#sessionTotal && this.#sessionTotal > 0;
+    this.#endSession({ legendary });
+
+    if (legendary) {
+      this.#evalPanel.showMessage(`
+        <div class="section-complete legendary-complete">
+          <div class="complete-icon">💛</div>
+          <h2>¡LEGENDARIO!</h2>
+          <p>Completaste el Master Quest con un <strong>100%</strong> de aciertos.</p>
+          <p class="legendary-badge-text">🏆 Insignia Legendaria desbloqueada</p>
+        </div>
+      `);
+    } else {
+      this.#evalPanel.showMessage(`
+        <div class="section-complete">
+          <div class="complete-icon">🎉</div>
+          <h2>¡Sección completada!</h2>
+          <p>Has respondido todas las preguntas de esta sesión.</p>
+          <p>Puedes repasar otras secciones desde el menú lateral.</p>
+        </div>
+      `);
+    }
+  }
+
   #onCorrect(answer) {
     this.#evalPanel.showCorrectResult(answer);
     this.#sessionCorrect++;
     this.#sessionTotal++;
     this.#tracker.recordAnswer(this.#activeSectionId, this.#currentQuestion.id, true);
 
-    // Check unlocks
     const unlocked = this.#unlockManager.checkUnlock(this.#activeSectionId, this.#sessionCorrect);
 
     setTimeout(async () => {
       this.#evalPanel.markCorrect();
-
-      if (unlocked) {
-        await this.#handleUnlock(unlocked);
-      }
-
-      // Small pause then load next question
+      if (unlocked) await this.#handleUnlock(unlocked);
       setTimeout(() => this.#nextQuestion(), 400);
     }, 1200);
   }
 
   #onWrong(answer) {
     this.#tracker.recordAnswer(this.#activeSectionId, this.#currentQuestion.id, false);
-    const q = this.#currentQuestion;
-    const maxHints = q.hints?.length ?? 0;
+    const maxHints = this.#currentQuestion.hints?.length ?? 0;
 
     if (this.#wrongAttempts < maxHints) {
       this.#evalPanel.showWrongFeedback(this.#wrongAttempts);
       this.#wrongAttempts++;
     } else {
-      // No more hints — reveal explanation and move on
       this.#sessionTotal++;
       this.#evalPanel.showExplanation(answer);
       setTimeout(() => this.#nextQuestion(), 2000);
@@ -168,42 +176,47 @@ export class CourseEngine {
   }
 
   async #handleUnlock(newSection) {
-    // Load data for new section
+    // Load section data
     await this.#ensureSectionLoaded(newSection);
 
-    // Add docs
-    this.#docPanel.addSection(newSection, this.#loadedSections.get(newSection.id));
+    // Add documentation only if the section has it
+    if (!newSection.isExam) {
+      const data = this.#loadedSections.get(newSection.id);
+      if (data?.documentation) this.#docPanel.addSection(newSection, data);
+    }
 
-    // Re-render sidebar
     this.#renderSidebar();
 
-    // SweetAlert celebration
     await Swal.fire({
-      title: `🔓 ¡Sección Desbloqueada!`,
+      title: `🔓 ¡${newSection.isExam ? 'Examen' : 'Sección'} Desbloqueado!`,
       html: `
         <div class="unlock-content">
           <span class="unlock-icon">${newSection.icon}</span>
           <h3>${newSection.title}</h3>
           <p>${newSection.description}</p>
-          <p>La documentación de esta sección ya está disponible en el panel derecho.</p>
+          ${newSection.isExam ? '<p><em>Selecciona el examen en el menú lateral para comenzar.</em></p>' : '<p>La documentación está disponible en el panel derecho.</p>'}
         </div>
       `,
       background: '#16213e',
       color: '#e0e0e0',
       confirmButtonText: '¡Vamos!',
-      confirmButtonColor: newSection.color,
-      showClass: { popup: 'swal2-show animate-unlock' },
+      confirmButtonColor: newSection.color ?? '#4CAF50',
       timer: 8000,
       timerProgressBar: true
     });
   }
 
-  #endSession() {
+  /** Records the current session and resets counters. Prevents double-recording. */
+  #endSession({ legendary = false } = {}) {
     if (this.#activeSectionId && this.#sessionTotal > 0) {
       this.#tracker.recordSession(this.#activeSectionId, {
         correct: this.#sessionCorrect,
-        total: this.#sessionTotal
+        total: this.#sessionTotal,
+        legendary
       });
+      // Reset immediately to prevent double-recording if endSession is called again
+      this.#sessionTotal = 0;
+      this.#sessionCorrect = 0;
       this.#renderSidebar();
     }
   }
@@ -221,54 +234,61 @@ export class CourseEngine {
     const available = sectionData.questions.filter(q => !this.#usedIds.has(q.id));
     if (available.length === 0) return null;
 
-    // Prefer lower difficulty for early questions in the session
-    const easyFirst = this.#sessionCorrect < 3;
-    if (easyFirst) {
-      available.sort((a, b) => a.difficulty - b.difficulty);
-    } else {
-      // Shuffle with slight preference for harder questions
-      available.sort(() => Math.random() - 0.4);
+    // In Master Quest: use them all in order of difficulty
+    if (this.#isMasterQuest) {
+      return available.sort((a, b) => a.difficulty - b.difficulty)[0];
     }
-    return available[0];
+
+    // Regular: prefer easier questions early, randomize after warm-up
+    if (this.#sessionCorrect < 3) {
+      return available.sort((a, b) => a.difficulty - b.difficulty)[0];
+    }
+    return available.sort(() => Math.random() - 0.4)[0];
   }
 
-  #getHandler(type) {
-    // Handlers are owned by EvaluationPanel but validate() is stateless,
-    // so we instantiate temporary ones here for validation only.
-    const { MultipleChoiceHandler } = window.__handlers__ ?? {};
-    switch (type) {
+  #validateAnswer(answer, question) {
+    switch (question.type) {
       case 'multiple_choice':
-        return { validate: (a, q) => ({ correct: a === q.correctIndex }) };
+        return { correct: answer === question.correctIndex };
       case 'identification':
         return {
-          validate: (a, q) => ({
-            correct: q.acceptedAnswers.some(acc => acc.toLowerCase() === a.trim().toLowerCase())
-          })
+          correct: question.acceptedAnswers.some(
+            a => a.toLowerCase() === String(answer).trim().toLowerCase()
+          )
         };
-      case 'code_writing':
-        return {
-          validate: (a, q) => {
-            const norm = s => s.trim().toLowerCase().replace(/\s+/g, ' ');
-            const ans = norm(a);
-            if (ans === norm(q.expectedAnswer)) return { correct: true };
-            const alts = (q.alternateAnswers ?? []).map(norm);
-            return { correct: alts.includes(ans) };
-          }
-        };
+      case 'code_writing': {
+        const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, ' ');
+        const a = norm(answer);
+        if (a === norm(question.expectedAnswer)) return { correct: true };
+        return { correct: (question.alternateAnswers ?? []).map(norm).includes(a) };
+      }
       default:
-        return { validate: () => ({ correct: false }) };
+        return { correct: false };
     }
+  }
+
+  #getAllSectionConfigs() {
+    const all = [];
+    for (const group of (this.#courseData?.groups ?? [])) {
+      all.push(...group.sections);
+      if (group.exam) all.push(group.exam);
+    }
+    return all;
   }
 
   #renderSidebar() {
-    const all = this.#unlockManager.getAllSections();
-    const unlocked = this.#unlockManager.getUnlockedSections().map(s => s.id);
-    this.#sidebar.render(all, unlocked, this.#activeSectionId, id => {
+    const groups = this.#unlockManager.getGroups();
+    const unlockedIds = this.#unlockManager.getUnlockedSections().map(s => s.id);
+
+    this.#sidebar.render(groups, unlockedIds, this.#activeSectionId, id => {
       const p = this.#tracker.getSectionProgress(id);
+      const sectionData = this.#loadedSections.get(id);
       return {
         sessions: p.sessions,
         totalCorrect: p.totalCorrect,
-        totalAttempted: p.totalAttempted
+        totalAttempted: p.totalAttempted,
+        uniqueAnswered: this.#tracker.getUniqueAnswered(id),
+        totalQuestionsAvailable: sectionData?.questions?.length ?? 0
       };
     });
   }

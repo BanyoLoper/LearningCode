@@ -204,7 +204,7 @@
       "question": "¿Qué comprueba la condición 'target != null'?",
       "target": "target != null",
       "acceptedAnswers": [
-        "que no es nulo", "que no es null", "null check", "verificación nula",
+        "que no es nulo", "que no es null", "null check", "verificación nula", "target no nulo", "que no sea nulo", "target no es nulo", "que target no sea nulo",
         "que el objeto existe", "que target existe", "que target tiene un objeto asignado"
       ],
       "hints": [

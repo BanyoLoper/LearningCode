@@ -37,17 +37,23 @@ export class ProgressTracker {
   }
 
   /** Records a completed session for a section. */
-  recordSession(sectionId, { correct, total }) {
+  recordSession(sectionId, { correct, total, legendary = false }) {
     const p = this.getSectionProgress(sectionId);
     p.sessions.push({
       date: new Date().toISOString(),
       correct,
       total,
-      score: total > 0 ? Math.round((correct / total) * 100) : 0
+      score: total > 0 ? Math.round((correct / total) * 100) : 0,
+      legendary
     });
     p.totalCorrect += correct;
     p.totalAttempted += total;
     this.#save();
+  }
+
+  /** Returns the number of distinct questions answered (at least one attempt). */
+  getUniqueAnswered(sectionId) {
+    return Object.keys(this.getSectionProgress(sectionId).answeredQuestions).length;
   }
 
   /** Records a single answer result for a question. */

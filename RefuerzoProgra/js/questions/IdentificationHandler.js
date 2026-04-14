@@ -1,3 +1,5 @@
+import { formatText } from '../core/TextFormatter.js';
+
 /**
  * IdentificationHandler — Renders and validates identification questions.
  * Shows a code snippet and asks the user to identify a highlighted term.
@@ -9,9 +11,9 @@ export class IdentificationHandler {
 
     container.innerHTML = `
       <div class="question-badge id-badge">Identificación</div>
-      <p class="question-preamble">${question.preamble}</p>
+      <p class="question-preamble">${formatText(question.preamble)}</p>
       <pre class="code-block"><code>${highlightedCode}</code></pre>
-      <p class="question-text">${question.question}</p>
+      <p class="question-text">${formatText(question.question)}</p>
       <div class="input-row">
         <input
           type="text"

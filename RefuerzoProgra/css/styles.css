@@ -488,8 +488,20 @@ code, pre { font-family: var(--font-mono); }
   padding: 0.75rem 1rem;
   background: color-mix(in srgb, var(--section-color, var(--blue)) 10%, transparent);
 }
-.doc-section-header h3 { font-size: 0.9rem; font-weight: 700; }
+.doc-section-header h3 { font-size: 0.9rem; font-weight: 700; flex: 1; }
 .doc-icon { font-size: 1.1rem; }
+.doc-section-toggle {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.doc-section-toggle:hover { color: var(--text); background: var(--border); }
 .doc-section-body { padding: 0.25rem; }
 
 .doc-entry { border-bottom: 1px solid var(--border); }
@@ -559,6 +571,158 @@ code, pre { font-family: var(--font-mono); }
 .unlock-icon { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
 .unlock-content h3 { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem; }
 .unlock-content p { color: var(--text-muted); font-size: 0.9rem; }
+
+/* ─── Sidebar Groups ─────────────────────────── */
+.nav-group {
+  margin: 0.35rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border-left: 3px solid var(--group-color, var(--border));
+}
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  background: color-mix(in srgb, var(--group-color, var(--blue)) 8%, transparent);
+  cursor: default;
+}
+.nav-group-icon { font-size: 1rem; }
+.nav-group-title { flex: 1; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.nav-group-toggle { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.65rem; padding: 2px 4px; border-radius: var(--radius-sm); transition: var(--transition); }
+.nav-group-toggle:hover { background: var(--bg-hover); }
+.nav-group-body { background: var(--bg-deep); }
+
+/* Override: items inside groups have no outer margin */
+.nav-group .nav-item { margin: 2px 4px; }
+
+/* ─── Master Quest Button ─────────────────────── */
+.btn-master-quest {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.btn-master-quest:hover {
+  background: color-mix(in srgb, #FFD700 15%, transparent);
+  border-color: #FFD700;
+  color: #FFD700;
+}
+.master-quest-banner {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: color-mix(in srgb, #FFD700 15%, transparent);
+  border: 1px solid #FFD700;
+  border-radius: var(--radius-md);
+  color: #FFD700;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* ─── Exam Item in Sidebar ───────────────────── */
+.nav-exam-item {
+  border-style: dashed;
+  border-color: var(--section-color, #FFD700);
+}
+.nav-exam-item.unlocked { border-style: solid; }
+
+/* ─── Legendary styles ───────────────────────── */
+.legendary-complete { background: color-mix(in srgb, #FFD700 8%, transparent); border: 1px solid #FFD700; border-radius: var(--radius-lg); }
+.legendary-complete h2 { color: #FFD700; font-size: 2rem; }
+.legendary-badge-text { color: #FFD700; font-weight: 700; font-size: 1rem; margin-top: 0.5rem !important; }
+.session-score.score-legendary { color: #FFD700; }
+
+/* ─── Session History improvements ───────────── */
+.nav-session-history {
+  display: block;
+  background: var(--bg-deep);
+  padding: 0.4rem 0.9rem 0.5rem;
+  border-top: 1px solid var(--border);
+}
+.nav-history-label { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+.nav-session-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.71rem;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border);
+}
+.nav-session-item:last-child { border: none; }
+.session-num { color: var(--text-muted); }
+.session-date { color: var(--text-muted); }
+.session-score { font-weight: 700; }
+.score-high { color: var(--green); }
+.score-mid  { color: var(--yellow); }
+.score-low  { color: var(--red); }
+.session-detail { color: var(--text-muted); }
+.btn-history-more {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 0.7rem;
+  cursor: pointer;
+  text-align: left;
+  padding: 4px 0;
+  transition: var(--transition);
+}
+.btn-history-more:hover { color: color-mix(in srgb, var(--blue) 80%, white); }
+.nav-history-rest { border-top: 1px dashed var(--border); padding-top: 4px; margin-top: 2px; }
+
+/* ─── Documentation Controls ─────────────────── */
+.doc-controls {
+  padding: 0.5rem 0.75rem 0;
+  flex-shrink: 0;
+}
+.btn-doc-collapse-all {
+  width: 100%;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition);
+}
+.btn-doc-collapse-all:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ─── Documentation Groups ───────────────────── */
+.doc-group { margin-bottom: 0.75rem; }
+.doc-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.35rem;
+  cursor: default;
+}
+.doc-group-title { flex: 1; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.doc-group-toggle { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.65rem; padding: 2px 4px; transition: var(--transition); }
+
+/* ─── Code inside question text (from TextFormatter) ─── */
+.question-text code, .question-preamble code {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  color: var(--text-code);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+.question-text strong { color: var(--text-main); }
 
 /* ─── Responsive ─────────────────────────────── */
 @media (max-width: 1100px) {

@@ -30,7 +30,8 @@ async function boot() {
 
   const sidebarManager = new SidebarManager(
     document.getElementById('sections-nav'),
-    sectionId => engine.selectSection(sectionId)
+    sectionId => engine.selectSection(sectionId),
+    sectionId => engine.startMasterQuest(sectionId)
   );
 
   // Wire engine with all dependencies

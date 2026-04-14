@@ -138,14 +138,31 @@ export class EvaluationPanel {
     item.dataset.questionId = question.id;
 
     if (correct) {
-      // Collapsed: just show question text and checkmark
+      // Correct: collapsed by default, but expandable to see explanation
       item.innerHTML = `
         <div class="history-header">
           <span class="history-icon">✓</span>
           <span class="history-preview">${this.#truncate(question.question ?? question.instruction, 80)}</span>
           <span class="history-type-tag">${this.#typeName(question.type)}</span>
+          <button class="history-toggle" aria-expanded="false" title="Ver explicación">▼</button>
+        </div>
+        <div class="history-body" style="display:none">
+          <p class="history-full-question">${question.question ?? question.instruction}</p>
+          ${question.code ? `<pre class="code-block small"><code>${this.#escapeHtml(question.code)}</code></pre>` : ''}
+          <div class="history-explanation">
+            <strong>Explicación:</strong>
+            <p>${question.explanation}</p>
+          </div>
         </div>
       `;
+      const toggle = item.querySelector('.history-toggle');
+      const body = item.querySelector('.history-body');
+      toggle?.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', !expanded);
+        toggle.textContent = expanded ? '▼' : '▲';
+        body.style.display = expanded ? 'none' : '';
+      });
     } else {
       // Expanded: show question + explanation
       item.innerHTML = `

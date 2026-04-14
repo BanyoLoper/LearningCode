@@ -1,27 +1,34 @@
 /**
- * DocumentationPanel — Renders and manages the documentation sidebar.
- * Sections are added progressively as the user unlocks them.
+ * DocumentationPanel — Progressive documentation panel.
+ * Sections are added as the user unlocks them.
+ * Groups sections under collapsible group headers.
+ * Includes "Collapse All / Expand All" button at the top.
  */
 export class DocumentationPanel {
   #container;
   #renderedSections = new Set();
+  #groups = new Map(); // groupId → { headerEl, bodyEl }
 
   constructor(container) {
     this.#container = container;
+    this.#buildControls();
   }
 
   /**
    * Adds documentation for a newly unlocked section.
-   * @param {object} sectionConfig - from course.json (id, title, icon, color)
-   * @param {object} sectionData - from the section's JSON (documentation.sections[])
+   * @param {object} sectionConfig - { id, title, icon, color, _groupId }
+   * @param {object} sectionData - section JSON (with .documentation.sections[])
    */
   addSection(sectionConfig, sectionData) {
     if (this.#renderedSections.has(sectionConfig.id)) return;
     this.#renderedSections.add(sectionConfig.id);
 
-    // Remove placeholder if present
     const placeholder = this.#container.querySelector('.doc-placeholder');
     if (placeholder) placeholder.remove();
+
+    // Find or create the group container
+    const groupId = sectionConfig._groupId ?? 'default';
+    const groupBody = this.#getOrCreateGroupContainer(groupId, sectionConfig);
 
     const block = document.createElement('div');
     block.className = 'doc-section';
@@ -32,36 +39,118 @@ export class DocumentationPanel {
       <div class="doc-section-header">
         <span class="doc-icon">${sectionConfig.icon}</span>
         <h3>${sectionConfig.title}</h3>
+        <button class="doc-section-toggle" aria-expanded="true" title="Colapsar sección">▼</button>
       </div>
       <div class="doc-section-body">
         ${sectionData.documentation.sections.map(s => this.#renderDocEntry(s)).join('')}
       </div>
     `;
 
-    // Make entries collapsible
+    // Section-level collapse toggle: collapses/expands all entries in this section
+    const sectionToggle = block.querySelector('.doc-section-toggle');
+    const sectionBody = block.querySelector('.doc-section-body');
+    sectionToggle.addEventListener('click', () => {
+      const expanded = sectionToggle.getAttribute('aria-expanded') === 'true';
+      sectionToggle.setAttribute('aria-expanded', !expanded);
+      sectionToggle.textContent = expanded ? '▶' : '▼';
+      sectionBody.style.display = expanded ? 'none' : '';
+    });
+
+    // Make each entry collapsible
     block.querySelectorAll('.doc-entry-header').forEach(header => {
       header.addEventListener('click', () => {
-        const entry = header.closest('.doc-entry');
-        entry.classList.toggle('collapsed');
+        header.closest('.doc-entry').classList.toggle('collapsed');
+        const toggle = header.querySelector('.doc-entry-toggle');
+        if (toggle) toggle.textContent = header.closest('.doc-entry').classList.contains('collapsed') ? '▶' : '▼';
       });
     });
 
-    this.#container.appendChild(block);
+    groupBody.appendChild(block);
 
     // Animate in
     requestAnimationFrame(() => block.classList.add('doc-section-visible'));
   }
 
-  /** Scrolls to a specific section in the docs panel. */
+  /** Scrolls to a specific section. */
   scrollTo(sectionId) {
     const el = this.#container.querySelector(`#doc-${sectionId}`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // ─── Private ─────────────────────────────────────────────────────────────────
+
+  #buildControls() {
+    const ctrl = document.createElement('div');
+    ctrl.className = 'doc-controls';
+    ctrl.innerHTML = `
+      <button class="btn-doc-collapse-all" title="Colapsar / expandir toda la documentación">
+        ⊟ Colapsar todo
+      </button>
+    `;
+    this.#container.before(ctrl);
+
+    let allCollapsed = false;
+    ctrl.querySelector('.btn-doc-collapse-all').addEventListener('click', (e) => {
+      allCollapsed = !allCollapsed;
+      this.#container.querySelectorAll('.doc-entry').forEach(entry => {
+        entry.classList.toggle('collapsed', allCollapsed);
+        const toggle = entry.querySelector('.doc-entry-toggle');
+        if (toggle) toggle.textContent = allCollapsed ? '▶' : '▼';
+      });
+      this.#container.querySelectorAll('.doc-section-body').forEach(body => {
+        body.style.display = allCollapsed ? 'none' : '';
+      });
+      this.#container.querySelectorAll('.doc-section-toggle').forEach(t => {
+        t.setAttribute('aria-expanded', !allCollapsed);
+        t.textContent = allCollapsed ? '▶' : '▼';
+      });
+      this.#container.querySelectorAll('.doc-group-body').forEach(body => {
+        body.style.display = allCollapsed ? 'none' : '';
+      });
+      this.#container.querySelectorAll('.doc-group-toggle').forEach(t => {
+        t.setAttribute('aria-expanded', !allCollapsed);
+        t.textContent = allCollapsed ? '▶' : '▼';
+      });
+      e.currentTarget.textContent = allCollapsed ? '⊞ Expandir todo' : '⊟ Colapsar todo';
+    });
+  }
+
+  #getOrCreateGroupContainer(groupId, sectionConfig) {
+    if (this.#groups.has(groupId)) return this.#groups.get(groupId);
+
+    const groupEl = document.createElement('div');
+    groupEl.className = 'doc-group';
+    groupEl.id = `doc-group-${groupId}`;
+    groupEl.innerHTML = `
+      <div class="doc-group-header">
+        <span class="doc-group-title">📐 ${this.#guessGroupTitle(groupId)}</span>
+        <button class="doc-group-toggle" aria-expanded="true" title="Colapsar grupo">▼</button>
+      </div>
+      <div class="doc-group-body"></div>
+    `;
+
+    const body = groupEl.querySelector('.doc-group-body');
+    const toggle = groupEl.querySelector('.doc-group-toggle');
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', !expanded);
+      toggle.textContent = expanded ? '▶' : '▼';
+      body.style.display = expanded ? 'none' : '';
+    });
+
+    this.#container.appendChild(groupEl);
+    this.#groups.set(groupId, body);
+    return body;
+  }
+
+  #guessGroupTitle(groupId) {
+    const titles = { poo: 'POO Fundamentals', default: 'Documentación' };
+    return titles[groupId] ?? groupId.toUpperCase();
+  }
+
   #renderDocEntry(entry) {
-    const typeClass = `doc-type-${entry.type}`;
     return `
-      <div class="doc-entry ${typeClass}">
+      <div class="doc-entry doc-type-${entry.type}">
         <div class="doc-entry-header">
           <span class="doc-entry-title">${entry.title}</span>
           <span class="doc-entry-toggle">▼</span>
@@ -80,9 +169,9 @@ export class DocumentationPanel {
       case 'list':
         return `<ul class="doc-list">${entry.items.map(i => `<li>${i}</li>`).join('')}</ul>`;
       case 'note':
-        return `<div class="doc-note">📌 ${entry.content}</div>`;
+        return `<div class="doc-note">${entry.content}</div>`;
       case 'analogy':
-        return `<div class="doc-analogy">🎮 ${entry.content}</div>`;
+        return `<div class="doc-analogy">${entry.content}</div>`;
       default:
         return `<div class="doc-text">${entry.content}</div>`;
     }
