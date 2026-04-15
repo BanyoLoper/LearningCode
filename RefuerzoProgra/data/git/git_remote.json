@@ -1,0 +1,360 @@
+{
+  "id": "git_remote",
+  "title": "Trabajo Remoto",
+  "icon": "☁️",
+  "color": "#F05032",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Remote?",
+        "type": "definition",
+        "content": "Un <strong>remote</strong> (repositorio remoto) es una versión del proyecto almacenada en un servidor externo, como GitHub, GitLab o Bitbucket. Mientras que tu repositorio local vive en tu máquina, el <strong>remote</strong> es el punto de sincronización compartido donde todos los miembros del equipo envían y reciben cambios. El <strong>remote</strong> por defecto se llama <strong>origin</strong> — es la convención universal en Git. Puedes ver tus remotos configurados con <code>git remote -v</code> (el flag <code>-v</code> muestra también el URL)."
+      },
+      {
+        "id": "doc-2",
+        "title": "git push y git pull — Sincronizar con el Remote",
+        "type": "code",
+        "content": "# Enviar tus commits locales al repositorio remoto\ngit push origin main\n# Sube los commits de tu branch 'main' local a origin\n\n# Descargar cambios del remote e integrarlos automáticamente\ngit pull origin main\n# Equivale a: git fetch + git merge en un solo paso\n\n# Ver los remotos configurados y sus URLs\ngit remote -v\n# origin  https://github.com/usuario/proyecto.git (fetch)\n# origin  https://github.com/usuario/proyecto.git (push)\n\n# Agregar un remote manualmente (si usaste git init)\ngit remote add origin https://github.com/usuario/proyecto.git"
+      },
+      {
+        "id": "doc-3",
+        "title": "git fetch vs git pull — Diferencia Clave",
+        "type": "analogy",
+        "content": "Imagina que el repositorio remoto es un buzón compartido de la oficina. <strong>git fetch</strong> es como ir al buzón, ver si hay cartas nuevas y traerlas a tu escritorio — pero todavía no las lees ni actúas en base a ellas. Tu código local no cambia. <strong>git pull</strong>, en cambio, es ir al buzón, traer las cartas Y leerlas inmediatamente, integrando su contenido en tu trabajo actual. Es decir, <strong>git pull</strong> hace <strong>git fetch</strong> + <strong>git merge</strong> automáticamente. <strong>fetch</strong> es más seguro cuando quieres revisar los cambios antes de integrarlos."
+      },
+      {
+        "id": "doc-4",
+        "title": "Flujo de Trabajo con GitHub",
+        "type": "code",
+        "content": "# Flujo típico en un equipo con GitHub:\n\n# 1. Clonar el repositorio (solo la primera vez)\ngit clone https://github.com/equipo/proyecto.git\n\n# 2. Crear un branch para tu tarea\ngit switch -c feature/mi-funcionalidad\n\n# 3. Trabajar: hacer cambios, add y commits\ngit add .\ngit commit -m \"Agrega sistema de pausa\"\n\n# 4. Subir el branch al remote\ngit push origin feature/mi-funcionalidad\n\n# 5. Crear un Pull Request en GitHub (desde la web)\n# → El equipo revisa el código\n# → Se aprueba y se fusiona en main\n\n# 6. Actualizar tu main local\ngit switch main\ngit pull origin main"
+      },
+      {
+        "id": "doc-5",
+        "title": "Pull Requests — Revisión de Código",
+        "type": "note",
+        "content": "Un <strong>Pull Request</strong> (PR) es una solicitud para fusionar los cambios de un <strong>branch</strong> en otro, generalmente de un <strong>branch</strong> feature hacia <strong>main</strong>. Es una herramienta de colaboración de GitHub (y similares), no de Git en sí. Con un <strong>PR</strong> puedes:<br><br>• Que tus compañeros revisen tu código antes de fusionarlo (<strong>code review</strong>)<br>• Ver exactamente qué cambios introduces con un <strong>diff</strong> visual<br>• Discutir el código línea a línea con comentarios<br>• Ejecutar pruebas automáticas antes de aprobar el merge<br><br>El nombre <em>\"Pull Request\"</em> viene de que le pides al equipo que haga <strong>pull</strong> de tus cambios hacia <strong>main</strong>."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "gitrem_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es **origin** en el contexto de Git?",
+      "options": [
+        "El nombre por defecto que Git asigna al repositorio remoto principal del proyecto",
+        "El nombre del branch principal del repositorio, equivalente a main",
+        "El primer commit realizado en el repositorio, también llamado commit raíz",
+        "Un alias para el directorio actual en los comandos de Git",
+        "El nombre del servidor donde está instalado Git en tu máquina"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>origin</strong> es el nombre convencional que Git asigna al <strong>remote</strong> de un repositorio cuando lo clonas con <strong>git clone</strong>. Es solo un alias que apunta al URL del repositorio remoto. Puedes verlo con <code>git remote -v</code>. Podrías renombrarlo, pero <strong>origin</strong> es el estándar universal que todos los desarrolladores reconocen."
+    },
+    {
+      "id": "gitrem_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace el comando `git push origin main`?",
+      "options": [
+        "Envía los commits locales del branch main al repositorio remoto llamado origin",
+        "Descarga los cambios del remote origin y los fusiona en el branch main local",
+        "Crea un nuevo branch main en el repositorio remoto origin",
+        "Sincroniza los cambios del remote sin integrarlos en el código local",
+        "Mueve el HEAD del repositorio remoto al último commit de main"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git push origin main</strong> sube los <strong>commits</strong> del branch <strong>main</strong> local que aún no están en el <strong>remote</strong> llamado <strong>origin</strong>. Si otros colaboradores han subido cambios que tú no tienes, Git rechazará el <strong>push</strong> y deberás hacer <strong>git pull</strong> primero para integrar esos cambios."
+    },
+    {
+      "id": "gitrem_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre `git fetch` y `git pull`?",
+      "options": [
+        "git fetch descarga los cambios del remote sin integrarlos al código local; git pull descarga E integra automáticamente (fetch + merge)",
+        "git pull es más lento porque verifica la integridad de todos los commits descargados",
+        "git fetch solo funciona con repositorios públicos; git pull funciona con privados también",
+        "No hay diferencia práctica: ambos sincronizan el código local con el remote de la misma manera",
+        "git fetch crea un branch nuevo con los cambios; git pull los fusiona directamente en main"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git fetch</strong> descarga los cambios del <strong>remote</strong> y los guarda en referencias locales (<code>origin/main</code>), pero tu <strong>branch</strong> local no cambia — puedes revisar los cambios antes de integrarlos. <strong>git pull</strong> hace <strong>fetch</strong> + <strong>merge</strong> automáticamente: descarga e integra en el mismo paso. <strong>fetch</strong> es más seguro; <strong>pull</strong> es más conveniente."
+    },
+    {
+      "id": "gitrem_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Intentas ejecutar `git push origin main` pero Git responde: \"rejected — non-fast-forward\". ¿Qué significa esto?",
+      "options": [
+        "El remote tiene commits que tú no tienes localmente; debes hacer git pull primero para integrarlos",
+        "Tu branch local está desactualizado porque olvidaste hacer git commit antes del push",
+        "El repositorio remoto está caído o sin conexión en este momento",
+        "No tienes permisos para subir cambios al branch main del remote",
+        "El tamaño de tus archivos supera el límite permitido por el remote"
+      ],
+      "correctIndex": 0,
+      "explanation": "El error <em>\"rejected — non-fast-forward\"</em> significa que el <strong>remote</strong> tiene <strong>commits</strong> que tu repositorio local no tiene. Git no puede hacer un <strong>push</strong> porque sobreescribiría esos commits remotos. La solución es: primero <strong>git pull origin main</strong> (para integrar los cambios del remote), resolver posibles <strong>conflicts</strong>, y luego hacer <strong>git push</strong> nuevamente."
+    },
+    {
+      "id": "gitrem_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué comando debes usar para agregar manualmente un remote llamado `origin` apuntando a una URL de GitHub, después de haber usado `git init`?",
+      "options": [
+        "git remote add origin https://github.com/usuario/proyecto.git",
+        "git remote set origin https://github.com/usuario/proyecto.git",
+        "git connect origin https://github.com/usuario/proyecto.git",
+        "git push --set-remote origin https://github.com/usuario/proyecto.git",
+        "git config remote.origin https://github.com/usuario/proyecto.git"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>git remote add <strong>origin</strong> &lt;url&gt;</code> registra un nuevo <strong>remote</strong> con el nombre <em>origin</em> apuntando al URL dado. Esto es necesario cuando usaste <strong>git init</strong> en lugar de <strong>git clone</strong> — al clonar, Git configura el <strong>remote</strong> automáticamente; al init, debes hacerlo manualmente antes de poder hacer <strong>push</strong>."
+    },
+    {
+      "id": "gitrem_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es un **Pull Request** en GitHub?",
+      "options": [
+        "Una solicitud para que el equipo revise y apruebe la fusión de un branch feature en main antes de hacerlo efectivo",
+        "Un comando de Git para descargar cambios del repositorio remoto con autorización previa",
+        "Una petición automática que Git envía cuando detecta que tu branch está desactualizado",
+        "Un proceso que Git ejecuta automáticamente para resolver conflictos de merge en el servidor",
+        "Un tipo especial de commit que marca el final del desarrollo de una funcionalidad"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Pull Request</strong> (PR) es una función de GitHub, no de Git. Es una solicitud para fusionar un <strong>branch</strong> (generalmente una feature) en otro (generalmente <strong>main</strong>). Antes de que se fusione, el equipo puede revisar el código (<strong>code review</strong>), dejar comentarios, pedir cambios y aprobar. Es la herramienta central del trabajo colaborativo en equipos profesionales."
+    },
+    {
+      "id": "gitrem_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué muestra `git remote -v`?",
+      "options": [
+        "Los remotos configurados en el repositorio y sus URLs tanto para fetch como para push",
+        "El historial de todas las operaciones de push y pull realizadas en el repositorio",
+        "Las versiones de Git instaladas en el sistema local y en el servidor remoto",
+        "Los branches remotos que existen en origin y su estado respecto al local",
+        "La velocidad de conexión con el servidor remoto en tiempo real"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>git remote <strong>-v</strong></code> (el flag <code>-v</code> significa <em>verbose</em>, detallado) muestra cada <strong>remote</strong> configurado con su URL para <strong>fetch</strong> y para <strong>push</strong>. La salida típica es: <code>origin https://github.com/usuario/repo.git (fetch)</code> y <code>origin https://github.com/usuario/repo.git (push)</code>. Útil para verificar que el <strong>remote</strong> apunta al URL correcto."
+    },
+    {
+      "id": "gitrem_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el flujo correcto de trabajo cuando quieres contribuir con una nueva funcionalidad a un proyecto de equipo en GitHub?",
+      "options": [
+        "git pull → crear branch → hacer commits → git push del branch → abrir Pull Request → esperar revisión → merge",
+        "abrir Pull Request → git push → crear branch → hacer commits → git pull → merge",
+        "hacer commits en main → git push → abrir Pull Request → git pull",
+        "crear branch → hacer commits → git push directamente a main → avisar al equipo",
+        "git pull → hacer commits en main → git push → crear tag de versión"
+      ],
+      "correctIndex": 0,
+      "explanation": "El flujo profesional con GitHub es: (1) <strong>git pull</strong> para tener main actualizado, (2) crear un <strong>branch</strong> para la funcionalidad, (3) hacer los <strong>commits</strong> de tu trabajo, (4) <strong>git push</strong> del <strong>branch</strong> al <strong>remote</strong>, (5) abrir un <strong>Pull Request</strong> en GitHub, (6) el equipo revisa y aprueba, y (7) se hace <strong>merge</strong> en <strong>main</strong>. Nunca se trabaja directamente en <strong>main</strong> en proyectos de equipo."
+    },
+    {
+      "id": "gitrem_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Ejecutas git remote -v en tu proyecto y obtienes esta salida:",
+      "code": "origin  https://github.com/miequipo/juego-plataformas.git (fetch)\norigin  https://github.com/miequipo/juego-plataformas.git (push)",
+      "question": "¿Cómo se llama el remote configurado en este repositorio?",
+      "target": "origin",
+      "acceptedAnswers": ["origin"],
+      "hints": [
+        "El nombre del remote aparece al principio de cada línea, antes de la URL.",
+        "Es el nombre estándar que Git asigna automáticamente al hacer git clone."
+      ],
+      "explanation": "El <strong>remote</strong> se llama <strong>origin</strong>. Este es el nombre estándar que Git configura automáticamente cuando clonas un repositorio. Aparece al inicio de cada línea en la salida de <code>git remote -v</code>, seguido de la URL y el tipo de operación (fetch o push)."
+    },
+    {
+      "id": "gitrem_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Tu compañero subió nuevos commits al repositorio remoto. Quieres descargarlos para ver qué cambió, pero SIN modificar tu código local todavía.",
+      "code": "git ______ origin main",
+      "question": "¿Qué comando debes usar para descargar los cambios sin integrarlos automáticamente?",
+      "target": "fetch",
+      "acceptedAnswers": ["fetch", "git fetch"],
+      "hints": [
+        "Necesitas el comando que solo descarga sin fusionar.",
+        "La diferencia con git pull es que este no modifica tu código local.",
+        "La palabra en inglés significa 'ir a buscar' o 'traer'."
+      ],
+      "explanation": "<strong>git fetch origin main</strong> descarga los nuevos <strong>commits</strong> del <strong>remote</strong> y los almacena en la referencia <code>origin/main</code>, pero tu <strong>branch</strong> local <strong>main</strong> no cambia. Puedes ver los cambios con <code>git log origin/main</code> y decidir si quieres integrarlos con <code>git merge origin/main</code>. Es la opción más segura cuando quieres revisar antes de integrar."
+    },
+    {
+      "id": "gitrem_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este flujo de comandos ejecutados por un estudiante:",
+      "code": "git switch -c feature/menu-principal\n# ... varios commits ...\ngit push origin feature/menu-principal",
+      "question": "Después de ejecutar git push, ¿qué paso falta para que los cambios lleguen a main en GitHub mediante el flujo profesional de trabajo en equipo?",
+      "target": "abrir un Pull Request",
+      "acceptedAnswers": [
+        "abrir un Pull Request",
+        "crear un Pull Request",
+        "abrir un PR",
+        "Pull Request",
+        "PR"
+      ],
+      "hints": [
+        "El branch ya está en el remote, pero main no ha cambiado todavía.",
+        "El flujo profesional requiere revisión del equipo antes de fusionar.",
+        "Es una función de GitHub, no de Git."
+      ],
+      "explanation": "Después de hacer <strong>push</strong> del <strong>branch</strong> al <strong>remote</strong>, el siguiente paso es abrir un <strong>Pull Request</strong> en GitHub. El PR permite que el equipo revise el código, sugiera cambios y apruebe la fusión antes de que llegue a <strong>main</strong>. Sin el PR, los cambios están en el servidor pero sin revisión ni merge oficial."
+    },
+    {
+      "id": "gitrem_id_004",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Quieres empezar a trabajar en un proyecto que tu profesor tiene en GitHub en esta URL: https://github.com/profe/curso-unity.git",
+      "code": "git ______ https://github.com/profe/curso-unity.git",
+      "question": "¿Qué subcomando de Git debes usar para obtener una copia completa del repositorio?",
+      "target": "clone",
+      "acceptedAnswers": ["clone", "git clone"],
+      "hints": [
+        "Este comando descarga el repositorio completo incluyendo todo el historial.",
+        "La palabra en inglés significa 'clonar' o 'copiar exactamente'."
+      ],
+      "explanation": "<strong>git clone</strong> descarga el repositorio completo desde el <strong>remote</strong>: todos los archivos del proyecto, todo el historial de <strong>commits</strong>, y configura automáticamente la conexión remota <strong>origin</strong>. Es el punto de entrada cuando empiezas a colaborar en un proyecto existente."
+    },
+    {
+      "id": "gitrem_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Un colaborador hizo push de nuevos commits a main. Analiza este flujo:",
+      "code": "git fetch origin main\ngit log HEAD..origin/main --oneline\n# a1b2c3d Agrega pantalla de créditos\n# e4f5g6h Corrige bug de menú",
+      "question": "¿Cuántos commits nuevos hay en el remote que todavía no tienes integrados localmente?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos", "2 commits"],
+      "hints": [
+        "git log HEAD..origin/main muestra los commits del remote que no tienes localmente.",
+        "Cuenta las líneas en la salida de git log."
+      ],
+      "explanation": "El comando <code>git log HEAD..origin/main</code> muestra exactamente los <strong>commits</strong> que existen en <code>origin/main</code> pero aún no están en tu <strong>branch</strong> local. La salida muestra dos commits: <em>\"Agrega pantalla de créditos\"</em> y <em>\"Corrige bug de menú\"</em>. Para integrarlos, ejecutarías <code>git merge origin/main</code> o simplemente <code>git pull</code>."
+    },
+    {
+      "id": "gitrem_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Terminaste de trabajar en tu branch local y quieres subirlo al remote para abrir un Pull Request.",
+      "code": "git push ______ feature/inventario",
+      "question": "¿Qué nombre del remote debes escribir para enviar el branch al repositorio remoto estándar?",
+      "target": "origin",
+      "acceptedAnswers": ["origin"],
+      "hints": [
+        "El nombre estándar del remote principal en Git es una palabra que significa 'origen'.",
+        "Es el nombre que Git configura automáticamente al hacer git clone."
+      ],
+      "explanation": "El <strong>remote</strong> estándar se llama <strong>origin</strong>. El comando completo <code>git push <strong>origin</strong> feature/inventario</code> sube el <strong>branch</strong> <em>feature/inventario</em> al repositorio remoto llamado <em>origin</em>. Desde ahí puedes crear el <strong>Pull Request</strong> en GitHub para revisión del equipo."
+    },
+    {
+      "id": "gitrem_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para subir el branch `main` local al remote `origin`:",
+      "codeTemplate": "git push ______ main",
+      "expectedAnswer": "origin",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del remote...",
+      "hints": [
+        "El nombre estándar del remote principal en cualquier repositorio clonado de GitHub.",
+        "Es la palabra inglesa que significa 'origen'."
+      ],
+      "explanation": "<code>git push <strong>origin</strong> main</code> envía los <strong>commits</strong> de tu <strong>branch</strong> <em>main</em> local al <strong>remote</strong> llamado <em>origin</em>. Git solo sube los <strong>commits</strong> que el <strong>remote</strong> no tiene todavía. Si el <strong>remote</strong> tiene commits que tú no tienes, Git rechazará el <strong>push</strong> hasta que hagas <strong>git pull</strong> primero."
+    },
+    {
+      "id": "gitrem_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para descargar e integrar los cambios de `main` del remote `origin` en tu branch actual:",
+      "codeTemplate": "git ______ origin main",
+      "expectedAnswer": "pull",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el subcomando...",
+      "hints": [
+        "Este comando descarga Y fusiona los cambios del remote en un solo paso.",
+        "La palabra en inglés significa 'jalar' o 'traer hacia ti'."
+      ],
+      "explanation": "<strong>git pull origin main</strong> hace dos operaciones en una: primero <strong>fetch</strong> (descarga los nuevos <strong>commits</strong> de <code>origin/main</code>) y luego <strong>merge</strong> (los integra en tu <strong>branch</strong> actual). Es la forma más rápida de actualizar tu código local con los cambios del equipo."
+    },
+    {
+      "id": "gitrem_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el comando para ver los remotos configurados en tu repositorio, mostrando también sus URLs:",
+      "codeTemplate": "git remote ___",
+      "expectedAnswer": "-v",
+      "alternateAnswers": ["--verbose"],
+      "placeholder": "Escribe el flag para mostrar URLs...",
+      "hints": [
+        "El flag que muestra información adicional (verbose) es una sola letra.",
+        "La letra viene de 'verbose' (detallado en inglés)."
+      ],
+      "explanation": "<code>git remote <strong>-v</strong></code> (verbose) muestra cada <strong>remote</strong> con su URL completa, tanto para <strong>fetch</strong> como para <strong>push</strong>. Sin el flag <code>-v</code>, <code>git remote</code> solo mostraría los nombres de los remotos sin sus URLs. Es útil para verificar que apuntas al repositorio correcto."
+    },
+    {
+      "id": "gitrem_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el comando para agregar un remote llamado `origin` apuntando a `https://github.com/alumno/proyecto-unity.git`:",
+      "codeTemplate": null,
+      "expectedAnswer": "git remote add origin https://github.com/alumno/proyecto-unity.git",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el comando completo...",
+      "hints": [
+        "El comando para registrar un remote tiene la forma: git remote add <nombre> <url>",
+        "El nombre estándar del remote principal es origin."
+      ],
+      "explanation": "<code>git remote add origin &lt;url&gt;</code> registra un nuevo <strong>remote</strong> con el nombre <em>origin</em> apuntando a la URL dada. Esto es necesario cuando creaste el repositorio local con <strong>git init</strong> y ahora quieres conectarlo a un repositorio remoto vacío que creaste en GitHub. Después de esto podrás hacer <strong>git push origin main</strong>."
+    },
+    {
+      "id": "gitrem_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el comando para descargar cambios del remote SIN integrarlos automáticamente en tu código local:",
+      "codeTemplate": null,
+      "expectedAnswer": "git fetch origin",
+      "alternateAnswers": ["git fetch origin main", "git fetch"],
+      "placeholder": "Escribe el comando completo...",
+      "hints": [
+        "El comando que solo descarga sin fusionar es diferente a git pull.",
+        "La palabra clave en inglés significa 'ir a buscar'."
+      ],
+      "explanation": "<code>git fetch origin</code> descarga todos los nuevos <strong>commits</strong> y <strong>branches</strong> del <strong>remote</strong> a tu máquina, pero no modifica ningún <strong>branch</strong> local. Los cambios quedan accesibles en <code>origin/main</code>, <code>origin/feature/x</code>, etc. Puedes inspeccionar los cambios y luego decidir si hacer <strong>merge</strong> con <code>git merge origin/main</code>."
+    },
+    {
+      "id": "gitrem_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe los cuatro comandos del flujo completo para: (1) actualizar main local, (2) crear branch `feature/highscore`, (3) subir ese branch al remote, después de haber hecho commits en él:",
+      "codeTemplate": null,
+      "expectedAnswer": "git pull origin main\ngit switch -c feature/highscore\ngit add .\ngit push origin feature/highscore",
+      "alternateAnswers": [
+        "git pull origin main\ngit checkout -b feature/highscore\ngit add .\ngit push origin feature/highscore"
+      ],
+      "placeholder": "Escribe los cuatro comandos, uno por línea...",
+      "hints": [
+        "Primero actualiza main con git pull.",
+        "Crea y cambia al branch con git switch -c.",
+        "Asume que ya hiciste commits — solo falta git add y git push.",
+        "git push necesita el nombre del remote y el nombre del branch."
+      ],
+      "explanation": "El flujo completo: <strong>git pull origin main</strong> (actualiza tu base), <strong>git switch -c feature/highscore</strong> (crea y cambia al branch), <strong>git add .</strong> + <strong>git commit</strong> (registra tus cambios — aquí omitimos el commit por brevedad), y finalmente <strong>git push origin feature/highscore</strong> (sube el branch para abrir el <strong>Pull Request</strong>)."
+    }
+  ]
+}

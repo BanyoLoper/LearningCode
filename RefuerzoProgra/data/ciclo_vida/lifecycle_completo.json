@@ -1,0 +1,374 @@
+{
+  "id": "lifecycle_completo",
+  "title": "Ciclo de Vida Completo",
+  "icon": "🔄",
+  "color": "#00ACC1",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es el Ciclo de Vida de MonoBehaviour?",
+        "type": "definition",
+        "content": "Cuando un <strong>GameObject</strong> con un componente <strong>MonoBehaviour</strong> existe en una escena de Unity, Unity llama automáticamente a métodos específicos de ese script en momentos concretos — esto se conoce como el <strong>ciclo de vida</strong> del <strong>MonoBehaviour</strong>. No los llamas tú: Unity los invoca cuando ocurren eventos del engine (inicio de escena, cada frame, colisión, etc.). Entender el orden exacto es fundamental para evitar errores de referencias nulas y comportamientos inesperados."
+      },
+      {
+        "id": "doc-2",
+        "title": "Orden de Ejecución del Ciclo de Vida",
+        "type": "code",
+        "content": "// Orden de ejecución de Unity (simplificado):\n\n// 1. INICIALIZACIÓN\nvoid Awake()    // Se llama primero, aunque el objeto esté desactivado. Ideal para inicializar referencias internas.\nvoid OnEnable() // Se llama cuando el objeto se activa. Puede llamarse varias veces.\nvoid Start()    // Se llama una sola vez, justo antes del primer frame. El objeto está activo.\n\n// 2. BUCLE DE JUEGO (repetido cada frame)\nvoid FixedUpdate()  // Frame de física (por defecto ~50 veces/seg). Usa para Rigidbody.\nvoid Update()       // Cada frame visual. Usa para input y lógica de juego.\nvoid LateUpdate()   // Después de Update. Ideal para cámaras que siguen al jugador.\n\n// 3. DESTRUCCIÓN\nvoid OnDisable()    // Cuando el objeto se desactiva.\nvoid OnDestroy()    // Cuando el objeto es destruido definitivamente."
+      },
+      {
+        "id": "doc-3",
+        "title": "Awake vs Start — La Diferencia Clave",
+        "type": "analogy",
+        "content": "Imagina que tienes varios músicos que deben tocar juntos. <strong>Awake</strong> es cuando cada músico llega al escenario y afina su propio instrumento — no importa si los demás ya están listos, cada uno se prepara internamente. <strong>Start</strong> es cuando el director da la señal de inicio: en ese momento ya sabes que <em>todos</em> los músicos ya terminaron de afinar (<strong>Awake</strong> de todos los scripts ya corrió). Por eso, si necesitas referenciar a otro script (con <code>GetComponent</code>), hazlo en <strong>Awake</strong>. Si necesitas usar esa referencia con certeza de que el otro script ya se inicializó, hazlo en <strong>Start</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Update, FixedUpdate y LateUpdate",
+        "type": "note",
+        "content": "<strong>Update</strong> se llama una vez por frame visual — su frecuencia varía según el rendimiento de la máquina (30, 60, 120 FPS). Úsalo para: input del jugador, movimiento de personajes (con <code>Time.deltaTime</code>), lógica de juego general.<br><br><strong>FixedUpdate</strong> se llama a intervalos fijos de tiempo (por defecto 0.02s = 50 veces/segundo). Úsalo para: fuerzas en <strong>Rigidbody</strong>, física, detección de colisiones con física. NUNCA uses <code>Input</code> aquí — puede saltarse frames.<br><br><strong>LateUpdate</strong> se llama después de que <em>todos</em> los <strong>Update</strong> de todos los scripts corrieron en ese frame. Úsalo para: mover cámaras que siguen al jugador (así el personaje ya se movió antes de que la cámara lo siga), lógica que depende del estado final del frame."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave del Ciclo de Vida",
+        "type": "list",
+        "items": [
+          "Awake se ejecuta incluso si el GameObject está desactivado — Start no.",
+          "El orden entre scripts es: primero corren todos los Awake, luego todos los Start.",
+          "FixedUpdate es el lugar correcto para AddForce y otras operaciones de física.",
+          "Update depende del framerate — siempre multiplica velocidades por Time.deltaTime.",
+          "LateUpdate es ideal para la lógica de cámara porque el personaje ya se movió.",
+          "OnDisable y OnDestroy son buenos lugares para desuscribirse de eventos y limpiar referencias."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "lc_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es el método de MonoBehaviour que se ejecuta PRIMERO en el ciclo de vida, incluso antes de que el objeto esté activo?",
+      "options": [
+        "Awake",
+        "Start",
+        "OnEnable",
+        "Update",
+        "FixedUpdate"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Awake</strong> es el primer método que Unity ejecuta, incluso si el <strong>GameObject</strong> está desactivado en la escena. Es el lugar ideal para inicializar referencias internas del propio script con <code>GetComponent</code>. Después de todos los <strong>Awake</strong>, Unity llama a <strong>OnEnable</strong> y luego a <strong>Start</strong>."
+    },
+    {
+      "id": "lc_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál método se llama una sola vez, justo antes del primer frame, y garantiza que todos los Awake de la escena ya se ejecutaron?",
+      "options": [
+        "Start",
+        "Awake",
+        "OnEnable",
+        "Update",
+        "Init"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Start</strong> se llama una única vez, justo antes del primer <strong>Update</strong>, y Unity garantiza que todos los <strong>Awake</strong> de todos los scripts de la escena ya corrieron. Por eso es el lugar correcto para inicializar cosas que dependen de otros scripts — sabes que esos scripts ya se inicializaron en su propio <strong>Awake</strong>."
+    },
+    {
+      "id": "lc_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿En qué método de MonoBehaviour debes aplicar fuerzas a un **Rigidbody** para que la física funcione correctamente?",
+      "options": [
+        "FixedUpdate",
+        "Update",
+        "LateUpdate",
+        "Start",
+        "Awake"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate</strong> se llama a intervalos de tiempo fijos (por defecto 50 veces por segundo), sincronizado con el motor de física de Unity. Usar <code>AddForce</code> en <strong>Update</strong> haría que la fuerza variara con el framerate, causando comportamiento inconsistente. Siempre usa <strong>FixedUpdate</strong> para operaciones de física."
+    },
+    {
+      "id": "lc_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué LateUpdate es ideal para mover la cámara que sigue al jugador?",
+      "options": [
+        "Porque LateUpdate se ejecuta después de que todos los Update de la escena corrieron, garantizando que el jugador ya se movió",
+        "Porque LateUpdate es más rápido que Update y reduce el tiempo de renderizado de la cámara",
+        "Porque Unity optimiza LateUpdate específicamente para cálculos de cámara y seguimiento",
+        "Porque el input del jugador solo se procesa en LateUpdate, no en Update",
+        "Porque la cámara tiene un componente Rigidbody que requiere LateUpdate obligatoriamente"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>LateUpdate</strong> corre después de que <em>todos</em> los <strong>Update</strong> de todos los scripts del frame se ejecutaron. Si mueves la cámara en <strong>Update</strong>, podría ejecutarse antes del <strong>Update</strong> del jugador, causando un lag de un frame en el seguimiento. Con <strong>LateUpdate</strong>, la cámara siempre sigue al jugador <em>después</em> de que este ya se movió."
+    },
+    {
+      "id": "lc_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes dos scripts: `EnemyManager` y `PlayerController`. EnemyManager necesita acceder a PlayerController en Awake. ¿Qué problema puede ocurrir?",
+      "options": [
+        "El Awake de PlayerController puede no haber corrido todavía cuando corre el Awake de EnemyManager, causando una referencia nula",
+        "Unity garantiza que Awake corre en el mismo orden que los scripts aparecen en la jerarquía, por lo que no hay problema",
+        "Awake nunca puede acceder a otros scripts; solo puede acceder a componentes del mismo GameObject",
+        "No hay ningún problema porque Awake de todos los scripts corre en el mismo frame simultáneamente",
+        "Solo ocurre si los dos scripts están en el mismo GameObject"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>orden de Awake entre scripts diferentes</strong> no está garantizado (a menos que lo configures manualmente en Script Execution Order). Si <code>EnemyManager.Awake</code> corre antes de <code>PlayerController.Awake</code>, la referencia a PlayerController puede ser nula. La solución: inicializa tus propias referencias en <strong>Awake</strong>, pero usa referencias de <em>otros</em> scripts en <strong>Start</strong> cuando ya todos los <strong>Awake</strong> terminaron."
+    },
+    {
+      "id": "lc_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia entre Awake y Start cuando un GameObject está DESACTIVADO en la escena?",
+      "options": [
+        "Awake se ejecuta aunque el GameObject esté desactivado; Start NO se ejecuta hasta que el objeto se active",
+        "Ambos se ejecutan independientemente del estado del GameObject",
+        "Ninguno se ejecuta si el GameObject está desactivado",
+        "Start se ejecuta aunque el objeto esté desactivado; Awake requiere que esté activo",
+        "Solo Awake se ejecuta en objetos desactivados, pero solo si tienen un Rigidbody"
+      ],
+      "correctIndex": 0,
+      "explanation": "Esta es una diferencia crítica: <strong>Awake</strong> se llama aunque el <strong>GameObject</strong> esté desactivado (su <code>active</code> es false). <strong>Start</strong>, en cambio, solo se llama cuando el objeto está activo y justo antes de su primer <strong>Update</strong>. Esto hace que <strong>Awake</strong> sea el lugar correcto para inicializaciones que deben ocurrir independientemente del estado del objeto."
+    },
+    {
+      "id": "lc_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el orden correcto de ejecución de estos métodos en el primer frame de una escena?",
+      "options": [
+        "Awake → OnEnable → Start → FixedUpdate → Update → LateUpdate",
+        "Start → Awake → OnEnable → Update → FixedUpdate → LateUpdate",
+        "OnEnable → Awake → Start → Update → FixedUpdate → LateUpdate",
+        "Awake → Start → OnEnable → FixedUpdate → Update → LateUpdate",
+        "FixedUpdate → Awake → OnEnable → Start → Update → LateUpdate"
+      ],
+      "correctIndex": 0,
+      "explanation": "El orden correcto es: <strong>Awake</strong> (inicialización, incluso si está desactivado) → <strong>OnEnable</strong> (objeto se activa) → <strong>Start</strong> (antes del primer frame) → <strong>FixedUpdate</strong> (física) → <strong>Update</strong> (lógica de juego) → <strong>LateUpdate</strong> (post-update). Este orden se respeta en cada script durante el ciclo de vida del <strong>GameObject</strong>."
+    },
+    {
+      "id": "lc_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿En qué método de MonoBehaviour debes desuscribirte de eventos y limpiar referencias para evitar memory leaks?",
+      "options": [
+        "OnDestroy y OnDisable",
+        "Update y LateUpdate",
+        "Awake y Start",
+        "FixedUpdate exclusivamente",
+        "Solo en el destructor de C# (~ClassName)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnDisable</strong> y <strong>OnDestroy</strong> son los lugares correctos para limpiar: desuscribirse de eventos (<code>evento -= MiMetodo</code>), cancelar <strong>Coroutines</strong>, y liberar referencias. Si te suscribes a un evento en <strong>OnEnable</strong>, desuscríbete en <strong>OnDisable</strong>. Si inicializas algo en <strong>Awake</strong> o <strong>Start</strong>, límpialo en <strong>OnDestroy</strong>."
+    },
+    {
+      "id": "lc_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script de Unity:",
+      "code": "public class Jugador : MonoBehaviour\n{\n    private Rigidbody rb;\n\n    void Awake()\n    {\n        rb = GetComponent<Rigidbody>();\n    }\n\n    void Start()\n    {\n        rb.mass = 2f;\n    }\n}",
+      "question": "¿Por qué tiene sentido obtener el componente Rigidbody en Awake y configurar su masa en Start?",
+      "target": "Para garantizar que rb no sea nulo cuando Start lo use",
+      "acceptedAnswers": [
+        "Para garantizar que rb no sea nulo cuando Start lo use",
+        "Porque Awake corre primero y asegura que rb esté listo para Start",
+        "Awake inicializa la referencia antes de que Start la necesite",
+        "Para que rb ya exista cuando Start lo configure"
+      ],
+      "hints": [
+        "Awake siempre corre antes que Start.",
+        "Si obtuvieras rb en Start, ¿podrías usarlo en Awake?",
+        "La razón es el orden garantizado de ejecución."
+      ],
+      "explanation": "Obtener referencias en <strong>Awake</strong> y usarlas en <strong>Start</strong> es la práctica correcta porque <strong>Awake</strong> siempre corre antes que <strong>Start</strong>. Cuando <strong>Start</strong> ejecuta <code>rb.mass = 2f</code>, la variable <code>rb</code> ya fue inicializada en <strong>Awake</strong>, por lo que nunca será <code>null</code>."
+    },
+    {
+      "id": "lc_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Un estudiante tiene este código y reporta que la cámara 'tiembla' al seguir al jugador:",
+      "code": "// Script del jugador\nvoid Update() { transform.position += velocidad * Time.deltaTime; }\n\n// Script de la cámara\nvoid Update() { transform.position = jugador.position + offset; }",
+      "question": "¿En qué método debería mover la cámara para eliminar el temblor?",
+      "target": "LateUpdate",
+      "acceptedAnswers": ["LateUpdate", "void LateUpdate()", "en LateUpdate"],
+      "hints": [
+        "El temblor ocurre porque a veces la cámara se mueve ANTES que el jugador en el mismo frame.",
+        "¿Qué método garantiza que el jugador ya se movió antes de que la cámara lo siga?",
+        "Se llama así porque se ejecuta 'después' del Update."
+      ],
+      "explanation": "El temblor ocurre porque el orden de ejecución de <strong>Update</strong> entre scripts no está garantizado — en algunos frames la cámara se mueve antes que el jugador. Mover la cámara en <strong>LateUpdate</strong> elimina el problema: <strong>LateUpdate</strong> siempre corre después de que <em>todos</em> los <strong>Update</strong> del frame terminaron, garantizando que el jugador ya se movió."
+    },
+    {
+      "id": "lc_id_003",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Un estudiante aplica una fuerza al Rigidbody en Update:",
+      "code": "void Update()\n{\n    rb.AddForce(Vector3.up * 10f);\n}",
+      "question": "¿En qué método debería colocar AddForce para que la física sea consistente independientemente del framerate?",
+      "target": "FixedUpdate",
+      "acceptedAnswers": ["FixedUpdate", "void FixedUpdate()", "en FixedUpdate"],
+      "hints": [
+        "Las operaciones de física en Unity tienen su propio método con frecuencia fija.",
+        "Este método se llama a intervalos constantes, no depende del FPS.",
+        "Empieza con 'Fixed'."
+      ],
+      "explanation": "<strong>FixedUpdate</strong> se ejecuta a intervalos de tiempo fijos (0.02 segundos por defecto), sincronizado con el motor de física de Unity. Si usas <code>AddForce</code> en <strong>Update</strong>, la fuerza aplicada varía según el FPS (a 30 FPS se aplica menos veces que a 120 FPS), haciendo el comportamiento inconsistente."
+    },
+    {
+      "id": "lc_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Tienes un GameObject desactivado en la escena con este script:",
+      "code": "public class PowerUp : MonoBehaviour\n{\n    private int valor;\n\n    void Awake()  { valor = 50; }\n    void Start()  { Debug.Log(\"PowerUp listo: \" + valor); }\n}",
+      "question": "¿Cuál de los dos métodos (Awake o Start) SE EJECUTARÁ si el GameObject está desactivado al inicio de la escena?",
+      "target": "Awake",
+      "acceptedAnswers": ["Awake", "void Awake()", "solo Awake"],
+      "hints": [
+        "Uno de los dos métodos se ejecuta incluso con el objeto desactivado.",
+        "El otro solo se ejecuta cuando el objeto está activo.",
+        "El que corre primero en el ciclo de vida."
+      ],
+      "explanation": "<strong>Awake</strong> se ejecuta aunque el <strong>GameObject</strong> esté desactivado (<code>active = false</code>). <strong>Start</strong> solo se ejecuta cuando el objeto está activo y justo antes de su primer <strong>Update</strong>. Por lo tanto, al inicio de la escena, si el objeto está desactivado, solo correrá <strong>Awake</strong> (y <code>valor = 50</code>), pero <strong>Start</strong> esperará hasta que el objeto se active."
+    },
+    {
+      "id": "lc_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este orden de métodos durante el primer frame de una escena con un solo objeto activo:",
+      "code": "// ¿Cuál es el orden correcto de A, B, C?\nvoid A() { /* ... */ } // ¿Awake, Start o Update?\nvoid B() { /* ... */ } // ¿Awake, Start o Update?\nvoid C() { /* ... */ } // ¿Awake, Start o Update?\n\n// Sabiendo que el orden de ejecución es: A → B → C",
+      "question": "Si A es el primero en ejecutarse y C es el que se repite cada frame, ¿qué método es B?",
+      "target": "Start",
+      "acceptedAnswers": ["Start", "void Start()", "el método Start"],
+      "hints": [
+        "El primer método del ciclo de vida es Awake.",
+        "El que se repite cada frame es Update.",
+        "¿Qué método queda entre Awake y Update?"
+      ],
+      "explanation": "Si A corre primero → es <strong>Awake</strong>. Si C se repite cada frame → es <strong>Update</strong>. B, que está entre los dos, es <strong>Start</strong>. El orden garantizado es: <strong>Awake</strong> → <strong>OnEnable</strong> → <strong>Start</strong> → <strong>Update</strong> (repetido). <strong>Start</strong> corre exactamente una vez, entre el fin de la inicialización y el inicio del bucle de juego."
+    },
+    {
+      "id": "lc_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script que tiene un bug de ciclo de vida:",
+      "code": "public class EnemySpawner : MonoBehaviour\n{\n    private GameManager gm;\n\n    void Awake()\n    {\n        gm = FindObjectOfType<GameManager>();\n        gm.RegisterEnemy(this); // ← posible NullReferenceException\n    }\n}",
+      "question": "¿Por qué `gm.RegisterEnemy(this)` puede causar NullReferenceException en Awake?",
+      "target": "Porque el Awake de GameManager puede no haber corrido todavía",
+      "acceptedAnswers": [
+        "Porque el Awake de GameManager puede no haber corrido todavía",
+        "Porque GameManager tal vez no se inicializó aún",
+        "El orden de Awake entre scripts no está garantizado",
+        "GameManager puede no estar listo"
+      ],
+      "hints": [
+        "FindObjectOfType puede encontrar el objeto, pero ¿está completamente inicializado?",
+        "El orden de Awake entre distintos scripts no está garantizado.",
+        "¿Dónde debería llamarse RegisterEnemy para asegurar que GameManager ya corrió su propio Awake?"
+      ],
+      "explanation": "El problema es que el <strong>orden de Awake entre diferentes scripts no está garantizado</strong>. Si <code>EnemySpawner.Awake</code> corre antes de <code>GameManager.Awake</code>, entonces <code>gm</code> podría existir como objeto pero aún no estar correctamente inicializado. La solución es mover <code>gm.RegisterEnemy(this)</code> a <strong>Start</strong>, donde se garantiza que todos los <strong>Awake</strong> de la escena ya corrieron."
+    },
+    {
+      "id": "lc_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre del método donde debes obtener referencias a componentes del mismo GameObject (se ejecuta primero):",
+      "codeTemplate": "void ________()\n{\n    rb = GetComponent<Rigidbody>();\n}",
+      "expectedAnswer": "Awake",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Este método se ejecuta primero en el ciclo de vida, incluso antes de Start.",
+        "En español significa 'despertar'."
+      ],
+      "explanation": "<strong>Awake</strong> es el primer método del ciclo de vida. Es el lugar correcto para inicializar referencias a componentes del propio <strong>GameObject</strong> con <code>GetComponent</code>. Al ser el primero en ejecutarse, garantiza que las referencias estén listas para cuando otros métodos las necesiten."
+    },
+    {
+      "id": "lc_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método donde debes aplicar fuerzas al Rigidbody del jugador:",
+      "codeTemplate": "void ____________()\n{\n    if (saltar) rb.AddForce(Vector3.up * fuerzaSalto);\n}",
+      "expectedAnswer": "FixedUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Las operaciones de física van en el método con frecuencia fija de tiempo.",
+        "Empieza con 'Fixed' y termina con 'Update'."
+      ],
+      "explanation": "<strong>FixedUpdate</strong> se ejecuta a intervalos de tiempo constantes (0.02s por defecto), sincronizado con el motor de física. Usar <code>AddForce</code> aquí garantiza que la física sea consistente independientemente del framerate, a diferencia de usarlo en <strong>Update</strong> donde la frecuencia varía."
+    },
+    {
+      "id": "lc_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método que se ejecuta DESPUÉS de todos los Update de la escena, ideal para mover la cámara:",
+      "codeTemplate": "void ____________()\n{\n    transform.position = objetivo.position + offset;\n}",
+      "expectedAnswer": "LateUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Este método se ejecuta 'después' (late) del Update.",
+        "Es ideal para lógica de cámara."
+      ],
+      "explanation": "<strong>LateUpdate</strong> corre después de que todos los <strong>Update</strong> de todos los scripts del frame terminaron. Esto garantiza que el personaje objetivo ya se movió antes de que la cámara actualice su posición, eliminando el efecto de temblor o lag de un frame."
+    },
+    {
+      "id": "lc_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la firma correcta del método que Unity llama cada frame para la lógica general del juego (input, movimiento, etc.):",
+      "codeTemplate": null,
+      "expectedAnswer": "void Update()",
+      "alternateAnswers": ["void Update() { }"],
+      "placeholder": "Escribe la firma del método...",
+      "hints": [
+        "Se llama una vez por frame visual.",
+        "Es el método más común de MonoBehaviour para lógica de juego."
+      ],
+      "explanation": "<code>void <strong>Update</strong>()</code> es el método más usado de <strong>MonoBehaviour</strong>. Unity lo llama automáticamente una vez por frame visual. Es el lugar correcto para procesar el input del jugador, mover personajes (usando <code>Time.deltaTime</code> para independencia del framerate), y actualizar la lógica general del juego."
+    },
+    {
+      "id": "lc_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el método para limpiar referencias y desuscribirse de eventos cuando el objeto sea destruido:",
+      "codeTemplate": "void _________()\n{\n    GameEvents.OnEnemyDied -= HandleEnemyDied;\n}",
+      "expectedAnswer": "OnDestroy",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Este método se llama cuando el GameObject es destruido definitivamente.",
+        "Es el complemento de Awake para limpiar lo que se creó."
+      ],
+      "explanation": "<strong>OnDestroy</strong> se ejecuta justo antes de que el <strong>GameObject</strong> sea destruido. Es el lugar correcto para hacer limpieza: desuscribirse de eventos, cancelar <strong>Coroutines</strong>, liberar recursos. Si no desuscribes el evento aquí, el evento podría intentar llamar a un método de un objeto destruido, causando errores."
+    },
+    {
+      "id": "lc_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe los tres métodos de ciclo de vida en el orden correcto: el de inicialización interna, el de inicio antes del primer frame, y el que se repite cada frame:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Awake()\nvoid Start()\nvoid Update()",
+      "alternateAnswers": [
+        "void Awake() { }\nvoid Start() { }\nvoid Update() { }"
+      ],
+      "placeholder": "Escribe los tres métodos en orden, uno por línea...",
+      "hints": [
+        "El primero es el de inicialización interna, que corre incluso con el objeto desactivado.",
+        "El segundo corre una vez antes del primer frame.",
+        "El tercero se repite cada frame."
+      ],
+      "explanation": "El orden correcto de los tres métodos fundamentales: <strong>Awake</strong> (inicialización interna, corre primero) → <strong>Start</strong> (inicio, corre una vez antes del primer frame) → <strong>Update</strong> (bucle de juego, corre cada frame). Este es el flujo básico de cualquier <strong>MonoBehaviour</strong> en Unity."
+    }
+  ]
+}

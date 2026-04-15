@@ -1,0 +1,375 @@
+{
+  "id": "lifecycle_editor",
+  "title": "Métodos de Editor y Validación",
+  "icon": "🔧",
+  "color": "#00ACC1",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Métodos Exclusivos del Editor de Unity",
+        "type": "definition",
+        "content": "Unity tiene métodos de <strong>MonoBehaviour</strong> que solo se ejecutan dentro del <strong>Editor</strong> (mientras diseñas el nivel), no en el juego compilado. Estos métodos son herramientas para el flujo de trabajo del desarrollador: validar configuraciones, dibujar ayudas visuales y responder a cambios en el <strong>Inspector</strong>. El atributo <code>[ExecuteInEditMode]</code> o <code>[ExecuteAlways]</code> en el script permite que ciertos métodos corran en el <strong>Editor</strong>. Son fundamentales para crear herramientas de diseño dentro de Unity."
+      },
+      {
+        "id": "doc-2",
+        "title": "Reset, OnValidate y Eventos del Editor",
+        "type": "code",
+        "content": "// Se llama cuando el script se agrega a un GameObject por primera vez\n// O cuando se hace Reset desde el menú contextual del componente\nvoid Reset()\n{\n    // Establece valores por defecto razonables\n    velocidad = 5f;\n    vida = 100;\n}\n\n// Se llama en el Editor cada vez que se modifica un campo en el Inspector\n// También se llama al cargar la escena\nvoid OnValidate()\n{\n    // Fuerza valores en rangos válidos\n    vida = Mathf.Max(1, vida);     // La vida nunca puede ser menor a 1\n    radio = Mathf.Abs(radio);      // El radio no puede ser negativo\n}\n\n// Se llama cuando la aplicación pausa (dentro del Editor o en builds)\nvoid OnApplicationPause(bool pauseStatus)\n{\n    if (pauseStatus) GuardarProgreso();\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "OnDrawGizmos y OnDrawGizmosSelected — Visualización en el Editor",
+        "type": "code",
+        "content": "// Se llama en TODOS los frames del Editor para dibujar ayudas visuales\n// Los Gizmos se ven en la Scene View, NO en el juego final\nvoid OnDrawGizmos()\n{\n    Gizmos.color = Color.red;\n    Gizmos.DrawWireSphere(transform.position, radioDeAtaque);\n}\n\n// Solo se dibuja cuando el objeto está SELECCIONADO en el Editor\nvoid OnDrawGizmosSelected()\n{\n    Gizmos.color = Color.yellow;\n    // Dibuja el radio de patrulla solo cuando seleccionas el enemigo\n    Gizmos.DrawWireSphere(transform.position, radioDePatrulla);\n}\n\n// Ejemplos de Gizmos útiles:\n// Gizmos.DrawLine(puntoA, puntoB)  → línea entre dos puntos\n// Gizmos.DrawRay(origen, dirección) → rayo visual\n// Gizmos.DrawCube(centro, tamaño)  → caja"
+      },
+      {
+        "id": "doc-4",
+        "title": "OnApplicationPause y OnApplicationQuit",
+        "type": "analogy",
+        "content": "Piensa en tu juego como una aplicación con estados de vida propios. <strong>OnApplicationPause</strong> es el equivalente a pausar un video — el juego se congela pero no termina. Unity llama este método cuando el jugador pausa, cuando la app va al fondo (en móvil), o cuando el Editor entra en modo pausa. El parámetro booleano indica si <em>se está pausando</em> (<code>true</code>) o <em>reanudando</em> (<code>false</code>). <strong>OnApplicationQuit</strong> es la señal de cierre — se llama justo antes de que la aplicación se cierre completamente. Ideal para guardar datos de progreso antes de salir."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave sobre Métodos de Editor",
+        "type": "list",
+        "items": [
+          "OnValidate solo corre en el Editor — nunca en el juego compilado (builds).",
+          "Reset es peligroso en producción si el diseñador hace 'Reset' por accidente y pierde la configuración.",
+          "OnDrawGizmos dibuja en TODOS los objetos; OnDrawGizmosSelected solo cuando está seleccionado.",
+          "Los Gizmos no aparecen en el juego final ni en builds — son solo para el Editor.",
+          "OnApplicationPause recibe true al pausar y false al reanudar.",
+          "OnValidate es ideal para asegurarte de que los valores en el Inspector estén en rangos válidos sin necesidad de código en Update."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "lce_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuándo se llama el método `OnValidate` en Unity?",
+      "options": [
+        "En el Editor, cada vez que se modifica un valor en el Inspector del componente",
+        "En el juego, cada vez que el jugador completa un nivel correctamente",
+        "Al inicio del juego, para validar que todos los scripts tienen referencias correctas",
+        "Solo cuando se compila el proyecto para exportarlo",
+        "Cada frame en el Editor, igual que Update pero en modo edición"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnValidate</strong> se llama en el <strong>Editor</strong> cada vez que modificas un valor en el <strong>Inspector</strong> del componente, y también al cargar la escena. Es el lugar correcto para forzar restricciones en los valores (por ejemplo, que la vida no sea negativa) sin necesidad de hacerlo en <strong>Update</strong>. Importante: <strong>OnValidate</strong> no corre en builds de producción."
+    },
+    {
+      "id": "lce_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué diferencia hay entre OnDrawGizmos y OnDrawGizmosSelected?",
+      "options": [
+        "OnDrawGizmos dibuja para todos los objetos siempre; OnDrawGizmosSelected solo dibuja cuando el objeto está seleccionado en el Editor",
+        "OnDrawGizmos es más eficiente porque solo dibuja el gizmo del objeto activo",
+        "OnDrawGizmosSelected aparece en el juego final; OnDrawGizmos solo en el Editor",
+        "No hay diferencia visual, solo cambia cuándo se calcula la posición del gizmo",
+        "OnDrawGizmos dibuja en 2D; OnDrawGizmosSelected dibuja en 3D"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnDrawGizmos</strong> dibuja el gizmo en todos los objetos que tengan ese script, siempre visible en la <strong>Scene View</strong>. <strong>OnDrawGizmosSelected</strong> solo dibuja el gizmo cuando ese objeto específico está seleccionado en el <strong>Editor</strong>. Úsalo para información detallada (como el radio de patrulla) que solo necesitas ver cuando inspeccionas ese objeto."
+    },
+    {
+      "id": "lce_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Los Gizmos dibujados con OnDrawGizmos aparecen en el juego final cuando lo exportas?",
+      "options": [
+        "No — los Gizmos solo se ven en la Scene View del Editor, nunca en el juego compilado",
+        "Sí — aparecen en todas las plataformas como elementos de depuración integrados",
+        "Depende del atributo [ExecuteInEditMode]: si está activo, aparecen en el juego",
+        "Solo en modo Debug del juego; en modo Release se ocultan automáticamente",
+        "Sí, pero solo si usas Gizmos.DrawIcon(); los demás métodos de Gizmos no se exportan"
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>Gizmos</strong> son exclusivos del <strong>Editor</strong> de Unity. Cuando exportas tu juego (build), los métodos <strong>OnDrawGizmos</strong> y <strong>OnDrawGizmosSelected</strong> simplemente no se ejecutan — no hay impacto en el rendimiento ni en la apariencia del juego final. Son herramientas de desarrollo, no elementos visuales del juego."
+    },
+    {
+      "id": "lce_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo es peligroso usar el método `Reset` en un proyecto con diseñadores no técnicos?",
+      "options": [
+        "Cuando un diseñador hace clic en 'Reset' desde el menú del Inspector y pierde accidentalmente la configuración personalizada del componente",
+        "Cuando Reset se llama automáticamente en cada build y sobreescribe los valores de producción",
+        "Cuando Reset es llamado en Awake, lo que sobreescribe la inicialización del Start",
+        "Cuando el juego detecta corrupción de datos y llama Reset para restaurar valores seguros",
+        "Reset solo es peligroso si el script tiene más de 10 campos configurables"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Reset</strong> se llama cuando un diseñador selecciona <em>\"Reset\"</em> desde el menú contextual del componente en el <strong>Inspector</strong>. Si el diseñador configuró valores específicos para ese nivel (vida del jefe = 5000, velocidad = 8.5) y accidentalmente hace <em>Reset</em>, todos esos valores se restauran a los defaults definidos en el método <strong>Reset</strong>. En producciones con diseñadores, es prudente documentar bien este comportamiento."
+    },
+    {
+      "id": "lce_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el uso principal de `OnValidate` para un campo de vida (`int vida`)?",
+      "options": [
+        "Forzar que vida siempre sea mayor a 0 sin tener que validarlo en Update cada frame",
+        "Calcular automáticamente la barra de vida en la UI cuando el diseñador cambia el valor",
+        "Sincronizar el valor de vida con el servidor remoto en tiempo real durante el diseño",
+        "Mostrar un warning en la consola si vida supera el valor máximo permitido por la historia",
+        "Guardar automáticamente el valor de vida en un archivo JSON cuando cambia en el Inspector"
+      ],
+      "correctIndex": 0,
+      "explanation": "El uso más común de <strong>OnValidate</strong> es forzar rangos válidos: <code>vida = Mathf.Max(1, vida)</code> garantiza que vida nunca sea 0 ni negativa, sin importar lo que el diseñador escriba en el <strong>Inspector</strong>. Esto evita bugs de división por cero o lógicas rotas en el juego, y da feedback inmediato al diseñador sin necesidad de ejecutar el juego."
+    },
+    {
+      "id": "lce_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué parámetro recibe `OnApplicationPause` y qué valor tiene cuando la aplicación SE PAUSA?",
+      "options": [
+        "Un bool — true cuando la aplicación se pausa, false cuando se reanuda",
+        "Un float — el tiempo en segundos que la aplicación lleva pausada",
+        "Un PauseState enum — con valores Paused, Resumed y Background",
+        "No recibe parámetros — solo se llama cuando la app se pausa, no al reanudar",
+        "Un int — 0 para pausa normal, 1 para pausa por minimizar, 2 para pausa por batería baja"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnApplicationPause(bool pauseStatus)</strong> recibe <code>true</code> cuando la aplicación se pausa (el jugador pausa, la app va al fondo en móvil) y <code>false</code> cuando se reanuda. Esto permite manejar ambos eventos con un solo método: <code>if (pauseStatus) GuardarProgreso();</code> al pausar, y lógica de reanudación cuando es <code>false</code>."
+    },
+    {
+      "id": "lce_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un script usa OnDrawGizmos para dibujar el radio de visión de 50 enemigos en la escena. ¿Qué problema de rendimiento puede causar en el Editor?",
+      "options": [
+        "El Editor se vuelve lento porque OnDrawGizmos se ejecuta para TODOS los objetos en cada frame de la Scene View",
+        "El juego final será más lento porque Unity incluye el cálculo de Gizmos en el build",
+        "Los Gizmos de 50 objetos pueden causar colisiones visuales en el Editor que confunden al diseñador",
+        "Unity tiene un límite de 32 Gizmos simultáneos — los demás se ignoran silenciosamente",
+        "No hay ningún problema de rendimiento — los Gizmos están optimizados por Unity para cualquier cantidad"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnDrawGizmos</strong> se ejecuta para <em>cada objeto</em> con ese script en cada frame de la <strong>Scene View</strong>. Con 50 enemigos, el Editor ejecuta 50 llamadas por frame. La solución es usar <strong>OnDrawGizmosSelected</strong> para información detallada — solo dibuja para el objeto seleccionado, reduciendo drasticamente el trabajo por frame en escenas con muchos objetos."
+    },
+    {
+      "id": "lce_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuándo se llama el método `Reset` de MonoBehaviour?",
+      "options": [
+        "Cuando el script se agrega a un GameObject por primera vez, o cuando el usuario hace 'Reset' desde el menú del Inspector",
+        "Cada vez que el juego reinicia la escena con SceneManager.LoadScene",
+        "Cuando el jugador pierde todas sus vidas y el nivel debe reiniciarse",
+        "Automáticamente al inicio de cada sesión de play mode en el Editor",
+        "Cuando Unity detecta valores inválidos en los campos serializados del componente"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Reset</strong> se invoca en dos situaciones: (1) cuando el script se añade a un <strong>GameObject</strong> por primera vez, permitiéndote establecer valores por defecto razonables, y (2) cuando el usuario selecciona <em>\"Reset\"</em> desde el menú contextual del componente en el <strong>Inspector</strong>. Es solo un método del <strong>Editor</strong> — no se llama durante el juego."
+    },
+    {
+      "id": "lce_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método en un script de enemigo:",
+      "code": "void OnDrawGizmos()\n{\n    Gizmos.color = Color.red;\n    Gizmos.DrawWireSphere(transform.position, radioDeVision);\n}",
+      "question": "¿Este gizmo de la esfera roja aparecerá en el juego final cuando el jugador juegue?",
+      "target": "No",
+      "acceptedAnswers": ["No", "no", "No aparecerá", "no aparece en el juego"],
+      "hints": [
+        "Los Gizmos son herramientas exclusivas del Editor.",
+        "Piensa en para qué sirven los Gizmos: ¿para el juego o para el desarrollador?"
+      ],
+      "explanation": "<strong>No</strong>. Los <strong>Gizmos</strong> son herramientas exclusivas del <strong>Editor</strong> de Unity. Solo se ven en la <strong>Scene View</strong> mientras diseñas el nivel. Al exportar el juego (build), los métodos <strong>OnDrawGizmos</strong> y <strong>OnDrawGizmosSelected</strong> simplemente no se ejecutan — no hay esfera roja ni ningún otro gizmo visible para el jugador."
+    },
+    {
+      "id": "lce_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Un diseñador reporta que al cambiar el valor de 'daño' en el Inspector de un enemigo, Unity automáticamente lo corrige a 1 si pone 0 o menos. El script tiene este método:",
+      "code": "void OnValidate()\n{\n    daño = Mathf.Max(1, daño);\n}",
+      "question": "¿En qué momento Unity llama a OnValidate para corregir el valor de daño?",
+      "target": "Cuando el diseñador modifica el valor en el Inspector",
+      "acceptedAnswers": [
+        "Cuando el diseñador modifica el valor en el Inspector",
+        "Al cambiar el valor en el Inspector",
+        "Cada vez que se edita un campo en el Inspector",
+        "Al modificar el campo en el Inspector"
+      ],
+      "hints": [
+        "OnValidate responde a cambios en el Inspector.",
+        "Se llama en el Editor, no durante el juego."
+      ],
+      "explanation": "<strong>OnValidate</strong> se llama en el <strong>Editor</strong> cada vez que el diseñador modifica un campo en el <strong>Inspector</strong>. En este caso, cuando el diseñador escribe 0 o un número negativo, <code>Mathf.Max(1, daño)</code> lo corrige a 1 inmediatamente, antes de que ese valor inválido cause problemas en el juego."
+    },
+    {
+      "id": "lce_id_003",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Quieres que un Gizmo de la esfera del radio de ataque de un enemigo solo se dibuje en el Editor cuando SELECCIONAS ese enemigo específico (no para todos los enemigos en la escena).",
+      "code": "void ______________________()\n{\n    Gizmos.DrawWireSphere(transform.position, radioAtaque);\n}",
+      "question": "¿Qué método debes usar?",
+      "target": "OnDrawGizmosSelected",
+      "acceptedAnswers": ["OnDrawGizmosSelected", "void OnDrawGizmosSelected"],
+      "hints": [
+        "Hay dos variantes de OnDrawGizmos.",
+        "La que solo dibuja cuando el objeto está seleccionado tiene un sufijo adicional."
+      ],
+      "explanation": "<strong>OnDrawGizmosSelected</strong> solo dibuja el gizmo cuando ese <strong>GameObject</strong> específico está seleccionado en el <strong>Editor</strong>. Esto es mucho más eficiente y limpio que <strong>OnDrawGizmos</strong> cuando tienes muchos objetos en la escena — evita que la <strong>Scene View</strong> se llene de esferas superpuestas de todos los enemigos."
+    },
+    {
+      "id": "lce_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método de un juego móvil:",
+      "code": "void OnApplicationPause(bool pauseStatus)\n{\n    if (pauseStatus)\n    {\n        SaveManager.GuardarPartida();\n    }\n}",
+      "question": "¿En qué situación se llamará OnApplicationPause con pauseStatus = true en un dispositivo móvil?",
+      "target": "Cuando el jugador pone la app en segundo plano",
+      "acceptedAnswers": [
+        "Cuando el jugador pone la app en segundo plano",
+        "Al minimizar la aplicación",
+        "Cuando la app va al fondo",
+        "Al salir sin cerrar la app",
+        "Cuando el jugador cambia de app"
+      ],
+      "hints": [
+        "pauseStatus = true indica que la app se está pausando.",
+        "En móvil, ¿qué hace que una app se pause sin cerrarse?"
+      ],
+      "explanation": "En dispositivos móviles, <strong>OnApplicationPause</strong> se llama con <code>pauseStatus = true</code> cuando el jugador manda la app al segundo plano (presiona el botón de inicio, recibe una llamada, cambia de app). Es el momento ideal para guardar el progreso automáticamente, pausar la música, o liberar recursos temporales."
+    },
+    {
+      "id": "lce_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Un diseñador de niveles agrega el script 'EnemyConfig' a un enemigo. El script tiene un método Reset con valores por defecto. Luego configura el enemigo con vida=500 y daño=75. Un mes después, hace clic en 'Reset' accidentalmente desde el Inspector.",
+      "code": "void Reset()\n{\n    vida = 100;\n    daño = 10;\n}\n// El diseñador configura: vida=500, daño=75\n// ... hace clic en Reset ...",
+      "question": "¿Qué valores tendrá el enemigo después del Reset accidental?",
+      "target": "vida=100 y daño=10",
+      "acceptedAnswers": [
+        "vida=100 y daño=10",
+        "vida 100 daño 10",
+        "100 y 10",
+        "vida=100, daño=10"
+      ],
+      "hints": [
+        "Reset restaura los valores definidos en el método Reset, no los que configuró el diseñador.",
+        "Mira los valores asignados dentro del método Reset."
+      ],
+      "explanation": "Al hacer <em>Reset</em> desde el <strong>Inspector</strong>, Unity llama al método <strong>Reset</strong> del script, que asigna <code>vida = 100</code> y <code>daño = 10</code>. Los valores personalizados del diseñador (<code>vida=500, daño=75</code>) se pierden completamente. Por eso es importante documentar o proteger configuraciones importantes con algún sistema de respaldo."
+    },
+    {
+      "id": "lce_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este uso de Gizmos en el script de un NPC:",
+      "code": "void OnDrawGizmos()\n{\n    Gizmos.color = Color.blue;\n    Gizmos.DrawLine(transform.position, destinoPatrulla.position);\n}",
+      "question": "¿Este Gizmos.DrawLine afecta el rendimiento del juego final exportado?",
+      "target": "No",
+      "acceptedAnswers": ["No", "no", "No afecta", "no afecta el rendimiento"],
+      "hints": [
+        "Los Gizmos son exclusivos del Editor.",
+        "En un build de producción, ¿se ejecutan los métodos OnDrawGizmos?"
+      ],
+      "explanation": "<strong>No</strong>. Los métodos <strong>OnDrawGizmos</strong> y <strong>OnDrawGizmosSelected</strong> son completamente ignorados en builds de producción. Unity los llama únicamente en la <strong>Scene View</strong> del <strong>Editor</strong>. El <code>Gizmos.DrawLine</code> no tiene ningún impacto en el rendimiento del juego que ven los jugadores."
+    },
+    {
+      "id": "lce_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método que Unity llama cuando se agrega el script a un GameObject, para establecer valores por defecto:",
+      "codeTemplate": "void _______()\n{\n    vida = 100;\n    velocidad = 5f;\n}",
+      "expectedAnswer": "Reset",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Este método 'reinicia' el componente a sus valores por defecto.",
+        "La palabra en inglés significa 'reiniciar' o 'restablecer'."
+      ],
+      "explanation": "<strong>Reset</strong> es llamado por Unity cuando el script se añade a un <strong>GameObject</strong> por primera vez, o cuando el usuario hace <em>\"Reset\"</em> desde el <strong>Inspector</strong>. Es el lugar ideal para establecer valores por defecto razonables que tengan sentido para el contexto del componente."
+    },
+    {
+      "id": "lce_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método que valida y corrige el valor de 'radio' para que nunca sea negativo:",
+      "codeTemplate": "void ____________()\n{\n    radio = Mathf.Abs(radio);\n}",
+      "expectedAnswer": "OnValidate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Este método se llama en el Editor cuando cambias un valor en el Inspector.",
+        "Su nombre sugiere que 'valida' los datos del componente."
+      ],
+      "explanation": "<strong>OnValidate</strong> se ejecuta en el <strong>Editor</strong> cada vez que el diseñador modifica un campo en el <strong>Inspector</strong>. Usando <code>Mathf.Abs(radio)</code>, garantizamos que el radio siempre sea positivo sin importar lo que el diseñador escriba. Este método no se ejecuta en el juego final."
+    },
+    {
+      "id": "lce_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que dibuja una esfera de alambre (wireframe) en la posición del objeto con radio 3f, de color amarillo, dentro de OnDrawGizmos:",
+      "codeTemplate": null,
+      "expectedAnswer": "Gizmos.color = Color.yellow;\nGizmos.DrawWireSphere(transform.position, 3f);",
+      "alternateAnswers": [
+        "Gizmos.color = Color.yellow; Gizmos.DrawWireSphere(transform.position, 3f);"
+      ],
+      "placeholder": "Escribe las dos líneas de Gizmos...",
+      "hints": [
+        "Primero establece el color con Gizmos.color.",
+        "Luego usa Gizmos.DrawWireSphere con la posición del objeto y el radio."
+      ],
+      "explanation": "<code>Gizmos.color = Color.yellow</code> establece el color para los gizmos siguientes. <code>Gizmos.DrawWireSphere(transform.position, 3f)</code> dibuja una esfera de alambre centrada en el objeto con radio 3. Esta visualización aparece solo en la <strong>Scene View</strong> del <strong>Editor</strong> y es invisible en el juego final."
+    },
+    {
+      "id": "lce_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método que guarda el progreso cuando la aplicación se pausa:",
+      "codeTemplate": "void OnApplicationPause(bool ___________)\n{\n    if (pauseStatus) GuardarProgreso();\n}",
+      "expectedAnswer": "pauseStatus",
+      "alternateAnswers": ["paused", "isPaused", "pause"],
+      "placeholder": "Escribe el nombre del parámetro booleano...",
+      "hints": [
+        "El parámetro es un bool que indica si la app está pausando (true) o reanudando (false).",
+        "El nombre del parámetro debe coincidir con el usado dentro del método."
+      ],
+      "explanation": "<strong>OnApplicationPause(bool pauseStatus)</strong> recibe un booleano: <code>true</code> cuando la aplicación se pausa y <code>false</code> cuando se reanuda. El nombre del parámetro es arbitrario, pero debe coincidir con el que usas dentro del método. El patrón <code>if (pauseStatus) GuardarProgreso();</code> guarda solo al pausar, no al reanudar."
+    },
+    {
+      "id": "lce_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para que el Gizmo solo se dibuje cuando el objeto está seleccionado en el Editor:",
+      "codeTemplate": "void OnDrawGizmos__________()\n{\n    Gizmos.DrawLine(transform.position, destino);\n}",
+      "expectedAnswer": "Selected",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el sufijo del método...",
+      "hints": [
+        "El método que solo dibuja al seleccionar tiene un sufijo adicional.",
+        "El sufijo indica que el objeto está 'seleccionado'."
+      ],
+      "explanation": "<strong>OnDrawGizmosSelected</strong> solo ejecuta el código de gizmos cuando ese <strong>GameObject</strong> está seleccionado en la jerarquía del <strong>Editor</strong>. Es más eficiente que <strong>OnDrawGizmos</strong> cuando tienes muchos objetos, ya que solo dibuja para el objeto que estás inspeccionando en ese momento."
+    },
+    {
+      "id": "lce_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un método OnValidate completo que asegure que 'cantidadEnemigos' esté siempre entre 1 y 50 (inclusive):",
+      "codeTemplate": null,
+      "expectedAnswer": "void OnValidate() { cantidadEnemigos = Mathf.Clamp(cantidadEnemigos, 1, 50); }",
+      "alternateAnswers": [
+        "void OnValidate()\n{\n    cantidadEnemigos = Mathf.Clamp(cantidadEnemigos, 1, 50);\n}"
+      ],
+      "placeholder": "Escribe el método completo...",
+      "hints": [
+        "OnValidate no recibe parámetros.",
+        "Mathf.Clamp(valor, min, max) limita el valor entre un mínimo y un máximo."
+      ],
+      "explanation": "<code>void <strong>OnValidate</strong>()</code> no recibe parámetros. <code>Mathf.Clamp(cantidadEnemigos, 1, 50)</code> fuerza el valor entre 1 y 50: si el diseñador escribe 0, queda en 1; si escribe 100, queda en 50. <strong>Mathf.Clamp</strong> es la forma más limpia de establecer límites en el <strong>Inspector</strong>."
+    }
+  ]
+}

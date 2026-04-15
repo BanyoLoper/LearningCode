@@ -1,0 +1,368 @@
+{
+  "id": "git_init",
+  "title": "Configuración e Init",
+  "icon": "🐙",
+  "color": "#F05032",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es Git?",
+        "type": "definition",
+        "content": "<strong>Git</strong> es un sistema de <strong>control de versiones distribuido</strong> que registra los cambios en tus archivos a lo largo del tiempo. Cada desarrollador tiene una copia completa del historial del proyecto en su máquina local. En proyectos Unity, Git te permite guardar versiones de scripts, escenas y assets; colaborar con tu equipo sin sobrescribir el trabajo de nadie; y volver a cualquier punto anterior del proyecto si algo sale mal. Cuando trabajas con Git, cada conjunto de cambios guardado se llama <strong>commit</strong>, y el historial completo de commits forma la línea de tiempo de tu proyecto."
+      },
+      {
+        "id": "doc-2",
+        "title": "git init — Inicializar un Repositorio",
+        "type": "code",
+        "content": "# Entrar a la carpeta del proyecto\ncd MiProyectoUnity\n\n# Inicializar el repositorio (crea la carpeta oculta .git)\ngit init\n# Salida: Initialized empty Git repository in .../MiProyectoUnity/.git/\n\n# Configurar la identidad del autor (solo una vez por máquina)\ngit config --global user.name \"Ana López\"\ngit config --global user.email \"ana@ejemplo.com\"\n\n# Verificar la configuración guardada\ngit config --list\n# user.name=Ana López\n# user.email=ana@ejemplo.com\n# core.repositoryformatversion=0\n# core.filemode=false"
+      },
+      {
+        "id": "doc-3",
+        "title": "git clone — Copiar un Repositorio Existente",
+        "type": "analogy",
+        "content": "Piensa en <strong>git init</strong> como construir una casa desde cero en un terreno vacío: tú defines todo desde el principio y el historial empieza en cero. En cambio, <strong>git clone</strong> es como hacer una copia exacta de una casa ya construida, incluyendo todos sus planos y el historial de modificaciones. Al ejecutar <code>git clone https://github.com/usuario/repo.git</code>, obtienes todos los archivos del proyecto, todo el historial de <strong>commits</strong>, y una conexión ya configurada automáticamente al repositorio remoto, que Git llama <strong>origin</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": ".gitignore — Qué Ignorar en Proyectos Unity",
+        "type": "note",
+        "content": "El archivo <strong>.gitignore</strong> le dice a Git qué archivos o carpetas debe omitir completamente. En proyectos Unity es fundamental configurarlo bien:<br><br><strong>❌ IGNORAR</strong> (se regeneran automáticamente, no agregar al repositorio):<br><code>Library/</code> — caché de importación de Unity, puede pesar varios GB<br><code>Temp/</code> — archivos temporales de compilación<br><code>Logs/</code> — registros del Editor de Unity<br><code>obj/</code> — objetos intermedios de compilación<br><br><strong>✅ RASTREAR</strong> (críticos para el proyecto):<br><code>Assets/</code> — tus scripts, escenas, prefabs, sprites<br><code>ProjectSettings/</code> — configuración del proyecto<br><code>*.meta</code> — <em>MUY IMPORTANTE</em>: los archivos <strong>.meta</strong> contienen los <strong>GUIDs</strong> (identificadores únicos) que conectan assets con scripts y prefabs. Si los ignoras, Unity pierde todas las referencias al abrir el proyecto en otra máquina."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Configuración e Init",
+        "type": "list",
+        "items": [
+          "git init crea una carpeta oculta .git que contiene toda la base de datos interna del repositorio.",
+          "Nunca edites ni borres la carpeta .git manualmente — dañarías el repositorio.",
+          "git config --global aplica la configuración a todos los repositorios en esa máquina.",
+          "git clone descarga el repositorio completo y configura automáticamente la conexión remota llamada origin.",
+          "Los archivos .meta de Unity DEBEN rastrearse: son los GUIDs que mantienen las referencias entre assets.",
+          "La carpeta Library/ puede superar 1 GB — ignorarla reduce drásticamente el tamaño del repositorio."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "gitinit_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué comando convierte una carpeta normal en un repositorio Git?",
+      "options": [
+        "git init",
+        "git start",
+        "git create",
+        "git new",
+        "git begin"
+      ],
+      "correctIndex": 0,
+      "explanation": "El comando <strong>git init</strong> inicializa un repositorio Git en la carpeta actual. Crea una subcarpeta oculta <code>.git</code> que contiene toda la base de datos interna del repositorio: objetos, referencias, configuración y el historial de cambios."
+    },
+    {
+      "id": "gitinit_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué estructura crea `git init` dentro de tu carpeta de proyecto?",
+      "options": [
+        "Una carpeta oculta llamada .git",
+        "Un archivo llamado git.config en la raíz",
+        "Una carpeta llamada repository",
+        "Un archivo llamado .gitconfig",
+        "Una carpeta llamada git_data"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git init</strong> crea la carpeta oculta <strong>.git</strong> en el directorio donde se ejecuta el comando. Esta carpeta contiene toda la base de datos del repositorio: objetos <strong>blob</strong>, <strong>tree</strong> y <strong>commit</strong>; las referencias (<strong>branches</strong>, <strong>tags</strong>); y el archivo <code>HEAD</code>. Nunca debes editarla manualmente."
+    },
+    {
+      "id": "gitinit_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia fundamental entre `git init` y `git clone`?",
+      "options": [
+        "git init crea un repositorio vacío local; git clone descarga una copia completa de un repositorio remoto existente",
+        "git clone crea un repositorio vacío local; git init descarga desde internet",
+        "Ambos hacen lo mismo, solo tienen sintaxis diferente",
+        "git init solo funciona en proyectos Unity; git clone funciona con cualquier proyecto",
+        "git init requiere conexión a internet; git clone funciona sin conexión"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git init</strong> crea un repositorio nuevo y vacío en la máquina local — el historial empieza desde cero. <strong>git clone</strong> descarga una copia completa de un repositorio que ya existe en un servidor remoto, incluyendo todos los archivos y todo el historial de <strong>commits</strong>, y configura automáticamente la conexión remota <strong>origin</strong>."
+    },
+    {
+      "id": "gitinit_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué archivo de texto le indica a Git qué archivos o carpetas debe ignorar completamente?",
+      "options": [
+        ".gitignore",
+        ".gitskip",
+        "git.exclude",
+        ".ignore",
+        "git.config"
+      ],
+      "correctIndex": 0,
+      "explanation": "El archivo <strong>.gitignore</strong> contiene patrones de nombres de archivos y carpetas que Git debe ignorar. Cada línea es un patrón: <code>Library/</code> ignora esa carpeta, <code>*.tmp</code> ignora todos los archivos con extensión .tmp. Git nunca rastreará ni mostrará estos archivos en <strong>git status</strong>."
+    },
+    {
+      "id": "gitinit_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un proyecto Unity, ¿cuál carpeta genera Unity automáticamente y DEBE ignorarse en `.gitignore` para no inflar el repositorio?",
+      "options": [
+        "Library/",
+        "Assets/",
+        "Scripts/",
+        "ProjectSettings/",
+        "Packages/"
+      ],
+      "correctIndex": 0,
+      "explanation": "La carpeta <strong>Library/</strong> es generada automáticamente por Unity al importar el proyecto. Contiene la caché de importación de assets y puede superar 1 GB. Agregar <code>Library/</code> al <strong>.gitignore</strong> es fundamental: Unity la recrea sola al abrir el proyecto en cualquier máquina."
+    },
+    {
+      "id": "gitinit_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué los archivos `.meta` de Unity NO deben ignorarse en `.gitignore`?",
+      "options": [
+        "Porque contienen los GUIDs que mantienen las referencias entre prefabs, scripts y otros assets",
+        "Porque son archivos de código fuente generados por el programador",
+        "Porque GitHub los requiere para mostrar la vista previa del proyecto",
+        "Porque contienen la configuración de compilación del proyecto",
+        "Porque Unity no puede ejecutarse sin ellos aunque estén desactualizados"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cada archivo <strong>.meta</strong> contiene el <strong>GUID</strong> (identificador único global) del asset asociado. Unity usa estos GUIDs para conectar scripts con <strong>MonoBehaviours</strong>, prefabs con sus componentes, y materiales con texturas. Si ignoras los <strong>.meta</strong>, al abrir el proyecto en otra máquina todas esas referencias se rompen — los scripts se desconectan de los GameObjects."
+    },
+    {
+      "id": "gitinit_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace el comando `git config --global user.email \"dev@ejemplo.com\"`?",
+      "options": [
+        "Registra el email del autor para todos los commits realizados en esa máquina",
+        "Crea una cuenta de GitHub con ese email",
+        "Configura el email solo para el repositorio actual, sin afectar otros proyectos",
+        "Cambia el email del último commit ya realizado",
+        "Envía una notificación al email cuando hay cambios en el repositorio"
+      ],
+      "correctIndex": 0,
+      "explanation": "El flag <strong>--global</strong> hace que la configuración aplique a <em>todos</em> los repositorios del usuario en esa máquina. El <code>user.email</code> se registra como autor en cada <strong>commit</strong>. Si quisieras configurar el email solo para un repositorio específico, usarías <strong>git config</strong> sin <code>--global</code> (configuración local)."
+    },
+    {
+      "id": "gitinit_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Si ejecutas `git init` en una carpeta que ya contiene archivos de un proyecto Unity, ¿qué sucede con esos archivos?",
+      "options": [
+        "Se crea la carpeta .git sin modificar ni borrar ningún archivo existente",
+        "Se borran todos los archivos y el repositorio empieza vacío",
+        "Git rechaza el comando porque la carpeta no está vacía",
+        "Se crea un backup automático de todos los archivos antes de inicializar",
+        "Solo se rastrean automáticamente los archivos .cs; el resto se ignora"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git init</strong> únicamente crea la carpeta <code>.git</code> — no toca ningún archivo existente. Los archivos del proyecto Unity siguen intactos, pero aún no están rastreados por Git (aparecerán como <strong>untracked</strong> en <strong>git status</strong>). Deberás hacer <strong>git add</strong> y <strong>git commit</strong> para empezar a registrarlos en el historial."
+    },
+    {
+      "id": "gitinit_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Ejecutas el siguiente comando en tu terminal:",
+      "code": "cd MiJuegoUnity\ngit init",
+      "question": "¿Qué carpeta oculta fue creada dentro de MiJuegoUnity después de ejecutar estos comandos?",
+      "target": ".git",
+      "acceptedAnswers": [".git", ".git/", "la carpeta .git"],
+      "hints": [
+        "git init siempre crea una sola carpeta oculta en el directorio actual.",
+        "El nombre de esta carpeta empieza con un punto, lo que la hace oculta en sistemas Unix y Windows.",
+        "Contiene toda la base de datos interna del repositorio."
+      ],
+      "explanation": "<strong>git init</strong> crea la carpeta oculta <strong>.git</strong> en el directorio donde se ejecuta. Esta carpeta es el corazón del repositorio: contiene el historial completo, las referencias a <strong>branches</strong>, la configuración y los objetos de Git. Puedes verificarla con <code>ls -la</code> o activando la vista de archivos ocultos."
+    },
+    {
+      "id": "gitinit_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este archivo .gitignore de un proyecto Unity:",
+      "code": "Library/\nTemp/\nLogs/\nobj/\n.DS_Store",
+      "question": "¿La carpeta Library/ será rastreada por Git con este .gitignore?",
+      "target": "No",
+      "acceptedAnswers": ["No", "no", "No, está ignorada", "no se rastrea", "No se rastrea"],
+      "hints": [
+        "Cada línea del .gitignore es un patrón que Git ignorará.",
+        "Si una carpeta aparece listada en .gitignore, Git la omite completamente.",
+        "Busca si Library/ aparece en el archivo mostrado."
+      ],
+      "explanation": "<strong>No</strong>. La carpeta <code>Library/</code> aparece explícitamente en el archivo <strong>.gitignore</strong>, por lo que Git la ignora por completo — no aparecerá en <strong>git status</strong> ni en ningún <strong>commit</strong>. Esto es correcto para proyectos Unity, ya que <code>Library/</code> se regenera automáticamente y puede pesar varios GB."
+    },
+    {
+      "id": "gitinit_id_003",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Escenario: Tu profesor te comparte un proyecto Unity que está en GitHub. Quieres descargar una copia completa a tu máquina para poder trabajar en él.",
+      "code": "git _______ https://github.com/profesor/ProyectoUnity.git",
+      "question": "¿Qué comando de Git debes usar para descargar una copia completa del repositorio remoto?",
+      "target": "git clone",
+      "acceptedAnswers": ["git clone", "clone"],
+      "hints": [
+        "Este comando descarga el repositorio completo, incluyendo todo el historial de commits.",
+        "La palabra en inglés significa 'clonar' o 'hacer una copia idéntica'.",
+        "Después de ejecutarlo, Git configura automáticamente la conexión remota llamada origin."
+      ],
+      "explanation": "<strong>git clone</strong> descarga una copia completa de un repositorio remoto: todos los archivos, todo el historial de <strong>commits</strong>, y configura automáticamente la conexión al <strong>remote</strong> de origen bajo el nombre <strong>origin</strong>. Es el punto de partida cuando quieres contribuir a un proyecto existente."
+    },
+    {
+      "id": "gitinit_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este .gitignore de un proyecto Unity que tiene un error común:",
+      "code": "Library/\nTemp/\nLogs/\n*.meta",
+      "question": "¿Qué problema introduce la línea `*.meta` en este .gitignore para un proyecto Unity?",
+      "target": "se pierden las referencias entre assets",
+      "acceptedAnswers": [
+        "se pierden las referencias entre assets",
+        "se rompen las referencias",
+        "se pierden los GUIDs",
+        "Unity pierde las conexiones entre assets",
+        "los prefabs pierden sus scripts",
+        "se rompen los GUIDs de los assets"
+      ],
+      "hints": [
+        "Los archivos .meta contienen información crítica que Unity usa internamente.",
+        "Pista clave: cada .meta guarda un identificador único llamado GUID.",
+        "¿Qué usa Unity para conectar un script C# con un MonoBehaviour en un prefab?"
+      ],
+      "explanation": "Ignorar los archivos <strong>.meta</strong> es un error grave en proyectos Unity. Cada <strong>.meta</strong> contiene el <strong>GUID</strong> del asset — el identificador único que Unity usa para conectar scripts con GameObjects, prefabs con componentes, y materiales con texturas. Si otro desarrollador clona el repositorio sin los <strong>.meta</strong>, Unity asignará nuevos GUIDs y <strong>todas las referencias se romperán</strong>."
+    },
+    {
+      "id": "gitinit_id_005",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Ejecutas el siguiente comando:",
+      "code": "git config --global user.name \"Carlos Mendoza\"",
+      "question": "¿Qué nombre aparecerá como autor en los próximos commits realizados en esa máquina?",
+      "target": "Carlos Mendoza",
+      "acceptedAnswers": ["Carlos Mendoza", "\"Carlos Mendoza\""],
+      "hints": [
+        "El comando git config --global user.name establece el nombre del autor.",
+        "El flag --global significa que aplica a todos los repositorios en esa máquina.",
+        "El nombre es exactamente el texto entre comillas."
+      ],
+      "explanation": "El comando configura el <strong>user.name</strong> globalmente: todos los <strong>commits</strong> futuros realizados en esa máquina mostrarán <strong>Carlos Mendoza</strong> como autor. Esta información queda registrada de forma permanente en el historial del repositorio junto con cada <strong>commit</strong>."
+    },
+    {
+      "id": "gitinit_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Después de ejecutar `git clone`, Git configura automáticamente una conexión al repositorio remoto de origen.",
+      "code": "git clone https://github.com/equipo/ProyectoFinal.git\n# Git descarga el repositorio y configura el remote automáticamente",
+      "question": "¿Cómo llama Git por defecto a esa conexión remota configurada automáticamente al hacer clone?",
+      "target": "origin",
+      "acceptedAnswers": ["origin", "\"origin\""],
+      "hints": [
+        "Es una palabra en inglés que significa 'origen' o 'fuente'.",
+        "Es el nombre estándar que Git usa para el repositorio del que hiciste clone.",
+        "Aparece cuando ejecutas git remote -v."
+      ],
+      "explanation": "Al hacer <strong>git clone</strong>, Git configura automáticamente una conexión remota llamada <strong>origin</strong> que apunta al URL del repositorio clonado. Este nombre es una convención — técnicamente podrías renombrarlo, pero <strong>origin</strong> es el estándar universal. Puedes verlo con <code>git remote -v</code>."
+    },
+    {
+      "id": "gitinit_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para inicializar un repositorio Git en la carpeta actual:",
+      "codeTemplate": "git ______",
+      "expectedAnswer": "init",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el subcomando...",
+      "hints": [
+        "Este comando 'inicializa' un repositorio Git.",
+        "La palabra en inglés significa 'inicializar' o 'arrancar'."
+      ],
+      "explanation": "<strong>git init</strong> es el comando que convierte cualquier carpeta en un repositorio Git creando la subcarpeta oculta <code>.git</code>. Es siempre el primer paso cuando comienzas un proyecto nuevo con control de versiones."
+    },
+    {
+      "id": "gitinit_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para configurar tu nombre de usuario globalmente en Git:",
+      "codeTemplate": "git config ______ user.name \"Dev Unity\"",
+      "expectedAnswer": "--global",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el flag de alcance global...",
+      "hints": [
+        "El flag que hace que la configuración aplique a TODOS los repositorios de la máquina empieza con --.",
+        "La palabra significa 'global'."
+      ],
+      "explanation": "El flag <strong>--global</strong> hace que <code>git config</code> guarde la configuración en el archivo <code>~/.gitconfig</code> del usuario, aplicándola a todos los repositorios de esa máquina. Sin este flag, la configuración sería <strong>local</strong> (solo para el repositorio actual)."
+    },
+    {
+      "id": "gitinit_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para descargar una copia de un repositorio remoto de GitHub:",
+      "codeTemplate": "git ______ https://github.com/usuario/mi-juego.git",
+      "expectedAnswer": "clone",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el subcomando...",
+      "hints": [
+        "Este comando crea una 'copia idéntica' del repositorio remoto.",
+        "La palabra en inglés significa 'clonar'."
+      ],
+      "explanation": "<strong>git clone</strong> descarga el repositorio completo: todos los archivos y todo el historial de <strong>commits</strong>. También configura automáticamente la conexión al repositorio remoto bajo el nombre <strong>origin</strong>, lista para hacer <strong>push</strong> y <strong>pull</strong>."
+    },
+    {
+      "id": "gitinit_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea exacta que debe ir en el archivo .gitignore para ignorar la carpeta Library/ de Unity:",
+      "codeTemplate": null,
+      "expectedAnswer": "Library/",
+      "alternateAnswers": ["Library", "/Library/"],
+      "placeholder": "Escribe la entrada del .gitignore...",
+      "hints": [
+        "En .gitignore, una carpeta se ignora escribiendo su nombre seguido de /.",
+        "La carpeta se llama Library (con L mayúscula)."
+      ],
+      "explanation": "En el archivo <strong>.gitignore</strong>, escribir <code>Library/</code> le dice a Git que ignore completamente esa carpeta y todo su contenido. La barra diagonal al final indica que es una carpeta (no un archivo). Esta entrada es esencial en cualquier proyecto Unity para evitar agregar la caché de importación al repositorio."
+    },
+    {
+      "id": "gitinit_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el comando para ver toda la configuración actual de Git en la máquina:",
+      "codeTemplate": "git config ______",
+      "expectedAnswer": "--list",
+      "alternateAnswers": ["-l"],
+      "placeholder": "Escribe el flag para listar la configuración...",
+      "hints": [
+        "El flag para 'listar' todos los valores de configuración empieza con --.",
+        "La palabra en inglés significa 'lista'."
+      ],
+      "explanation": "<code>git config <strong>--list</strong></code> muestra todas las entradas de configuración activas: globales (de <code>~/.gitconfig</code>) y locales (de <code>.git/config</code>). Es útil para verificar que <code>user.name</code> y <code>user.email</code> estén configurados correctamente antes de hacer tu primer <strong>commit</strong>."
+    },
+    {
+      "id": "gitinit_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la entrada de .gitignore que ignora TODOS los archivos con extensión .log (usando comodín):",
+      "codeTemplate": null,
+      "expectedAnswer": "*.log",
+      "alternateAnswers": ["*.log/"],
+      "placeholder": "Escribe el patrón con comodín...",
+      "hints": [
+        "El símbolo * en .gitignore es un comodín que representa cualquier nombre de archivo.",
+        "El patrón debe terminar con la extensión .log."
+      ],
+      "explanation": "En <strong>.gitignore</strong>, el asterisco <code>*</code> es un comodín que representa cualquier secuencia de caracteres. El patrón <code>*.log</code> le dice a Git que ignore <em>cualquier</em> archivo cuyo nombre termine en <code>.log</code>, sin importar cómo se llame. El mismo patrón sirve para <code>*.tmp</code>, <code>*.bak</code>, etc."
+    }
+  ]
+}

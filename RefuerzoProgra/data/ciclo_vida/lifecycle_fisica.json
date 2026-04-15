@@ -1,0 +1,371 @@
+{
+  "id": "lifecycle_fisica",
+  "title": "Métodos de Física y Colisión",
+  "icon": "💥",
+  "color": "#00ACC1",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "OnCollision vs OnTrigger — La Diferencia Fundamental",
+        "type": "definition",
+        "content": "Unity tiene dos tipos de detección de contacto físico:<br><br><strong>OnCollision</strong> — ocurre cuando dos colisionadores sólidos chocan físicamente. Implica física real: rebotes, fuerzas, fricción. Para que funcione, al menos uno de los objetos debe tener <strong>Rigidbody</strong>.<br><br><strong>OnTrigger</strong> — ocurre cuando un objeto entra en una zona de detección sin interacción física real. Los objetos se atraviesan mutuamente. Se activa marcando <strong>Is Trigger</strong> en el colisionador. Úsalo para: zonas de daño, checkpoints, áreas de recolección de ítems.<br><br>La diferencia clave: si <code>isTrigger = true</code>, el colisionador no tiene física real — solo detecta superposición."
+      },
+      {
+        "id": "doc-2",
+        "title": "Métodos de Colisión Física",
+        "type": "code",
+        "content": "// Se llama cuando ENTRA en contacto con otro colisionador físico\nvoid OnCollisionEnter(Collision collision)\n{\n    Debug.Log(\"Chocó con: \" + collision.gameObject.name);\n    // collision.contacts → puntos de contacto\n    // collision.relativeVelocity → velocidad relativa del impacto\n}\n\n// Se llama cada frame mientras SIGUE en contacto\nvoid OnCollisionStay(Collision collision)\n{\n    // Útil para: daño continuo al estar aplastado contra una pared\n}\n\n// Se llama cuando SE SEPARA del colisionador\nvoid OnCollisionExit(Collision collision)\n{\n    // Útil para: detectar cuándo el jugador toca el suelo y lo deja\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Métodos de Trigger (Zona de Detección)",
+        "type": "code",
+        "content": "// Se llama cuando ENTRA en la zona trigger\nvoid OnTriggerEnter(Collider other)\n{\n    if (other.CompareTag(\"Player\"))\n    {\n        // El jugador entró a la zona\n        ActivarCheckpoint();\n    }\n}\n\n// Se llama cada frame mientras PERMANECE dentro del trigger\nvoid OnTriggerStay(Collider other)\n{\n    // Útil para: daño de zona venenosa por segundo\n    vida -= danoPorSegundo * Time.deltaTime;\n}\n\n// Se llama cuando SALE de la zona trigger\nvoid OnTriggerExit(Collider other)\n{\n    // Útil para: apagar efectos al salir de una zona de fuego\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "¿Cuándo Usar Collision vs Trigger?",
+        "type": "analogy",
+        "content": "Imagina una puerta giratoria. <strong>OnCollision</strong> es como chocar físicamente contra ella — hay resistencia, rebotes, fuerzas reales. <strong>OnTrigger</strong> es como un sensor de movimiento invisible — puedes atravesarlo sin resistencia, pero activa algo al detectarte. Usa <strong>OnCollision</strong> para: plataformas, paredes, suelo, físicas de objetos. Usa <strong>OnTrigger</strong> para: zonas de daño, checkpoints, ítem pickups, puertas automáticas, áreas de boss, zonas de diálogo. La regla de oro: si el jugador puede <em>atravesar</em> la zona, es un <strong>trigger</strong>."
+      },
+      {
+        "id": "doc-5",
+        "title": "Requisitos para que Funcionen los Callbacks",
+        "type": "list",
+        "items": [
+          "Para OnCollision: al menos uno de los dos objetos debe tener Rigidbody; ambos necesitan Collider.",
+          "Para OnTrigger: el collider del objeto marcado como trigger (isTrigger = true) detecta entradas; al menos uno de los objetos necesita Rigidbody.",
+          "OnTriggerEnter recibe Collider (sin física); OnCollisionEnter recibe Collision (con datos físicos como velocidad y puntos de contacto).",
+          "OnCollisionStay puede ser pesado en rendimiento — úsalo con moderación.",
+          "CompareTag es más eficiente que comparar gameObject.tag con == para filtrar qué objeto entró.",
+          "En Unity 3D existe OnCollisionEnter; en Unity 2D se usa OnCollisionEnter2D (con el sufijo 2D)."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "lcf_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué diferencia a un colisionador con `isTrigger = true` de uno normal?",
+      "options": [
+        "El trigger no tiene física real — los objetos lo atraviesan, pero detecta cuando algo lo superpone",
+        "El trigger repele a los objetos con una fuerza magnética en lugar de chocar con ellos",
+        "El trigger solo funciona con objetos que tienen el tag 'Trigger' asignado",
+        "El trigger se activa únicamente con objetos que tienen Rigidbody kinematic",
+        "No hay diferencia en comportamiento, solo en qué método se llama en el script"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando <code>isTrigger = true</code>, el colisionador funciona como una zona de detección: los objetos lo <em>atraviesan</em> sin resistencia física, pero Unity llama los métodos <strong>OnTriggerEnter/Stay/Exit</strong> cuando algo superpone el área. Es ideal para checkpoints, zonas de daño, pickups — cualquier cosa donde no quieres física real, solo detección."
+    },
+    {
+      "id": "lcf_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué método se llama cuando el jugador toca por primera vez el suelo (colisión física real)?",
+      "options": [
+        "OnCollisionEnter",
+        "OnTriggerEnter",
+        "OnCollisionStay",
+        "OnContactBegin",
+        "OnPhysicsEnter"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnCollisionEnter</strong> se llama exactamente una vez en el momento en que dos colisionadores físicos hacen contacto por primera vez. Recibe un parámetro de tipo <code>Collision</code> que contiene información como la velocidad del impacto, los puntos de contacto y el <strong>GameObject</strong> con el que chocó."
+    },
+    {
+      "id": "lcf_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un área de zona venenosa debe hacer daño continuo mientras el jugador esté dentro. ¿Qué método y qué tipo de colisionador son los más adecuados?",
+      "options": [
+        "OnTriggerStay con isTrigger = true — el jugador atraviesa la zona y recibe daño cada frame",
+        "OnCollisionStay con isTrigger = false — la zona bloquea físicamente al jugador",
+        "OnTriggerEnter con isTrigger = true — solo se activa cuando entra, no continuamente",
+        "Update con Physics.OverlapSphere — verifica colisiones manualmente cada frame",
+        "OnCollisionEnter repetido mediante InvokeRepeating cada segundo"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnTriggerStay</strong> se llama cada frame mientras un objeto permanece dentro del área trigger. Al multiplicar el daño por <code>Time.deltaTime</code>, el daño es proporcional al tiempo — independiente del framerate. El colisionador de la zona debe tener <code>isTrigger = true</code> para que el jugador pueda moverse por ella sin ser bloqueado físicamente."
+    },
+    {
+      "id": "lcf_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué requisito mínimo deben cumplir los objetos para que OnCollisionEnter se llame correctamente?",
+      "options": [
+        "Al menos uno de los dos objetos debe tener Rigidbody, y ambos deben tener Collider",
+        "Ambos objetos deben tener Rigidbody y Collider para que la colisión se registre",
+        "Solo el objeto que tiene el script con OnCollisionEnter necesita Rigidbody",
+        "Ningún Rigidbody es necesario — basta con que ambos tengan Collider",
+        "El objeto debe tener isTrigger = false y Rigidbody kinematic activo"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para que <strong>OnCollisionEnter</strong> funcione: ambos objetos necesitan <strong>Collider</strong>, y al menos uno de ellos necesita un <strong>Rigidbody</strong> no-kinematic. Sin <strong>Rigidbody</strong>, Unity no simula la física entre los objetos y los callbacks de colisión no se activan. El objeto estático (suelo, pared) puede no tener <strong>Rigidbody</strong>."
+    },
+    {
+      "id": "lcf_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia entre el parámetro de OnCollisionEnter y OnTriggerEnter?",
+      "options": [
+        "OnCollisionEnter recibe Collision (con datos físicos); OnTriggerEnter recibe Collider (solo la referencia al colisionador)",
+        "OnTriggerEnter recibe Collision con más datos; OnCollisionEnter recibe solo el nombre del objeto",
+        "Ambos reciben exactamente el mismo parámetro de tipo Collider",
+        "OnCollisionEnter no recibe ningún parámetro; OnTriggerEnter recibe el GameObject",
+        "Ambos reciben Collision pero OnTriggerEnter ignora los datos físicos automáticamente"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnCollisionEnter</strong> recibe un parámetro de tipo <code><strong>Collision</strong></code> que contiene datos físicos: <code>collision.relativeVelocity</code> (velocidad del impacto), <code>collision.contacts</code> (puntos de contacto), y <code>collision.gameObject</code> (objeto con el que chocó). <strong>OnTriggerEnter</strong> recibe un <code><strong>Collider</strong></code> — solo la referencia al colisionador que entró, sin datos físicos."
+    },
+    {
+      "id": "lcf_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué método se usa para detectar cuando el jugador recoge un ítem en el suelo (el ítem no debe bloquearlo físicamente)?",
+      "options": [
+        "OnTriggerEnter — con isTrigger = true en el colisionador del ítem",
+        "OnCollisionEnter — con Rigidbody en el ítem para detectar el contacto",
+        "OnTriggerStay — porque el jugador puede estar encima del ítem varios frames",
+        "OnCollisionExit — cuando el jugador deja de tocar el ítem lo recoge",
+        "Update — verificando manualmente la distancia entre jugador e ítem cada frame"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para un pickup de ítem, usas <strong>OnTriggerEnter</strong> con el colisionador del ítem marcado como <code>isTrigger = true</code>. El jugador puede atravesar el ítem (no lo bloquea físicamente) y cuando su colisionador superpone el del ítem, se llama <strong>OnTriggerEnter</strong> en el script del ítem. Allí activas la lógica de recolección y destruyes el ítem."
+    },
+    {
+      "id": "lcf_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuándo se llama OnCollisionExit?",
+      "options": [
+        "Cuando dos colisionadores que estaban en contacto se separan",
+        "Cuando el objeto sale del área de visión de la cámara",
+        "Cuando el Rigidbody del objeto es destruido",
+        "Cuando el objeto sale de los límites de la escena",
+        "Cuando el jugador presiona la tecla de escape durante una colisión"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnCollisionExit</strong> se llama exactamente una vez en el momento en que dos colisionadores que estaban en contacto se separan. Es el complemento de <strong>OnCollisionEnter</strong>. Útil para: detectar cuándo el jugador deja de tocar el suelo (para salto), cuando un proyectil rebota y se aleja, o cuando un objeto deja de empujar a otro."
+    },
+    {
+      "id": "lcf_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un checkpoint invisible que activa una animación cuando el jugador lo pasa. ¿Cuál es la configuración correcta del GameObject del checkpoint?",
+      "options": [
+        "Collider con isTrigger = true (sin Rigidbody en el checkpoint) + script con OnTriggerEnter",
+        "Collider con isTrigger = false + Rigidbody + script con OnCollisionEnter",
+        "Collider con isTrigger = true + Rigidbody kinematic + script con OnCollisionEnter",
+        "Solo script con Update que verifique la distancia al jugador manualmente",
+        "Collider con isTrigger = false + script con OnTriggerEnter para mayor precisión"
+      ],
+      "correctIndex": 0,
+      "explanation": "El checkpoint invisible debe tener: un <strong>Collider</strong> con <code>isTrigger = true</code> (para que el jugador lo atraviese sin ser bloqueado) y el método <strong>OnTriggerEnter</strong> en su script. El checkpoint no necesita <strong>Rigidbody</strong> porque es estático — el <strong>Rigidbody</strong> del jugador basta para que el sistema de física de Unity detecte la superposición."
+    },
+    {
+      "id": "lcf_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script de una zona de daño:",
+      "code": "void OnTriggerEnter(Collider other)\n{\n    if (other.CompareTag(\"Player\"))\n        other.GetComponent<Health>().TakeDamage(25);\n}",
+      "question": "¿Qué propiedad debe tener el Collider de esta zona de daño para que OnTriggerEnter se active?",
+      "target": "isTrigger = true",
+      "acceptedAnswers": ["isTrigger = true", "isTrigger true", "Is Trigger activado", "Is Trigger = true"],
+      "hints": [
+        "OnTriggerEnter solo se llama si el colisionador tiene una propiedad específica activada.",
+        "La propiedad indica que el colisionador es una 'zona de detección' sin física real.",
+        "Se configura en el Inspector de Unity en el componente Collider."
+      ],
+      "explanation": "Para que los métodos <strong>OnTrigger*</strong> se activen, el <strong>Collider</strong> debe tener <code><strong>isTrigger = true</strong></code>. Sin esta propiedad, el colisionador tendría física real y se llamarían los métodos <strong>OnCollision*</strong> en lugar de los de trigger."
+    },
+    {
+      "id": "lcf_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Un estudiante quiere hacer daño continuo mientras el enemigo está dentro de un área de fuego. Usó este método:",
+      "code": "void OnTriggerEnter(Collider other)\n{\n    other.GetComponent<Enemy>().TakeDamage(danoTotal);\n}",
+      "question": "¿Qué método debería usar en lugar de OnTriggerEnter para que el daño sea continuo mientras el enemigo esté dentro?",
+      "target": "OnTriggerStay",
+      "acceptedAnswers": ["OnTriggerStay", "void OnTriggerStay"],
+      "hints": [
+        "OnTriggerEnter solo se llama UNA VEZ al entrar.",
+        "Necesitas un método que se llame cada frame mientras el objeto esté dentro.",
+        "Es el equivalente de OnCollisionStay pero para triggers."
+      ],
+      "explanation": "<strong>OnTriggerEnter</strong> se llama solo una vez al entrar. Para daño continuo, usa <strong>OnTriggerStay</strong> que se llama cada frame mientras el objeto permanece dentro del trigger. Combinado con <code>Time.deltaTime</code>: <code>TakeDamage(danoPorSegundo * Time.deltaTime)</code>, el daño será consistente independientemente del framerate."
+    },
+    {
+      "id": "lcf_id_003",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza estas dos firmas de métodos:",
+      "code": "void OnCollisionEnter(Collision collision) { }\nvoid OnTriggerEnter(Collider other) { }",
+      "question": "¿Cuál es el tipo del parámetro en OnCollisionEnter?",
+      "target": "Collision",
+      "acceptedAnswers": ["Collision", "Collision collision"],
+      "hints": [
+        "Observa el tipo antes del nombre de la variable en cada firma.",
+        "El tipo de OnCollisionEnter contiene datos físicos como velocidad y puntos de contacto."
+      ],
+      "explanation": "El parámetro de <strong>OnCollisionEnter</strong> es de tipo <strong>Collision</strong> (con C mayúscula), que contiene datos físicos completos. El de <strong>OnTriggerEnter</strong> es de tipo <code>Collider</code> — solo la referencia al colisionador. Esta diferencia refleja que las colisiones físicas tienen más información (fuerzas, puntos de contacto) que las zonas trigger."
+    },
+    {
+      "id": "lcf_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Escenario: Quieres detectar cuando el jugador está parado sobre el suelo (para habilitar el salto). El suelo es una plataforma física real.",
+      "code": "void OnCollision______(Collision collision)\n{\n    if (collision.gameObject.CompareTag(\"Ground\"))\n        estaEnElSuelo = true;\n}",
+      "question": "¿Qué sufijo completa el nombre del método para detectar el momento exacto de contacto?",
+      "target": "Enter",
+      "acceptedAnswers": ["Enter", "OnCollisionEnter"],
+      "hints": [
+        "Necesitas detectar el momento exacto en que el jugador TOCA el suelo por primera vez.",
+        "Los sufijos disponibles son Enter, Stay y Exit.",
+        "'Entrar en contacto' corresponde a..."
+      ],
+      "explanation": "<strong>OnCollisionEnter</strong> se llama exactamente en el momento en que el jugador toca el suelo por primera vez. Aquí estableces <code>estaEnElSuelo = true</code>. En el método complementario <strong>OnCollisionExit</strong> establecerías <code>estaEnElSuelo = false</code> cuando el jugador despegue del suelo."
+    },
+    {
+      "id": "lcf_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza la configuración de estos dos objetos en Unity:",
+      "code": "// Objeto A: Jugador\n// - Rigidbody (no kinematic)\n// - Capsule Collider (isTrigger = false)\n\n// Objeto B: Moneda\n// - Circle Collider 2D (isTrigger = true)\n// - Script con OnTriggerEnter2D",
+      "question": "¿Qué método se llamará cuando el jugador toque la moneda, y en qué objeto se ejecutará?",
+      "target": "OnTriggerEnter2D en la Moneda",
+      "acceptedAnswers": [
+        "OnTriggerEnter2D en la Moneda",
+        "OnTriggerEnter2D en el script de la moneda",
+        "OnTriggerEnter2D",
+        "se llama OnTriggerEnter2D en la Moneda"
+      ],
+      "hints": [
+        "La Moneda tiene isTrigger = true, por lo que sus callbacks son OnTrigger*.",
+        "El script con el método OnTriggerEnter2D está en la Moneda.",
+        "El Jugador tiene Rigidbody — esto satisface el requisito para que el trigger detecte la entrada."
+      ],
+      "explanation": "Como la Moneda tiene <code>isTrigger = true</code>, se llama <strong>OnTriggerEnter2D</strong> (versión 2D) en el script de la Moneda. El Jugador tiene <strong>Rigidbody</strong>, que es el requisito mínimo para que el sistema de física detecte la superposición. Los callbacks <strong>OnTrigger*</strong> pueden llamarse en cualquiera de los dos objetos involucrados, siempre que uno tenga <code>isTrigger = true</code>."
+    },
+    {
+      "id": "lcf_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método para saber si es correcto:",
+      "code": "// Objetivo: detectar cuando el jugador DEJA de estar en una zona de niebla\nvoid OnTriggerEnter(Collider other)\n{\n    if (other.CompareTag(\"Player\"))\n        QuitarEfectoNiebla();\n}",
+      "question": "¿Qué método debería usarse para detectar cuando el jugador SALE de la zona de niebla?",
+      "target": "OnTriggerExit",
+      "acceptedAnswers": ["OnTriggerExit", "void OnTriggerExit"],
+      "hints": [
+        "OnTriggerEnter detecta la entrada. ¿Cuál detecta la salida?",
+        "Los tres sufijos son: Enter (entra), Stay (permanece), Exit (sale)."
+      ],
+      "explanation": "<strong>OnTriggerExit</strong> se llama cuando un objeto <em>sale</em> de la zona trigger — es el complemento de <strong>OnTriggerEnter</strong>. El código correcto sería: <code>OnTriggerEnter</code> para activar el efecto de niebla al entrar, y <code>OnTriggerExit</code> para quitarlo al salir."
+    },
+    {
+      "id": "lcf_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre del método que se llama cuando el jugador ENTRA por primera vez en una zona trigger:",
+      "codeTemplate": "void ______________(Collider other)\n{\n    Debug.Log(\"Entró al área: \" + other.name);\n}",
+      "expectedAnswer": "OnTriggerEnter",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Los métodos de trigger empiezan con 'OnTrigger'.",
+        "El sufijo indica que el objeto ENTRÓ a la zona."
+      ],
+      "explanation": "<strong>OnTriggerEnter</strong> se llama exactamente una vez cuando un objeto entra por primera vez en la zona de un colisionador con <code>isTrigger = true</code>. Recibe el parámetro <code>Collider other</code> que referencia al colisionador que entró."
+    },
+    {
+      "id": "lcf_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre del método que se llama en cada frame mientras un objeto físico (no trigger) está en contacto:",
+      "codeTemplate": "void ________________(Collision collision)\n{\n    // Aplasta daño continuo\n    vida -= daño * Time.deltaTime;\n}",
+      "expectedAnswer": "OnCollisionStay",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Es un método de Collision (no Trigger) que se llama mientras el contacto permanece.",
+        "El sufijo indica que el contacto 'permanece'."
+      ],
+      "explanation": "<strong>OnCollisionStay</strong> se llama cada frame mientras dos colisionadores físicos siguen en contacto. Útil para daño continuo por aplastamiento u otras lógicas que dependen de contacto físico sostenido. Multiplica siempre por <code>Time.deltaTime</code> para que el efecto sea independiente del framerate."
+    },
+    {
+      "id": "lcf_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método completo que destruye el GameObject actual cuando cualquier objeto con el tag 'Enemy' entra en su trigger:",
+      "codeTemplate": null,
+      "expectedAnswer": "void OnTriggerEnter(Collider other) { if (other.CompareTag(\"Enemy\")) Destroy(gameObject); }",
+      "alternateAnswers": [
+        "void OnTriggerEnter(Collider other)\n{\n    if (other.CompareTag(\"Enemy\"))\n        Destroy(gameObject);\n}"
+      ],
+      "placeholder": "Escribe el método completo...",
+      "hints": [
+        "El método para trigger se llama OnTriggerEnter y recibe Collider other.",
+        "Usa CompareTag para verificar el tag del objeto que entró.",
+        "Destroy(gameObject) destruye el objeto actual."
+      ],
+      "explanation": "<code>void <strong>OnTriggerEnter</strong>(Collider other)</code> recibe el <strong>Collider</strong> del objeto que entró. <code>other.CompareTag(\"Enemy\")</code> verifica el tag de forma eficiente. <code>Destroy(gameObject)</code> destruye el objeto que tiene este script. Este patrón es típico para proyectiles que desaparecen al tocar enemigos."
+    },
+    {
+      "id": "lcf_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para que la función de colisión reciba los datos físicos del impacto (velocidad, puntos de contacto):",
+      "codeTemplate": "void OnCollisionEnter(__________ collision)\n{\n    float impacto = collision.relativeVelocity.magnitude;\n}",
+      "expectedAnswer": "Collision",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo del parámetro...",
+      "hints": [
+        "El parámetro de OnCollisionEnter tiene un tipo específico que contiene datos físicos.",
+        "Es diferente al tipo del parámetro de OnTriggerEnter.",
+        "El tipo empieza con C mayúscula."
+      ],
+      "explanation": "El parámetro de <strong>OnCollisionEnter</strong> es de tipo <strong>Collision</strong>. Este objeto contiene toda la información del impacto físico: <code>collision.relativeVelocity</code> (velocidad relativa), <code>collision.contacts</code> (puntos de contacto), <code>collision.gameObject</code> (objeto con el que chocó). En contraste, <strong>OnTriggerEnter</strong> recibe solo un <code>Collider</code>."
+    },
+    {
+      "id": "lcf_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método que se llama cuando el jugador SALE de la zona trigger del checkpoint:",
+      "codeTemplate": "void OnTrigger______(Collider other)\n{\n    if (other.CompareTag(\"Player\"))\n        DesactivarIndicadorCheckpoint();\n}",
+      "expectedAnswer": "Exit",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el sufijo del método...",
+      "hints": [
+        "Los sufijos de los métodos de trigger son: Enter, Stay, Exit.",
+        "Necesitas el que indica que el objeto SALIÓ de la zona."
+      ],
+      "explanation": "<strong>OnTriggerExit</strong> se llama cuando un objeto sale de la zona de un trigger. Junto con <strong>OnTriggerEnter</strong> (al entrar) y <strong>OnTriggerStay</strong> (mientras está dentro), forman el conjunto completo de métodos de detección de zonas. El sufijo <strong>Exit</strong> = salida."
+    },
+    {
+      "id": "lcf_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método que detecta cuando el jugador aterriza en el suelo (primer contacto físico), y establece `estaEnSuelo = true`:",
+      "codeTemplate": null,
+      "expectedAnswer": "void OnCollisionEnter(Collision collision) { if (collision.gameObject.CompareTag(\"Ground\")) estaEnSuelo = true; }",
+      "alternateAnswers": [
+        "void OnCollisionEnter(Collision col)\n{\n    if (col.gameObject.CompareTag(\"Ground\"))\n        estaEnSuelo = true;\n}"
+      ],
+      "placeholder": "Escribe el método completo...",
+      "hints": [
+        "Necesitas detectar el primer contacto físico — es una colisión, no un trigger.",
+        "El método de colisión que detecta la entrada empieza con OnCollision y termina con Enter.",
+        "El parámetro es de tipo Collision, y puedes acceder al GameObject con collision.gameObject."
+      ],
+      "explanation": "<code>void <strong>OnCollisionEnter</strong>(Collision collision)</code> detecta el primer contacto físico. Verificar el <strong>tag</strong> con <code>collision.gameObject.CompareTag(\"Ground\")</code> asegura que solo reaccionamos al suelo y no a otras colisiones. En el método <strong>OnCollisionExit</strong> correspondiente, establecerías <code>estaEnSuelo = false</code>."
+    }
+  ]
+}

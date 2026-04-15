@@ -244,7 +244,7 @@
       "title": "Patrones Unity",
       "icon": "🎮",
       "description": "MonoBehaviour, Componentes, Prefabs y ScriptableObjects",
-      "color": "#FF5722",
+      "color": "#4CAF50",
       "sections": [
         {
           "id": "monobehaviour",
@@ -295,6 +295,65 @@
         "dataFile": "data/patrones_unity/exam.json",
         "color": "#FFD700",
         "unlockRequirement": "scriptableobjects",
+        "isExam": true
+      }
+    },
+    {
+      "id": "git",
+      "title": "Git",
+      "icon": "🐙",
+      "description": "Control de versiones con Git: init, commits, branches y trabajo remoto con GitHub",
+      "color": "#F05032",
+      "sections": [
+        {
+          "id": "git_init",
+          "title": "Configuración e Init",
+          "icon": "🐙",
+          "description": "git init, git clone, git config y el archivo .gitignore en proyectos Unity",
+          "dataFile": "data/git/git_init.json",
+          "color": "#F05032",
+          "unlockRequirement": "unity_exam",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "git_commits",
+          "title": "Staging y Commits",
+          "icon": "📝",
+          "description": "git add, git commit, git status, git diff y buenas prácticas de mensajes",
+          "dataFile": "data/git/git_commits.json",
+          "color": "#E53935",
+          "unlockRequirement": "git_init",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "git_branches",
+          "title": "Branches",
+          "icon": "🌿",
+          "description": "git branch, git switch, git merge, fast-forward vs three-way merge y conflictos",
+          "dataFile": "data/git/git_branches.json",
+          "color": "#C62828",
+          "unlockRequirement": "git_commits",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "git_remote",
+          "title": "Trabajo Remoto",
+          "icon": "☁️",
+          "description": "git remote, git push, git pull, git fetch, origin y Pull Requests en GitHub",
+          "dataFile": "data/git/git_remote.json",
+          "color": "#B71C1C",
+          "unlockRequirement": "git_branches",
+          "correctAnswersToUnlockNext": 5
+        }
+      ],
+      "exam": {
+        "id": "git_exam",
+        "title": "Examen Final: Git",
+        "icon": "🎓",
+        "description": "20 desafíos: secuencias de comandos, interpretar git log, resolver escenarios de conflicto y flujos de trabajo",
+        "dataFile": "data/git/exam.json",
+        "color": "#FFD700",
+        "unlockRequirement": "git_remote",
         "isExam": true
       }
     }

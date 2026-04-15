@@ -1,0 +1,370 @@
+{
+  "id": "ienumerator",
+  "title": "IEnumerator y Corrutinas",
+  "icon": "⏱️",
+  "color": "#00ACC1",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es una Corrutina?",
+        "type": "definition",
+        "content": "Una <strong>corrutina</strong> (<strong>Coroutine</strong>) es una función especial en Unity que puede <em>pausar su ejecución</em> en un punto, devolver el control al engine por uno o varios frames, y luego <em>reanudar</em> exactamente donde se quedó. Son ideales para tareas que suceden a lo largo del tiempo: esperar 2 segundos, realizar una transición gradual, animar paso a paso. Se declaran con el tipo de retorno <strong>IEnumerator</strong> y usan la palabra clave <strong>yield return</strong> para pausar. Se inician con <strong>StartCoroutine</strong> y se detienen con <strong>StopCoroutine</strong>."
+      },
+      {
+        "id": "doc-2",
+        "title": "yield return — Tipos de Pausa",
+        "type": "code",
+        "content": "// Espera hasta el siguiente frame\nyield return null;\n\n// Espera N segundos de tiempo de juego\nyield return new WaitForSeconds(2f);\n\n// Espera N segundos de tiempo real (no afectado por Time.timeScale)\nyield return new WaitForSecondsRealtime(2f);\n\n// Espera hasta el siguiente FixedUpdate\nyield return new WaitForFixedUpdate();\n\n// Espera hasta que una condición sea true\nyield return new WaitUntil(() => estaEnElSuelo);\n\n// Espera mientras una condición sea true\nyield return new WaitWhile(() => estaVivo);\n\n// Espera a que otra corrutina termine\nyield return StartCoroutine(OtraCorrutina());"
+      },
+      {
+        "id": "doc-3",
+        "title": "StartCoroutine y StopCoroutine",
+        "type": "code",
+        "content": "// Declarar una corrutina\nIEnumerator EsperarYDisparar()\n{\n    Debug.Log(\"Preparando disparo...\");\n    yield return new WaitForSeconds(1.5f);  // Pausa 1.5 segundos\n    Debug.Log(\"¡FUEGO!\");\n    Instantiate(proyectil, transform.position, Quaternion.identity);\n}\n\n// Iniciar la corrutina\nStartCoroutine(EsperarYDisparar());\n\n// Guardar referencia para poder detenerla\nCoroutine miCorrutina = StartCoroutine(EsperarYDisparar());\n\n// Detener una corrutina específica\nStopCoroutine(miCorrutina);\n\n// Detener TODAS las corrutinas del MonoBehaviour\nStopAllCoroutines();"
+      },
+      {
+        "id": "doc-4",
+        "title": "Corrutina vs Update — ¿Cuándo Usar Cada Una?",
+        "type": "analogy",
+        "content": "Imagina que tienes que hervir agua para el té. Con <strong>Update</strong>, verificarías la temperatura cada frame: <em>¿llegó a 100°? No. ¿Llegó a 100°? No...</em> — funciona pero es repetitivo. Con una <strong>Coroutine</strong>, simplemente dirías: <em>\"avísame cuando llegue a 100°\"</em> y seguirías haciendo otras cosas. La <strong>Coroutine</strong> es más limpia para lógica secuencial con tiempos.<br><br>Usa <strong>Update</strong> para: lógica continua (movimiento del jugador, detección de input, estado del juego).<br>Usa <strong>Coroutine</strong> para: esperar N segundos, secuencias paso a paso, animaciones programáticas, carga de escenas con pantalla de transición."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Corrutinas",
+        "type": "list",
+        "items": [
+          "Una Coroutine debe tener tipo de retorno IEnumerator — no void, no int, solo IEnumerator.",
+          "yield return null espera exactamente un frame antes de continuar.",
+          "yield return new WaitForSeconds(n) espera n segundos de tiempo de juego (se afecta por Time.timeScale).",
+          "WaitForSecondsRealtime no se afecta por Time.timeScale — útil para pausas de UI.",
+          "Una Coroutine se detiene si el GameObject es desactivado o destruido.",
+          "StopCoroutine solo funciona si guardas la referencia de la Coroutine devuelta por StartCoroutine."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ien_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué tipo de retorno debe tener una función para ser una corrutina en Unity?",
+      "options": [
+        "IEnumerator",
+        "void",
+        "Coroutine",
+        "IEnumerable",
+        "YieldInstruction"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una <strong>corrutina</strong> en Unity debe declararse con el tipo de retorno <strong>IEnumerator</strong>. Este tipo de la biblioteca de C# es lo que permite el uso de <strong>yield return</strong> dentro de la función. Sin <code>IEnumerator</code>, Unity no puede iniciar la función con <strong>StartCoroutine</strong>."
+    },
+    {
+      "id": "ien_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace `yield return null` dentro de una corrutina?",
+      "options": [
+        "Pausa la corrutina hasta el siguiente frame y luego reanuda la ejecución",
+        "Termina la corrutina inmediatamente devolviendo null como resultado",
+        "Espera exactamente 1 segundo antes de continuar la ejecución",
+        "Pausa la corrutina indefinidamente hasta que se llame StartCoroutine de nuevo",
+        "Salta el resto del código y va directamente al final de la corrutina"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>yield return null</strong> pausa la corrutina exactamente hasta el siguiente frame. En el próximo <strong>Update</strong>, la ejecución se reanuda desde la línea siguiente al <code>yield return null</code>. Es útil cuando necesitas que algo ocurra en frames consecutivos sin bloquear el juego."
+    },
+    {
+      "id": "ien_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cómo se inicia una corrutina llamada `EsperarYContinuar()` en Unity?",
+      "options": [
+        "StartCoroutine(EsperarYContinuar())",
+        "EsperarYContinuar()",
+        "Coroutine.Start(EsperarYContinuar)",
+        "RunCoroutine(EsperarYContinuar())",
+        "BeginCoroutine(EsperarYContinuar)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>StartCoroutine(NombreMetodo())</strong> es la forma correcta de iniciar una <strong>corrutina</strong> en Unity. Llamar directamente a <code>EsperarYContinuar()</code> sin <strong>StartCoroutine</strong> simplemente crearía el enumerador pero no lo ejecutaría — el código dentro no correría."
+    },
+    {
+      "id": "ien_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia entre `WaitForSeconds` y `WaitForSecondsRealtime`?",
+      "options": [
+        "WaitForSeconds se afecta por Time.timeScale (la pausa del juego); WaitForSecondsRealtime usa tiempo real sin importar la escala",
+        "WaitForSecondsRealtime es más preciso porque usa el reloj del sistema operativo en lugar del delta de Unity",
+        "WaitForSeconds espera frames completos; WaitForSecondsRealtime espera milisegundos exactos",
+        "No hay diferencia práctica entre los dos en la mayoría de los juegos",
+        "WaitForSeconds solo funciona en FixedUpdate; WaitForSecondsRealtime funciona en Update"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>WaitForSeconds(n)</strong> espera <em>n segundos de tiempo de juego</em> — si <code>Time.timeScale = 0</code> (juego pausado), la espera también se pausa. <strong>WaitForSecondsRealtime(n)</strong> usa tiempo real del reloj, sin importar <code>Time.timeScale</code>. Usa <strong>WaitForSecondsRealtime</strong> para animaciones de UI durante la pausa del juego."
+    },
+    {
+      "id": "ien_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo es preferible usar una corrutina en lugar de Update para \"esperar 3 segundos y luego desactivar un efecto\"?",
+      "options": [
+        "Siempre en este caso — la corrutina expresa la secuencia temporal de forma más clara y no requiere un contador en Update",
+        "Solo si el efecto necesita detenerse con precisión de milisegundos",
+        "Solo si hay más de 10 efectos simultáneos activos en la escena",
+        "Nunca — Update siempre es más eficiente que una corrutina para este tipo de lógica",
+        "Solo si el script hereda de MonoBehaviour y tiene acceso a StartCoroutine"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para lógica secuencial con tiempos, la <strong>corrutina</strong> es la opción natural: <code>yield return new WaitForSeconds(3f);</code> es mucho más legible que mantener un contador en <strong>Update</strong>. Con <strong>Update</strong> necesitarías un <code>float timer;</code>, incrementarlo cada frame y verificar si superó 3 segundos — más código y más propenso a errores."
+    },
+    {
+      "id": "ien_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace `yield return new WaitUntil(() => estaEnElSuelo)`?",
+      "options": [
+        "Pausa la corrutina hasta que la expresión lambda `estaEnElSuelo` sea true",
+        "Espera indefinidamente hasta que el desarrollador llame ManuallyResume()",
+        "Pausa la corrutina exactamente mientras `estaEnElSuelo` sea true, y la reanuda cuando sea false",
+        "Lanza una excepción si `estaEnElSuelo` nunca se vuelve true después de 10 segundos",
+        "Ejecuta el bloque lambda en un hilo separado para no bloquear el hilo principal"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>WaitUntil</strong> recibe una función lambda (condición) y pausa la corrutina verificando esa condición cada frame. Cuando la condición es <code>true</code>, la corrutina se reanuda. En contraste, <strong>WaitWhile</strong> hace lo opuesto: pausa mientras la condición sea <code>true</code> y reanuda cuando sea <code>false</code>."
+    },
+    {
+      "id": "ien_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué ocurre con una corrutina activa cuando el GameObject que la inició es DESACTIVADO?",
+      "options": [
+        "La corrutina se detiene automáticamente porque requiere que el MonoBehaviour esté activo para ejecutarse",
+        "La corrutina continúa ejecutándose en segundo plano aunque el objeto esté desactivado",
+        "La corrutina lanza una excepción y Unity registra el error en la consola",
+        "La corrutina se suspende y se reanuda automáticamente cuando el objeto se reactive",
+        "Depende de si se usó StartCoroutine o se guardó la referencia con Coroutine miRef"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando un <strong>GameObject</strong> es <strong>desactivado</strong> (<code>SetActive(false)</code>), todas sus <strong>corrutinas</strong> activas se detienen. Si el objeto se reactiva, las corrutinas <em>no se reanudan automáticamente</em> — debes iniciarlas de nuevo. Esto es diferente a cuando el objeto es <em>destruido</em>, donde las corrutinas también se detienen pero permanentemente."
+    },
+    {
+      "id": "ien_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estas opciones muestra correctamente cómo hacer que un objeto parpadee (toggle visible/invisible) 3 veces esperando 0.5 segundos entre cada parpadeo?",
+      "options": [
+        "IEnumerator Parpadear() { for(int i=0; i<3; i++) { renderer.enabled = !renderer.enabled; yield return new WaitForSeconds(0.5f); } }",
+        "void Parpadear() { for(int i=0; i<3; i++) { renderer.enabled = !renderer.enabled; WaitForSeconds(0.5f); } }",
+        "IEnumerator Parpadear() { renderer.enabled = false; yield return null; renderer.enabled = true; }",
+        "Coroutine Parpadear() { for(int i=0; i<3; i++) { yield return WaitForSeconds(0.5f); } }",
+        "void Parpadear() { yield return new WaitForSeconds(0.5f); renderer.enabled = false; }"
+      ],
+      "correctIndex": 0,
+      "explanation": "La opción correcta tiene: tipo de retorno <strong>IEnumerator</strong>, un bucle que alterna el estado del renderer, y <code>yield return new WaitForSeconds(0.5f)</code> para esperar entre cada parpadeo. Las otras opciones tienen errores: usar <code>void</code> con <code>yield</code> es inválido, <code>WaitForSeconds</code> sin <code>new</code> y sin <code>yield return</code> no funciona, y el tipo <code>Coroutine</code> como retorno es incorrecto para el cuerpo con <code>yield</code>."
+    },
+    {
+      "id": "ien_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta corrutina:",
+      "code": "IEnumerator MostrarMensaje()\n{\n    mensajeUI.SetActive(true);\n    yield return new WaitForSeconds(3f);\n    mensajeUI.SetActive(false);\n}",
+      "question": "¿Cuántos segundos estará visible el mensaje de UI?",
+      "target": "3",
+      "acceptedAnswers": ["3", "3 segundos", "3f", "tres segundos", "tres"],
+      "hints": [
+        "La corrutina activa el mensaje, espera, y luego lo desactiva.",
+        "El argumento de WaitForSeconds indica cuánto tiempo se espera.",
+        "Observa el número dentro de WaitForSeconds."
+      ],
+      "explanation": "La corrutina activa el mensaje con <code>SetActive(true)</code>, luego <strong>yield return new WaitForSeconds(3f)</strong> pausa la ejecución exactamente <strong>3 segundos</strong>, y luego desactiva el mensaje con <code>SetActive(false)</code>. Este es el patrón más común para mostrar mensajes temporales en Unity."
+    },
+    {
+      "id": "ien_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Un estudiante escribió este código pero no funciona — el método se llama pero el código dentro no se ejecuta:",
+      "code": "void Start()\n{\n    EsperarYDisparar(); // ← llamada directa, sin StartCoroutine\n}\n\nIEnumerator EsperarYDisparar()\n{\n    yield return new WaitForSeconds(2f);\n    Disparar();\n}",
+      "question": "¿Por qué el código dentro de EsperarYDisparar no se ejecuta?",
+      "target": "Falta usar StartCoroutine",
+      "acceptedAnswers": [
+        "Falta usar StartCoroutine",
+        "No se usó StartCoroutine",
+        "Debe llamarse con StartCoroutine(EsperarYDisparar())",
+        "No se inició la corrutina correctamente"
+      ],
+      "hints": [
+        "Llamar directamente a un método IEnumerator solo crea el objeto enumerador, no lo ejecuta.",
+        "¿Qué método de MonoBehaviour inicia la ejecución de una corrutina?"
+      ],
+      "explanation": "Llamar <code>EsperarYDisparar()</code> directamente crea el objeto <strong>IEnumerator</strong> pero no lo ejecuta — es como crear un libro pero no leerlo. Para que Unity ejecute el código paso a paso, debes usar <strong>StartCoroutine(EsperarYDisparar())</strong>. Sin <code>StartCoroutine</code>, el código dentro de la corrutina nunca corre."
+    },
+    {
+      "id": "ien_id_003",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta corrutina que hace una transición de fade:",
+      "code": "IEnumerator FadeOut()\n{\n    float alpha = 1f;\n    while (alpha > 0)\n    {\n        alpha -= 0.1f;\n        canvasGroup.alpha = alpha;\n        yield return null;\n    }\n}",
+      "question": "¿Cuántos frames esperará la corrutina entre cada reducción del alpha?",
+      "target": "1",
+      "acceptedAnswers": ["1", "un frame", "1 frame"],
+      "hints": [
+        "yield return null espera exactamente un periodo específico.",
+        "La unidad de tiempo de yield return null es el frame, no segundos."
+      ],
+      "explanation": "<strong>yield return null</strong> pausa la corrutina exactamente <strong>1 frame</strong> antes de continuar. En cada frame, el alpha se reduce en 0.1 y se aplica al <code>canvasGroup</code>. Con 10 iteraciones (de 1.0 a 0.0), el fade completo toma exactamente 10 frames."
+    },
+    {
+      "id": "ien_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Un juego tiene la pausa activa (Time.timeScale = 0). Analiza estas dos corrutinas activas:",
+      "code": "// Corrutina A:\nyield return new WaitForSeconds(2f);\n\n// Corrutina B:\nyield return new WaitForSecondsRealtime(2f);",
+      "question": "¿Cuál de las dos corrutinas continuará ejecutándose aunque el juego esté pausado (timeScale = 0)?",
+      "target": "Corrutina B",
+      "acceptedAnswers": ["Corrutina B", "B", "WaitForSecondsRealtime", "la corrutina B"],
+      "hints": [
+        "WaitForSeconds depende del tiempo del juego, que se controla con Time.timeScale.",
+        "Cuando timeScale = 0, el tiempo del juego se detiene.",
+        "¿Cuál de las dos usa tiempo real del reloj?"
+      ],
+      "explanation": "<strong>Corrutina B</strong> continuará ejecutándose. <strong>WaitForSecondsRealtime</strong> usa el tiempo real del reloj del sistema, independiente de <code>Time.timeScale</code>. <strong>WaitForSeconds</strong> usa tiempo de juego — con <code>timeScale = 0</code>, el tiempo de juego se congela y la corrutina A nunca avanzará."
+    },
+    {
+      "id": "ien_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este uso de WaitUntil:",
+      "code": "IEnumerator EsperarAterrizaje()\n{\n    yield return new WaitUntil(() => estaEnElSuelo);\n    Debug.Log(\"El jugador aterrizó\");\n    ReproducirSonidoAterrizaje();\n}",
+      "question": "¿Cuándo se ejecutará Debug.Log(\"El jugador aterrizó\")?",
+      "target": "Cuando estaEnElSuelo sea true",
+      "acceptedAnswers": [
+        "Cuando estaEnElSuelo sea true",
+        "Cuando la variable estaEnElSuelo sea true",
+        "Al tocar el suelo",
+        "Cuando estaEnElSuelo = true"
+      ],
+      "hints": [
+        "WaitUntil pausa hasta que la condición sea true.",
+        "La condición es la lambda () => estaEnElSuelo."
+      ],
+      "explanation": "<strong>WaitUntil</strong> verifica la condición <code>estaEnElSuelo</code> en cada frame. Mientras sea <code>false</code>, la corrutina permanece pausada. En el primer frame donde <code>estaEnElSuelo</code> sea <code>true</code>, la corrutina reanuda y ejecuta <code>Debug.Log</code> y el sonido de aterrizaje."
+    },
+    {
+      "id": "ien_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Un script tiene una corrutina activa que hace spawn de enemigos cada 5 segundos. El jugador activa una habilidad que debe detener el spawn.",
+      "code": "Coroutine spawnCoroutine = StartCoroutine(SpawnEnemigos());\n\n// ... más tarde ...\nif (habilidadActivada)\n{\n    _______________(spawnCoroutine);\n}",
+      "question": "¿Qué método debes llamar para detener la corrutina de spawn?",
+      "target": "StopCoroutine",
+      "acceptedAnswers": ["StopCoroutine", "StopCoroutine(spawnCoroutine)"],
+      "hints": [
+        "El método para detener una corrutina específica en Unity.",
+        "Es el complemento de StartCoroutine."
+      ],
+      "explanation": "<strong>StopCoroutine(spawnCoroutine)</strong> detiene la corrutina específica referenciada. Para que esto funcione, es necesario haber guardado la referencia devuelta por <strong>StartCoroutine</strong> en una variable de tipo <code>Coroutine</code>. Si no guardas la referencia, deberías usar <strong>StopAllCoroutines()</strong> para detener todas las corrutinas del script."
+    },
+    {
+      "id": "ien_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el tipo de retorno de una función que sea una corrutina de Unity:",
+      "codeTemplate": "__________ EsperarYActivar()\n{\n    yield return new WaitForSeconds(2f);\n    objetoOculto.SetActive(true);\n}",
+      "expectedAnswer": "IEnumerator",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de retorno...",
+      "hints": [
+        "Es una interfaz de C# que permite el uso de yield return.",
+        "Empieza con 'I' (de Interface) seguido de Enumerator."
+      ],
+      "explanation": "El tipo de retorno <strong>IEnumerator</strong> es obligatorio para cualquier función que use <code>yield return</code> y sea ejecutada como <strong>corrutina</strong> con <strong>StartCoroutine</strong>. Sin este tipo, el compilador de C# rechazará el uso de <code>yield return</code> dentro de la función."
+    },
+    {
+      "id": "ien_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para esperar 3 segundos dentro de una corrutina:",
+      "codeTemplate": "yield return new ________________(3f);",
+      "expectedAnswer": "WaitForSeconds",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre de la clase de espera...",
+      "hints": [
+        "La clase que pausa la corrutina N segundos de tiempo de juego.",
+        "Empieza con 'WaitFor' y termina con 'Seconds'."
+      ],
+      "explanation": "<code>yield return new <strong>WaitForSeconds</strong>(3f)</code> pausa la corrutina exactamente 3 segundos de tiempo de juego. Se crea una nueva instancia de <code>WaitForSeconds</code> con el tiempo deseado. Esta espera se ve afectada por <code>Time.timeScale</code>."
+    },
+    {
+      "id": "ien_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para iniciar la corrutina `IntroduccionNivel()`:",
+      "codeTemplate": "_______________(IntroduccionNivel());",
+      "expectedAnswer": "StartCoroutine",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para iniciar la corrutina...",
+      "hints": [
+        "El método de MonoBehaviour que inicia la ejecución de una corrutina.",
+        "Empieza con 'Start' y termina con 'Coroutine'."
+      ],
+      "explanation": "<strong>StartCoroutine(IntroduccionNivel())</strong> es la única forma correcta de iniciar una <strong>corrutina</strong> en Unity. Los paréntesis de <code>IntroduccionNivel()</code> crean el objeto <code>IEnumerator</code>, y <code>StartCoroutine</code> se encarga de ejecutarlo frame a frame."
+    },
+    {
+      "id": "ien_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea de yield que pausa la corrutina hasta que la variable booleana `portalAbierto` sea true:",
+      "codeTemplate": null,
+      "expectedAnswer": "yield return new WaitUntil(() => portalAbierto);",
+      "alternateAnswers": ["yield return new WaitUntil(() => portalAbierto == true);"],
+      "placeholder": "Escribe la línea completa...",
+      "hints": [
+        "Usa WaitUntil con una función lambda.",
+        "La sintaxis de lambda en C# es: () => condicion"
+      ],
+      "explanation": "<code>yield return new <strong>WaitUntil</strong>(() => portalAbierto)</code> pausa la corrutina verificando cada frame si <code>portalAbierto</code> es <code>true</code>. La sintaxis <code>() =></code> es una función lambda (función anónima) — en este caso devuelve el valor de <code>portalAbierto</code>. Unity evalúa esta lambda cada frame hasta que retorne <code>true</code>."
+    },
+    {
+      "id": "ien_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una corrutina completa llamada `ExplotarDespues` que espere 2 segundos y luego llame al método `Explotar()`:",
+      "codeTemplate": null,
+      "expectedAnswer": "IEnumerator ExplotarDespues() { yield return new WaitForSeconds(2f); Explotar(); }",
+      "alternateAnswers": [
+        "IEnumerator ExplotarDespues()\n{\n    yield return new WaitForSeconds(2f);\n    Explotar();\n}"
+      ],
+      "placeholder": "Escribe la corrutina completa...",
+      "hints": [
+        "El tipo de retorno debe ser IEnumerator.",
+        "Usa yield return new WaitForSeconds(2f) para la espera.",
+        "Luego llama al método Explotar()."
+      ],
+      "explanation": "La corrutina completa: <code><strong>IEnumerator</strong> ExplotarDespues()</code> con tipo de retorno correcto, <code>yield return new <strong>WaitForSeconds</strong>(2f)</code> para esperar 2 segundos, y luego <code>Explotar()</code>. Para ejecutarla: <code>StartCoroutine(ExplotarDespues())</code>. Este es el patrón más común de corrutina en Unity."
+    },
+    {
+      "id": "ien_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para detener la corrutina guardada en la referencia `animacionCorrutina`:",
+      "codeTemplate": "_________________(animacionCorrutina);",
+      "expectedAnswer": "StopCoroutine",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para detener la corrutina...",
+      "hints": [
+        "El método complementario de StartCoroutine.",
+        "Empieza con 'Stop' y termina con 'Coroutine'."
+      ],
+      "explanation": "<strong>StopCoroutine(animacionCorrutina)</strong> detiene específicamente esa corrutina. Para que funcione, debe haberse guardado la referencia: <code>Coroutine animacionCorrutina = StartCoroutine(MiAnimacion())</code>. Sin la referencia, la única opción sería <code>StopAllCoroutines()</code> que detiene todas las corrutinas del <strong>MonoBehaviour</strong>."
+    }
+  ]
+}

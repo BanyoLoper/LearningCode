@@ -1,0 +1,301 @@
+{
+  "id": "lifecycle_exam",
+  "title": "Examen Final: Ciclo de Vida MonoBehaviour",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "lc_ex_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método que se ejecuta PRIMERO en el ciclo de vida, incluso si el objeto está desactivado:",
+      "codeTemplate": "void _______()\n{\n    rb = GetComponent<Rigidbody>();\n}",
+      "expectedAnswer": "Awake",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["Se ejecuta primero, antes que Start.", "Corre incluso con el objeto desactivado."],
+      "explanation": "<strong>Awake</strong> es el primer método del ciclo de vida. Se ejecuta incluso si el <strong>GameObject</strong> está desactivado. Es el lugar correcto para inicializar referencias internas con <code>GetComponent</code>."
+    },
+    {
+      "id": "lc_ex_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método donde deben ir las fuerzas del Rigidbody para física consistente:",
+      "codeTemplate": "void ____________()\n{\n    rb.AddForce(Vector3.up * jumpForce);\n}",
+      "expectedAnswer": "FixedUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["El método de física con frecuencia fija.", "Empieza con Fixed."],
+      "explanation": "<strong>FixedUpdate</strong> se ejecuta a intervalos de tiempo fijos sincronizados con el motor de física. Las fuerzas de <strong>Rigidbody</strong> van aquí para ser consistentes independientemente del framerate."
+    },
+    {
+      "id": "lc_ex_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el tipo de retorno de una corrutina:",
+      "codeTemplate": "__________ EsperarYActivar()\n{\n    yield return new WaitForSeconds(2f);\n    gameObject.SetActive(true);\n}",
+      "expectedAnswer": "IEnumerator",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de retorno...",
+      "hints": ["Interfaz de C# que permite yield return.", "Empieza con I mayúscula."],
+      "explanation": "El tipo de retorno <strong>IEnumerator</strong> es obligatorio para cualquier corrutina en Unity. Sin él, el compilador rechaza el uso de <code>yield return</code>."
+    },
+    {
+      "id": "lc_ex_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para esperar 1.5 segundos dentro de una corrutina:",
+      "codeTemplate": "yield return new _______________(1.5f);",
+      "expectedAnswer": "WaitForSeconds",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la clase de espera...",
+      "hints": ["La clase que pausa una corrutina N segundos de tiempo de juego.", "WaitFor...Seconds."],
+      "explanation": "<code>yield return new <strong>WaitForSeconds</strong>(1.5f)</code> pausa la corrutina 1.5 segundos. Se ve afectada por <code>Time.timeScale</code> — si el juego está pausado, también se detiene."
+    },
+    {
+      "id": "lc_ex_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método del ciclo de vida para mover la cámara DESPUÉS de que todos los Update de la escena corrieron:",
+      "codeTemplate": "void ____________()\n{\n    transform.position = jugador.position + offset;\n}",
+      "expectedAnswer": "LateUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["Se ejecuta 'después' del Update.", "Ideal para lógica de cámara."],
+      "explanation": "<strong>LateUpdate</strong> corre después de que todos los <strong>Update</strong> de todos los scripts del frame terminaron. Garantiza que el jugador ya se movió antes de que la cámara lo siga, eliminando el temblor."
+    },
+    {
+      "id": "lc_ex_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para iniciar la corrutina `IntroEscena()`:",
+      "codeTemplate": "_______________(IntroEscena());",
+      "expectedAnswer": "StartCoroutine",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para iniciar la corrutina...",
+      "hints": ["El método de MonoBehaviour que ejecuta una corrutina.", "Start + Coroutine."],
+      "explanation": "<strong>StartCoroutine(IntroEscena())</strong> es la única forma de ejecutar una corrutina en Unity. Llamarla directamente sin <code>StartCoroutine</code> no ejecuta el código dentro."
+    },
+    {
+      "id": "lc_ex_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método que valida en el Editor que 'vidaMaxima' no sea menor a 1:",
+      "codeTemplate": "void ____________()\n{\n    vidaMaxima = Mathf.Max(1, vidaMaxima);\n}",
+      "expectedAnswer": "OnValidate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método del Editor...",
+      "hints": ["Se llama en el Editor cuando cambias un valor en el Inspector.", "Su nombre sugiere 'validar' datos."],
+      "explanation": "<strong>OnValidate</strong> se ejecuta en el <strong>Editor</strong> al modificar el <strong>Inspector</strong>. Asegura que los valores sean válidos sin necesidad de comprobaciones en tiempo de ejecución."
+    },
+    {
+      "id": "lc_ex_008",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea yield que pausa la corrutina hasta que la variable `nivelCargado` sea true:",
+      "codeTemplate": null,
+      "expectedAnswer": "yield return new WaitUntil(() => nivelCargado);",
+      "alternateAnswers": ["yield return new WaitUntil(() => nivelCargado == true);"],
+      "placeholder": "Escribe la línea completa...",
+      "hints": ["Usa WaitUntil con lambda.", "Sintaxis: yield return new WaitUntil(() => condicion);"],
+      "explanation": "<code>yield return new <strong>WaitUntil</strong>(() => nivelCargado)</code> verifica la condición cada frame y reanuda cuando <code>nivelCargado</code> sea <code>true</code>. La lambda <code>() =></code> es la función que devuelve el valor booleano."
+    },
+    {
+      "id": "lc_ex_009",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el orden correcto de ejecución en el primer frame de una escena?",
+      "options": [
+        "Awake → OnEnable → Start → FixedUpdate → Update → LateUpdate",
+        "Start → Awake → OnEnable → Update → FixedUpdate → LateUpdate",
+        "OnEnable → Awake → Start → Update → FixedUpdate → LateUpdate",
+        "Awake → Start → OnEnable → Update → FixedUpdate → LateUpdate",
+        "FixedUpdate → Awake → Start → Update → LateUpdate"
+      ],
+      "correctIndex": 0,
+      "explanation": "El orden garantizado: <strong>Awake</strong> (inicialización interna) → <strong>OnEnable</strong> (objeto activo) → <strong>Start</strong> (antes del primer frame) → <strong>FixedUpdate</strong> (física) → <strong>Update</strong> (lógica) → <strong>LateUpdate</strong> (post-update)."
+    },
+    {
+      "id": "lc_ex_010",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué diferencia a OnCollisionEnter de OnTriggerEnter?",
+      "options": [
+        "OnCollisionEnter es para colisiones físicas reales; OnTriggerEnter es para zonas de detección donde los objetos se atraviesan",
+        "OnTriggerEnter recibe más datos físicos que OnCollisionEnter",
+        "OnCollisionEnter solo funciona en objetos con Rigidbody kinematic",
+        "No hay diferencia práctica — Unity los usa indistintamente según el tipo de colisionador",
+        "OnTriggerEnter requiere isTrigger = false en el colisionador"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnCollisionEnter</strong> se activa con física real (rebotes, fuerzas). <strong>OnTriggerEnter</strong> se activa cuando un objeto entra en una zona con <code>isTrigger = true</code> — los objetos se atraviesan sin física. El parámetro también difiere: <code>Collision</code> vs <code>Collider</code>."
+    },
+    {
+      "id": "lc_ex_011",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Una corrutina usa `WaitForSeconds(3f)` pero el juego está pausado con `Time.timeScale = 0`. ¿Qué ocurre?",
+      "options": [
+        "La corrutina se congela — WaitForSeconds usa tiempo de juego que no avanza cuando timeScale = 0",
+        "La corrutina continúa normalmente porque WaitForSeconds usa tiempo real del sistema",
+        "Unity lanza una excepción porque WaitForSeconds no es compatible con timeScale = 0",
+        "La corrutina se detiene permanentemente y debe reiniciarse con StartCoroutine de nuevo",
+        "La corrutina espera el doble del tiempo porque timeScale = 0 duplica las pausas"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>WaitForSeconds</strong> usa tiempo de juego, que se controla con <code>Time.timeScale</code>. Con <code>timeScale = 0</code>, el tiempo de juego se detiene y la corrutina permanece congelada. Para animaciones de UI durante la pausa, usa <strong>WaitForSecondsRealtime</strong>."
+    },
+    {
+      "id": "lc_ex_012",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirve `OnDrawGizmosSelected` en lugar de `OnDrawGizmos`?",
+      "options": [
+        "Para dibujar gizmos solo cuando el GameObject está seleccionado en el Editor, evitando ruido visual con muchos objetos",
+        "Para dibujar gizmos que también aparecen en el juego final cuando el objeto es seleccionado",
+        "Para dibujar gizmos de forma más eficiente porque usa GPU en lugar de CPU",
+        "Para dibujar gizmos de UI (Canvas) que OnDrawGizmos no puede manejar",
+        "No hay diferencia visual — solo cambia cuándo se actualiza la posición del gizmo"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnDrawGizmosSelected</strong> solo dibuja cuando el objeto está seleccionado. En escenas con muchos objetos (50 enemigos), <strong>OnDrawGizmos</strong> dibujaría 50 gizmos simultáneamente, llenando la <strong>Scene View</strong>. <strong>OnDrawGizmosSelected</strong> solo muestra el del objeto que inspeccionas."
+    },
+    {
+      "id": "lc_ex_013",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué ocurre con una corrutina activa cuando el GameObject que la inició es desactivado con SetActive(false)?",
+      "options": [
+        "La corrutina se detiene automáticamente y no se reanuda al reactivar el objeto",
+        "La corrutina continúa en segundo plano aunque el objeto esté desactivado",
+        "La corrutina se pausa y se reanuda automáticamente cuando el objeto se reactive",
+        "Unity lanza un error y la corrutina lanza una excepción",
+        "Depende del tipo de yield return que esté esperando en ese momento"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando un <strong>GameObject</strong> se desactiva, todas sus <strong>corrutinas</strong> activas se <strong>detienen</strong>. Si el objeto se reactiva, las corrutinas <em>no se reanudan automáticamente</em> — debes iniciarlas de nuevo con <strong>StartCoroutine</strong>."
+    },
+    {
+      "id": "lc_ex_014",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo usar una corrutina en lugar de Update para el comportamiento \"esperar 2 segundos y luego hacer X\"?",
+      "options": [
+        "Siempre — la corrutina es más legible y no requiere mantener un contador de tiempo en Update",
+        "Solo si la espera es exactamente 2 segundos; para otros tiempos se usa Update",
+        "Solo si el juego necesita estar pausado durante la espera",
+        "Nunca — Update con un contador es siempre más eficiente que una corrutina",
+        "Solo si la acción X es una animación de Unity, no si es lógica de juego"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>corrutina</strong> con <code>yield return new WaitForSeconds(2f)</code> es mucho más limpia que mantener un <code>float timer</code> en <strong>Update</strong> que incremente cada frame y verifique si superó 2 segundos. La corrutina expresa la intención secuencial de forma natural y legible."
+    },
+    {
+      "id": "lc_ex_015",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué NO debes leer Input del jugador en FixedUpdate?",
+      "options": [
+        "Porque FixedUpdate no corre cada frame visual — puede saltarse frames de input haciendo que algunas pulsaciones no se detecten",
+        "Porque Input.GetKey lanza excepción en FixedUpdate por limitaciones del motor de física",
+        "Porque el input solo está disponible durante Update y LateUpdate",
+        "Porque FixedUpdate corre demasiado rápido y procesaría el input múltiples veces",
+        "No hay restricción — Input funciona igual en Update y FixedUpdate"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate</strong> se ejecuta a frecuencia fija (50 veces/seg por defecto) y no está sincronizado con los frames visuales. Si el juego corre a 60 FPS, algunos frames de input ocurren entre dos <strong>FixedUpdate</strong> y nunca serían detectados. Siempre lee el <strong>input</strong> en <strong>Update</strong>."
+    },
+    {
+      "id": "lc_ex_016",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script y determina el orden de salida en la consola al iniciar la escena:",
+      "code": "void Awake()  { Debug.Log(\"A\"); }\nvoid Start()  { Debug.Log(\"B\"); }\nvoid Update() { Debug.Log(\"C\"); } // solo el primer frame",
+      "question": "¿En qué orden aparecen los mensajes en la consola?",
+      "target": "A, B, C",
+      "acceptedAnswers": ["A, B, C", "A B C", "ABC", "primero A, luego B, luego C"],
+      "hints": [
+        "El orden es el del ciclo de vida: Awake primero, luego Start, luego Update.",
+        "Awake → Start → Update es la secuencia de inicialización."
+      ],
+      "explanation": "El orden garantizado: <strong>Awake</strong> imprime <em>A</em>, luego <strong>Start</strong> imprime <em>B</em>, y finalmente el primer <strong>Update</strong> imprime <em>C</em>. Este es el orden fundamental del ciclo de vida de <strong>MonoBehaviour</strong>."
+    },
+    {
+      "id": "lc_ex_017",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script de una zona de recolección de monedas:",
+      "code": "public class Moneda : MonoBehaviour\n{\n    void OnTriggerEnter(Collider other)\n    {\n        if (other.CompareTag(\"Player\"))\n        {\n            GameManager.Instance.AgregarPuntos(10);\n            Destroy(gameObject);\n        }\n    }\n}",
+      "question": "¿Qué propiedad debe tener el Collider de la moneda para que OnTriggerEnter se active?",
+      "target": "isTrigger = true",
+      "acceptedAnswers": ["isTrigger = true", "Is Trigger activado", "isTrigger true"],
+      "hints": [
+        "OnTriggerEnter requiere que el colisionador sea de tipo trigger.",
+        "Se configura en el Inspector del Collider."
+      ],
+      "explanation": "Para que <strong>OnTriggerEnter</strong> se active, el <strong>Collider</strong> debe tener <code><strong>isTrigger = true</strong></code>. Sin esta propiedad, se llamaría <strong>OnCollisionEnter</strong> en su lugar, y el jugador sería bloqueado físicamente por la moneda en lugar de poder atravesarla para recogerla."
+    },
+    {
+      "id": "lc_ex_018",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza esta corrutina que anima una barra de progreso:",
+      "code": "IEnumerator AnimarBarra(float duracion)\n{\n    float tiempo = 0;\n    while (tiempo < duracion)\n    {\n        tiempo += Time.deltaTime;\n        barraUI.fillAmount = tiempo / duracion;\n        yield return null;\n    }\n    barraUI.fillAmount = 1f;\n}",
+      "question": "¿Cuántos frames espera la corrutina entre cada actualización del fillAmount?",
+      "target": "1",
+      "acceptedAnswers": ["1", "un frame", "1 frame"],
+      "hints": [
+        "yield return null espera exactamente un periodo.",
+        "La unidad de yield return null es el frame visual."
+      ],
+      "explanation": "<strong>yield return null</strong> pausa la corrutina exactamente <strong>1 frame</strong>. En cada frame, <code>tiempo</code> aumenta con <code>Time.deltaTime</code> y el <code>fillAmount</code> se actualiza progresivamente. La barra completa la animación cuando <code>tiempo</code> alcanza <code>duracion</code>."
+    },
+    {
+      "id": "lc_ex_019",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Un diseñador de niveles reporta que los Gizmos de ayuda que dibujaste ya no se ven en la Scene View. Analiza el método:",
+      "code": "void OnDrawGizmosSelected()\n{\n    Gizmos.DrawWireCube(transform.position, new Vector3(5, 1, 5));\n}",
+      "question": "¿Por qué el diseñador no ve el Gizmo aunque esté en la Scene View?",
+      "target": "Porque el objeto no está seleccionado",
+      "acceptedAnswers": [
+        "Porque el objeto no está seleccionado",
+        "El objeto no está seleccionado en la jerarquía",
+        "Debe seleccionar el objeto para verlo"
+      ],
+      "hints": [
+        "OnDrawGizmosSelected tiene un comportamiento condicional.",
+        "El sufijo 'Selected' da una pista sobre cuándo se dibuja."
+      ],
+      "explanation": "<strong>OnDrawGizmosSelected</strong> solo dibuja el gizmo cuando el <strong>GameObject</strong> está <em>seleccionado</em> en el <strong>Editor</strong>. Si el diseñador no tiene ese objeto seleccionado en la jerarquía, el gizmo no se mostrará. Para que siempre sea visible, debería usarse <strong>OnDrawGizmos</strong> en su lugar."
+    },
+    {
+      "id": "lc_ex_020",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este script con dos scripts en la misma escena:",
+      "code": "// Script A: EnemyManager\nvoid Awake()\n{\n    player = FindObjectOfType<PlayerController>();\n    player.RegisterEnemy(this); // ← puede fallar\n}\n\n// Script B: PlayerController\nvoid Awake()\n{\n    vida = 100; // inicialización propia\n}",
+      "question": "¿Por qué `player.RegisterEnemy(this)` en EnemyManager.Awake puede causar un error?",
+      "target": "Porque el Awake de PlayerController puede no haber corrido todavía",
+      "acceptedAnswers": [
+        "Porque el Awake de PlayerController puede no haber corrido todavía",
+        "El orden de Awake entre scripts no está garantizado",
+        "PlayerController puede no estar inicializado aún",
+        "Awake de EnemyManager puede ejecutarse antes que Awake de PlayerController"
+      ],
+      "hints": [
+        "El orden de Awake entre diferentes scripts no está garantizado.",
+        "¿Qué pasa si EnemyManager.Awake corre antes que PlayerController.Awake?"
+      ],
+      "explanation": "El <strong>orden de Awake entre scripts distintos</strong> no está garantizado. Si <code>EnemyManager.Awake</code> corre antes de <code>PlayerController.Awake</code>, el objeto <code>player</code> puede existir pero no estar completamente inicializado, causando comportamiento inesperado. La solución es mover <code>RegisterEnemy</code> a <strong>Start</strong>, donde todos los <strong>Awake</strong> ya corrieron."
+    }
+  ]
+}

@@ -1,0 +1,383 @@
+{
+  "id": "git_commits",
+  "title": "Staging y Commits",
+  "icon": "📝",
+  "color": "#F05032",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "El Flujo de Tres Áreas de Git",
+        "type": "definition",
+        "content": "Git organiza tu trabajo en tres áreas:<br><br><strong>Working Directory</strong> (directorio de trabajo): los archivos que ves y editas en tu máquina.<br><strong>Staging Area</strong> (área de preparación): una lista de cambios que Git tiene listo para incluir en el próximo <strong>commit</strong>. Funciona como una sala de espera donde agrupas los cambios que quieres guardar juntos.<br><strong>Repository</strong> (repositorio): el historial permanente de <strong>commits</strong> guardados en la carpeta <code>.git</code>.<br><br>El flujo siempre es: <em>modificar archivos → agregarlos al <strong>staging area</strong> → confirmar con <strong>commit</strong></em>."
+      },
+      {
+        "id": "doc-2",
+        "title": "git add y git commit — Guardar Cambios",
+        "type": "code",
+        "content": "# Ver el estado actual del repositorio\ngit status\n# Muestra archivos modificados, en staging y untracked\n\n# Agregar un archivo específico al staging area\ngit add PlayerController.cs\n\n# Agregar TODOS los cambios al staging area\ngit add .\n\n# Crear un commit con los cambios en staging\ngit commit -m \"Agrega movimiento del jugador con WASD\"\n\n# Ver el historial de commits (una línea por commit)\ngit log --oneline\n# abc1234 Agrega movimiento del jugador con WASD\n# def5678 Configuración inicial del proyecto"
+      },
+      {
+        "id": "doc-3",
+        "title": "git status y git diff — Inspeccionar Cambios",
+        "type": "code",
+        "content": "# git status muestra tres secciones:\ngit status\n# Changes to be committed:   → archivos en staging (listos para commit)\n#   modified: PlayerController.cs\n#\n# Changes not staged:        → archivos modificados pero NO en staging\n#   modified: EnemyAI.cs\n#\n# Untracked files:           → archivos nuevos que Git no conoce aún\n#   GameManager.cs\n\n# git diff muestra qué cambió exactamente (NO en staging)\ngit diff\n# - vida = 100;   (línea eliminada)\n# + vida = 150;   (línea agregada)\n\n# Ver diferencias de archivos que YA están en staging\ngit diff --staged"
+      },
+      {
+        "id": "doc-4",
+        "title": "git log — Navegar el Historial",
+        "type": "analogy",
+        "content": "Imagina que cada <strong>commit</strong> es una foto del estado completo de tu proyecto en un momento dado. <strong>git log</strong> es el álbum de fotos — te muestra todas las fotos en orden de más reciente a más antigua. Cada entrada muestra el <strong>hash</strong> (identificador único del commit), el autor, la fecha y el mensaje. <code>git log --oneline</code> muestra una versión compacta: solo el hash corto y el mensaje, ideal para ver el historial de un vistazo. Si alguna vez necesitas volver a una versión anterior, usarías ese <strong>hash</strong> como referencia."
+      },
+      {
+        "id": "doc-5",
+        "title": "Buenas Prácticas para Mensajes de Commit",
+        "type": "list",
+        "items": [
+          "Usa verbos en modo imperativo: 'Agrega', 'Corrige', 'Elimina', 'Refactoriza' (no 'Agregué' ni 'Agregando').",
+          "El mensaje debe describir QUÉ cambió y POR QUÉ, no cómo lo hiciste.",
+          "Límite de 50-72 caracteres en el título para que sea legible en git log --oneline.",
+          "Commits pequeños y frecuentes son mejor que uno grande con muchos cambios mezclados.",
+          "git add . agrega todos los cambios; úsalo con cuidado para no incluir archivos no deseados.",
+          "git diff --staged te muestra exactamente qué está listo para commit antes de confirmarlo."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "gitcom_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es el propósito del **staging area** en Git?",
+      "options": [
+        "Preparar un conjunto específico de cambios que se incluirán en el próximo commit",
+        "Almacenar el historial permanente de commits del repositorio",
+        "Sincronizar los archivos locales con el servidor remoto",
+        "Crear una copia de seguridad automática de todos los archivos del proyecto",
+        "Mostrar las diferencias entre la versión local y la remota"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>staging area</strong> (área de preparación) actúa como una sala de espera entre tus ediciones y el historial del repositorio. Allí agrupas exactamente los cambios que quieres incluir en el próximo <strong>commit</strong>, lo que te permite hacer commits precisos aunque hayas modificado muchos archivos a la vez."
+    },
+    {
+      "id": "gitcom_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué comando agrega el archivo `EnemyAI.cs` al **staging area**?",
+      "options": [
+        "git add EnemyAI.cs",
+        "git stage EnemyAI.cs",
+        "git commit EnemyAI.cs",
+        "git track EnemyAI.cs",
+        "git include EnemyAI.cs"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git add &lt;archivo&gt;</strong> mueve los cambios de ese archivo desde el <strong>working directory</strong> al <strong>staging area</strong>. Después de este comando, el archivo aparecerá bajo la sección <em>Changes to be committed</em> en <strong>git status</strong>. Para agregar todos los cambios de una vez, se usa <code>git add .</code>"
+    },
+    {
+      "id": "gitcom_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace el comando `git commit -m \"Corrige bug de salto del jugador\"`?",
+      "options": [
+        "Guarda permanentemente en el historial del repositorio todos los cambios que están en el staging area, con ese mensaje descriptivo",
+        "Agrega los cambios del archivo al staging area con ese mensaje como etiqueta",
+        "Envía los cambios al repositorio remoto en GitHub con ese mensaje",
+        "Crea una nueva rama con ese nombre",
+        "Revierte el último commit con ese mensaje de justificación"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git commit -m</strong> toma todo lo que está en el <strong>staging area</strong> y crea un <strong>commit</strong>: una instantánea permanente en el historial del repositorio. El flag <code>-m</code> permite escribir el mensaje directamente en la línea de comandos. Cada commit genera un <strong>hash</strong> único (identificador) para poder referenciarlo después."
+    },
+    {
+      "id": "gitcom_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué muestra `git status` cuando un archivo fue modificado pero todavía NO fue agregado al **staging area**?",
+      "options": [
+        "El archivo aparece bajo \"Changes not staged for commit\" en color rojo",
+        "El archivo aparece bajo \"Changes to be committed\" en color verde",
+        "El archivo aparece bajo \"Untracked files\" porque Git no lo reconoce",
+        "git status no muestra archivos modificados, solo archivos nuevos",
+        "El archivo aparece bajo \"Committed\" indicando que ya fue guardado"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git status</strong> distingue tres estados: archivos en <strong>staging</strong> (listos para commit, en verde), archivos modificados pero <strong>no en staging</strong> (en rojo bajo <em>Changes not staged</em>), y archivos nuevos no rastreados (<em>Untracked files</em>). Un archivo modificado sin <code>git add</code> aparece en rojo — todavía no está listo para commit."
+    },
+    {
+      "id": "gitcom_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué diferencia hay entre `git diff` y `git diff --staged`?",
+      "options": [
+        "git diff muestra cambios NO en staging; git diff --staged muestra cambios que ya están en staging listos para commit",
+        "git diff --staged es más lento porque compara contra el servidor remoto",
+        "git diff solo funciona en archivos de código; git diff --staged funciona con cualquier archivo",
+        "No hay diferencia: ambos muestran exactamente los mismos cambios",
+        "git diff compara contra el último commit; git diff --staged compara contra el repositorio remoto"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>git diff</strong> (sin flags) muestra las diferencias entre el <strong>working directory</strong> y el <strong>staging area</strong> — es decir, los cambios que has hecho pero aún no has incluido con <code>git add</code>. <strong>git diff --staged</strong> (o <code>--cached</code>) muestra las diferencias entre el <strong>staging area</strong> y el último <strong>commit</strong> — lo que está listo para confirmar."
+    },
+    {
+      "id": "gitcom_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué muestra `git log --oneline`?",
+      "options": [
+        "El historial de commits, mostrando el hash corto y el mensaje de cada commit en una sola línea",
+        "Solo el último commit realizado en el repositorio",
+        "La lista de archivos modificados en el último commit",
+        "El historial de commits con todos los detalles: autor, fecha, archivos y diferencias",
+        "Los commits que aún no han sido enviados al repositorio remoto"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>git log --oneline</code> formatea la salida de forma compacta: cada <strong>commit</strong> en una sola línea con su <strong>hash</strong> corto (7 caracteres) y el mensaje. Por ejemplo: <code>abc1234 Corrige bug de salto</code>. Es el formato más útil para ver el historial de un vistazo sin perderte en detalles."
+    },
+    {
+      "id": "gitcom_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estos mensajes de commit sigue las mejores prácticas?",
+      "options": [
+        "Agrega sistema de inventario con capacidad máxima de 20 ítems",
+        "cambios en el inventario",
+        "Trabajé en el inventario y arreglé algunas cosas también",
+        "inventory_update_v2_final_FINAL",
+        "Se realizaron modificaciones al sistema de gestión de inventario del jugador"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un buen mensaje de <strong>commit</strong> usa el <strong>modo imperativo</strong> (\"Agrega\", no \"Agregué\"), es específico sobre qué cambió, y cabe en menos de 72 caracteres. El mensaje <em>\"Agrega sistema de inventario con capacidad máxima de 20 ítems\"</em> cumple con todo: verbo imperativo, descripción clara y concisa del cambio."
+    },
+    {
+      "id": "gitcom_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace `git add .` (punto al final)?",
+      "options": [
+        "Agrega al staging area TODOS los archivos modificados y nuevos en el directorio actual y sus subcarpetas",
+        "Agrega solo los archivos con extensión .cs al staging area",
+        "Agrega al staging area solo el último archivo modificado",
+        "Crea un punto de guardado automático sin necesidad de git commit",
+        "Agrega todos los archivos pero excluye los que están en .gitignore — los incluye de todos modos"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>git add .</code> agrega al <strong>staging area</strong> todos los cambios del directorio actual hacia abajo — archivos nuevos, modificados y eliminados. Los archivos listados en <strong>.gitignore</strong> quedan excluidos automáticamente. Úsalo con precaución: es conveniente, pero puede incluir archivos que no quieres en el commit."
+    },
+    {
+      "id": "gitcom_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Ejecutas los siguientes comandos en tu proyecto Unity:",
+      "code": "git add PlayerController.cs\ngit status",
+      "question": "¿Bajo qué sección de git status aparecerá PlayerController.cs después de ejecutar git add?",
+      "target": "Changes to be committed",
+      "acceptedAnswers": [
+        "Changes to be committed",
+        "changes to be committed",
+        "en staging",
+        "staged",
+        "listo para commit"
+      ],
+      "hints": [
+        "git add mueve el archivo al staging area.",
+        "git status tiene una sección específica para archivos que están en staging.",
+        "Esta sección se muestra en color verde en la mayoría de los terminales."
+      ],
+      "explanation": "Después de <strong>git add</strong>, el archivo pasa al <strong>staging area</strong> y aparece bajo la sección <em><strong>Changes to be committed</strong></em> (en verde) en la salida de <strong>git status</strong>. Eso indica que está listo para ser incluido en el próximo <strong>commit</strong>."
+    },
+    {
+      "id": "gitcom_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta salida de git log --oneline:",
+      "code": "a3f2c1b Corrige bug de colisión con paredes\n7e9d4a2 Agrega sistema de puntuación\n1b0c3e4 Configuración inicial del proyecto",
+      "question": "¿Cuál fue el primer commit realizado en este repositorio?",
+      "target": "Configuración inicial del proyecto",
+      "acceptedAnswers": [
+        "Configuración inicial del proyecto",
+        "1b0c3e4 Configuración inicial del proyecto",
+        "1b0c3e4"
+      ],
+      "hints": [
+        "git log --oneline muestra los commits de más reciente (arriba) a más antiguo (abajo).",
+        "El primer commit realizado es el más antiguo.",
+        "Busca el que está más abajo en la lista."
+      ],
+      "explanation": "<strong>git log</strong> muestra los commits en orden cronológico inverso: el más reciente arriba y el más antiguo abajo. Por lo tanto, el primer <strong>commit</strong> realizado es <em>\"Configuración inicial del proyecto\"</em> (con hash <code>1b0c3e4</code>), que aparece al final de la lista."
+    },
+    {
+      "id": "gitcom_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta salida de git diff en un script de Unity:",
+      "code": "-    public float velocidad = 5f;\n+    public float velocidad = 10f;",
+      "question": "¿Qué valor tenía la variable `velocidad` ANTES del cambio?",
+      "target": "5f",
+      "acceptedAnswers": ["5f", "5", "5.0f", "5.0"],
+      "hints": [
+        "En git diff, las líneas que empiezan con - son las que se eliminaron (estado anterior).",
+        "Las líneas con + son las que se agregaron (estado nuevo).",
+        "Busca el valor en la línea que empieza con -."
+      ],
+      "explanation": "En la salida de <strong>git diff</strong>, las líneas precedidas por <code>-</code> (en rojo) muestran el estado <em>anterior</em> — lo que se eliminó. Las líneas con <code>+</code> (en verde) muestran el estado <em>nuevo</em> — lo que se agregó. Por lo tanto, <code>velocidad</code> tenía el valor <strong>5f</strong> antes del cambio y ahora tiene <strong>10f</strong>."
+    },
+    {
+      "id": "gitcom_id_004",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Quieres ver exactamente qué archivos modificaste en tu proyecto hoy, cuáles ya están listos para commit y cuáles no.",
+      "code": "git ______",
+      "question": "¿Qué comando de Git usarías para ver ese resumen del estado actual?",
+      "target": "git status",
+      "acceptedAnswers": ["git status", "status"],
+      "hints": [
+        "Este comando muestra el 'estado' de los archivos en el working directory y staging area.",
+        "La palabra en inglés significa 'estado' o 'situación'."
+      ],
+      "explanation": "<strong>git status</strong> es el comando de diagnóstico principal de Git. Muestra: archivos en <strong>staging</strong> (listos para commit), archivos modificados pero <strong>no en staging</strong>, y archivos nuevos no rastreados (<strong>untracked</strong>). Es buena práctica ejecutarlo antes de cada <strong>git add</strong> y <strong>git commit</strong>."
+    },
+    {
+      "id": "gitcom_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Un compañero hizo commits en el proyecto. Analiza esta salida de git log --oneline:",
+      "code": "f1a2b3c Agrega pantalla de game over\ne4d5c6b Agrega sistema de vidas del jugador\n9a8b7c6 Corrige bug: el enemigo no detectaba colisiones\n2e3f4a5 Configuración inicial Unity",
+      "question": "¿En qué commit se introdujo el sistema de vidas del jugador?",
+      "target": "e4d5c6b",
+      "acceptedAnswers": [
+        "e4d5c6b",
+        "e4d5c6b Agrega sistema de vidas del jugador",
+        "Agrega sistema de vidas del jugador"
+      ],
+      "hints": [
+        "git log --oneline muestra: hash_corto mensaje_del_commit",
+        "Busca el commit cuyo mensaje menciona 'vidas del jugador'.",
+        "El hash es el identificador corto de 7 caracteres al inicio de la línea."
+      ],
+      "explanation": "El <strong>commit</strong> con hash <strong>e4d5c6b</strong> tiene el mensaje <em>\"Agrega sistema de vidas del jugador\"</em>. El <strong>hash</strong> (identificador único) sirve para referenciar ese commit exacto — por ejemplo, con <code>git show e4d5c6b</code> para ver sus cambios detallados, o para revertirlo si fuera necesario."
+    },
+    {
+      "id": "gitcom_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Modificaste tres archivos: PlayerController.cs, EnemyAI.cs y UIManager.cs. Solo quieres hacer commit de los cambios de PlayerController.cs ahora.",
+      "code": "git add PlayerController.cs\ngit commit -m \"Agrega dash al movimiento del jugador\"",
+      "question": "¿Qué archivos quedan pendientes (no en staging) después de estos comandos?",
+      "target": "EnemyAI.cs y UIManager.cs",
+      "acceptedAnswers": [
+        "EnemyAI.cs y UIManager.cs",
+        "EnemyAI.cs, UIManager.cs",
+        "EnemyAI.cs y UIManager.cs quedan sin agregar",
+        "los otros dos archivos"
+      ],
+      "hints": [
+        "git add solo agrega el archivo específico que le indiques.",
+        "Solo se hace commit de lo que estaba en staging.",
+        "Los otros dos archivos modificados siguen en el working directory."
+      ],
+      "explanation": "Al usar <code>git add PlayerController.cs</code>, solo ese archivo va al <strong>staging area</strong>. El <strong>commit</strong> guarda únicamente ese cambio. <strong>EnemyAI.cs</strong> y <strong>UIManager.cs</strong> siguen modificados en el <strong>working directory</strong> pero no en staging — aparecerán en rojo en <strong>git status</strong> hasta que los agregues con <code>git add</code>."
+    },
+    {
+      "id": "gitcom_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para agregar TODOS los archivos modificados al staging area:",
+      "codeTemplate": "git add ____",
+      "expectedAnswer": ".",
+      "alternateAnswers": ["-A", "--all"],
+      "placeholder": "Escribe el argumento para agregar todo...",
+      "hints": [
+        "Hay un símbolo de un solo carácter que representa 'el directorio actual y todo su contenido'.",
+        "Es un punto."
+      ],
+      "explanation": "<code>git add <strong>.</strong></code> agrega al <strong>staging area</strong> todos los cambios del directorio actual: archivos nuevos, modificados y eliminados. Es el atajo más común, aunque conviene verificar con <strong>git status</strong> antes para asegurarte de no incluir archivos no deseados."
+    },
+    {
+      "id": "gitcom_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el comando para crear un commit con el mensaje 'Agrega patrulla del enemigo':",
+      "codeTemplate": "git commit ____ \"Agrega patrulla del enemigo\"",
+      "expectedAnswer": "-m",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el flag para el mensaje...",
+      "hints": [
+        "El flag para escribir el mensaje del commit directamente en la línea de comandos es una letra.",
+        "La letra viene de 'message' (mensaje en inglés)."
+      ],
+      "explanation": "El flag <strong>-m</strong> permite pasar el mensaje del <strong>commit</strong> directamente en la línea de comandos entre comillas. Sin <code>-m</code>, Git abriría el editor de texto configurado (vim o nano) para que escribas el mensaje. Con <code>-m</code> es más rápido para mensajes cortos."
+    },
+    {
+      "id": "gitcom_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el comando para ver el historial de commits en formato compacto (una línea por commit):",
+      "codeTemplate": "git log ________",
+      "expectedAnswer": "--oneline",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el flag de formato compacto...",
+      "hints": [
+        "El flag que muestra cada commit en 'una línea' se escribe en inglés.",
+        "'Una línea' en inglés es 'one line'."
+      ],
+      "explanation": "<code>git log <strong>--oneline</strong></code> muestra cada <strong>commit</strong> en una sola línea: el <strong>hash</strong> corto (7 caracteres) y el mensaje. Es el formato más práctico para revisar el historial de un proyecto de un vistazo. Puedes combinar opciones como <code>git log --oneline --graph</code> para ver el árbol de <strong>branches</strong>."
+    },
+    {
+      "id": "gitcom_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el comando completo para agregar solo el archivo `GameManager.cs` al staging area:",
+      "codeTemplate": null,
+      "expectedAnswer": "git add GameManager.cs",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el comando completo...",
+      "hints": [
+        "El comando para agregar archivos al staging area es git add.",
+        "Especifica el nombre exacto del archivo después del comando."
+      ],
+      "explanation": "<code>git add GameManager.cs</code> mueve únicamente los cambios de ese archivo al <strong>staging area</strong>. Agregar archivos de forma individual en lugar de <code>git add .</code> te da control preciso sobre qué incluir en cada <strong>commit</strong>, lo que resulta en un historial más limpio y fácil de entender."
+    },
+    {
+      "id": "gitcom_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para ver los cambios de archivos que YA están en el staging area (listos para commit):",
+      "codeTemplate": "git diff ________",
+      "expectedAnswer": "--staged",
+      "alternateAnswers": ["--cached"],
+      "placeholder": "Escribe el flag para ver cambios en staging...",
+      "hints": [
+        "El flag que muestra diferencias de archivos ya en staging tiene relación con la palabra 'staged'.",
+        "Empieza con --."
+      ],
+      "explanation": "<code>git diff <strong>--staged</strong></code> (equivalente a <code>--cached</code>) muestra las diferencias entre el <strong>staging area</strong> y el último <strong>commit</strong>. Es la forma de revisar exactamente qué cambios se incluirán en tu próximo <strong>commit</strong> antes de confirmarlo — una buena práctica para evitar errores."
+    },
+    {
+      "id": "gitcom_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe los dos comandos, en orden, para: primero agregar todos los cambios al staging area, y luego hacer commit con el mensaje 'Corrige velocidad del proyectil':",
+      "codeTemplate": null,
+      "expectedAnswer": "git add .\ngit commit -m \"Corrige velocidad del proyectil\"",
+      "alternateAnswers": [
+        "git add -A\ngit commit -m \"Corrige velocidad del proyectil\"",
+        "git add --all\ngit commit -m \"Corrige velocidad del proyectil\""
+      ],
+      "placeholder": "Escribe los dos comandos, uno por línea...",
+      "hints": [
+        "Primero debes agregar los cambios al staging area.",
+        "El punto (.) después de git add agrega todos los cambios.",
+        "Luego usa git commit con el flag -m y el mensaje entre comillas."
+      ],
+      "explanation": "El flujo básico de Git siempre es: <strong>git add</strong> (mover cambios al staging area) → <strong>git commit</strong> (guardar en el historial). Intentar hacer <code>git commit</code> sin <code>git add</code> previo resultará en un commit vacío o un error si no hay nada en staging."
+    }
+  ]
+}
