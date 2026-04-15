@@ -1,0 +1,370 @@
+{
+  "id": "listas",
+  "title": "Listas",
+  "icon": "📋",
+  "color": "#2196F3",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es List<T>?",
+        "type": "definition",
+        "content": "Una <strong>List&lt;T&gt;</strong> es una colección dinámica genérica que puede <em>crecer y reducirse</em> en tiempo de ejecución. La <code>T</code> es un parámetro de tipo: al declarar la lista indicas qué tipo almacenará, por ejemplo <code>List&lt;int&gt;</code> o <code>List&lt;Enemy&gt;</code>. A diferencia de los arrays, no necesitas saber de antemano cuántos elementos tendrás. Para usarla debes agregar el namespace: <code>using System.Collections.Generic;</code> al inicio de tu archivo (en Unity esto suele ya estar incluido por defecto)."
+      },
+      {
+        "id": "doc-2",
+        "title": "Declaración y Métodos Principales",
+        "type": "code",
+        "content": "using System.Collections.Generic;\n\n// Declarar e instanciar una lista vacía\nList<string> nombres = new List<string>();\n\n// Agregar elementos\nnombres.Add(\"Ana\");\nnombres.Add(\"Luis\");\nnombres.Add(\"Mia\");\n\n// Acceder por índice (igual que un array)\nDebug.Log(nombres[0]); // \"Ana\"\n\n// Count: número de elementos actuales\nDebug.Log(nombres.Count); // 3\n\n// Verificar si existe un elemento\nbool existe = nombres.Contains(\"Luis\"); // true\n\n// Obtener el índice de un elemento\nint idx = nombres.IndexOf(\"Mia\"); // 2\n\n// Eliminar por valor\nnombres.Remove(\"Ana\"); // elimina la primera ocurrencia\n\n// Eliminar por índice\nnombres.RemoveAt(0); // elimina el elemento en la posición 0\n\n// Recorrer con foreach\nforeach (string nombre in nombres)\n{\n    Debug.Log(nombre);\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "List<T> vs Array",
+        "type": "note",
+        "content": "<strong>Array:</strong> tamaño fijo, sintaxis más simple, rendimiento ligeramente mejor en acceso directo. Usa arrays cuando la cantidad de elementos <em>no cambia</em>.<br><br><strong>List&lt;T&gt;:</strong> tamaño dinámico, tiene métodos convenientes (Add, Remove, Contains...), es la opción predeterminada cuando no sabes cuántos elementos tendrás. La propiedad es <code>Count</code> (no <code>Length</code> como en arrays). Ambas permiten acceso por índice <code>[i]</code> y recorrido con <code>foreach</code>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Analogía en Unity",
+        "type": "analogy",
+        "content": "Imagina la lista de <strong>enemigos activos</strong> en tu escena. Cada vez que aparece un nuevo enemigo lo agregas: <code>enemigosActivos.Add(nuevoEnemigo);</code>. Cuando muere, lo eliminas: <code>enemigosActivos.Remove(enemigo);</code>. El número de enemigos varía constantemente durante la partida, ¡por eso un array de tamaño fijo no serviría aquí! Con <code>List&lt;Enemy&gt;</code> puedes manejar cualquier cantidad de enemigos sin preocuparte por el tamaño."
+      },
+      {
+        "id": "doc-5",
+        "title": "Métodos Clave de List<T>",
+        "type": "list",
+        "items": [
+          "Add(elemento): agrega un elemento al final de la lista.",
+          "Remove(elemento): elimina la primera ocurrencia del elemento dado.",
+          "RemoveAt(índice): elimina el elemento en la posición especificada.",
+          "Contains(elemento): devuelve true si el elemento está en la lista.",
+          "IndexOf(elemento): devuelve el índice del elemento, o -1 si no existe.",
+          "Count: propiedad que devuelve el número actual de elementos (no Length).",
+          "Clear(): elimina todos los elementos de la lista."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "col_mc_009",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la ventaja principal de `List<T>` sobre un array estándar?",
+      "options": [
+        "Su tamaño es dinámico: puede crecer y reducirse en tiempo de ejecución.",
+        "Es más rápida que un array para acceso por índice.",
+        "No requiere ningún namespace adicional.",
+        "Puede almacenar elementos de diferentes tipos a la vez.",
+        "Ocupa menos memoria que un array del mismo tamaño."
+      ],
+      "correctIndex": 0,
+      "explanation": "La ventaja clave de <code>List&lt;T&gt;</code> es su <strong>tamaño dinámico</strong>: puedes agregar y eliminar elementos en cualquier momento con <code>Add()</code> y <code>Remove()</code>. Los arrays tienen tamaño fijo que no puede cambiar tras su creación."
+    },
+    {
+      "id": "col_mc_010",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué método se usa para agregar un elemento al FINAL de una `List<T>`?",
+      "options": [
+        "Add()",
+        "Append()",
+        "Insert()",
+        "Push()",
+        "Enqueue()"
+      ],
+      "correctIndex": 0,
+      "explanation": "El método <strong><code>Add(elemento)</code></strong> agrega el elemento al final de la lista. Por ejemplo: <code>enemies.Add(nuevoEnemigo);</code>. Si quieres insertar en una posición específica, usarías <code>Insert(índice, elemento)</code>."
+    },
+    {
+      "id": "col_mc_011",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué propiedad de `List<T>` devuelve el número de elementos que contiene actualmente?",
+      "options": [
+        "Count",
+        "Length",
+        "Size",
+        "Capacity",
+        "Total"
+      ],
+      "correctIndex": 0,
+      "explanation": "En <code>List&lt;T&gt;</code> se usa la propiedad <strong><code>Count</code></strong>, no <code>Length</code> (que es la propiedad de los arrays). Esta es una diferencia importante: <code>miLista.Count</code> para listas, <code>miArray.Length</code> para arrays."
+    },
+    {
+      "id": "col_mc_012",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué diferencia hay entre `Remove(elemento)` y `RemoveAt(índice)` en una `List<T>`?",
+      "options": [
+        "Remove() elimina por valor; RemoveAt() elimina por posición de índice.",
+        "Remove() elimina todos los duplicados; RemoveAt() solo elimina el primero.",
+        "Remove() solo funciona con strings; RemoveAt() funciona con cualquier tipo.",
+        "Son idénticos, Remove() es solo un alias de RemoveAt().",
+        "RemoveAt() elimina por valor; Remove() elimina por posición de índice."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Remove(elemento)</code> busca el elemento por <strong>valor</strong> y elimina la primera ocurrencia. <code>RemoveAt(índice)</code> elimina el elemento en la <strong>posición</strong> especificada. Ejemplo: <code>lista.Remove(\"Ana\")</code> vs <code>lista.RemoveAt(0)</code>."
+    },
+    {
+      "id": "col_mc_013",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué devuelve `lista.Contains(\"Dragon\")` si \"Dragon\" NO está en la lista?",
+      "options": [
+        "false",
+        "true",
+        "-1",
+        "null",
+        "Lanza una excepción"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Contains()</code> devuelve un <strong>bool</strong>: <code>true</code> si el elemento existe en la lista, <code>false</code> si no existe. Nunca lanza excepción. Si necesitas también el índice, usa <code>IndexOf()</code> que devuelve <code>-1</code> cuando no lo encuentra."
+    },
+    {
+      "id": "col_mc_014",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué namespace necesitas importar para usar `List<T>` en C#?",
+      "options": [
+        "System.Collections.Generic",
+        "System.Collections",
+        "System.Linq",
+        "UnityEngine.Collections",
+        "System.Generic"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para usar <code>List&lt;T&gt;</code> necesitas <strong><code>using System.Collections.Generic;</code></strong> al inicio del archivo. En Unity, los scripts de MonoBehaviour ya incluyen este namespace por defecto, pero en clases C# puras debes agregarlo manualmente."
+    },
+    {
+      "id": "col_mc_015",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿cuándo deberías preferir una `List<Enemy>` sobre un `Enemy[]` array?",
+      "options": [
+        "Cuando los enemigos pueden aparecer y morir dinámicamente durante la partida.",
+        "Cuando la cantidad de enemigos está fija desde el inicio y no cambia.",
+        "Cuando necesitas acceder a los enemigos por índice numérico.",
+        "Cuando los enemigos son todos del mismo tipo exacto.",
+        "Cuando la partida tiene menos de 10 enemigos en pantalla."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usa <code>List&lt;Enemy&gt;</code> cuando el número de enemigos <strong>cambia en tiempo de ejecución</strong> (aparecen y mueren). Si la cantidad es fija y conocida desde el inicio (como waypoints o posiciones de spawn), un array es más apropiado."
+    },
+    {
+      "id": "col_mc_016",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Es válido recorrer una `List<string>` con `foreach`? ¿Cuál sería la sintaxis correcta?",
+      "options": [
+        "Sí: `foreach (string s in miLista) { }`",
+        "No, foreach solo funciona con arrays.",
+        "Sí: `foreach (var in miLista) { }`",
+        "Sí: `foreach (miLista as string s) { }`",
+        "No, hay que convertirla a array primero con .ToArray()."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>foreach</code> funciona con cualquier colección que implemente <code>IEnumerable</code>, incluyendo <code>List&lt;T&gt;</code>. La sintaxis es <strong><code>foreach (string s in miLista)</code></strong>. Es la forma más limpia y legible de recorrer todos los elementos."
+    },
+    {
+      "id": "col_id_007",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "List<string> poderes = new List<string>();\npoderes.Add(\"Fuego\");\npoderes.Add(\"Hielo\");\npoderes.Add(\"Rayo\");\nDebug.Log(poderes.Count);",
+      "question": "¿Qué valor imprime `poderes.Count`?",
+      "target": "3",
+      "acceptedAnswers": ["3"],
+      "hints": [
+        "Count devuelve cuántos elementos hay en la lista en ese momento.",
+        "Se llamó Add() tres veces.",
+        "Cuenta las llamadas a Add()."
+      ],
+      "explanation": "Se llamó a <code>Add()</code> tres veces, añadiendo tres elementos. La propiedad <strong><code>Count</code></strong> devuelve el número actual de elementos, que es <code>3</code>."
+    },
+    {
+      "id": "col_id_008",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "List<int> numeros = new List<int>();\nnumeros.Add(10);\nnumeros.Add(20);\nnumeros.Add(30);\nnumeros.RemoveAt(1);\nDebug.Log(numeros.Count);",
+      "question": "¿Qué valor imprime `numeros.Count` después de llamar a `RemoveAt(1)`?",
+      "target": "2",
+      "acceptedAnswers": ["2"],
+      "hints": [
+        "Primero se agregan 3 elementos.",
+        "RemoveAt(1) elimina un elemento.",
+        "3 elementos - 1 eliminado = ?"
+      ],
+      "explanation": "La lista empieza con 3 elementos (10, 20, 30). <code>RemoveAt(1)</code> elimina el elemento en el índice 1 (el valor 20). Quedan 2 elementos (10, 30), por lo que <code>Count</code> es <strong>2</strong>."
+    },
+    {
+      "id": "col_id_009",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "List<string> items = new List<string>();\nitems.Add(\"Pocion\");\nitems.Add(\"Espada\");\nbool resultado = items.Contains(\"Escudo\");",
+      "question": "¿Qué valor tiene la variable `resultado`?",
+      "target": "false",
+      "acceptedAnswers": ["false", "False"],
+      "hints": [
+        "Contains() verifica si un elemento está en la lista.",
+        "Solo se añadieron 'Pocion' y 'Espada'.",
+        "¿Está 'Escudo' en la lista?"
+      ],
+      "explanation": "La lista contiene <code>\"Pocion\"</code> y <code>\"Espada\"</code>, pero <strong>no</strong> contiene <code>\"Escudo\"</code>. Por lo tanto, <code>Contains(\"Escudo\")</code> devuelve <strong><code>false</code></strong>."
+    },
+    {
+      "id": "col_id_010",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este fragmento de Unity:",
+      "code": "public class GameManager : MonoBehaviour\n{\n    private List<GameObject> enemies;\n\n    void Start()\n    {\n        enemies = new List<GameObject>();\n    }\n\n    public void RegisterEnemy(GameObject enemy)\n    {\n        enemies.Add(enemy);\n    }\n\n    public void UnregisterEnemy(GameObject enemy)\n    {\n        enemies.Remove(enemy);\n    }\n}",
+      "question": "¿Cuál es el método que permite eliminar un enemigo específico de la lista pasando el objeto directamente como argumento?",
+      "target": "Remove",
+      "acceptedAnswers": ["Remove", "Remove()", "enemies.Remove"],
+      "hints": [
+        "El método recibe el objeto a eliminar, no su índice.",
+        "Busca el método en UnregisterEnemy.",
+        "Empieza con la letra R."
+      ],
+      "explanation": "El método <strong><code>Remove(elemento)</code></strong> elimina la primera ocurrencia del elemento dado buscándolo por referencia/valor. Aquí <code>enemies.Remove(enemy)</code> elimina el GameObject específico de la lista."
+    },
+    {
+      "id": "col_id_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "using System.Collections.Generic;\n\nList<float> velocidades = new List<float>();\nvelocidades.Add(1.5f);\nvelocidades.Add(3.0f);\nint posicion = velocidades.IndexOf(3.0f);",
+      "question": "¿Qué valor tendrá la variable `posicion`?",
+      "target": "1",
+      "acceptedAnswers": ["1"],
+      "hints": [
+        "IndexOf() devuelve el índice base cero del elemento.",
+        "El primer elemento es 1.5f (índice 0).",
+        "El segundo elemento es 3.0f, ¿cuál es su índice?"
+      ],
+      "explanation": "<code>IndexOf(3.0f)</code> busca el valor <code>3.0f</code> en la lista y devuelve su índice. Como fue el segundo elemento agregado, su índice es <strong>1</strong> (recuerda: base cero)."
+    },
+    {
+      "id": "col_id_012",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código:",
+      "code": "List<string> misiones = new List<string>();\nmisiones.Add(\"A\");\nmisiones.Add(\"B\");\nmisiones.Add(\"C\");\nmisiones.Remove(\"B\");\nDebug.Log(misiones[1]);",
+      "question": "¿Qué valor imprime `misiones[1]` después de eliminar \"B\"?",
+      "target": "C",
+      "acceptedAnswers": ["C", "\"C\""],
+      "hints": [
+        "Después de Remove('B'), la lista se reorganiza.",
+        "Los elementos restantes son 'A' y 'C'.",
+        "¿Cuál es el elemento en el índice 1 de { 'A', 'C' }?"
+      ],
+      "explanation": "Después de <code>Remove(\"B\")</code>, la lista queda como <code>[\"A\", \"C\"]</code>. Los índices se reajustan automáticamente: <code>misiones[0]</code> es <code>\"A\"</code> y <code>misiones[1]</code> es <strong><code>\"C\"</code></strong>."
+    },
+    {
+      "id": "col_cw_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración e instanciación de una List de strings llamada `nombres`:",
+      "codeTemplate": "List<__________> nombres = new List<string>();",
+      "expectedAnswer": "string",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué tipo va entre los < >?",
+      "hints": [
+        "La lista debe almacenar cadenas de texto.",
+        "El tipo para cadenas de texto en C# es string.",
+        "Debe ser el mismo tipo que aparece en el new List<string>()."
+      ],
+      "explanation": "Para crear una lista de strings, el tipo genérico <code>T</code> es <strong><code>string</code></strong>: <code>List&lt;string&gt; nombres = new List&lt;string&gt;();</code>. Los dos lados del <code>=</code> deben usar el mismo tipo."
+    },
+    {
+      "id": "col_cw_008",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la llamada al método para agregar el objeto `nuevoEnemigo` a la lista `enemies`:",
+      "codeTemplate": "enemies.__________(nuevoEnemigo);",
+      "expectedAnswer": "Add",
+      "alternateAnswers": [],
+      "placeholder": "¿Cómo se llama el método para agregar?",
+      "hints": [
+        "Este método agrega un elemento al final de la lista.",
+        "Empieza con mayúscula.",
+        "En inglés, 'agregar' es 'add'."
+      ],
+      "explanation": "El método <strong><code>Add(elemento)</code></strong> agrega el elemento al final de la lista. En este caso, <code>enemies.Add(nuevoEnemigo)</code> añade el enemigo a la lista de enemigos activos."
+    },
+    {
+      "id": "col_cw_009",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa que declara e inicializa una lista vacía de objetos de tipo `Enemy` llamada `enemigosActivos`:",
+      "codeTemplate": null,
+      "expectedAnswer": "List<Enemy> enemigosActivos = new List<Enemy>();",
+      "alternateAnswers": [
+        "var enemigosActivos = new List<Enemy>();"
+      ],
+      "placeholder": "Escribe la declaración completa...",
+      "hints": [
+        "El tipo genérico entre < > es Enemy.",
+        "La lista empieza vacía, sin elementos.",
+        "El patrón es: List<Tipo> nombre = new List<Tipo>();"
+      ],
+      "explanation": "La declaración correcta es <code>List&lt;Enemy&gt; enemigosActivos = new List&lt;Enemy&gt;();</code>. Los paréntesis vacíos <code>()</code> al final crean una lista vacía a la que luego se le agregarán elementos con <code>Add()</code>."
+    },
+    {
+      "id": "col_cw_010",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el foreach para imprimir cada elemento de la lista `poderes`:",
+      "codeTemplate": "foreach (string poder in __________)\n{\n    Debug.Log(poder);\n}",
+      "expectedAnswer": "poderes",
+      "alternateAnswers": [],
+      "placeholder": "¿Sobre qué colección itera el foreach?",
+      "hints": [
+        "El foreach necesita saber sobre qué colección iterar.",
+        "La lista se llama 'poderes'.",
+        "Va donde dice 'in ___'."
+      ],
+      "explanation": "El <code>foreach</code> necesita la colección sobre la que itera después de la palabra <code>in</code>. La sintaxis completa es <code>foreach (string poder in <strong>poderes</strong>)</code>, donde <code>poderes</code> es el nombre de la lista."
+    },
+    {
+      "id": "col_cw_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el condicional que verifica si la lista `inventario` contiene el item \"LlaveDorada\" antes de usarla:",
+      "codeTemplate": "if (inventario.__________(\"LlaveDorada\"))\n{\n    AbrirPuerta();\n}",
+      "expectedAnswer": "Contains",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué método verifica si existe un elemento?",
+      "hints": [
+        "Necesitas un método que devuelva true o false.",
+        "El método verifica si la lista 'contiene' un elemento.",
+        "En inglés, 'contiene' es 'contains'."
+      ],
+      "explanation": "El método <strong><code>Contains(elemento)</code></strong> devuelve <code>true</code> si el elemento está en la lista, o <code>false</code> si no. Es perfecto para verificar condiciones antes de realizar acciones."
+    },
+    {
+      "id": "col_cw_012",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición del for para recorrer la lista `enemies` usando su propiedad de cantidad:",
+      "codeTemplate": "for (int i = 0; i < enemies.__________; i++)\n{\n    enemies[i].TakeDamage(10);\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué propiedad devuelve el tamaño de una List?",
+      "hints": [
+        "Las listas no tienen Length como los arrays.",
+        "La propiedad que devuelve el número de elementos de una List se llama diferente.",
+        "Empieza con C."
+      ],
+      "explanation": "En <code>List&lt;T&gt;</code>, la propiedad que devuelve el número de elementos es <strong><code>Count</code></strong> (no <code>Length</code>, que es de los arrays). La condición correcta es <code>i &lt; enemies.Count</code>."
+    }
+  ]
+}

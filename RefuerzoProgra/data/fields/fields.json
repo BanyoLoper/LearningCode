@@ -206,7 +206,7 @@
       "question": "¿Cuál de los campos pertenece a la CLASE y no a las instancias individuales?",
       "target": "TotalScore",
       "acceptedAnswers": [
-        "TotalScore y HighScore", "TotalScore", "HighScore",
+        "TotalScore y HighScore", "TotalScore", "HighScore", "TotalScore, HighScore", "TotalScore HighScore",
         "los estáticos", "static fields", "los campos estáticos",
         "TotalScore y HighScore (ambos estáticos)"
       ],
@@ -272,7 +272,7 @@
       "question": "¿Qué son '_name', '_level', '_health' e '_isAlive', a diferencia de 'upperName'?",
       "target": "_name",
       "acceptedAnswers": [
-        "son campos", "son campos de la clase", "son variables de instancia",
+        "son campos", "son campos de la clase", "son variables de instancia", "campos de clase",
         "pertenecen a la clase", "son miembros de la clase",
         "viven durante toda la vida del objeto"
       ],

@@ -1,0 +1,398 @@
+{
+  "id": "componentes",
+  "title": "Componentes",
+  "icon": "🧩",
+  "color": "#9C27B0",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "El Modelo de Componentes en Unity",
+        "type": "definition",
+        "content": "<strong>Composición sobre herencia</strong>: En Unity, un <code>GameObject</code> es un contenedor vacío. La funcionalidad viene de los <strong>Componentes</strong> que le agregas.<br><br>Ejemplos: agregas un <code>Rigidbody</code> y el objeto tiene física; agregas un <code>Collider</code> y puede detectar colisiones; agregas tu script y tiene lógica personalizada.<br><br>Esto es más flexible que la herencia profunda: en vez de <em>heredar</em> de una clase 'PhysicsPlayer', <em>agregas</em> Rigidbody + PlayerController + Animator al mismo GameObject."
+      },
+      {
+        "id": "doc-2",
+        "title": "GetComponent y Caching en Awake",
+        "type": "code",
+        "content": "using UnityEngine;\n\npublic class PlayerController : MonoBehaviour\n{\n    // Referencias cacheadas — buscar UNA vez en Awake\n    private Rigidbody rb;\n    private Animator animator;\n    private AudioSource audioSource;\n\n    void Awake()\n    {\n        // GetComponent<T>() busca el componente en este GameObject\n        rb = GetComponent<Rigidbody>();\n        animator = GetComponent<Animator>();\n        audioSource = GetComponent<AudioSource>();\n\n        // Verificar null después de GetComponent\n        if (rb == null)\n        {\n            Debug.LogError(\"No se encontró Rigidbody en \" + gameObject.name);\n        }\n    }\n\n    void Update()\n    {\n        // Usamos las referencias cacheadas — NO GetComponent aquí\n        float h = Input.GetAxis(\"Horizontal\");\n        animator.SetFloat(\"Speed\", Mathf.Abs(h));\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "TryGetComponent: El Patrón Seguro",
+        "type": "code",
+        "content": "using UnityEngine;\n\npublic class CollisionHandler : MonoBehaviour\n{\n    void OnCollisionEnter(Collision collision)\n    {\n        // TryGetComponent: no lanza excepción si no existe\n        // Usa 'out' para recibir el componente si se encuentra\n        if (collision.gameObject.TryGetComponent<Enemy>(out Enemy enemy))\n        {\n            enemy.TakeDamage(10);\n        }\n\n        // Alternativa con GetComponent (menos segura):\n        // Enemy enemy = collision.gameObject.GetComponent<Enemy>();\n        // if (enemy != null) enemy.TakeDamage(10);\n\n        // GetComponentInChildren: busca en hijos también\n        Collider col = GetComponentInChildren<Collider>();\n\n        // GetComponentInParent: busca en padres\n        Canvas canvas = GetComponentInParent<Canvas>();\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "RequireComponent: Dependencias Automáticas",
+        "type": "code",
+        "content": "using UnityEngine;\n\n// RequireComponent garantiza que Rigidbody siempre exista\n// Unity lo agrega automáticamente y no permite eliminarlo\n[RequireComponent(typeof(Rigidbody))]\n[RequireComponent(typeof(Collider))]\npublic class PhysicsObject : MonoBehaviour\n{\n    private Rigidbody rb;\n\n    void Awake()\n    {\n        // Seguro: RequireComponent garantiza que existe\n        rb = GetComponent<Rigidbody>();\n    }\n}\n\n// [SerializeField] expone campos privados al Inspector\npublic class EnemyStats : MonoBehaviour\n{\n    [SerializeField] private float health = 100f;\n    [SerializeField] private float speed = 5f;\n    [SerializeField] private Transform target; // Arrastra desde el Inspector\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Comparación: Componentes vs Herencia",
+        "type": "list",
+        "items": [
+          "Componentes (Unity): GameObject + Rigidbody + Collider + Script → composición flexible",
+          "Herencia profunda: Player : Character : Entity : GameObject → difícil de mantener",
+          "GetComponent<T>(): busca en el mismo GameObject",
+          "GetComponentInChildren<T>(): busca en el GameObject Y todos sus hijos (profundidad)",
+          "GetComponentInParent<T>(): busca en el GameObject Y todos sus padres (hacia arriba)",
+          "TryGetComponent<T>(out T comp): no lanza excepción, retorna bool — preferir sobre GetComponent cuando el componente puede no existir",
+          "AddComponent<T>(): agrega un componente en runtime",
+          "[RequireComponent(typeof(T))]: agrega dependencias automáticas al Editor",
+          "[SerializeField]: expone campos privados al Inspector de Unity (mejor que public)"
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "unity_mc_009",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace GetComponent<T>() en Unity?",
+      "options": [
+        "Busca y retorna el componente de tipo T en el mismo GameObject",
+        "Crea un nuevo componente de tipo T y lo agrega al GameObject",
+        "Busca el componente T en todos los objetos de la escena",
+        "Busca el componente T en los objetos hijos del GameObject",
+        "Retorna todos los componentes del GameObject como una lista"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>GetComponent&lt;T&gt;()</code> busca un componente del tipo especificado en el <strong>mismo GameObject</strong>. Si no existe, retorna <code>null</code>. Para buscar en hijos usa <code>GetComponentInChildren&lt;T&gt;()</code>."
+    },
+    {
+      "id": "unity_mc_010",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de MonoBehaviour se recomienda llamar GetComponent para cachear referencias a componentes?",
+      "options": [
+        "En Awake(), para que la referencia esté lista desde el inicio y no se repita cada frame",
+        "En Update(), para asegurarse de que el componente siempre exista",
+        "En Start(), es el único lugar válido para GetComponent",
+        "En OnEnable(), cada vez que el objeto se activa",
+        "No importa dónde, el rendimiento es igual en todos los métodos"
+      ],
+      "correctIndex": 0,
+      "explanation": "Se cachea en <strong>Awake()</strong> para que la referencia esté disponible desde Start() en adelante. Llamar <code>GetComponent</code> en <code>Update()</code> lo ejecutaría 60+ veces por segundo, desperdiciando rendimiento."
+    },
+    {
+      "id": "unity_mc_011",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la ventaja de TryGetComponent<T>() sobre GetComponent<T>()?",
+      "options": [
+        "TryGetComponent no lanza advertencias de rendimiento y retorna bool; es más seguro cuando el componente puede no existir",
+        "TryGetComponent es más rápido pero solo funciona en el Editor, no en builds",
+        "TryGetComponent lanza una excepción clara si el componente no existe, facilitando el debug",
+        "TryGetComponent busca en toda la jerarquía, no solo en el GameObject actual",
+        "No hay diferencia, son equivalentes en todos los aspectos"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>TryGetComponent&lt;T&gt;(out T comp)</code> retorna <code>true</code> si encuentra el componente (y lo asigna a <code>comp</code>) o <code>false</code> si no existe. Evita la asignación + null check por separado y no genera garbage en Unity 2019.2+."
+    },
+    {
+      "id": "unity_mc_012",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo usarías GetComponentInChildren<T>() en lugar de GetComponent<T>()?",
+      "options": [
+        "Cuando el componente buscado está en un GameObject hijo, como una malla o collider en un objeto hijo",
+        "Cuando quieres buscar el componente solo en el propio objeto, ignorando hijos",
+        "Cuando necesitas buscar el componente en objetos de otras escenas",
+        "GetComponentInChildren es más rápido, por eso siempre se prefiere",
+        "Cuando el componente solo existe en prefabs, no en escenas"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>GetComponentInChildren&lt;T&gt;()</code> busca el componente en el GameObject actual <em>y</em> en todos sus hijos (recursivamente). Es útil cuando tienes estructuras como: un objeto 'Player' raíz con un hijo 'Mesh' que tiene el <code>SkinnedMeshRenderer</code>."
+    },
+    {
+      "id": "unity_mc_013",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace el atributo [RequireComponent(typeof(Rigidbody))]?",
+      "options": [
+        "Obliga a que el Rigidbody esté presente: Unity lo agrega automáticamente y no permite eliminarlo mientras el script esté adjunto",
+        "Hace que el script solo funcione en objetos que tengan Rigidbody previamente agregado",
+        "Lanza un error en runtime si el Rigidbody no existe",
+        "Agrega el Rigidbody solo en builds de producción, no en el Editor",
+        "Es solo documentación y no tiene efecto funcional"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>[RequireComponent(typeof(T))]</code> le dice al Editor de Unity que este script <em>necesita</em> el componente T. Si agregas el script a un objeto sin ese componente, Unity lo agrega automáticamente. También evita borrar el componente requerido accidentalmente."
+    },
+    {
+      "id": "unity_mc_014",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Para qué sirve [SerializeField] en un campo privado?",
+      "options": [
+        "Expone el campo privado en el Inspector de Unity, permitiendo asignarlo sin hacerlo público",
+        "Guarda el campo en un archivo JSON automáticamente al salir del juego",
+        "Hace que el campo se sincronice en red para juegos multijugador",
+        "Convierte el campo privado en una propiedad con getter y setter automáticos",
+        "Hace que el campo sea de solo lectura desde el Inspector"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>[SerializeField]</code> le dice a Unity que serialice (muestre y guarde) el campo privado en el Inspector. Es preferible a hacer el campo <code>public</code> porque mantiene la encapsulación: otros scripts no pueden acceder al campo, pero el diseñador puede configurarlo desde el Editor."
+    },
+    {
+      "id": "unity_mc_015",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia principal entre composición por componentes y herencia profunda en Unity?",
+      "options": [
+        "Los componentes permiten combinar funcionalidades sin crear jerarquías de clases rígidas; se pueden agregar o quitar en runtime",
+        "La herencia es más eficiente en memoria; los componentes solo se usan para prototipos",
+        "Los componentes solo funcionan con GameObjects; la herencia funciona en cualquier clase C#",
+        "No hay diferencia práctica, Unity soporta ambos patrones por igual",
+        "La herencia permite acceso al Inspector de Unity; los componentes no"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>composición</strong> (componentes) permite construir objetos combinando piezas reutilizables sin acoplamiento de herencia. Un objeto puede tener Rigidbody + Collider + Script sin heredar de ninguna clase especial. La herencia profunda (Player → Character → Entity → ...) se vuelve difícil de mantener y modificar."
+    },
+    {
+      "id": "unity_mc_016",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes un script de cámara que necesita acceder al AudioListener del mismo objeto. ¿Cuál es la forma más correcta?",
+      "options": [
+        "Cachear con GetComponent<AudioListener>() en Awake() y guardar la referencia en un campo privado",
+        "Llamar GetComponent<AudioListener>() cada vez que se necesite en Update()",
+        "Usar FindObjectOfType<AudioListener>() en cada frame",
+        "Hacer el campo AudioListener público y arrastrarlo desde el Inspector cada vez",
+        "Usar GetComponentInParent<AudioListener>() porque siempre está en el padre"
+      ],
+      "correctIndex": 0,
+      "explanation": "El patrón correcto es <strong>cachear</strong>: campo privado + <code>GetComponent&lt;AudioListener&gt;()</code> en <code>Awake()</code>. Esto evita búsquedas repetidas en Update y mantiene la encapsulación. <code>FindObjectOfType</code> es mucho más costoso porque busca en <em>toda</em> la escena."
+    },
+    {
+      "id": "unity_id_007",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script:",
+      "code": "[RequireComponent(typeof(Rigidbody))]\n[RequireComponent(typeof(CapsuleCollider))]\npublic class CharacterMovement : MonoBehaviour\n{\n    private Rigidbody rb;\n\n    void Awake()\n    {\n        rb = GetComponent<Rigidbody>();\n    }\n}",
+      "question": "¿Qué atributo garantiza que Rigidbody y CapsuleCollider siempre existen en el GameObject?",
+      "target": "RequireComponent",
+      "acceptedAnswers": [
+        "RequireComponent",
+        "[RequireComponent]",
+        "require component"
+      ],
+      "hints": [
+        "Es un atributo de C# escrito antes de la clase",
+        "Su nombre en inglés indica 'componente requerido'",
+        "Unity lo agrega automáticamente al Inspector cuando asignas el script"
+      ],
+      "explanation": "<code>[RequireComponent(typeof(T))]</code> garantiza que el componente especificado siempre esté presente. Al agregar <code>CharacterMovement</code> a un objeto sin Rigidbody, Unity agrega el Rigidbody automáticamente. Además, impide borrar el Rigidbody mientras el script esté adjunto."
+    },
+    {
+      "id": "unity_id_008",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script:",
+      "code": "public class WeaponHolder : MonoBehaviour\n{\n    [SerializeField] private Transform weaponSocket;\n    [SerializeField] private float damage = 25f;\n    [SerializeField] private AudioClip shootSound;\n}",
+      "question": "¿Qué atributo hace que campos privados aparezcan en el Inspector de Unity?",
+      "target": "SerializeField",
+      "acceptedAnswers": [
+        "SerializeField",
+        "[SerializeField]",
+        "serialize field"
+      ],
+      "hints": [
+        "Es un atributo que aparece entre corchetes antes de cada campo",
+        "Su nombre indica 'campo serializado'",
+        "Permite mantener el campo privado pero visible en el Inspector"
+      ],
+      "explanation": "<code>[SerializeField]</code> le dice a Unity que serialize ese campo privado, haciéndolo visible y editable en el Inspector. Es la alternativa recomendada a hacer campos <code>public</code>, ya que mantiene la encapsulación de C# (otros scripts no pueden acceder al campo directamente)."
+    },
+    {
+      "id": "unity_id_009",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código con un patrón específico:",
+      "code": "void OnCollisionEnter(Collision collision)\n{\n    if (collision.gameObject.TryGetComponent<IDamageable>(out IDamageable damageable))\n    {\n        damageable.TakeDamage(damage);\n    }\n}",
+      "question": "¿Qué método se usa para obtener un componente de forma segura sin riesgo de NullReferenceException?",
+      "target": "TryGetComponent",
+      "acceptedAnswers": [
+        "TryGetComponent",
+        "TryGetComponent<IDamageable>",
+        "trygetcomponent"
+      ],
+      "hints": [
+        "El método empieza con 'Try'",
+        "Usa el parámetro 'out' para recibir el componente",
+        "Retorna bool: true si encontró el componente"
+      ],
+      "explanation": "<code>TryGetComponent&lt;T&gt;(out T component)</code> intenta obtener el componente y retorna <code>true</code> si lo encuentra (asignando la referencia al parámetro <code>out</code>). Evita el patrón <code>GetComponent + null check</code> y en Unity 2019.2+ no genera garbage allocation."
+    },
+    {
+      "id": "unity_id_010",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza esta jerarquía de prefab: Player (raíz) → Body (hijo) → Sword (nieto). El Animator está en Body:",
+      "code": "public class PlayerCombat : MonoBehaviour\n{\n    private Animator animator;\n\n    void Awake()\n    {\n        // ¿Qué método se usa aquí?\n        animator = GetComponentInChildren<Animator>();\n    }\n}",
+      "question": "¿Qué método permite obtener el Animator que está en un GameObject hijo?",
+      "target": "GetComponentInChildren",
+      "acceptedAnswers": [
+        "GetComponentInChildren",
+        "GetComponentInChildren<Animator>",
+        "getcomponentinchildren"
+      ],
+      "hints": [
+        "El componente no está en el mismo objeto, sino en un hijo",
+        "El método tiene 'InChildren' en su nombre",
+        "Busca en el objeto actual Y en toda su jerarquía de hijos"
+      ],
+      "explanation": "<code>GetComponentInChildren&lt;T&gt;()</code> busca el componente en el GameObject actual <em>y</em> en todos sus descendientes (hijos, nietos, etc.). Útil cuando la estructura visual del prefab separa los componentes en objetos hijos por organización."
+    },
+    {
+      "id": "unity_id_012",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este patrón de acceso a componentes en un juego de plataformas:",
+      "code": "public class JumpPad : MonoBehaviour\n{\n    void OnTriggerEnter(Collider other)\n    {\n        Rigidbody rb = other.GetComponent<Rigidbody>();\n        if (rb != null)\n        {\n            rb.AddForce(Vector3.up * 1000f, ForceMode.Impulse);\n        }\n    }\n}",
+      "question": "¿Por qué se verifica que 'rb != null' después de GetComponent?",
+      "target": "null check",
+      "acceptedAnswers": [
+        "null check",
+        "verificación de nulo",
+        "porque GetComponent puede retornar null",
+        "el objeto puede no tener Rigidbody",
+        "no todos los objetos tienen Rigidbody"
+      ],
+      "hints": [
+        "¿Qué retorna GetComponent si el componente no existe?",
+        "¿Qué pasa si llamas rb.AddForce() cuando rb es null?",
+        "No todos los objetos que entran al trigger necesariamente tienen Rigidbody"
+      ],
+      "explanation": "<code>GetComponent&lt;T&gt;()</code> retorna <code>null</code> si el componente no existe en el objeto. Intentar usar una referencia nula lanza un <strong>NullReferenceException</strong>. La verificación <code>if (rb != null)</code> protege contra este error — el trigger podría activarse con objetos estáticos sin Rigidbody."
+    },
+    {
+      "id": "unity_cw_007",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 1,
+      "instruction": "Escribe la línea completa para cachear el componente Animator del mismo GameObject en una variable privada llamada 'animator' dentro de Awake():",
+      "expectedAnswer": "animator = GetComponent<Animator>();",
+      "alternateAnswers": [
+        "animator = GetComponent<Animator>() ;",
+        "this.animator = GetComponent<Animator>();"
+      ],
+      "placeholder": "animator = ...",
+      "hints": [
+        "Usa GetComponent con el tipo genérico entre <>",
+        "El tipo es Animator",
+        "Termina con punto y coma"
+      ],
+      "explanation": "<code>animator = GetComponent&lt;Animator&gt;();</code> obtiene el Animator del mismo GameObject. Al cachearlo en Awake(), está disponible en Update() y otros métodos sin búsqueda repetida."
+    },
+    {
+      "id": "unity_cw_008",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo para garantizar que este script siempre tenga un Rigidbody adjunto:",
+      "codeTemplate": "[__________(typeof(Rigidbody))]\npublic class PhysicsObject : MonoBehaviour { }",
+      "expectedAnswer": "RequireComponent",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del atributo",
+      "hints": [
+        "Es un atributo de Unity escrito entre corchetes",
+        "Indica que este componente es 'requerido'",
+        "En inglés: 'require' + 'component'"
+      ],
+      "explanation": "<code>[RequireComponent(typeof(Rigidbody))]</code> garantiza que Unity agregue automáticamente el Rigidbody al GameObject cuando se asigna el script. También previene eliminarlo accidentalmente desde el Inspector."
+    },
+    {
+      "id": "unity_cw_009",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el atributo para que el campo privado 'speed' aparezca en el Inspector de Unity:",
+      "codeTemplate": "[__________] private float speed = 5f;",
+      "expectedAnswer": "SerializeField",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del atributo",
+      "hints": [
+        "El atributo va entre corchetes antes del campo",
+        "Combina las palabras 'serialize' y 'field'",
+        "Permite ver campos privados en el Inspector sin hacerlos públicos"
+      ],
+      "explanation": "<code>[SerializeField]</code> expone el campo privado en el Inspector de Unity. Es la práctica recomendada sobre hacer campos <code>public</code>, ya que mantiene la encapsulación de C#."
+    },
+    {
+      "id": "unity_cw_010",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa para obtener de forma SEGURA (con out) el componente Enemy del objeto que chocó, guardándolo en una variable 'enemy':",
+      "expectedAnswer": "if (collision.gameObject.TryGetComponent<Enemy>(out Enemy enemy))",
+      "alternateAnswers": [
+        "collision.gameObject.TryGetComponent<Enemy>(out Enemy enemy)"
+      ],
+      "placeholder": "if (...)",
+      "hints": [
+        "Usa TryGetComponent en lugar de GetComponent",
+        "El parámetro out declara la variable y la recibe al mismo tiempo",
+        "TryGetComponent retorna bool, por eso va en un if"
+      ],
+      "explanation": "<code>if (collision.gameObject.TryGetComponent&lt;Enemy&gt;(out Enemy enemy))</code> intenta obtener el componente Enemy. Si existe, <code>enemy</code> tiene la referencia y el bloque <code>if</code> se ejecuta. Si no existe, retorna false y no hay riesgo de NullReferenceException."
+    },
+    {
+      "id": "unity_cw_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método que busca un Animator en el GameObject actual Y en todos sus hijos:",
+      "codeTemplate": "animator = __________<Animator>();",
+      "expectedAnswer": "GetComponentInChildren",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "El método busca 'InChildren' (en los hijos)",
+        "Es similar a GetComponent pero con alcance extendido a hijos",
+        "Busca en el objeto actual y en toda su jerarquía descendiente"
+      ],
+      "explanation": "<code>GetComponentInChildren&lt;T&gt;()</code> busca el componente en el GameObject actual y en todos sus descendientes. Útil cuando el prefab tiene objetos hijos con componentes específicos (como un Animator en un hijo 'Body')."
+    },
+    {
+      "id": "unity_cw_012",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración completa de un campo privado 'rb' de tipo Rigidbody con el atributo SerializeField para asignarlo desde el Inspector:",
+      "expectedAnswer": "[SerializeField] private Rigidbody rb;",
+      "alternateAnswers": [
+        "[SerializeField]\nprivate Rigidbody rb;",
+        "[SerializeField] private Rigidbody rb = null;"
+      ],
+      "placeholder": "[...] private ...",
+      "hints": [
+        "Empieza con el atributo entre corchetes",
+        "Luego la visibilidad 'private', el tipo 'Rigidbody' y el nombre 'rb'",
+        "Termina con punto y coma"
+      ],
+      "explanation": "<code>[SerializeField] private Rigidbody rb;</code> declara el campo como privado (encapsulación) pero visible en el Inspector (para asignarlo arrastrando). Es la práctica recomendada frente a <code>public Rigidbody rb;</code>."
+    },
+    {
+      "id": "unity_cw_013",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea que usa TryGetComponent para obtener un Rigidbody de forma segura, guardando el resultado en una variable llamada rb.",
+      "expectedAnswer": "TryGetComponent<Rigidbody>(out Rigidbody rb);",
+      "alternateAnswers": [
+        "TryGetComponent<Rigidbody>(out var rb);"
+      ],
+      "placeholder": "Escribe la línea completa...",
+      "hints": [
+        "TryGetComponent usa la palabra clave out para devolver el componente",
+        "La sintaxis es: TryGetComponent<Tipo>(out Tipo nombreVariable)"
+      ],
+      "explanation": "<code>TryGetComponent&lt;Rigidbody&gt;(out Rigidbody rb)</code> es la versión segura de GetComponent. Devuelve <code>true</code> si encontró el componente y lo asigna a <code>rb</code>. Si no lo encuentra, devuelve <code>false</code> y rb queda como null, sin lanzar errores."
+    }
+  ]
+}

@@ -1,0 +1,376 @@
+{
+  "id": "scriptableobjects",
+  "title": "ScriptableObjects",
+  "icon": "📄",
+  "documentation": {
+    "sections": [
+      {
+        "id": "so-def",
+        "title": "¿Qué es un ScriptableObject?",
+        "type": "definition",
+        "content": "Un <strong>ScriptableObject</strong> es una clase especial de Unity que permite crear <em>assets de datos</em> en el proyecto — archivos <code>.asset</code> que viven en la carpeta del proyecto, no en una escena. A diferencia de MonoBehaviour, <strong>no necesita estar adjunto a un GameObject</strong>. Es ideal para almacenar configuraciones, estadísticas, y datos compartidos entre múltiples objetos de la escena."
+      },
+      {
+        "id": "so-syntax",
+        "title": "Declarar y Crear un ScriptableObject",
+        "type": "code",
+        "content": "using UnityEngine;\n\n// 1. Declara heredando de ScriptableObject\n[CreateAssetMenu(fileName = \"WeaponData\", menuName = \"Game/Weapon Data\")]\npublic class WeaponData : ScriptableObject\n{\n    public string weaponName;\n    public int damage;\n    public float attackSpeed;\n    public Sprite icon;\n}\n\n// Crear en Unity: clic derecho en Project → Game → Weapon Data\n// Aparece un archivo WeaponData.asset en tu carpeta"
+      },
+      {
+        "id": "so-use",
+        "title": "Usar un ScriptableObject desde MonoBehaviour",
+        "type": "code",
+        "content": "public class Warrior : MonoBehaviour\n{\n    // Arrastra el .asset desde el Inspector\n    [SerializeField] private WeaponData weaponData;\n\n    void Attack(IDamageable target)\n    {\n        // Lee los datos del SO\n        target.TakeDamage(weaponData.damage);\n        Debug.Log($\"Atacando con {weaponData.weaponName}\");\n    }\n}\n// Múltiples Warriors pueden referenciar el MISMO WeaponData.asset\n// Cambiar el .asset afecta a TODOS los que lo usan"
+      },
+      {
+        "id": "so-vs-mono",
+        "title": "ScriptableObject vs MonoBehaviour",
+        "type": "list",
+        "items": [
+          "<strong>ScriptableObject:</strong> Hereda de <code>ScriptableObject</code>. No tiene Transform. No se adjunta a GameObjects. Vive en el proyecto como un .asset. Persiste entre escenas.",
+          "<strong>MonoBehaviour:</strong> Hereda de <code>MonoBehaviour</code>. Tiene Transform. Se adjunta a GameObjects. Vive en una escena específica. Se destruye al cambiar de escena.",
+          "ScriptableObject <strong>no tiene</strong> Awake/Start/Update en el sentido tradicional (tiene OnEnable y OnDisable).",
+          "ScriptableObject es un <em>asset persistente</em> — existe mientras esté en el proyecto, independientemente de qué escena esté activa."
+        ]
+      },
+      {
+        "id": "so-analogy",
+        "title": "🎮 Analogía: SO como Config File",
+        "type": "analogy",
+        "content": "Piensa en los ScriptableObjects como <strong>archivos de configuración tipados</strong>. En lugar de guardar las estadísticas de armas en un JSON o hardcodearlas en el código, creas un <code>WeaponData.asset</code> por cada arma. Los diseñadores del juego pueden editar los valores directamente en el Inspector de Unity sin tocar código. Si tienes 50 guerreros en la escena y todos usan la misma <code>EspadadeMadera.asset</code>, cambiar el daño en ese asset actualiza todos al instante."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "so_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿De qué clase debe heredar un ScriptableObject en Unity?",
+      "options": [
+        "MonoBehaviour",
+        "ScriptableObject",
+        "Component",
+        "Object",
+        "Behaviour"
+      ],
+      "correctIndex": 1,
+      "explanation": "Los ScriptableObjects heredan de la clase <strong>ScriptableObject</strong> de Unity: <code>public class WeaponData : ScriptableObject</code>. No heredan de MonoBehaviour (que es para componentes de GameObjects). ScriptableObject ofrece serialización y persistencia como asset sin el overhead de un componente."
+    },
+    {
+      "id": "so_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Para qué sirve el atributo `[CreateAssetMenu]` en un ScriptableObject?",
+      "options": [
+        "Para que el SO aparezca en el menú Component del GameObject",
+        "Para añadir una entrada en el menú clic derecho del Project que permite crear el asset",
+        "Para que Unity llame a un método cuando se crea el archivo",
+        "Para marcar el SO como de solo lectura en el Inspector",
+        "Para que el SO se sincronice automáticamente con una base de datos"
+      ],
+      "correctIndex": 1,
+      "explanation": "<code>[CreateAssetMenu]</code> añade una opción en el menú <strong>clic derecho → Create</strong> del panel Project de Unity. Sin este atributo, hay que crear el asset por código. Con él, los diseñadores pueden crear nuevas instancias del SO directamente desde el Editor sin código."
+    },
+    {
+      "id": "so_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Necesita un ScriptableObject estar adjunto a un GameObject para funcionar?",
+      "options": [
+        "Sí, siempre debe estar en un GameObject",
+        "No — vive como un archivo .asset en el proyecto, independiente de cualquier escena",
+        "Solo si tiene el método Awake()",
+        "Sí, pero puede ser en cualquier GameObject vacío",
+        "Depende de si hereda también de MonoBehaviour"
+      ],
+      "correctIndex": 1,
+      "explanation": "No. Un ScriptableObject <strong>es un asset del proyecto</strong>, como una textura o un audio clip. Existe como archivo <code>.asset</code> en tu carpeta de proyecto y persiste entre escenas. No necesita ni puede estar adjunto a un GameObject. Se referencia desde MonoBehaviours mediante campos serializados."
+    },
+    {
+      "id": "so_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la ventaja de usar un ScriptableObject para las estadísticas de un enemigo en lugar de hardcodearlas en el script?",
+      "options": [
+        "El código compila más rápido",
+        "Permite que diseñadores cambien los valores desde el Inspector sin modificar código",
+        "Los ScriptableObjects usan menos memoria que los campos de MonoBehaviour",
+        "Obliga a que todos los enemigos tengan los mismos stats",
+        "El ScriptableObject se actualiza automáticamente en tiempo real"
+      ],
+      "correctIndex": 1,
+      "explanation": "La ventaja principal es la <strong>separación entre datos y código</strong>. Un diseñador puede crear un <code>GoblinStats.asset</code> y ajustar health, damage, speed directamente en el Inspector sin tocar ni una línea de C#. Además, múltiples prefabs de enemigos pueden compartir el mismo asset — cambiar uno cambia todos."
+    },
+    {
+      "id": "so_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué ocurre si 100 guerreros en la escena referencian el mismo `WeaponData.asset`?",
+      "options": [
+        "Se crean 100 copias del asset en memoria, una por guerrero",
+        "Todos comparten la misma instancia del asset — cambiar uno cambia todos",
+        "Genera un error porque solo un objeto puede referenciar un SO a la vez",
+        "Los datos se copian al iniciar la escena, por lo que cambios posteriores no afectan",
+        "Unity crea copias automáticamente para evitar conflictos"
+      ],
+      "correctIndex": 1,
+      "explanation": "Todos los 100 guerreros <strong>comparten la misma instancia</strong> del asset. Solo hay un <code>WeaponData.asset</code> en memoria. Esta es una de las grandes ventajas de los ScriptableObjects: datos compartidos sin duplicación. Si cambias el <code>damage</code> del asset en runtime, todos los guerreros lo sienten al instante."
+    },
+    {
+      "id": "so_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Tiene un ScriptableObject acceso a los métodos `Update()`, `Start()` y `Awake()` como MonoBehaviour?",
+      "options": [
+        "Sí, exactamente igual que MonoBehaviour",
+        "Solo tiene Update() pero no Start() ni Awake()",
+        "No — ScriptableObject no tiene estos métodos de ciclo de vida de escena",
+        "Solo tiene Awake() que se llama al cargar el proyecto",
+        "Tiene Start() pero se llama al crear el asset, no al iniciar la escena"
+      ],
+      "correctIndex": 2,
+      "explanation": "Los ScriptableObjects <strong>no tienen</strong> <code>Update()</code>, <code>Start()</code> ni <code>Awake()</code>. Son assets de datos, no componentes de juego. Tienen <code>OnEnable()</code> (cuando se activa/carga) y <code>OnDisable()</code>. Si necesitas lógica por frame, sigue siendo el MonoBehaviour el que tiene Update y lee datos del SO."
+    },
+    {
+      "id": "so_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuándo es más apropiado usar un ScriptableObject en lugar de una clase estática con datos?",
+      "options": [
+        "Nunca — las clases estáticas son siempre preferibles por ser más simples",
+        "Cuando los datos necesitan ser editables en el Inspector de Unity y persistir como asset",
+        "Solo cuando los datos cambian en runtime",
+        "Cuando la clase necesita heredar de MonoBehaviour",
+        "Solo en builds de producción, no en desarrollo"
+      ],
+      "correctIndex": 1,
+      "explanation": "ScriptableObject es preferible cuando: (1) los datos deben ser <strong>editables en el Inspector</strong> por diseñadores, (2) necesitas <strong>múltiples configuraciones</strong> (varios weapon_data.asset para cada arma), (3) los datos deben <strong>persistir como asset</strong> en el proyecto. Las clases estáticas no son editables en el Inspector ni crean assets."
+    },
+    {
+      "id": "so_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En el atributo `[CreateAssetMenu(fileName = \"WeaponData\", menuName = \"Game/Weapon Data\")]`, ¿qué controla el parámetro `menuName`?",
+      "options": [
+        "El nombre del archivo .asset que se creará",
+        "La ruta en el menú Create donde aparece la opción",
+        "El nombre que se muestra en el Inspector",
+        "La carpeta donde se guardará el asset",
+        "El nombre de la clase en el código"
+      ],
+      "correctIndex": 1,
+      "explanation": "<code>menuName</code> define la <strong>ruta en el menú Create</strong> del Project. <code>\"Game/Weapon Data\"</code> crea una entrada bajo <em>Game → Weapon Data</em> al hacer clic derecho. <code>fileName</code> es el nombre por defecto del archivo .asset al crearse. Esto organiza los assets personalizados en submenús para mantener el proyecto ordenado."
+    },
+    {
+      "id": "so_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta clase:",
+      "code": "[CreateAssetMenu(fileName = \"EnemyStats\", menuName = \"Game/Enemy Stats\")]\npublic class EnemyStats : ScriptableObject\n{\n    public string enemyName;\n    public int maxHealth;\n    public float moveSpeed;\n    public int attackDamage;\n}",
+      "question": "¿Qué tipo de archivo crea Unity cuando usas el menú para crear este asset?",
+      "target": ".asset",
+      "acceptedAnswers": [
+        ".asset", "archivo asset", "EnemyStats.asset", "un asset",
+        "archivo .asset", "asset de Unity"
+      ],
+      "hints": [
+        "Los ScriptableObjects no se guardan como .cs (código) ni como .json",
+        "Unity tiene un formato de asset propio para sus objetos serializados",
+        "La extensión del archivo generado es..."
+      ],
+      "explanation": "Unity crea un archivo <code>.asset</code> (por ejemplo, <code>EnemyStats.asset</code>). Este es el formato binario serializado de Unity para assets personalizados. Es visible y editable en el Panel Project, y sus campos se muestran en el Inspector cuando lo seleccionas."
+    },
+    {
+      "id": "so_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa cómo se usa el SO en un MonoBehaviour:",
+      "code": "public class Enemy : MonoBehaviour\n{\n    [SerializeField] private EnemyStats stats;\n    private int currentHealth;\n\n    void Awake()\n    {\n        currentHealth = stats.maxHealth;\n    }\n}",
+      "question": "¿Cómo se asigna `stats` (el EnemyStats) al prefab de Enemy en Unity?",
+      "target": "[SerializeField]",
+      "acceptedAnswers": [
+        "arrastrando desde el Inspector", "drag and drop en el Inspector",
+        "en el Inspector de Unity", "desde el panel Project al Inspector",
+        "asignando en el Inspector"
+      ],
+      "hints": [
+        "[SerializeField] hace que el campo privado aparezca en el Inspector de Unity",
+        "El .asset del EnemyStats está en el panel Project",
+        "Se asigna visualmente sin código: arrastra el .asset al campo del Inspector"
+      ],
+      "explanation": "Gracias a <code>[SerializeField]</code>, el campo <code>stats</code> aparece en el Inspector del prefab Enemy. Para asignarlo, simplemente <strong>arrastra el <code>EnemyStats.asset</code> desde el panel Project al campo</strong> en el Inspector. No se necesita código adicional."
+    },
+    {
+      "id": "so_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa este sistema de inventario:",
+      "code": "[CreateAssetMenu(menuName = \"Game/Item\")]\npublic class ItemData : ScriptableObject\n{\n    public string itemName;\n    public Sprite icon;\n    public int value;\n}\n\npublic class InventorySlot : MonoBehaviour\n{\n    public ItemData item;  // puede ser null si el slot está vacío\n    private Image iconImage;\n\n    void Start()\n    {\n        iconImage = GetComponent<Image>();\n        if (item != null)\n            iconImage.sprite = item.icon;\n    }\n}",
+      "question": "Si 5 slots del inventario referencian el mismo `SwordItem.asset`, ¿cuántas instancias de `ItemData` existen en memoria?",
+      "target": "SwordItem.asset",
+      "acceptedAnswers": ["1", "una", "uno", "una instancia", "una sola"],
+      "hints": [
+        "Los ScriptableObjects son assets compartidos — todos apuntan al mismo archivo",
+        "Cinco referencias al mismo archivo no crea cinco copias del archivo",
+        "Si fueran clases normales instanciadas con 'new', serían 5 copias. Pero un SO es..."
+      ],
+      "explanation": "Solo <strong>1 instancia</strong> de <code>ItemData</code> en memoria. Los 5 slots tienen una referencia al mismo <code>SwordItem.asset</code> — es como 5 punteros apuntando al mismo objeto. Esta es la clave de los ScriptableObjects: datos compartidos sin duplicación."
+    },
+    {
+      "id": "so_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza estos dos enfoques:",
+      "code": "// Enfoque A: datos hardcoded\npublic class Sword : MonoBehaviour\n{\n    private int damage = 35;\n    private float speed = 1.2f;\n    private string name = \"Iron Sword\";\n}\n\n// Enfoque B: con ScriptableObject\npublic class Sword : MonoBehaviour\n{\n    [SerializeField] private WeaponData data;\n    // damage, speed y name vienen del .asset\n}",
+      "question": "¿Qué ventaja tiene el Enfoque B para un equipo de desarrollo con un diseñador de niveles?",
+      "target": "WeaponData",
+      "acceptedAnswers": [
+        "el diseñador puede cambiar valores sin código", "sin tocar el código",
+        "configurable en el Inspector", "el diseñador ajusta en el Inspector",
+        "separación datos y código", "no requiere programar para cambiar stats"
+      ],
+      "hints": [
+        "El diseñador de niveles probablemente no sabe programar",
+        "En el enfoque A, cambiar el daño requiere modificar el .cs",
+        "En el enfoque B, los valores están en un .asset editable en el..."
+      ],
+      "explanation": "El Enfoque B permite al diseñador de niveles <strong>modificar damage, speed y name directamente desde el Inspector</strong> sin abrir ningún archivo de código. Solo selecciona el <code>WeaponData.asset</code> y edita los campos. El programador y el diseñador pueden trabajar en paralelo sin pisarse."
+    },
+    {
+      "id": "so_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este patrón de evento con ScriptableObjects:",
+      "code": "[CreateAssetMenu(menuName = \"Events/Game Event\")]\npublic class GameEvent : ScriptableObject\n{\n    private List<GameEventListener> listeners = new List<GameEventListener>();\n\n    public void Raise()\n    {\n        for (int i = listeners.Count - 1; i >= 0; i--)\n            listeners[i].OnEventRaised();\n    }\n\n    public void RegisterListener(GameEventListener l) => listeners.Add(l);\n    public void UnregisterListener(GameEventListener l) => listeners.Remove(l);\n}",
+      "question": "¿Qué patrón de diseño implementa este ScriptableObject?",
+      "target": "GameEvent",
+      "acceptedAnswers": [
+        "observer", "patrón observer", "event system", "sistema de eventos",
+        "publisher subscriber", "pub sub", "event-driven"
+      ],
+      "hints": [
+        "El SO mantiene una lista de 'listeners' y los notifica al llamar Raise()",
+        "Este patrón tiene un publicador (el evento) y múltiples suscriptores (los listeners)",
+        "El patrón donde múltiples objetos se suscriben para ser notificados de un cambio es..."
+      ],
+      "explanation": "Implementa el <strong>patrón Observer</strong> (también conocido como Event System o Publish-Subscribe). El <code>GameEvent</code> ScriptableObject actúa como el publicador: cuando se llama <code>Raise()</code>, notifica a todos los listeners registrados. Los listeners se suscriben/desuscriben sin que el publicador los conozca directamente."
+    },
+    {
+      "id": "so_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este código:",
+      "code": "public class QuestManager : MonoBehaviour\n{\n    [SerializeField] private QuestData currentQuest;\n\n    void Start()\n    {\n        Debug.Log(\"Quest activa: \" + currentQuest.questName);\n        Debug.Log(\"Objetivo: \" + currentQuest.objective);\n    }\n}",
+      "question": "¿Dónde se define el valor de `currentQuest.questName`?",
+      "target": "QuestData",
+      "acceptedAnswers": [
+        "en el ScriptableObject", "en el .asset", "en el Inspector",
+        "en QuestData.asset", "en el asset de Unity", "en el archivo .asset"
+      ],
+      "hints": [
+        "QuestData es un ScriptableObject — sus campos se editan en el Editor de Unity",
+        "El QuestManager lee el dato pero no lo define — lo obtiene del campo serializado",
+        "El valor viene del archivo .asset que fue asignado en el..."
+      ],
+      "explanation": "El valor de <code>questName</code> se define en el <strong>archivo .asset de QuestData</strong>, editado desde el Inspector de Unity. El <code>QuestManager</code> solo lee el dato mediante la referencia <code>currentQuest</code>. Esto separa claramente quién define los datos (el asset/diseñador) y quién los usa (el MonoBehaviour)."
+    },
+    {
+      "id": "so_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la declaración para que WeaponData sea un ScriptableObject:",
+      "codeTemplate": "public class WeaponData : __________\n{\n    public int damage;\n}",
+      "expectedAnswer": "ScriptableObject",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la clase base...",
+      "hints": [
+        "Los ScriptableObjects heredan de una clase especial de Unity, no de MonoBehaviour",
+        "La clase base se llama igual que el tipo de asset"
+      ],
+      "explanation": "Para crear un ScriptableObject se hereda de <code>ScriptableObject</code>: <code>public class WeaponData : ScriptableObject</code>. A diferencia de componentes de GameObjects que heredan de <code>MonoBehaviour</code>, los ScriptableObjects usan esta clase base específica."
+    },
+    {
+      "id": "so_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo que permite crear este asset desde el menú del Editor de Unity:",
+      "codeTemplate": "[__________(fileName = \"EnemyConfig\", menuName = \"Game/Enemy Config\")]\npublic class EnemyConfig : ScriptableObject { }",
+      "expectedAnswer": "CreateAssetMenu",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del atributo...",
+      "hints": [
+        "Este atributo de Unity permite crear instancias del SO desde el panel Project",
+        "Su nombre describe la acción: crear (Create) un menú (AssetMenu) de asset"
+      ],
+      "explanation": "<code>[CreateAssetMenu]</code> es el atributo de Unity que añade una entrada en el menú clic derecho del Project panel. Sin él, no hay forma visual de crear instancias del ScriptableObject desde el Editor. Los parámetros <code>fileName</code> y <code>menuName</code> controlan el nombre del archivo y la ubicación en el menú."
+    },
+    {
+      "id": "so_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración completa de la clase `ItemData` que sea un ScriptableObject con el atributo `[CreateAssetMenu]` usando menuName `\"Game/Item\"`.",
+      "expectedAnswer": "[CreateAssetMenu(menuName = \"Game/Item\")]\npublic class ItemData : ScriptableObject\n{\n}",
+      "alternateAnswers": [
+        "[CreateAssetMenu(fileName = \"ItemData\", menuName = \"Game/Item\")] public class ItemData : ScriptableObject { }",
+        "[CreateAssetMenu(menuName=\"Game/Item\")] public class ItemData : ScriptableObject { }"
+      ],
+      "placeholder": "Escribe el atributo y la declaración de clase...",
+      "hints": [
+        "Necesitas el atributo [CreateAssetMenu] con el menuName especificado",
+        "La clase hereda de ScriptableObject, no de MonoBehaviour"
+      ],
+      "explanation": "La estructura es: primero el atributo <code>[CreateAssetMenu(menuName = \"Game/Item\")]</code>, luego la clase que hereda de <code>ScriptableObject</code>. El atributo va en la línea justo antes de <code>public class</code>."
+    },
+    {
+      "id": "so_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo para que el campo `weaponData` aparezca en el Inspector aunque sea privado:",
+      "codeTemplate": "public class Knight : MonoBehaviour\n{\n    [__________] private WeaponData weaponData;\n}",
+      "expectedAnswer": "SerializeField",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el atributo...",
+      "hints": [
+        "Este atributo de Unity hace visibles los campos privados en el Inspector",
+        "Se llama 'Serialize' + 'Field'"
+      ],
+      "explanation": "<code>[SerializeField]</code> expone el campo privado <code>weaponData</code> en el Inspector de Unity. Sin él, un campo privado es invisible en el Inspector. Es la forma recomendada de exponer referencias a ScriptableObjects: privado en código pero asignable visualmente desde el Editor."
+    },
+    {
+      "id": "so_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea completa que declara un campo privado serializado llamado `enemyStats` de tipo `EnemyStats` (un ScriptableObject) en un MonoBehaviour.",
+      "expectedAnswer": "[SerializeField] private EnemyStats enemyStats;",
+      "alternateAnswers": ["[SerializeField]\nprivate EnemyStats enemyStats;"],
+      "placeholder": "Escribe la línea completa...",
+      "hints": [
+        "Necesitas el atributo [SerializeField] para que sea visible en el Inspector",
+        "La declaración es: [atributo] modificador tipo nombre;"
+      ],
+      "explanation": "<code>[SerializeField] private EnemyStats enemyStats;</code> combina encapsulación (privado) con visibilidad en el Inspector (SerializeField). Es el patrón más común para referenciar ScriptableObjects: el código externo no puede asignar el campo directamente, pero el diseñador sí desde el Editor."
+    },
+    {
+      "id": "so_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para leer el campo `damage` del ScriptableObject `weaponData` dentro de un método de ataque:",
+      "codeTemplate": "void PerformAttack(IDamageable target)\n{\n    target.TakeDamage(__________damage);\n}",
+      "expectedAnswer": "weaponData.",
+      "alternateAnswers": ["weaponData ."],
+      "placeholder": "Escribe cómo acceder al campo del SO...",
+      "hints": [
+        "weaponData es la referencia al ScriptableObject",
+        "Para acceder a campos de un objeto se usa el operador punto (.)"
+      ],
+      "explanation": "Para acceder a los campos de un ScriptableObject se usa el operador punto igual que con cualquier objeto: <code>weaponData.damage</code>. El ScriptableObject es solo un objeto C# — sus campos se leen y escriben con la misma sintaxis que cualquier otra clase."
+    }
+  ]
+}

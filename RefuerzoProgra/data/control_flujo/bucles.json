@@ -1,0 +1,366 @@
+{
+  "id": "bucles",
+  "title": "Bucles",
+  "icon": "🔁",
+  "color": "#E91E63",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "El bucle for",
+        "type": "code",
+        "content": "// Estructura: for (inicialización; condición; incremento)\nfor (int i = 0; i < 10; i++)\n{\n    Debug.Log(\"Iteración: \" + i);\n}\n// i va de 0 a 9 (10 iteraciones)\n\n// Iterar un array de enemigos\nfor (int i = 0; i < enemies.Length; i++)\n{\n    enemies[i].TakeDamage(10);\n}\n\n// Recorrer en reversa\nfor (int i = enemies.Length - 1; i >= 0; i--)\n{\n    if (enemies[i].isDead) enemies.RemoveAt(i);\n}"
+      },
+      {
+        "id": "doc-2",
+        "title": "El bucle while",
+        "type": "code",
+        "content": "// while: repite MIENTRAS la condición sea true\nint attempts = 0;\nwhile (attempts < 3)\n{\n    bool success = TryConnect();\n    if (success) break;\n    attempts++;\n}\n\n// foreach: para colecciones (más seguro que for con índices)\nforeach (GameObject enemy in enemies)\n{\n    enemy.SetActive(false);\n}\n\n// ADVERTENCIA: bucle infinito (evitar)\n// while (true) { } // Congela Unity si no tiene break"
+      },
+      {
+        "id": "doc-3",
+        "title": "El bucle do-while",
+        "type": "note",
+        "content": "El bucle <code>do-while</code> <strong>siempre ejecuta el cuerpo al menos una vez</strong>, ya que la condición se evalúa <em>al final</em>. Útil cuando necesitas que una acción ocurra antes de verificar si debe continuar. Ejemplo típico: mostrar un menú al menos una vez. Sintaxis: <code>do { codigo; } while (condicion);</code>. Nota el punto y coma obligatorio al final del <code>while</code>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Error off-by-one y bucles infinitos",
+        "type": "note",
+        "content": "El <strong>error off-by-one</strong> ocurre cuando el bucle itera una vez de más o de menos. Ejemplo: <code>for (int i = 0; i &lt;= 10; i++)</code> itera 11 veces (0 a 10), no 10. Para N iteraciones, usa <code>i &lt; N</code>. Los <strong>bucles infinitos</strong> ocurren cuando la condición nunca se vuelve false. En Unity, un bucle infinito en <code>Update()</code> congela el editor. Siempre verifica que la variable del bucle cambie hacia la condición de salida."
+      },
+      {
+        "id": "doc-5",
+        "title": "Analogía Unity: Update() vs bucle manual",
+        "type": "analogy",
+        "content": "En Unity, <code>Update()</code> <em>ya es un bucle implícito</em> que corre cada frame. Para lógica que necesita repetirse continuamente (movimiento, input), usa <code>Update()</code>. Para tareas que deben completarse en un solo frame (inicializar un array, dañar a todos los enemigos a la vez), usa un <code>for</code> o <code>foreach</code> dentro de un método. Para tareas que se repiten a lo largo del tiempo con pausas, usa <code>Coroutine</code> con <code>while(true)</code> + <code>yield return</code>."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "cf_mc_017",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuántas veces se ejecuta este bucle? `for (int i = 0; i < 5; i++) { }`",
+      "options": [
+        "5 veces (i toma valores 0, 1, 2, 3, 4)",
+        "6 veces (i toma valores 0, 1, 2, 3, 4, 5)",
+        "4 veces (i toma valores 1, 2, 3, 4)",
+        "Infinitas veces",
+        "0 veces porque nunca entra"
+      ],
+      "correctIndex": 0,
+      "explanation": "El bucle comienza con <code>i = 0</code> y continúa mientras <code>i &lt; 5</code>. Los valores de <code>i</code> son: 0, 1, 2, 3, 4. Cuando <code>i</code> llega a 5, la condición <code>5 &lt; 5</code> es <code>false</code> y el bucle termina. Total: <strong>5 iteraciones</strong>. Para N iteraciones empezando en 0, siempre usa <code>i &lt; N</code>."
+    },
+    {
+      "id": "cf_mc_018",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre `while` y `do-while`?",
+      "options": [
+        "do-while siempre ejecuta el cuerpo al menos una vez; while puede no ejecutarlo nunca",
+        "while es más rápido que do-while",
+        "do-while solo funciona con números enteros",
+        "while verifica la condición al final; do-while la verifica al inicio",
+        "No hay diferencia, son equivalentes"
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia clave: en <code>while</code>, la condición se evalúa <em>antes</em> del cuerpo, por lo que si es <code>false</code> desde el inicio, el cuerpo nunca se ejecuta. En <code>do-while</code>, el cuerpo se ejecuta <em>primero</em> y la condición se evalúa <em>después</em>, garantizando al menos una ejecución."
+    },
+    {
+      "id": "cf_mc_019",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En Unity, ¿qué método actúa como un bucle implícito que se ejecuta cada frame?",
+      "options": [
+        "Update()",
+        "Start()",
+        "Awake()",
+        "loop()",
+        "Repeat()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Update()</code> es llamado por Unity <strong>cada frame</strong>, comportándose como un bucle implícito. No necesitas escribir un bucle para que la lógica se repita: solo coloca el código en <code>Update()</code>. A diferencia de un bucle <code>while(true)</code>, <code>Update()</code> cede el control entre frames, evitando congelar el juego."
+    },
+    {
+      "id": "cf_mc_020",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué imprime este código? `for (int i = 1; i <= 3; i++) { Debug.Log(i); }`",
+      "options": [
+        "1, 2, 3",
+        "0, 1, 2",
+        "1, 2, 3, 4",
+        "0, 1, 2, 3",
+        "Nada, es un bucle infinito"
+      ],
+      "correctIndex": 0,
+      "explanation": "Este bucle comienza con <code>i = 1</code> (no 0) y continúa mientras <code>i &lt;= 3</code> (menor o igual). Los valores impresos son <strong>1, 2, 3</strong>. Cuando <code>i</code> llega a 4, la condición <code>4 &lt;= 3</code> es <code>false</code> y el bucle termina."
+    },
+    {
+      "id": "cf_mc_021",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el error en este bucle? `for (int i = 0; i < enemies.Length; i++) { enemies[i].SetActive(false); enemies.Add(newEnemy); }`",
+      "options": [
+        "Modificar la colección mientras se itera puede causar comportamiento indefinido o excepción",
+        "El índice i debería empezar en 1",
+        "No se puede usar Length con arrays",
+        "SetActive no existe en Unity",
+        "No hay ningún error"
+      ],
+      "correctIndex": 0,
+      "explanation": "Modificar una colección (agregar o eliminar elementos) mientras se itera sobre ella es un error grave. El tamaño de la colección cambia, por lo que <code>enemies.Length</code> ya no es el valor original y el comportamiento es impredecible (puede saltar elementos, lanzar <code>IndexOutOfRangeException</code>, o bucle infinito). Solución: itera sobre una copia o recorre en orden inverso al eliminar."
+    },
+    {
+      "id": "cf_mc_022",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuántas veces ejecuta el cuerpo este código? `int i = 10; while (i > 0) { i -= 3; }`",
+      "options": [
+        "4 veces (i: 10→7→4→1→-2, condición falla cuando i=-2)",
+        "3 veces",
+        "10 veces",
+        "Infinitas veces",
+        "0 veces"
+      ],
+      "correctIndex": 0,
+      "explanation": "Iteración 1: i=10, 10>0 true, i=7. Iteración 2: i=7, 7>0 true, i=4. Iteración 3: i=4, 4>0 true, i=1. Iteración 4: i=1, 1>0 true, i=-2. Siguiente verificación: -2>0 false, termina. Total: <strong>4 iteraciones</strong>. El bucle no se detiene en 0 porque i salta de 1 a -2."
+    },
+    {
+      "id": "cf_mc_023",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el problema conocido como 'off-by-one error' en el siguiente bucle? `for (int i = 0; i <= array.Length; i++) { Process(array[i]); }`",
+      "options": [
+        "Cuando i == array.Length, accede a un índice fuera del array y lanza IndexOutOfRangeException",
+        "El bucle itera una vez de menos",
+        "El incremento i++ debería ser ++i",
+        "El bucle no puede usar <=",
+        "No hay ningún error"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un array de tamaño N tiene índices válidos de <strong>0 a N-1</strong>. Con <code>i &lt;= array.Length</code>, cuando <code>i</code> llega a <code>Length</code>, se intenta acceder a <code>array[Length]</code>, que no existe, causando <code>IndexOutOfRangeException</code>. La condición correcta es <code>i &lt; array.Length</code>. Este es el clásico error 'off-by-one'."
+    },
+    {
+      "id": "cf_mc_024",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuándo es más apropiado usar `foreach` en lugar de `for` con índice en Unity?",
+      "options": [
+        "Cuando solo necesitas leer cada elemento sin modificar la colección ni necesitar el índice",
+        "Cuando necesitas modificar elementos del array",
+        "Cuando necesitas eliminar elementos durante la iteración",
+        "Cuando necesitas recorrer en orden inverso",
+        "foreach siempre es mejor que for"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>foreach</code> es más limpio y seguro cuando solo necesitas <strong>leer</strong> cada elemento sin necesitar el índice ni modificar la colección. Si necesitas el índice, modificar elementos, eliminar durante la iteración, o recorrer en reversa, usa <code>for</code> con índice. En colecciones como <code>List&lt;T&gt;</code>, el <code>foreach</code> también previene modificaciones accidentales."
+    },
+    {
+      "id": "cf_id_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza la estructura de este bucle:",
+      "code": "for (int i = 0; i < 10; i++)\n{\n    SpawnEnemy();\n}",
+      "question": "¿Cómo se llama la parte `int i = 0` al inicio del bucle for?",
+      "target": "inicialización",
+      "acceptedAnswers": ["inicialización", "inicializacion", "inicializador", "declaración inicial", "init", "variable de control"],
+      "hints": [
+        "Es la primera de las tres partes del for, separadas por punto y coma",
+        "Se ejecuta una sola vez, al comenzar el bucle",
+        "Aquí se crea y establece el valor inicial de la variable del bucle"
+      ],
+      "explanation": "La <strong>inicialización</strong> (<code>int i = 0</code>) es la primera de las tres partes del <code>for</code>. Se ejecuta <em>una sola vez</em> antes de que comience el bucle. Aquí se declara y asigna el valor inicial a la variable de control (también llamada variable iteradora). Las otras partes son: condición y actualización (incremento)."
+    },
+    {
+      "id": "cf_id_014",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Examina este bucle de Unity:",
+      "code": "foreach (Transform child in transform)\n{\n    child.gameObject.SetActive(false);\n}",
+      "question": "¿Cómo se llama este tipo de bucle que recorre cada elemento de una colección sin usar índices?",
+      "target": "foreach",
+      "acceptedAnswers": ["foreach", "bucle foreach", "for each", "bucle for each", "iterador foreach"],
+      "hints": [
+        "Su nombre en inglés significa 'para cada'",
+        "No necesitas un índice numérico para acceder a los elementos",
+        "En Unity, es ideal para recorrer hijos de un Transform"
+      ],
+      "explanation": "El bucle <strong>foreach</strong> recorre cada elemento de una colección sin necesitar un índice. La variable <code>child</code> recibe automáticamente cada elemento. En Unity, <code>foreach (Transform child in transform)</code> itera sobre todos los hijos del GameObject. Es más legible que <code>for</code> cuando no necesitas el índice."
+    },
+    {
+      "id": "cf_id_015",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa este bucle problemático:",
+      "code": "void Update()\n{\n    while (score < 1000)\n    {\n        score += CalculatePoints();\n    }\n}",
+      "question": "Si `CalculatePoints()` siempre devuelve 0, ¿qué problema ocurrirá en Unity?",
+      "target": "bucle infinito",
+      "acceptedAnswers": ["bucle infinito", "loop infinito", "infinite loop", "congelamiento", "freeze", "bucle sin fin", "Unity se congela"],
+      "hints": [
+        "Si score nunca llega a 1000, la condición nunca será false",
+        "Unity no puede pasar al siguiente frame",
+        "El editor se volvería irresponsivo"
+      ],
+      "explanation": "Un <strong>bucle infinito</strong> ocurre cuando la condición nunca se vuelve <code>false</code>. Si <code>CalculatePoints()</code> devuelve 0, <code>score</code> nunca cambia, la condición <code>score &lt; 1000</code> siempre es <code>true</code>, y Unity se congela porque <code>Update()</code> nunca termina. Solución: asegurarse de que la variable avance hacia la condición de salida, o usar <code>break</code> como seguridad."
+    },
+    {
+      "id": "cf_id_016",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Compara estos dos bucles anidados:",
+      "code": "// Bucle anidado\nfor (int row = 0; row < 5; row++)\n{\n    for (int col = 0; col < 5; col++)\n    {\n        grid[row, col] = 0;\n    }\n}",
+      "question": "¿Cuántas veces se ejecuta la línea `grid[row, col] = 0` en total?",
+      "target": "25",
+      "acceptedAnswers": ["25", "veinticinco", "5x5", "5*5", "25 veces"],
+      "hints": [
+        "El bucle externo corre 5 veces",
+        "Por cada vuelta del externo, el interno corre 5 veces",
+        "Multiplica las iteraciones de ambos bucles"
+      ],
+      "explanation": "En bucles anidados, el total de iteraciones es el <strong>producto</strong> de las iteraciones de cada nivel. El bucle externo corre 5 veces (row: 0-4). Por cada iteración del externo, el interno corre 5 veces (col: 0-4). Total: 5 × 5 = <strong>25 iteraciones</strong>. Los bucles anidados son comunes en Unity para manejar grids o matrices 2D."
+    },
+    {
+      "id": "cf_id_017",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este bucle do-while:",
+      "code": "int attempts = 0;\nbool connected = false;\ndo\n{\n    connected = TryConnect();\n    attempts++;\n} while (!connected && attempts < 3);",
+      "question": "¿Cuántas veces se ejecuta el cuerpo del do-while si `TryConnect()` siempre devuelve false?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres", "3 veces", "tres veces"],
+      "hints": [
+        "El cuerpo se ejecuta primero, la condición se verifica después",
+        "La condición es: !connected AND attempts < 3",
+        "Cuenta cuándo attempts < 3 se vuelve false"
+      ],
+      "explanation": "El do-while ejecuta el cuerpo <em>antes</em> de verificar. Iteración 1: attempts=1, connected=false, condición: !false && 1<3 = true. Iteración 2: attempts=2, condición: true && 2<3 = true. Iteración 3: attempts=3, condición: true && 3<3 = false, termina. Total: <strong>3 veces</strong>."
+    },
+    {
+      "id": "cf_id_018",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa la variable en este bucle:",
+      "code": "for (int i = 0; i < 5; i++)\n{\n    Debug.Log(i);\n}\n// Debug.Log(i); // ERROR: 'i' no existe aquí",
+      "question": "¿Cómo se llama el concepto que limita la variable `i` a existir solo dentro del bucle `for`?",
+      "target": "ámbito",
+      "acceptedAnswers": ["ámbito", "ambito", "scope", "alcance", "ámbito de variable", "variable scope", "ámbito local"],
+      "hints": [
+        "Determina desde dónde es accesible una variable",
+        "La variable i 'vive' solo dentro de las llaves del for",
+        "En inglés se llama 'scope'"
+      ],
+      "explanation": "El <strong>ámbito</strong> (scope) determina dónde es accesible una variable. La variable <code>i</code> declarada en el <code>for</code> solo existe <em>dentro</em> del bloque del bucle. Intentar usarla fuera del bucle causa un error de compilación. Esto es una buena práctica: limita la visibilidad de variables al mínimo necesario."
+    },
+    {
+      "id": "cf_cw_013",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el bucle for para que itere exactamente 10 veces (de 0 a 9):",
+      "codeTemplate": "for (int i = 0; ______; i++)\n{\n    SpawnEnemy();\n}",
+      "expectedAnswer": "i < 10",
+      "alternateAnswers": ["i<10", "i <= 9"],
+      "placeholder": "Escribe la condición del for...",
+      "hints": [
+        "Empieza en 0, ¿cuándo debe detenerse para dar exactamente 10 iteraciones?",
+        "Usa el operador < (estrictamente menor)",
+        "Si empieza en 0 y necesitas 10 iteraciones, el límite es 10"
+      ],
+      "explanation": "Para iterar de 0 a 9 (10 veces), la condición es <code>i &lt; 10</code>. Cuando <code>i</code> llega a 10, la condición es <code>false</code> y el bucle termina. Usar <code>i &lt;= 9</code> también funciona pero es menos idiomático. La convención en C# es usar <code>i &lt; N</code> para N iteraciones empezando en 0."
+    },
+    {
+      "id": "cf_cw_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el bucle while para que reste 10 de `health` en cada iteración y continúe mientras health sea mayor que 0:",
+      "codeTemplate": "while (______)\n{\n    health -= 10;\n}",
+      "expectedAnswer": "health > 0",
+      "alternateAnswers": ["health>0", "health >= 1", "health != 0"],
+      "placeholder": "Escribe la condición del while...",
+      "hints": [
+        "El bucle debe continuar mientras haya salud positiva",
+        "Usa el operador > (mayor que)",
+        "La condición es: health mayor que cero"
+      ],
+      "explanation": "La condición <code>health &gt; 0</code> mantiene el bucle activo mientras haya salud. Cuando <code>health</code> llega a 0 o menos, el bucle termina. Nota: si <code>health</code> empieza en 0, el bucle nunca se ejecuta (a diferencia del <code>do-while</code>)."
+    },
+    {
+      "id": "cf_cw_015",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un bucle for completo que recorra el array `enemies` desde el índice 0 hasta el último elemento usando `enemies.Length` en la condición:",
+      "expectedAnswer": "for (int i = 0; i < enemies.Length; i++) { enemies[i].TakeDamage(10); }",
+      "alternateAnswers": [
+        "for (int i = 0; i < enemies.Length; i++)\n{\n    enemies[i].TakeDamage(10);\n}",
+        "for(int i=0;i<enemies.Length;i++){enemies[i].TakeDamage(10);}"
+      ],
+      "placeholder": "Escribe el bucle for completo...",
+      "hints": [
+        "Empieza en i = 0",
+        "La condición usa enemies.Length para el límite",
+        "Llama a TakeDamage(10) en cada enemies[i]"
+      ],
+      "explanation": "El bucle <code>for (int i = 0; i &lt; enemies.Length; i++)</code> recorre todos los índices válidos del array. <code>enemies.Length</code> devuelve el número de elementos, y con <code>i &lt; Length</code> (no <code>&lt;=</code>) se evita el error de índice fuera de rango."
+    },
+    {
+      "id": "cf_cw_016",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un bucle do-while que incremente `score` en 5 en cada iteración y se detenga cuando `score` llegue a 25 o más. La variable score ya está declarada con valor 0.",
+      "expectedAnswer": "do { score += 5; } while (score < 25);",
+      "alternateAnswers": [
+        "do\n{\n    score += 5;\n}\nwhile (score < 25);",
+        "do { score = score + 5; } while (score < 25);"
+      ],
+      "placeholder": "Escribe el do-while completo...",
+      "hints": [
+        "Empieza con la palabra clave 'do'",
+        "El cuerpo va entre llaves después del do",
+        "La condición va después de 'while' al final, seguida de punto y coma"
+      ],
+      "explanation": "<code>do { score += 5; } while (score &lt; 25);</code>. El cuerpo ejecuta primero (score=5), luego verifica la condición. Iteraciones: score=5, 10, 15, 20, 25. Cuando score llega a 25, la condición <code>25 &lt; 25</code> es false y el bucle termina. Total: 5 iteraciones. Nota el punto y coma obligatorio después del <code>while(condicion)</code>."
+    },
+    {
+      "id": "cf_cw_017",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un bucle for anidado que rellene una grilla 3x3 (array bidimensional `grid`) con el valor 1. El array ya está declarado como `int[,] grid = new int[3,3]`.",
+      "expectedAnswer": "for (int row = 0; row < 3; row++) { for (int col = 0; col < 3; col++) { grid[row, col] = 1; } }",
+      "alternateAnswers": [
+        "for (int i = 0; i < 3; i++) { for (int j = 0; j < 3; j++) { grid[i, j] = 1; } }",
+        "for (int row = 0; row < 3; row++)\n{\n    for (int col = 0; col < 3; col++)\n    {\n        grid[row, col] = 1;\n    }\n}"
+      ],
+      "placeholder": "Escribe los dos bucles for anidados...",
+      "hints": [
+        "El primer for recorre las filas (rows), el segundo las columnas (cols)",
+        "Ambos van de 0 a 2 (condición < 3)",
+        "Accede al elemento con grid[row, col]"
+      ],
+      "explanation": "Los bucles anidados son necesarios para recorrer estructuras 2D. El bucle externo itera las filas (0-2) y el interno las columnas (0-2). En cada combinación (row, col), se asigna el valor 1. Total: 9 asignaciones. La sintaxis de arrays 2D en C# usa coma: <code>grid[row, col]</code>."
+    },
+    {
+      "id": "cf_cw_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el foreach para recorrer la lista `List<GameObject> enemies` y llamar a `Destroy()` en cada uno:",
+      "codeTemplate": "foreach (______ enemy in enemies)\n{\n    Destroy(enemy);\n}",
+      "expectedAnswer": "GameObject",
+      "alternateAnswers": ["GameObject "],
+      "placeholder": "Escribe el tipo de elemento...",
+      "hints": [
+        "La lista es de tipo List<GameObject>",
+        "El tipo del elemento coincide con el tipo genérico de la lista",
+        "En Unity, los objetos de la escena son de tipo..."
+      ],
+      "explanation": "En un <code>foreach</code>, el tipo de la variable de iteración debe coincidir con el tipo de los elementos de la colección. Como la lista es <code>List&lt;GameObject&gt;</code>, cada elemento es un <code>GameObject</code>. La variable <code>enemy</code> recibe automáticamente cada <code>GameObject</code> en cada iteración."
+    }
+  ]
+}

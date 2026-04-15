@@ -1,0 +1,296 @@
+{
+  "id": "unity_exam",
+  "title": "Examen Final: Patrones Unity",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "unity_ex_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método que Unity llama UNA VEZ antes que Start, antes de que otros objetos se inicialicen:",
+      "codeTemplate": "void __________()\n{\n    rb = GetComponent<Rigidbody>();\n}",
+      "expectedAnswer": "Awake",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["Este método se llama antes que Start y antes de que los otros objetos hayan corrido Start", "Es ideal para inicializar referencias propias (GetComponent)"],
+      "explanation": "<code>Awake()</code> es el primer método del ciclo de vida en llamarse, antes de <code>Start()</code>. Se usa para inicializar el objeto por sí mismo (como cachear componentes con GetComponent). <code>Start()</code> es para inicialización que depende de otros objetos, que ya habrán pasado por Awake."
+    },
+    {
+      "id": "unity_ex_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método que Unity llama CADA FRAME:",
+      "codeTemplate": "void __________()\n{\n    if (Input.GetKeyDown(KeyCode.Space))\n        Jump();\n}",
+      "expectedAnswer": "Update",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["Este método se llama una vez por cada frame renderizado", "Es el lugar estándar para input y lógica de juego"],
+      "explanation": "<code>Update()</code> se llama cada frame. Su frecuencia depende del framerate (puede ser 30, 60, 120+ veces por segundo). Es el lugar correcto para: leer input, mover personajes con Transform, actualizar lógica de juego."
+    },
+    {
+      "id": "unity_ex_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método correcto para aplicar fuerzas a un Rigidbody (física a intervalos fijos):",
+      "codeTemplate": "void __________()\n{\n    rb.AddForce(Vector3.forward * speed);\n}",
+      "expectedAnswer": "FixedUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["Este método se llama a intervalos fijos de tiempo (no cada frame)", "Es el correcto para operaciones de física con Rigidbody"],
+      "explanation": "<code>FixedUpdate()</code> se llama a un intervalo fijo (por defecto cada 0.02 segundos, independientemente del framerate). Las operaciones de física (<code>AddForce</code>, <code>velocity</code>) deben ir aquí para ser consistentes. Si usas física en <code>Update</code>, el comportamiento varía con el framerate."
+    },
+    {
+      "id": "unity_ex_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el nombre del método que se ejecuta DESPUÉS de todos los Update (ideal para que la cámara siga al jugador):",
+      "codeTemplate": "void __________()\n{\n    transform.position = target.position + offset;\n}",
+      "expectedAnswer": "LateUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["Este método se ejecuta después de que TODOS los objetos han corrido Update", "Se usa para lógica que depende de posiciones ya actualizadas (como seguir al jugador)"],
+      "explanation": "<code>LateUpdate()</code> se ejecuta al final de cada frame, después de que todos los <code>Update()</code> han corrido. Ideal para cámaras: primero el personaje se mueve en <code>Update</code>, luego la cámara lo sigue en <code>LateUpdate</code>, evitando jitter."
+    },
+    {
+      "id": "unity_ex_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `Awake()` completo que cachea el componente `Rigidbody` en una variable privada `rb`.",
+      "expectedAnswer": "void Awake() { rb = GetComponent<Rigidbody>(); }",
+      "alternateAnswers": [
+        "void Awake()\n{\n    rb = GetComponent<Rigidbody>();\n}",
+        "private void Awake() { rb = GetComponent<Rigidbody>(); }"
+      ],
+      "placeholder": "Escribe el método Awake completo...",
+      "hints": [
+        "Awake es el lugar correcto para cachear componentes (no Start ni Update)",
+        "GetComponent<Rigidbody>() obtiene el componente del GameObject actual"
+      ],
+      "explanation": "<code>void Awake() { rb = GetComponent&lt;Rigidbody&gt;(); }</code> — cachear en Awake significa que la referencia está lista desde el principio. Hacer GetComponent en Update llamaría esa búsqueda 60+ veces por segundo, lo cual es un desperdicio de rendimiento."
+    },
+    {
+      "id": "unity_ex_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método de Unity para obtener un componente del GameObject actual:",
+      "codeTemplate": "Rigidbody rb = __________(Rigidbody>();",
+      "expectedAnswer": "GetComponent<",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el inicio del método...",
+      "hints": ["Este método de MonoBehaviour busca un componente por tipo en el GameObject actual", "Se llama Get + Component con el tipo entre < >"],
+      "explanation": "<code>GetComponent&lt;Rigidbody&gt;()</code> busca el componente Rigidbody en el GameObject al que está adjunto este script. Devuelve null si no encuentra el componente. Siempre cachea el resultado en Awake en lugar de llamarlo repetidamente."
+    },
+    {
+      "id": "unity_ex_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para usar TryGetComponent de forma segura, guardando el resultado en `anim`:",
+      "codeTemplate": "if (TryGetComponent<Animator>(out Animator __))\n{\n    anim.Play(\"Run\");\n}",
+      "expectedAnswer": "anim",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre de la variable out...",
+      "hints": ["TryGetComponent usa 'out' para devolver el componente encontrado", "El nombre de la variable debe coincidir con lo que usas luego en el if"],
+      "explanation": "<code>TryGetComponent&lt;Animator&gt;(out Animator anim)</code> devuelve <code>true</code> si encuentra el componente y lo asigna a <code>anim</code>. Si no lo encuentra, devuelve <code>false</code> y <code>anim</code> es null. No lanza excepción — es la versión segura de GetComponent."
+    },
+    {
+      "id": "unity_ex_008",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo que obliga a que el GameObject tenga un Rigidbody si tiene este script:",
+      "codeTemplate": "[__________(typeof(Rigidbody))]\npublic class PhysicsObject : MonoBehaviour { }",
+      "expectedAnswer": "RequireComponent",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del atributo...",
+      "hints": ["Este atributo de Unity añade automáticamente el componente requerido si no está presente", "Su nombre en inglés describe lo que hace: 'requerir componente'"],
+      "explanation": "<code>[RequireComponent(typeof(Rigidbody))]</code> hace que Unity automáticamente añada un Rigidbody al GameObject cuando se añade este script. También impide eliminarlo mientras el script esté presente. Evita NullReferenceExceptions por componentes faltantes."
+    },
+    {
+      "id": "unity_ex_009",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo que hace visible un campo privado en el Inspector de Unity:",
+      "codeTemplate": "[__________]\nprivate float speed = 5f;",
+      "expectedAnswer": "SerializeField",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del atributo...",
+      "hints": ["Este atributo de Unity 'serializa' el campo — lo hace visible y editable en el Inspector", "Combina encapsulación (privado) con accesibilidad desde el Editor"],
+      "explanation": "<code>[SerializeField]</code> expone el campo privado <code>speed</code> en el Inspector. Es la práctica recomendada en lugar de <code>public float speed</code>: mantiene el campo privado para el código pero accesible para el diseñador en el Editor."
+    },
+    {
+      "id": "unity_ex_010",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea que instancia un prefab en la posición del transform actual con rotación identidad, guardando la referencia en `bullet`.",
+      "expectedAnswer": "GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);",
+      "alternateAnswers": [
+        "var bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity);",
+        "GameObject bullet = Instantiate(bulletPrefab, transform.position, Quaternion.identity) as GameObject;"
+      ],
+      "placeholder": "Escribe la línea de Instantiate completa...",
+      "hints": [
+        "Instantiate recibe: el prefab, la posición y la rotación",
+        "Quaternion.identity significa 'sin rotación' (rotación por defecto)"
+      ],
+      "explanation": "<code>Instantiate(prefab, pos, rot)</code> clona el prefab en la posición y rotación indicadas. <code>Quaternion.identity</code> es la rotación sin transformación (igual que Quaternion(0,0,0,1)). Devuelve el GameObject creado, que se almacena en <code>bullet</code>."
+    },
+    {
+      "id": "unity_ex_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para destruir el `gameObject` actual inmediatamente:",
+      "codeTemplate": "__________(gameObject);",
+      "expectedAnswer": "Destroy",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["El método de Unity para destruir GameObjects se llama...", "Con mayúscula D"],
+      "explanation": "<code>Destroy(gameObject)</code> destruye el GameObject actual al final del frame. Unity no lo elimina de inmediato para evitar problemas con el frame en curso. Para destruir componentes, pasa el componente: <code>Destroy(this)</code>. Para destruir otro objeto, pasa su referencia."
+    },
+    {
+      "id": "unity_ex_012",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para destruir el `gameObject` después de 3 segundos de delay:",
+      "codeTemplate": "Destroy(gameObject, __________);\n",
+      "expectedAnswer": "3f",
+      "alternateAnswers": ["3.0f", "3"],
+      "placeholder": "Escribe el tiempo de delay en segundos...",
+      "hints": ["El segundo parámetro de Destroy es el tiempo de espera en segundos", "Los tiempos en Unity se expresan como float con la letra f al final"],
+      "explanation": "<code>Destroy(gameObject, 3f)</code> destruye el objeto 3 segundos después. Muy útil para efectos de explosión, desaparición gradual, o bullet lifetime. El <code>f</code> indica que es un <code>float</code>; sin él, sería un <code>double</code> que se convierte implícitamente."
+    },
+    {
+      "id": "unity_ex_013",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `Start()` que obtiene el componente `AudioSource` del GameObject actual y lo guarda en el campo `audioSource` (asume que el campo ya existe como private AudioSource audioSource).",
+      "expectedAnswer": "void Start() { audioSource = GetComponent<AudioSource>(); }",
+      "alternateAnswers": [
+        "void Start()\n{\n    audioSource = GetComponent<AudioSource>();\n}",
+        "private void Start() { audioSource = GetComponent<AudioSource>(); }"
+      ],
+      "placeholder": "Escribe el método Start completo...",
+      "hints": [
+        "Start es uno de los lugares para cachear componentes (preferiblemente Awake)",
+        "GetComponent<AudioSource>() obtiene el AudioSource del mismo GameObject"
+      ],
+      "explanation": "<code>void Start() { audioSource = GetComponent&lt;AudioSource&gt;(); }</code> — Start se llama una vez al inicio, después de Awake. Aunque Awake es preferible para cachear, Start también es válido. El resultado se almacena en el campo para no llamar GetComponent en cada Update."
+    },
+    {
+      "id": "unity_ex_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para obtener un componente en un objeto HIJO del GameObject actual:",
+      "codeTemplate": "Animator childAnim = GetComponentIn__________(Animator>();",
+      "expectedAnswer": "Children<",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la parte que falta del método...",
+      "hints": [
+        "GetComponent busca en el propio objeto. Para buscar en los hijos, el método tiene una palabra extra",
+        "La palabra hace referencia a los 'hijos' en la jerarquía — en inglés es..."
+      ],
+      "explanation": "<code>GetComponentInChildren&lt;Animator&gt;()</code> busca el componente Animator en el GameObject actual y todos sus hijos en la jerarquía. Útil cuando el componente está en un objeto hijo (por ejemplo, el Animator en un modelo 3D que es hijo del prefab raíz)."
+    },
+    {
+      "id": "unity_ex_015",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la clase base para crear un ScriptableObject llamado `EnemyData`:",
+      "codeTemplate": "[CreateAssetMenu(menuName = \"Game/Enemy Data\")]\npublic class EnemyData : __________\n{\n    public int maxHealth;\n    public float speed;\n}",
+      "expectedAnswer": "ScriptableObject",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la clase base...",
+      "hints": ["Los ScriptableObjects no heredan de MonoBehaviour", "La clase base para assets de datos en Unity se llama igual que el tipo"],
+      "explanation": "Para crear un ScriptableObject se hereda de <code>ScriptableObject</code> (no de MonoBehaviour). Esto permite crear archivos <code>.asset</code> en el proyecto que almacenan datos sin necesitar un GameObject."
+    },
+    {
+      "id": "unity_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo que permite crear instancias del ScriptableObject desde el menú del Editor:",
+      "codeTemplate": "[__________(fileName = \"WeaponData\", menuName = \"Game/Weapon\")]\npublic class WeaponData : ScriptableObject { }",
+      "expectedAnswer": "CreateAssetMenu",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del atributo...",
+      "hints": ["Este atributo añade una opción al menú Create del Project panel", "Su nombre describe la acción de crear un menú de assets"],
+      "explanation": "<code>[CreateAssetMenu]</code> añade el tipo a la lista del menú Create (clic derecho en Project → Create → Game → Weapon). Sin este atributo, el ScriptableObject no puede crearse visualmente desde el Editor — solo por código."
+    },
+    {
+      "id": "unity_ex_017",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `OnTriggerEnter` completo que destruye `gameObject` cuando colisiona con cualquier objeto que tenga la tag \"Enemy\".",
+      "expectedAnswer": "void OnTriggerEnter(Collider other) { if (other.CompareTag(\"Enemy\")) Destroy(gameObject); }",
+      "alternateAnswers": [
+        "void OnTriggerEnter(Collider other)\n{\n    if (other.CompareTag(\"Enemy\"))\n        Destroy(gameObject);\n}",
+        "void OnTriggerEnter(Collider other) { if (other.tag == \"Enemy\") Destroy(gameObject); }"
+      ],
+      "placeholder": "Escribe el método OnTriggerEnter completo...",
+      "hints": [
+        "OnTriggerEnter recibe un Collider other — el objeto con el que colisionó",
+        "CompareTag(\"Enemy\") o other.tag == \"Enemy\" verifica la tag del objeto colisionado"
+      ],
+      "explanation": "<code>void OnTriggerEnter(Collider other)</code> se llama cuando el trigger detecta una entrada. <code>other.CompareTag(\"Enemy\")</code> es preferible a <code>other.tag == \"Enemy\"</code> por rendimiento (no hace boxing de string). Si la tag coincide, destruye este objeto."
+    },
+    {
+      "id": "unity_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para instanciar un prefab como hijo de un transform específico (`spawnParent`), en la posición del padre y sin rotación:",
+      "codeTemplate": "GameObject obj = Instantiate(prefab, spawnParent.__________, Quaternion.identity, spawnParent);",
+      "expectedAnswer": "position",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad del transform para obtener la posición...",
+      "hints": ["La propiedad del Transform que da la posición en el mundo se llama...", "El cuarto parámetro de Instantiate es el padre (parent transform)"],
+      "explanation": "<code>spawnParent.position</code> accede a la posición mundial del Transform. El cuarto parámetro de <code>Instantiate</code> es el Transform padre — el objeto creado será hijo en la jerarquía. Útil para organizar la jerarquía de escena (por ejemplo, agrupar instancias bajo un 'Container' object)."
+    },
+    {
+      "id": "unity_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe las dos líneas de un método Update que: (1) detecte si se presiona la tecla Space con Input.GetKeyDown, y (2) llame a `Jump()` si se detecta.",
+      "expectedAnswer": "if (Input.GetKeyDown(KeyCode.Space)) Jump();",
+      "alternateAnswers": [
+        "if (Input.GetKeyDown(KeyCode.Space)) { Jump(); }",
+        "bool spacePressed = Input.GetKeyDown(KeyCode.Space);\nif (spacePressed) Jump();"
+      ],
+      "placeholder": "Escribe la detección de input y llamada a Jump...",
+      "hints": [
+        "Input.GetKeyDown devuelve true solo en el primer frame que se presiona la tecla",
+        "KeyCode.Space es la constante para la tecla Space"
+      ],
+      "explanation": "<code>Input.GetKeyDown(KeyCode.Space)</code> devuelve <code>true</code> solo en el <strong>primer frame</strong> que se presiona Space (no mientras se mantiene presionado — eso sería <code>GetKey</code>). Ideal para acciones discretas como saltar, atacar, o recargar."
+    },
+    {
+      "id": "unity_ex_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para acceder al campo `damage` de un ScriptableObject `weaponData` de tipo `WeaponData` referenciado en el MonoBehaviour:",
+      "codeTemplate": "void Attack(IDamageable target)\n{\n    target.TakeDamage(weaponData.__________);\n}",
+      "expectedAnswer": "damage",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del campo del ScriptableObject...",
+      "hints": ["Se accede a los campos de un ScriptableObject igual que a cualquier objeto", "El campo se llama 'damage' — se accede con el operador punto"],
+      "explanation": "<code>weaponData.damage</code> accede al campo <code>damage</code> del ScriptableObject. Los ScriptableObjects son objetos C# normales — sus campos públicos o [SerializeField] se leen con la misma sintaxis de punto que cualquier otra clase."
+    }
+  ]
+}

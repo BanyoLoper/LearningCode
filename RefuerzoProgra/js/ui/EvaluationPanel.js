@@ -29,8 +29,10 @@ export class EvaluationPanel {
    * Renders a new question as the active question.
    * @param {object} question
    * @param {function} onSubmit - called with (answer) when user submits
+   * @param {number} [num] - question number in this session (1-based)
+   * @param {number} [total] - total questions in the section
    */
-  renderQuestion(question, onSubmit) {
+  renderQuestion(question, onSubmit, num = 0, total = 0) {
     this.#activeQuestion = question;
     this.#activeHandler = this.#handlers[question.type];
 
@@ -40,12 +42,25 @@ export class EvaluationPanel {
     card.dataset.questionId = question.id;
     card.dataset.difficulty = question.difficulty;
 
-    // Difficulty stars
+    // Top row: difficulty stars (left) + question counter (right)
+    const topRow = document.createElement('div');
+    topRow.className = 'question-top-row';
+
     const stars = document.createElement('div');
     stars.className = 'question-difficulty';
     stars.innerHTML = Array(question.difficulty).fill('★').join('') +
       Array(3 - question.difficulty).fill('☆').join('');
-    card.appendChild(stars);
+
+    topRow.appendChild(stars);
+
+    if (num > 0 && total > 0) {
+      const counter = document.createElement('div');
+      counter.className = 'question-counter';
+      counter.textContent = `${num} / ${total}`;
+      topRow.appendChild(counter);
+    }
+
+    card.appendChild(topRow);
 
     const body = document.createElement('div');
     body.className = 'question-body';
@@ -132,7 +147,7 @@ export class EvaluationPanel {
     this.#currentContainer.innerHTML = `<div class="panel-message">${html}</div>`;
   }
 
-  #renderHistoryItem(question, correct, lastAnswer = null) {
+  #renderHistoryItem(question, correct, _lastAnswer = null) {
     const item = document.createElement('div');
     item.className = `history-item ${correct ? 'history-correct' : 'history-wrong'}`;
     item.dataset.questionId = question.id;

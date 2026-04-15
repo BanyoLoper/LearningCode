@@ -43,14 +43,18 @@ export class UnlockManager {
   }
 
   /**
-   * Checks whether the current session triggers an unlock.
+   * Checks whether the current session triggers an unlock (regular sections only).
+   * Called per correct answer from CourseEngine.
    * @param {string} sectionId
    * @param {number} sessionCorrect - correct answers in the current (unsaved) session
    * @returns {object|null} Newly unlocked section/exam config, or null
    */
   checkUnlock(sectionId, sessionCorrect) {
     const section = this.#flatSections.find(s => s.id === sectionId);
-    if (!section?.correctAnswersToUnlockNext) return null;
+    if (!section) return null;
+    // Exams are handled separately via checkExamUnlock — skip here
+    if (section.isExam) return null;
+    if (!section.correctAnswersToUnlockNext) return null;
 
     const totalCorrect = this.#tracker.getTotalCorrect(sectionId) + sessionCorrect;
     if (totalCorrect >= section.correctAnswersToUnlockNext) {
@@ -59,6 +63,23 @@ export class UnlockManager {
         this.#tracker.unlockSection(next.id);
         return next;
       }
+    }
+    return null;
+  }
+
+  /**
+   * Called when an exam pool is exhausted (section complete).
+   * Unlocks the first section of the next group.
+   * @param {string} examId
+   * @returns {object|null} Newly unlocked section config, or null
+   */
+  checkExamUnlock(examId) {
+    const section = this.#flatSections.find(s => s.id === examId);
+    if (!section?.isExam) return null;
+    const next = this.#getNextSection(examId);
+    if (next && !this.#tracker.isUnlocked(next.id)) {
+      this.#tracker.unlockSection(next.id);
+      return next;
     }
     return null;
   }
@@ -80,12 +101,25 @@ export class UnlockManager {
 
   // Returns the section/exam that comes after currentId in the course flow
   #getNextSection(currentId) {
-    for (const group of this.#courseData.groups) {
+    const groups = this.#courseData.groups;
+    for (let gi = 0; gi < groups.length; gi++) {
+      const group = groups[gi];
+
+      // Check if currentId is this group's exam → return first section of next group
+      if (group.exam?.id === currentId) {
+        const nextGroup = groups[gi + 1];
+        if (nextGroup?.sections?.length > 0) {
+          return { ...nextGroup.sections[0], _groupId: nextGroup.id };
+        }
+        return null;
+      }
+
+      // Check within group sections
       const sections = group.sections;
       const idx = sections.findIndex(s => s.id === currentId);
       if (idx >= 0) {
         // Next within group sections
-        if (idx < sections.length - 1) return sections[idx + 1];
+        if (idx < sections.length - 1) return { ...sections[idx + 1], _groupId: group.id };
         // Last section → unlock the group's exam
         return group.exam ? { ...group.exam, _groupId: group.id } : null;
       }

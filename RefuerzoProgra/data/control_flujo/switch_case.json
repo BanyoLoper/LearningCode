@@ -1,0 +1,364 @@
+{
+  "id": "switch_case",
+  "title": "Switch / Case",
+  "icon": "🔀",
+  "color": "#F44336",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Sintaxis del switch",
+        "type": "code",
+        "content": "// Switch clásico en C#\nswitch (gameState)\n{\n    case \"Menu\":\n        ShowMenu();\n        break;\n    case \"Playing\":\n        UpdateGame();\n        break;\n    case \"GameOver\":\n        ShowGameOver();\n        break;\n    default:\n        Debug.LogError(\"Estado desconocido\");\n        break;\n}\n\n// Switch expression (C# 8+) - más compacto\nstring message = gameState switch\n{\n    \"Menu\"     => \"Estás en el menú\",\n    \"Playing\"  => \"¡Juego en curso!\",\n    \"GameOver\" => \"Fin del juego\",\n    _          => \"Estado desconocido\"\n};"
+      },
+      {
+        "id": "doc-2",
+        "title": "¿Cuándo usar switch en lugar de if?",
+        "type": "note",
+        "content": "Usa <code>switch</code> cuando compares <strong>una sola variable</strong> contra múltiples valores concretos (no rangos). Es más legible que una larga cadena de <code>else if</code> cuando tienes 3 o más casos. Usa <code>if/else</code> cuando necesites comparar rangos (<code>&lt;</code>, <code>&gt;</code>) o condiciones complejas con <code>&amp;&amp;</code> y <code>||</code>."
+      },
+      {
+        "id": "doc-3",
+        "title": "El keyword break es obligatorio",
+        "type": "note",
+        "content": "En C#, cada <code>case</code> <strong>debe terminar con <code>break</code></strong> (o <code>return</code>, o <code>throw</code>). A diferencia de C o Java, C# <em>no permite fall-through</em> (que un case continúe automáticamente al siguiente). Si olvidas el <code>break</code>, el compilador generará un error. La única excepción es un <code>case</code> completamente vacío."
+      },
+      {
+        "id": "doc-4",
+        "title": "El caso default",
+        "type": "note",
+        "content": "El bloque <code>default</code> se ejecuta cuando <strong>ningún case coincide</strong> con el valor. Es equivalente al <code>else</code> en una cadena <code>if/else</code>. Aunque es opcional, se recomienda siempre incluirlo para manejar valores inesperados. En Unity, puede usarse para registrar errores con <code>Debug.LogWarning()</code>."
+      },
+      {
+        "id": "doc-5",
+        "title": "Analogía Unity: máquina de estados",
+        "type": "code",
+        "content": "// Patrón común en Unity: switch para estados de enemigo\npublic enum EnemyState { Idle, Patrol, Chase, Attack, Dead }\n\nvoid Update()\n{\n    switch (currentState)\n    {\n        case EnemyState.Idle:\n            IdleBehavior();\n            break;\n        case EnemyState.Patrol:\n            PatrolBehavior();\n            break;\n        case EnemyState.Chase:\n            ChaseBehavior();\n            break;\n        case EnemyState.Attack:\n            AttackBehavior();\n            break;\n        case EnemyState.Dead:\n            // No hacer nada\n            break;\n    }\n}"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "cf_mc_009",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué keyword es OBLIGATORIO al final de cada `case` en un `switch` de C#?",
+      "options": [
+        "break",
+        "end",
+        "stop",
+        "exit",
+        "return"
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, cada <code>case</code> debe terminar con <code>break</code> (o <code>return</code>/<code>throw</code>). C# <strong>no permite fall-through</strong>, a diferencia de C o JavaScript. Si olvidas el <code>break</code>, el compilador lanzará un error de compilación."
+    },
+    {
+      "id": "cf_mc_010",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cómo se escribe el caso por defecto en un `switch` de C#?",
+      "options": [
+        "default:",
+        "else:",
+        "otherwise:",
+        "case default:",
+        "case _:"
+      ],
+      "correctIndex": 0,
+      "explanation": "La palabra clave <code>default:</code> define el caso que se ejecuta cuando ningún <code>case</code> coincide. Es el equivalente del <code>else</code> en un <code>if/else</code>. Nota: en las <em>switch expressions</em> de C# 8+, el patrón descarte <code>_</code> cumple esa función, pero en el switch clásico se usa <code>default</code>."
+    },
+    {
+      "id": "cf_mc_011",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Con qué tipos de datos puede trabajar un `switch` en C#?",
+      "options": [
+        "int, string, char, bool, enum",
+        "Solo int",
+        "Solo int y string",
+        "Todos los tipos incluyendo float",
+        "Solo tipos primitivos numéricos"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <code>switch</code> en C# funciona con <strong>int, string, char, bool y enum</strong>, entre otros. No funciona directamente con <code>float</code> o <code>double</code> por problemas de precisión decimal. En Unity, es muy común usar <code>switch</code> con <code>enum</code> para manejar estados."
+    },
+    {
+      "id": "cf_mc_012",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la principal ventaja de usar `switch` sobre una cadena `if/else if` con muchos casos?",
+      "options": [
+        "Mayor legibilidad cuando se compara una variable contra múltiples valores concretos",
+        "El switch siempre es más rápido que if/else",
+        "El switch permite comparar rangos de valores",
+        "El switch no requiere break ni default",
+        "El switch puede usar operadores && y ||"
+      ],
+      "correctIndex": 0,
+      "explanation": "La principal ventaja del <code>switch</code> es la <strong>legibilidad</strong>: cuando una variable se compara contra 3 o más valores concretos, el <code>switch</code> es más claro y organizado. El rendimiento puede ser similar o igual. Para rangos (<code>&lt;</code>, <code>&gt;</code>) o condiciones compuestas, sigue siendo mejor el <code>if/else</code>."
+    },
+    {
+      "id": "cf_mc_013",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué imprime este código? `int x = 3; switch(x) { case 1: Debug.Log(\"uno\"); break; case 3: Debug.Log(\"tres\"); break; default: Debug.Log(\"otro\"); break; }`",
+      "options": [
+        "tres",
+        "uno",
+        "otro",
+        "uno y tres",
+        "tres y otro"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <code>switch</code> compara <code>x</code> (valor 3) con cada <code>case</code>. <code>case 1</code> no coincide. <code>case 3</code> sí coincide, por lo que se imprime <strong>\"tres\"</strong> y el <code>break</code> sale del switch. El <code>default</code> no se ejecuta porque ya se encontró un caso coincidente."
+    },
+    {
+      "id": "cf_mc_014",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En una máquina de estados de Unity con switch/enum, ¿cuál es la forma correcta de cambiar de estado?",
+      "options": [
+        "Asignar un nuevo valor al enum: currentState = EnemyState.Chase;",
+        "Usar break para saltar al siguiente case",
+        "Llamar a switch() nuevamente con el nuevo estado",
+        "Modificar el switch directamente en código",
+        "Los estados del switch no pueden cambiar"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para cambiar de estado, simplemente se <strong>asigna un nuevo valor</strong> a la variable del enum: <code>currentState = EnemyState.Chase;</code>. En el siguiente frame, el <code>Update()</code> ejecutará el switch de nuevo y entrará al nuevo <code>case</code> correspondiente."
+    },
+    {
+      "id": "cf_mc_015",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la sintaxis correcta de una switch expression de C# 8+ que devuelve un int?",
+      "options": [
+        "int result = direction switch { \"up\" => 1, \"down\" => -1, _ => 0 };",
+        "int result = switch(direction) { \"up\": 1, \"down\": -1 };",
+        "int result = direction switch { case \"up\": return 1; default: return 0; };",
+        "int result = (switch direction) { \"up\" => 1, _ => 0 };",
+        "int result = switch { direction == \"up\" => 1, _ => 0 };"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>switch expression</strong> de C# 8+ usa la sintaxis: <code>variable switch { patron =&gt; valor, _ =&gt; valorPorDefecto }</code>. No usa <code>case</code> ni <code>break</code>. El <code>_</code> (guion bajo) es el patrón de descarte que actúa como <code>default</code>. Es más compacta que el switch clásico."
+    },
+    {
+      "id": "cf_mc_016",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué ocurre si en C# tienes dos `case` vacíos seguidos sin break entre ellos?",
+      "options": [
+        "Es válido: el fall-through está permitido solo entre cases vacíos",
+        "Error de compilación en ambos cases",
+        "Solo el primer case se ejecuta",
+        "Ambos cases se ignoran",
+        "El compilador agrega break automáticamente"
+      ],
+      "correctIndex": 0,
+      "explanation": "C# permite el <strong>fall-through únicamente entre cases vacíos</strong>. Por ejemplo: <code>case 1: case 2: DoSomething(); break;</code> es válido porque <code>case 1</code> está vacío y 'cae' al <code>case 2</code>. Pero si un case tiene código y no tiene <code>break</code>, el compilador generará un error."
+    },
+    {
+      "id": "cf_id_007",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este switch de Unity:",
+      "code": "switch (weaponType)\n{\n    case WeaponType.Sword:\n        damage = 50;\n        break;\n    case WeaponType.Bow:\n        damage = 30;\n        break;\n    default:\n        damage = 10;\n        break;\n}",
+      "question": "¿Cómo se llama el tipo de dato `WeaponType` que se usa como variable del switch?",
+      "target": "enum",
+      "acceptedAnswers": ["enum", "enumeración", "enumeration", "tipo enumerado", "enumerador"],
+      "hints": [
+        "Es un tipo de dato que define un conjunto de constantes con nombre",
+        "Se declara con la palabra clave 'enum' en C#",
+        "Es ideal para representar estados o categorías discretas"
+      ],
+      "explanation": "Un <strong>enum</strong> (enumeración) es un tipo especial que define un conjunto de constantes con nombre. En Unity, los enums son ideales para usar con <code>switch</code> porque hacen el código más legible: <code>WeaponType.Sword</code> es más claro que un número mágico como <code>0</code>."
+    },
+    {
+      "id": "cf_id_008",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este fragmento de switch:",
+      "code": "switch (lives)\n{\n    case 3:\n        Debug.Log(\"Full lives\");\n        break;\n    case 2:\n        Debug.Log(\"One lost\");\n        break;\n    case 1:\n        Debug.Log(\"Last life!\");\n        break;\n    default:\n        Debug.Log(\"Game Over\");\n        break;\n}",
+      "question": "¿Cómo se llama el bloque `default` en este switch y cuándo se ejecuta?",
+      "target": "caso por defecto",
+      "acceptedAnswers": ["caso por defecto", "default", "caso default", "caso predeterminado", "bloque default"],
+      "hints": [
+        "Es el equivalente del 'else' en un if/else",
+        "Se ejecuta cuando ningún case coincide",
+        "En este código, se ejecuta cuando lives es 0 o cualquier otro valor no listado"
+      ],
+      "explanation": "El <strong>caso por defecto</strong> (<code>default</code>) se ejecuta cuando ningún <code>case</code> coincide con el valor de la variable. En este ejemplo, si <code>lives</code> es 0 (u otro valor no listado), se ejecuta el <code>default</code> y se imprime \"Game Over\". Es buena práctica siempre incluirlo."
+    },
+    {
+      "id": "cf_id_009",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Estudia esta switch expression de C# 8+:",
+      "code": "string stateMessage = currentState switch\n{\n    GameState.Menu     => \"Menú Principal\",\n    GameState.Playing  => \"Jugando\",\n    GameState.Paused   => \"Pausado\",\n    _                  => \"Estado Desconocido\"\n};",
+      "question": "¿Qué representa el símbolo `_` (guion bajo) en esta switch expression?",
+      "target": "patrón de descarte",
+      "acceptedAnswers": ["patrón de descarte", "descarte", "discard", "caso por defecto", "wildcard", "default", "discard pattern"],
+      "hints": [
+        "Funciona como el 'default' en el switch clásico",
+        "Coincide con cualquier valor que no fue capturado antes",
+        "En inglés se llama 'discard pattern'"
+      ],
+      "explanation": "El símbolo <code>_</code> en una switch expression es el <strong>patrón de descarte</strong> (discard pattern). Actúa como el <code>default</code> del switch clásico: coincide con cualquier valor que no fue capturado por los patrones anteriores. Es obligatorio incluirlo si el compilador no puede verificar que todos los casos están cubiertos."
+    },
+    {
+      "id": "cf_id_010",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este error de C#:",
+      "code": "switch (direction)\n{\n    case \"North\":\n        MoveNorth();\n        // Falta el break aquí\n    case \"South\":\n        MoveSouth();\n        break;\n}",
+      "question": "¿Qué tipo de error ocurre cuando un case con código no tiene `break` en C#?",
+      "target": "error de compilación",
+      "acceptedAnswers": ["error de compilación", "error de compilacion", "compile error", "error del compilador", "compilation error", "error de sintaxis"],
+      "hints": [
+        "No es un error en tiempo de ejecución",
+        "El programa ni siquiera puede construirse",
+        "El compilador detecta el problema antes de ejecutar el código"
+      ],
+      "explanation": "En C#, omitir el <code>break</code> en un <code>case</code> con código genera un <strong>error de compilación</strong>. El compilador detecta el posible fall-through y rechaza el código antes de ejecutarlo. Esto es una característica de seguridad de C# para prevenir bugs difíciles de encontrar, comunes en C y Java."
+    },
+    {
+      "id": "cf_id_011",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa este patrón de diseño en Unity:",
+      "code": "public enum GameState { Menu, Playing, Paused, GameOver }\nprivate GameState currentState = GameState.Menu;\n\nvoid Update()\n{\n    switch (currentState)\n    {\n        case GameState.Playing:\n            UpdatePhysics();\n            CheckEnemies();\n            break;\n        case GameState.Paused:\n            ShowPauseMenu();\n            break;\n    }\n}",
+      "question": "¿Cómo se llama el patrón de diseño que controla el comportamiento de un objeto basándose en su estado actual usando switch/enum?",
+      "target": "máquina de estados",
+      "acceptedAnswers": ["máquina de estados", "maquina de estados", "state machine", "FSM", "finite state machine", "máquina de estados finita"],
+      "hints": [
+        "Es un patrón de diseño clásico en videojuegos",
+        "El objeto puede estar en uno de varios estados definidos",
+        "En inglés se llama 'State Machine' o 'FSM'"
+      ],
+      "explanation": "Una <strong>máquina de estados</strong> (State Machine o FSM: Finite State Machine) controla el comportamiento de un objeto según su estado actual. Con <code>enum</code> + <code>switch</code>, cada <code>case</code> define el comportamiento de un estado. Es uno de los patrones más usados en Unity para IA de enemigos, animaciones y flujo del juego."
+    },
+    {
+      "id": "cf_id_012",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara estos dos fragmentos que hacen lo mismo:",
+      "code": "// Versión A: if/else if\nif (dir == \"N\") MoveNorth();\nelse if (dir == \"S\") MoveSouth();\nelse if (dir == \"E\") MoveEast();\nelse if (dir == \"W\") MoveWest();\n\n// Versión B: switch\nswitch (dir)\n{\n    case \"N\": MoveNorth(); break;\n    case \"S\": MoveSouth(); break;\n    case \"E\": MoveEast();  break;\n    case \"W\": MoveWest();  break;\n}",
+      "question": "¿Cuál versión es más recomendable cuando se compara una variable contra múltiples valores concretos?",
+      "target": "switch",
+      "acceptedAnswers": ["switch", "versión B", "version B", "la versión con switch", "B"],
+      "hints": [
+        "Una de las versiones es más legible con muchos casos",
+        "La estructura visual es más clara en una de ellas",
+        "La recomendación es usar switch cuando hay 3 o más casos concretos"
+      ],
+      "explanation": "La <strong>versión B con switch</strong> es más recomendable. Cuando se compara una variable contra múltiples valores concretos (3 o más), el <code>switch</code> es más legible porque agrupa visualmente todos los casos y elimina la repetición de la variable en cada condición. Ambas versiones son funcionalmente equivalentes."
+    },
+    {
+      "id": "cf_cw_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el case para que cuando el estado sea \"Attack\" se llame al método AttackPlayer():",
+      "codeTemplate": "switch (state)\n{\n    case ______:\n        AttackPlayer();\n        break;\n}",
+      "expectedAnswer": "\"Attack\"",
+      "alternateAnswers": ["\"Attack\":"],
+      "placeholder": "Escribe el valor del case...",
+      "hints": [
+        "El estado es un string, así que va entre comillas",
+        "Después del valor va dos puntos (:)",
+        "El valor debe coincidir exactamente con el string \"Attack\""
+      ],
+      "explanation": "En un <code>switch</code> con strings, el valor del <code>case</code> debe ir entre <strong>comillas dobles</strong>: <code>case \"Attack\":</code>. C# distingue entre mayúsculas y minúsculas, así que <code>\"attack\"</code> y <code>\"Attack\"</code> son diferentes."
+    },
+    {
+      "id": "cf_cw_008",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el switch agregando el caso `default` que llame a `Debug.LogWarning(\"Estado desconocido\")` y luego haga break:",
+      "codeTemplate": "switch (enemyState)\n{\n    case EnemyState.Idle:\n        IdleBehavior();\n        break;\n    case EnemyState.Chase:\n        ChaseBehavior();\n        break;\n    ______:\n        Debug.LogWarning(\"Estado desconocido\");\n        break;\n}",
+      "expectedAnswer": "default",
+      "alternateAnswers": ["default:"],
+      "placeholder": "Escribe la palabra clave para el caso por defecto...",
+      "hints": [
+        "Es el caso que se ejecuta cuando ningún otro coincide",
+        "Es una palabra clave de C#, no lleva valor entre paréntesis",
+        "Es el equivalente del 'else' final en un if/else"
+      ],
+      "explanation": "La palabra clave <code>default</code> define el caso que se ejecuta cuando ningún <code>case</code> coincide. Se escribe sin valor: solo <code>default:</code>. Es buena práctica incluirlo siempre, especialmente en switches con enum, para detectar estados no manejados."
+    },
+    {
+      "id": "cf_cw_009",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un switch completo para la variable int `lives`. Si es 3: Debug.Log(\"Full\"); si es 1: Debug.Log(\"Danger\"); en cualquier otro caso: Debug.Log(\"OK\"). No olvides los break.",
+      "expectedAnswer": "switch (lives) { case 3: Debug.Log(\"Full\"); break; case 1: Debug.Log(\"Danger\"); break; default: Debug.Log(\"OK\"); break; }",
+      "alternateAnswers": [
+        "switch (lives)\n{\n    case 3:\n        Debug.Log(\"Full\");\n        break;\n    case 1:\n        Debug.Log(\"Danger\");\n        break;\n    default:\n        Debug.Log(\"OK\");\n        break;\n}"
+      ],
+      "placeholder": "Escribe el switch completo...",
+      "hints": [
+        "Empieza con switch (lives) { }",
+        "Cada case necesita su break al final",
+        "El default no lleva valor, solo default:"
+      ],
+      "explanation": "La estructura completa del switch incluye: <code>switch (variable) { case valor: codigo; break; ... default: codigo; break; }</code>. Cada <code>case</code> necesita su <code>break</code> para evitar fall-through. El <code>default</code> maneja los casos no especificados (lives = 2, 0, etc.)."
+    },
+    {
+      "id": "cf_cw_010",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Reescribe este if/else if como una switch expression de C# 8+: si direction == \"up\" devuelve Vector3.up, si direction == \"down\" devuelve Vector3.down, cualquier otro caso devuelve Vector3.zero. Asígnalo a una variable Vector3 llamada moveDir.",
+      "expectedAnswer": "Vector3 moveDir = direction switch { \"up\" => Vector3.up, \"down\" => Vector3.down, _ => Vector3.zero };",
+      "alternateAnswers": [
+        "var moveDir = direction switch { \"up\" => Vector3.up, \"down\" => Vector3.down, _ => Vector3.zero };"
+      ],
+      "placeholder": "Escribe la switch expression completa...",
+      "hints": [
+        "La sintaxis es: variable switch { patron => valor, _ => default }",
+        "No usa case ni break, usa => (flecha gruesa)",
+        "El _ al final es el caso por defecto"
+      ],
+      "explanation": "La switch expression de C# 8+ tiene la forma: <code>tipo nombre = variable switch { patron =&gt; valor, _ =&gt; default };</code>. Es más compacta que el switch clásico: no necesita <code>case</code>, <code>break</code>, ni llaves internas. El <code>_</code> captura cualquier caso no especificado."
+    },
+    {
+      "id": "cf_cw_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el switch para que los cases de WeaponType.Sword y WeaponType.Axe ejecuten el mismo código (ambos llamen a HeavyAttack()). Usa fall-through válido en C#:",
+      "codeTemplate": "switch (weapon)\n{\n    case WeaponType.Sword:\n    ______\n        HeavyAttack();\n        break;\n    case WeaponType.Bow:\n        RangedAttack();\n        break;\n}",
+      "expectedAnswer": "case WeaponType.Axe:",
+      "alternateAnswers": ["case WeaponType.Axe"],
+      "placeholder": "Escribe el case adicional...",
+      "hints": [
+        "El fall-through en C# solo funciona si el case está vacío",
+        "Dos cases vacíos seguidos caen al mismo bloque de código",
+        "El primero no tiene código propio, el segundo sí"
+      ],
+      "explanation": "En C#, el único fall-through permitido es entre <strong>cases vacíos</strong>. Al escribir <code>case WeaponType.Sword:</code> seguido inmediatamente de <code>case WeaponType.Axe:</code> (sin código ni break entre ellos), ambos ejecutan el mismo bloque. Esto es válido porque C# puede verificar que no hay caída accidental de código."
+    },
+    {
+      "id": "cf_cw_012",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una switch expression completa (C# 8+) que asigne a `int points` el valor 100 si gameResult es \"win\", 50 si es \"draw\", y 0 para cualquier otro caso:",
+      "expectedAnswer": "int points = gameResult switch { \"win\" => 100, \"draw\" => 50, _ => 0 };",
+      "alternateAnswers": [
+        "var points = gameResult switch { \"win\" => 100, \"draw\" => 50, _ => 0 };",
+        "int points = gameResult switch { \"win\" => 100, \"draw\" => 50, _ => 0 };"
+      ],
+      "placeholder": "Escribe la switch expression...",
+      "hints": [
+        "Declara int points y asígnale el resultado de la switch expression",
+        "Los strings van entre comillas dobles en los patrones",
+        "Usa _ como último patrón para el caso por defecto"
+      ],
+      "explanation": "<code>int points = gameResult switch { \"win\" =&gt; 100, \"draw\" =&gt; 50, _ =&gt; 0 };</code>. La switch expression evalúa <code>gameResult</code> y devuelve el valor correspondiente. Si <code>gameResult</code> es <code>\"lose\"</code> o cualquier otro string, <code>_</code> captura ese caso y devuelve <code>0</code>."
+    }
+  ]
+}

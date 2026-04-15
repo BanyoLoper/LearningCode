@@ -31,6 +31,15 @@ export class MultipleChoiceHandler {
     const btn = container.querySelector('.btn-submit');
     const labels = container.querySelectorAll('.option-item');
 
+    const selectOption = (index) => {
+      const radio = radios[index];
+      if (!radio) return;
+      radio.checked = true;
+      labels.forEach(l => l.classList.remove('selected'));
+      radio.closest('.option-item').classList.add('selected');
+      btn.disabled = false;
+    };
+
     radios.forEach(radio => {
       radio.addEventListener('change', () => {
         labels.forEach(l => l.classList.remove('selected'));
@@ -45,6 +54,31 @@ export class MultipleChoiceHandler {
       btn.disabled = true;
       onSubmit(parseInt(checked.value));
     });
+
+    // Make the card focusable so arrow keys don't leak to scroll containers
+    const card = container.closest('.question-card') ?? container;
+    card.setAttribute('tabindex', '-1');
+    card.style.outline = 'none';
+
+    // Arrow keys to navigate options (with loop), Enter to confirm
+    let currentIndex = -1;
+    const keyHandler = (e) => {
+      if (btn.disabled) return;
+      const total = radios.length;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowDown' ? 1 : -1;
+        currentIndex = (currentIndex + dir + total) % total;
+        selectOption(currentIndex);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!btn.disabled) btn.click();
+      }
+    };
+    card.addEventListener('keydown', keyHandler);
+
+    // Focus the card so keydown lands here, not on scroll containers
+    requestAnimationFrame(() => card.focus());
   }
 
   /**

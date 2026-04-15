@@ -1,0 +1,375 @@
+{
+  "id": "interfaces",
+  "title": "Interfaces",
+  "icon": "🔌",
+  "documentation": {
+    "sections": [
+      {
+        "id": "interface-def",
+        "title": "¿Qué es una Interface?",
+        "type": "definition",
+        "content": "Una <strong>interface</strong> es un <em>contrato puro</em>: define <em>qué</em> debe hacer una clase sin especificar <em>cómo</em>. Cualquier clase que implemente la interface <strong>debe</strong> proporcionar una implementación para todos sus miembros. A diferencia de las clases abstractas, las interfaces no pueden tener campos ni implementación (en C# anterior a 8.0)."
+      },
+      {
+        "id": "interface-syntax",
+        "title": "Sintaxis de una Interface",
+        "type": "code",
+        "content": "// Por convención, las interfaces empiezan con 'I'\npublic interface IDamageable\n{\n    void TakeDamage(int amount);  // No tiene cuerpo\n    int Health { get; }           // Propiedad sin implementación\n}\n\n// Implementar la interface (usa : igual que herencia)\npublic class Enemy : MonoBehaviour, IDamageable\n{\n    public int Health { get; private set; } = 100;\n\n    public void TakeDamage(int amount)\n    {\n        Health -= amount;\n        if (Health <= 0) Die();\n    }\n}"
+      },
+      {
+        "id": "multi-interface",
+        "title": "Múltiples Interfaces",
+        "type": "code",
+        "content": "// Una clase puede implementar VARIAS interfaces a la vez\npublic class Player : MonoBehaviour, IDamageable, IInteractable, IMovable\n{\n    // Debe implementar los métodos de TODAS las interfaces\n    public void TakeDamage(int amount) { ... }\n    public void Interact() { ... }\n    public void Move(Vector3 direction) { ... }\n}\n\n// Puedes usar el tipo de la interface como referencia\nIDamageable target = GetComponent<IDamageable>();\nif (target != null) target.TakeDamage(50);"
+      },
+      {
+        "id": "interface-vs-abstract",
+        "title": "Interface vs Clase Abstracta",
+        "type": "list",
+        "items": [
+          "<strong>Interface:</strong> Contrato puro. Solo firmas de métodos (sin implementación en C# &lt;8). Herencia múltiple permitida. Sin campos. Sin constructor.",
+          "<strong>Clase Abstracta:</strong> Contrato parcial. Puede tener métodos abstractos Y concretos. Solo herencia única. Puede tener campos, constructor y estado.",
+          "Usa <strong>interface</strong> cuando: defines un comportamiento que clases no relacionadas pueden compartir (IDamageable, IInteractable).",
+          "Usa <strong>clase abstracta</strong> cuando: las clases derivadas comparten estado o lógica base común (EnemyBase con campos de salud y movimiento)."
+        ]
+      },
+      {
+        "id": "unity-pattern",
+        "title": "🎮 Patrón Unity con Interfaces",
+        "type": "analogy",
+        "content": "En Unity es muy común usar interfaces para hacer código genérico. En lugar de hacer <code>GetComponent&lt;Enemy&gt;()</code> (que solo funciona con Enemy), usas <code>GetComponent&lt;IDamageable&gt;()</code> que funciona con <strong>cualquier cosa damageable</strong> — Enemy, Player, BreakableBox, etc:<br><pre>void OnTriggerEnter(Collider other) {\n    IDamageable target = other.GetComponent&lt;IDamageable&gt;();\n    if (target != null)\n        target.TakeDamage(damage);\n    // ¡No importa qué tipo de objeto es!\n}</pre>"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "int_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es una interface en C#?",
+      "options": [
+        "Un contrato que define qué métodos debe implementar una clase",
+        "Una clase especial que ya tiene implementaciones listas para usar",
+        "Un tipo de herencia múltiple que copia código de otra clase",
+        "Un archivo de configuración que Unity lee al iniciar",
+        "Una clase que no puede ser instanciada porque está incompleta"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una interface es un <strong>contrato</strong>: define qué métodos/propiedades debe tener una clase sin implementarlos. La clase que la implementa está obligada a escribir el código de cada miembro. Es la forma de C# de garantizar que un objeto tiene cierto comportamiento sin importar su tipo exacto."
+    },
+    {
+      "id": "int_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Por convención en C#, ¿cómo se nombran las interfaces?",
+      "options": [
+        "Empiezan con 'A' (de Abstract): AMovable, ADamageable",
+        "Terminan con 'Interface': MovableInterface, DamageableInterface",
+        "Empiezan con 'I': IMovable, IDamageable, IInteractable",
+        "Van en MAYÚSCULAS: MOVABLE, DAMAGEABLE",
+        "Empiezan con 'Base': BaseMovable, BaseDamageable"
+      ],
+      "correctIndex": 2,
+      "explanation": "Por convención, las interfaces en C# comienzan con la letra <strong>I</strong> mayúscula: <code>IDamageable</code>, <code>IMovable</code>, <code>IInteractable</code>. Esta convención viene del framework .NET (IEnumerable, IDisposable, IComparable) y permite identificar al instante que algo es una interface."
+    },
+    {
+      "id": "int_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuántas interfaces puede implementar una clase en C#?",
+      "options": [
+        "Solo una (igual que la herencia normal)",
+        "Máximo dos",
+        "Máximo una interface y una clase base",
+        "Varias — no hay límite de interfaces",
+        "Depende del modificador de acceso de la interface"
+      ],
+      "correctIndex": 3,
+      "explanation": "Una clase puede implementar <strong>tantas interfaces como necesite</strong>: <code>class Player : MonoBehaviour, IDamageable, IInteractable, IMovable</code>. Esto es diferente a la herencia de clases, donde C# solo permite heredar de una clase base. Las interfaces permiten la 'herencia múltiple de comportamiento'."
+    },
+    {
+      "id": "int_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Pueden las interfaces tener campos (variables de instancia) en C# antes de la versión 8?",
+      "options": [
+        "Sí, igual que una clase normal",
+        "Solo campos públicos estáticos",
+        "No — las interfaces solo pueden tener firmas de métodos y propiedades",
+        "Solo campos de solo lectura (readonly)",
+        "Solo constantes (const)"
+      ],
+      "correctIndex": 2,
+      "explanation": "En C# (versiones anteriores a 8.0), las interfaces <strong>no pueden tener campos</strong>. Solo pueden definir firmas de métodos, propiedades, eventos e indexadores — sin implementación ni datos. A partir de C# 8.0 se añadieron 'default interface implementations', pero los campos siguen sin poder declararse."
+    },
+    {
+      "id": "int_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia clave entre una interface y una clase abstracta?",
+      "options": [
+        "Las interfaces son más rápidas en ejecución que las clases abstractas",
+        "Una interface solo define contratos sin estado; una clase abstracta puede tener campos y lógica compartida",
+        "Las clases abstractas no pueden instanciarse; las interfaces sí",
+        "Las interfaces son para datos; las clases abstractas son para comportamiento",
+        "No hay diferencia práctica, son sinónimos"
+      ],
+      "correctIndex": 1,
+      "explanation": "La diferencia clave: una interface es un contrato puro (sin estado ni implementación); una clase abstracta puede mezclar métodos abstractos (sin implementación) y concretos (con implementación), y puede tener campos. Además, una clase puede implementar múltiples interfaces pero solo heredar de una clase abstracta."
+    },
+    {
+      "id": "int_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿por qué es útil usar `GetComponent<IDamageable>()` en lugar de `GetComponent<Enemy>()`?",
+      "options": [
+        "Porque GetComponent con interfaces es más rápido",
+        "Porque funciona con cualquier objeto que implemente IDamageable, no solo con Enemy",
+        "Porque Unity no soporta GetComponent con tipos concretos",
+        "Porque IDamageable es un componente de Unity built-in",
+        "Porque evita errores de compilación al hacer casting"
+      ],
+      "correctIndex": 1,
+      "explanation": "<code>GetComponent&lt;IDamageable&gt;()</code> funciona con <strong>cualquier clase</strong> que implemente <code>IDamageable</code> — Enemy, Player, BreakableBarrel, Boss. Esto hace el código genérico y reutilizable. <code>GetComponent&lt;Enemy&gt;()</code> solo funciona con objetos Enemy específicamente."
+    },
+    {
+      "id": "int_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué ocurre si una clase implementa una interface pero no implementa todos sus métodos?",
+      "options": [
+        "Los métodos sin implementar se heredan vacíos automáticamente",
+        "Error de compilación — la clase debe implementar todos los miembros de la interface",
+        "Warning de compilación, pero el código compila y se ejecuta",
+        "Los métodos sin implementar se marcan como abstract automáticamente",
+        "Depende de si la clase es pública o privada"
+      ],
+      "correctIndex": 1,
+      "explanation": "Si una clase implementa una interface y no define todos sus miembros, el compilador genera un <strong>error</strong>. La interface es un contrato que debe cumplirse completamente. La única excepción es si la clase es abstracta — entonces puede dejar los métodos de la interface sin implementar (serán abstract implícitamente)."
+    },
+    {
+      "id": "int_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tienes: `IDamageable target = new Enemy();`. ¿Qué métodos puedes llamar a través de `target`?",
+      "options": [
+        "Todos los métodos públicos de Enemy",
+        "Solo los métodos definidos en IDamageable",
+        "Solo los métodos privados de Enemy",
+        "Ninguno — no puedes asignar un Enemy a una variable IDamageable",
+        "Todos los métodos de todas las interfaces que Enemy implemente"
+      ],
+      "correctIndex": 1,
+      "explanation": "A través de una referencia de tipo <code>IDamageable</code>, solo puedes acceder a los miembros <strong>definidos en IDamageable</strong>. Aunque el objeto es un Enemy, el compilador solo conoce lo que la interface garantiza. Para acceder a métodos específicos de Enemy, necesitarías hacer un cast: <code>((Enemy)target).SpecialMethod()</code>."
+    },
+    {
+      "id": "int_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta declaración:",
+      "code": "public interface IInteractable\n{\n    void Interact(GameObject interactor);\n    string GetPromptText();\n}",
+      "question": "¿Qué característica notable tienen los métodos de esta interface?",
+      "target": "sin cuerpo",
+      "acceptedAnswers": [
+        "no tienen cuerpo", "sin implementación", "sin body", "solo firmas",
+        "no tienen código", "declaraciones sin cuerpo", "abstractos"
+      ],
+      "hints": [
+        "Observa que los métodos terminan en ';' sin llaves {}",
+        "No hay código dentro de los métodos — solo la firma",
+        "En una interface los métodos son puras declaraciones (firmas), sin..."
+      ],
+      "explanation": "Los métodos de una interface <strong>no tienen cuerpo</strong> — solo la firma (nombre, parámetros, tipo de retorno) seguida de un punto y coma. Son declaraciones puras. La clase que implemente esta interface debe proporcionar el cuerpo de cada método."
+    },
+    {
+      "id": "int_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta clase:",
+      "code": "public class Chest : MonoBehaviour, IInteractable, IOpenable\n{\n    public void Interact(GameObject player) { OpenChest(player); }\n    public void Open() { ... }\n    public void Close() { ... }\n    public bool IsOpen { get; private set; }\n}",
+      "question": "¿Cuántas interfaces implementa la clase Chest?",
+      "target": "IInteractable, IOpenable",
+      "acceptedAnswers": ["2", "dos", "dos interfaces", "2 interfaces"],
+      "hints": [
+        "Después de los dos puntos ':' se listan la clase base y las interfaces",
+        "MonoBehaviour es la clase base (herencia), las otras son interfaces",
+        "Cuenta los nombres que empiezan con 'I'"
+      ],
+      "explanation": "Chest implementa <strong>2 interfaces</strong>: <code>IInteractable</code> e <code>IOpenable</code>. <code>MonoBehaviour</code> es la clase base (herencia). C# separa con comas tanto la clase base como las interfaces en la declaración — todo después de <code>:</code>."
+    },
+    {
+      "id": "int_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de un sistema de daño genérico:",
+      "code": "public class Projectile : MonoBehaviour\n{\n    public int damage = 25;\n\n    void OnTriggerEnter(Collider other)\n    {\n        IDamageable target = other.GetComponent<IDamageable>();\n        if (target != null)\n            target.TakeDamage(damage);\n        Destroy(gameObject);\n    }\n}",
+      "question": "¿Por qué este proyectil puede dañar tanto a Enemy como a Player sin necesitar código especial para cada uno?",
+      "target": "IDamageable",
+      "acceptedAnswers": [
+        "porque usa la interface", "por IDamageable", "interface IDamageable",
+        "polimorfismo con interface", "tipado por interface", "abstracción"
+      ],
+      "hints": [
+        "El proyectil no pregunta '¿eres un Enemy o un Player?'",
+        "Usa GetComponent con un tipo de interface, no un tipo concreto",
+        "Cualquier cosa que implemente IDamageable responde a TakeDamage()"
+      ],
+      "explanation": "El proyectil usa <code>IDamageable</code> como tipo genérico. <strong>No importa</strong> si el objeto es Enemy, Player, o BreakableBarrel — si implementa <code>IDamageable</code>, tiene <code>TakeDamage()</code> y el proyectil funciona. Esto es <em>polimorfismo de interfaces</em>: código escrito una vez que funciona con cualquier tipo que cumpla el contrato."
+    },
+    {
+      "id": "int_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara estas dos declaraciones:",
+      "code": "// Opción A\npublic abstract class Damageable\n{\n    public int health = 100;\n    public abstract void TakeDamage(int amount);\n    public void Heal(int amount) { health += amount; }\n}\n\n// Opción B\npublic interface IDamageable\n{\n    void TakeDamage(int amount);\n}",
+      "question": "¿Qué tiene la Opción A (clase abstracta) que NO puede tener la Opción B (interface)?",
+      "target": "campo health / implementación",
+      "acceptedAnswers": [
+        "campos", "field", "variables de instancia", "estado", "datos",
+        "implementación concreta", "método concreto Heal", "health"
+      ],
+      "hints": [
+        "Observa que la clase abstracta tiene 'public int health' — ¿puede tener eso una interface?",
+        "La clase abstracta también tiene un método con cuerpo: Heal() — ¿puede tener eso una interface?",
+        "Las interfaces solo pueden tener firmas; las clases abstractas también pueden tener..."
+      ],
+      "explanation": "La clase abstracta puede tener <strong>campos</strong> (<code>public int health</code>) y <strong>métodos con implementación</strong> (<code>Heal()</code>). Una interface no puede tener campos ni implementación concreta (en C# &lt;8). La clase abstracta comparte estado y lógica; la interface solo define el contrato."
+    },
+    {
+      "id": "int_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código:",
+      "code": "public interface IWeapon\n{\n    int Damage { get; }\n    void Attack(IDamageable target);\n}\n\npublic class Sword : MonoBehaviour, IWeapon\n{\n    public int Damage => 30;\n    public void Attack(IDamageable target)\n    {\n        target.TakeDamage(Damage);\n    }\n}",
+      "question": "¿Qué significa `int Damage { get; }` en la interface?",
+      "target": "Damage { get; }",
+      "acceptedAnswers": [
+        "propiedad de solo lectura", "property get-only", "propiedad con getter",
+        "propiedad sin setter", "read-only property", "propiedad solo lectura"
+      ],
+      "hints": [
+        "Damage con { get; } no es un campo — es una declaración especial",
+        "La parte { get; } indica que tiene un getter pero no setter en la interface",
+        "Este tipo de miembro con llaves y get/set se llama..."
+      ],
+      "explanation": "<code>int Damage { get; }</code> es una <strong>propiedad de solo lectura</strong> declarada en la interface. La interface exige que cualquier implementador exponga una propiedad <code>Damage</code> que tenga al menos un getter. La clase implementadora decide cómo funciona: <code>public int Damage => 30;</code> devuelve siempre 30."
+    },
+    {
+      "id": "int_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este error en tiempo de compilación:",
+      "code": "public interface IMovable\n{\n    void Move(Vector3 direction);\n    void Stop();\n}\n\n// ERROR DE COMPILACIÓN:\npublic class Rock : MonoBehaviour, IMovable\n{\n    public void Move(Vector3 direction)\n    {\n        transform.Translate(direction);\n    }\n    // ¡Stop() no está implementado!\n}",
+      "question": "¿Por qué ocurre el error de compilación?",
+      "target": "Stop() no implementado",
+      "acceptedAnswers": [
+        "falta implementar Stop()", "no implementó todos los métodos",
+        "Stop no está implementado", "la interface requiere Stop",
+        "implementación incompleta de la interface"
+      ],
+      "hints": [
+        "La interface IMovable define DOS métodos: Move y Stop",
+        "La clase Rock solo implementó UNO de ellos",
+        "Una clase que implementa una interface debe implementar TODOS sus miembros"
+      ],
+      "explanation": "Error porque <code>Rock</code> implementa <code>IMovable</code> pero no define <code>Stop()</code>. En C#, implementar una interface es un compromiso total — debes implementar <strong>todos</strong> los miembros declarados en la interface. Si falta alguno, es error de compilación."
+    },
+    {
+      "id": "int_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la declaración de la interface IDamageable con un método TakeDamage que recibe un int:",
+      "codeTemplate": "public __________ IDamageable\n{\n    void TakeDamage(int amount);\n}",
+      "expectedAnswer": "interface",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": [
+        "No es 'class' ni 'abstract class' — es un tipo diferente de contrato",
+        "La palabra clave para definir este tipo de contrato en C# es..."
+      ],
+      "explanation": "La palabra clave <code>interface</code> declara una interface. A diferencia de <code>class</code> o <code>abstract class</code>, una interface solo contiene firmas de métodos (sin implementación). Por convención el nombre empieza con <code>I</code>."
+    },
+    {
+      "id": "int_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la declaración para que Enemy herede de MonoBehaviour Y implemente IDamageable:",
+      "codeTemplate": "public class Enemy __________ MonoBehaviour, IDamageable\n{\n    // ...\n}",
+      "expectedAnswer": ":",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el símbolo...",
+      "hints": [
+        "En C# se usa el mismo símbolo para heredar de una clase E implementar interfaces",
+        "Es el mismo símbolo que en 'class Dog : Animal'"
+      ],
+      "explanation": "El símbolo <code>:</code> (dos puntos) en C# indica tanto herencia de clase como implementación de interfaces. En <code>class Enemy : MonoBehaviour, IDamageable</code>, Enemy hereda de MonoBehaviour e implementa IDamageable. Todo se separa por comas después del <code>:</code>."
+    },
+    {
+      "id": "int_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración completa de una interface llamada `IInteractable` con un solo método `Interact` que recibe un `GameObject` llamado `interactor` y no devuelve nada.",
+      "expectedAnswer": "public interface IInteractable { void Interact(GameObject interactor); }",
+      "alternateAnswers": [
+        "interface IInteractable { void Interact(GameObject interactor); }",
+        "public interface IInteractable\n{\n    void Interact(GameObject interactor);\n}"
+      ],
+      "placeholder": "Escribe la interface completa...",
+      "hints": [
+        "Estructura: public interface NombreInterface { tipoRetorno Metodo(params); }",
+        "Los métodos de interface no tienen cuerpo, solo terminan en ;"
+      ],
+      "explanation": "<code>public interface IInteractable { void Interact(GameObject interactor); }</code>. Puntos clave: palabra clave <code>interface</code>, nombre empieza con <code>I</code>, el método <code>void Interact</code> no tiene cuerpo (termina en <code>;</code>)."
+    },
+    {
+      "id": "int_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para obtener el componente IDamageable de un objeto y dañarlo solo si no es null:",
+      "codeTemplate": "IDamageable target = other.__________(IDamageable>();\nif (target __________ null)\n    target.TakeDamage(50);",
+      "expectedAnswer": "GetComponent<",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método de Unity para obtener componentes...",
+      "hints": [
+        "El método de Unity para obtener componentes es GetComponent<T>()",
+        "Se usa igual con interfaces que con tipos concretos"
+      ],
+      "explanation": "<code>other.GetComponent&lt;IDamageable&gt;()</code> funciona con interfaces igual que con tipos concretos. Unity busca en el objeto un componente que implemente <code>IDamageable</code>. Si no encuentra ninguno, devuelve <code>null</code>, de ahí el null check antes de llamar <code>TakeDamage</code>."
+    },
+    {
+      "id": "int_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea de declaración de una clase `Player` que hereda de `MonoBehaviour` e implementa las interfaces `IDamageable` e `IMovable`.",
+      "expectedAnswer": "public class Player : MonoBehaviour, IDamageable, IMovable",
+      "alternateAnswers": ["class Player : MonoBehaviour, IDamageable, IMovable"],
+      "placeholder": "Escribe solo la línea de declaración (sin llaves)...",
+      "hints": [
+        "Primero la clase base (MonoBehaviour), luego las interfaces separadas por comas",
+        "La sintaxis es: class Nombre : ClaseBase, IInterface1, IInterface2"
+      ],
+      "explanation": "<code>public class Player : MonoBehaviour, IDamageable, IMovable</code>. La clase base va primero después de <code>:</code>; las interfaces se listan después, separadas por comas. C# permite múltiples interfaces pero solo una clase base."
+    },
+    {
+      "id": "int_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la implementación del método TakeDamage de la interface IDamageable en la clase Enemy:",
+      "codeTemplate": "public class Enemy : MonoBehaviour, IDamageable\n{\n    private int health = 100;\n\n    public __________ TakeDamage(int amount)\n    {\n        health -= amount;\n    }\n}",
+      "expectedAnswer": "void",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de retorno...",
+      "hints": [
+        "TakeDamage en la interface se declaró como: void TakeDamage(int amount)",
+        "La implementación debe tener el mismo tipo de retorno que la interface declaró"
+      ],
+      "explanation": "El tipo de retorno debe ser <code>void</code>, igual que en la declaración de la interface (<code>void TakeDamage(int amount);</code>). La implementación debe coincidir exactamente con la firma de la interface: mismo nombre, mismos parámetros, mismo tipo de retorno."
+    }
+  ]
+}

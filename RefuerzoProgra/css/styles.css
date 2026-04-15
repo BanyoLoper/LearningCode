@@ -248,11 +248,25 @@ code, pre { font-family: var(--font-mono); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.question-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
 .question-difficulty {
   font-size: 0.75rem;
   color: var(--yellow);
   letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
+}
+.question-counter {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
 }
 
 .question-badge {
@@ -314,6 +328,11 @@ code, pre { font-family: var(--font-mono); }
   border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 700;
+  transition: background 0.15s, color 0.15s;
+}
+.option-item.selected .option-letter {
+  background: var(--blue);
+  color: #fff;
 }
 .option-text { font-size: 0.9rem; line-height: 1.5; }
 

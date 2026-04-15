@@ -60,6 +60,7 @@ export class CourseEngine {
     this.#endSession();
     await this.#startSection(sectionId);
     this.#sidebar.setActive(sectionId);
+    this.#docPanel.focusSection(sectionId);
   }
 
   /** Starts a Master Quest session — all questions in the pool in one run. */
@@ -109,20 +110,31 @@ export class CourseEngine {
     setTimeout(() => this.#nextQuestion(), 800);
   }
 
-  #nextQuestion() {
+  async #nextQuestion() {
     const q = this.#pickQuestion();
     if (!q) {
-      this.#onSectionComplete();
+      await this.#onSectionComplete();
       return;
     }
     this.#currentQuestion = q;
     this.#wrongAttempts = 0;
     this.#usedIds.add(q.id);
-    this.#evalPanel.renderQuestion(q, answer => this.handleAnswer(answer));
+    const sectionData = this.#loadedSections.get(this.#activeSectionId);
+    const total = sectionData?.questions?.length ?? 0;
+    const num   = this.#usedIds.size; // already added above
+    this.#evalPanel.renderQuestion(q, answer => this.handleAnswer(answer), num, total);
   }
 
-  #onSectionComplete() {
+  async #onSectionComplete() {
     const legendary = this.#isMasterQuest && this.#sessionCorrect === this.#sessionTotal && this.#sessionTotal > 0;
+
+    // Check exam unlock BEFORE endSession resets the counters
+    const activeSection = this.#unlockManager.getAllSections().find(s => s.id === this.#activeSectionId);
+    let examUnlocked = null;
+    if (activeSection?.isExam) {
+      examUnlocked = this.#unlockManager.checkExamUnlock(this.#activeSectionId);
+    }
+
     this.#endSession({ legendary });
 
     if (legendary) {
@@ -144,6 +156,8 @@ export class CourseEngine {
         </div>
       `);
     }
+
+    if (examUnlocked) await this.#handleUnlock(examUnlocked);
   }
 
   #onCorrect(answer) {
@@ -234,16 +248,40 @@ export class CourseEngine {
     const available = sectionData.questions.filter(q => !this.#usedIds.has(q.id));
     if (available.length === 0) return null;
 
-    // In Master Quest: use them all in order of difficulty
+    let picked;
+
     if (this.#isMasterQuest) {
-      return available.sort((a, b) => a.difficulty - b.difficulty)[0];
+      // Master Quest: sorted by difficulty but shuffled within same difficulty level
+      const shuffled = [...available].sort(() => Math.random() - 0.5);
+      shuffled.sort((a, b) => a.difficulty - b.difficulty);
+      picked = shuffled[0];
+    } else if (this.#sessionCorrect < 3) {
+      // Warm-up: pick randomly from the easiest available difficulty group
+      const shuffled = [...available].sort(() => Math.random() - 0.5);
+      const minDiff = Math.min(...shuffled.map(q => q.difficulty));
+      const easyPool = shuffled.filter(q => q.difficulty === minDiff);
+      picked = easyPool[Math.floor(Math.random() * easyPool.length)];
+    } else {
+      // After warm-up: fully random order
+      const shuffled = [...available].sort(() => Math.random() - 0.5);
+      picked = shuffled[0];
     }
 
-    // Regular: prefer easier questions early, randomize after warm-up
-    if (this.#sessionCorrect < 3) {
-      return available.sort((a, b) => a.difficulty - b.difficulty)[0];
+    // For multiple-choice: shuffle options and update correctIndex accordingly
+    if (picked?.type === 'multiple_choice') {
+      const tagged = picked.options.map((opt, i) => ({ opt, correct: i === picked.correctIndex }));
+      for (let i = tagged.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [tagged[i], tagged[j]] = [tagged[j], tagged[i]];
+      }
+      picked = {
+        ...picked,
+        options: tagged.map(t => t.opt),
+        correctIndex: tagged.findIndex(t => t.correct)
+      };
     }
-    return available.sort(() => Math.random() - 0.4)[0];
+
+    return picked;
   }
 
   #validateAnswer(answer, question) {

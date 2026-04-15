@@ -1,0 +1,367 @@
+{
+  "id": "herencia",
+  "title": "Herencia",
+  "icon": "🧬",
+  "color": "#673AB7",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es la Herencia?",
+        "type": "definition",
+        "content": "<strong>Herencia</strong> es un mecanismo de la POO que permite que una clase (<em>clase derivada</em> o hija) adquiera automáticamente los miembros de otra clase (<em>clase base</em> o padre). Representa una relación <strong>\"es-un\"</strong>: un <code>Dog</code> <em>es un</em> <code>Animal</code>, un <code>Boss</code> <em>es un</em> <code>Enemy</code>. Esto evita duplicar código y crea jerarquías lógicas entre tipos."
+      },
+      {
+        "id": "doc-2",
+        "title": "Sintaxis con dos puntos (:)",
+        "type": "code",
+        "content": "// Clase base\npublic class Animal\n{\n    public string Name;\n    protected int Health;\n\n    public Animal(string name, int health)\n    {\n        Name = name;\n        Health = health;\n    }\n\n    public void Breathe()\n    {\n        Debug.Log(Name + \" is breathing.\");\n    }\n}\n\n// Clase derivada de Animal\npublic class Dog : Animal\n{\n    public string Breed;\n\n    public Dog(string name, string breed) : base(name, 100)\n    {\n        Breed = breed;\n    }\n\n    public void Bark()\n    {\n        Debug.Log(Name + \" says: Woof!\");\n    }\n}\n\n// Herencia multinivel: GoldenRetriever es un Dog que es un Animal\npublic class GoldenRetriever : Dog\n{\n    public GoldenRetriever(string name) : base(name, \"Golden Retriever\") { }\n\n    public void Fetch()\n    {\n        Debug.Log(Name + \" fetches the ball!\");\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Constructor con base()",
+        "type": "code",
+        "content": "public class Enemy\n{\n    public string EnemyName;\n    public int MaxHealth;\n\n    // Constructor de la clase base\n    public Enemy(string name, int maxHealth)\n    {\n        EnemyName = name;\n        MaxHealth = maxHealth;\n    }\n}\n\npublic class Boss : Enemy\n{\n    public int Phase;\n\n    // base(name, maxHealth) llama al constructor de Enemy ANTES de ejecutar este cuerpo\n    public Boss(string name, int phase) : base(name, 500)\n    {\n        Phase = phase;\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "¿Qué se hereda?",
+        "type": "list",
+        "items": [
+          "Campos <code>public</code> — accesibles desde cualquier lugar",
+          "Campos <code>protected</code> — accesibles solo desde la clase base y sus derivadas",
+          "Métodos <code>public</code> — disponibles en la clase derivada y desde fuera",
+          "Métodos <code>protected</code> — disponibles internamente en la jerarquía",
+          "Propiedades <code>public</code> y <code>protected</code>",
+          "Los miembros <code>private</code> NO se heredan (existen pero la derivada no puede acceder a ellos)"
+        ]
+      },
+      {
+        "id": "doc-5",
+        "title": "Analogía en Unity",
+        "type": "analogy",
+        "content": "En Unity, <strong>toda clase de comportamiento hereda de <code>MonoBehaviour</code></strong>. Por ejemplo: <code>MonoBehaviour → Behaviour → Component → Object</code>. Cuando creas un enemigo puedes hacer <code>Enemy : MonoBehaviour</code> y luego <code>Boss : Enemy</code>. El <code>Boss</code> hereda <em>todo</em> de <code>Enemy</code> y también todos los métodos de Unity como <code>Start()</code>, <code>Update()</code> y <code>GetComponent()</code>. La clase <code>Object</code> de C# (no la de Unity) es la raíz de <strong>todas</strong> las clases; aunque no escribas <code>: Object</code>, toda clase hereda de ella implícitamente."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "her_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la sintaxis correcta para que la clase <code>Dog</code> herede de la clase <code>Animal</code> en C#?",
+      "options": [
+        "public class Dog : Animal",
+        "public class Dog extends Animal",
+        "public class Dog inherits Animal",
+        "public class Dog -> Animal",
+        "public class Dog(Animal)"
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, la herencia se indica con <strong>dos puntos (<code>:</code>)</strong> después del nombre de la clase derivada, seguido del nombre de la clase base. La sintaxis <code>extends</code> es de Java, no de C#."
+    },
+    {
+      "id": "her_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de los siguientes términos describe correctamente la clase de la que se hereda (la clase padre)?",
+      "options": [
+        "Clase base",
+        "Clase derivada",
+        "Clase abstracta",
+        "Clase sellada",
+        "Clase interfaz"
+      ],
+      "correctIndex": 0,
+      "explanation": "La clase <strong>base</strong> (también llamada padre o superclase) es la clase de la que se hereda. La clase <strong>derivada</strong> (hija o subclase) es la que hereda."
+    },
+    {
+      "id": "her_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado el siguiente código: <code>public class Animal { private int secret; protected int health; public string name; }</code> y <code>public class Dog : Animal { }</code>. ¿A cuáles miembros puede acceder directamente <code>Dog</code>?",
+      "options": [
+        "Solo a health y name",
+        "Solo a name",
+        "A secret, health y name",
+        "Solo a secret",
+        "A ninguno"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>health</code> es <code>protected</code> (accesible desde clases derivadas) y <code>name</code> es <code>public</code> (accesible desde cualquier lugar). El campo <code>secret</code> es <code>private</code>, por lo que <strong>no es accesible</strong> desde <code>Dog</code>."
+    },
+    {
+      "id": "her_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace la palabra clave <code>base</code> cuando se usa en el constructor de una clase derivada, como en <code>public Dog(string name) : base(name, 100)</code>?",
+      "options": [
+        "Llama al constructor de la clase base antes de ejecutar el cuerpo del constructor actual",
+        "Llama al constructor de la clase derivada recursivamente",
+        "Indica que Dog hereda de Animal",
+        "Crea una instancia de la clase base",
+        "Llama al constructor de Object"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>base(...)</code> en la firma del constructor invoca al <strong>constructor de la clase base</strong> con los argumentos indicados. Esto ocurre <em>antes</em> de ejecutar el cuerpo del constructor de la clase derivada, garantizando que la parte base esté inicializada primero."
+    },
+    {
+      "id": "her_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué efecto tiene marcar una clase con la palabra clave <code>sealed</code> en C#?",
+      "options": [
+        "Ninguna otra clase puede heredar de ella",
+        "La clase no puede tener campos privados",
+        "La clase no puede instanciarse",
+        "Todos sus métodos se vuelven abstractos",
+        "La clase se convierte en una interfaz"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una clase <code>sealed</code> (sellada) <strong>no puede ser heredada</strong>. Se usa cuando se quiere prevenir que otras clases extiendan su comportamiento. Por ejemplo, <code>string</code> en C# es una clase sellada."
+    },
+    {
+      "id": "her_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué relación conceptual representa la herencia en POO?",
+      "options": [
+        "Relación \"es-un\" (is-a)",
+        "Relación \"tiene-un\" (has-a)",
+        "Relación \"usa-un\" (uses-a)",
+        "Relación \"crea-un\" (creates-a)",
+        "Relación \"depende-de\" (depends-on)"
+      ],
+      "correctIndex": 0,
+      "explanation": "La herencia representa la relación <strong>\"es-un\"</strong>: un <code>Dog</code> <em>es un</em> <code>Animal</code>. La relación <em>\"tiene-un\"</em> corresponde a la <strong>composición</strong>, donde una clase contiene una instancia de otra."
+    },
+    {
+      "id": "her_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En Unity, ¿de qué clase hereda directamente <code>MonoBehaviour</code>?",
+      "options": [
+        "Behaviour",
+        "Component",
+        "Object",
+        "GameObject",
+        "Transform"
+      ],
+      "correctIndex": 0,
+      "explanation": "La jerarquía en Unity es: <code>Object → Component → Behaviour → MonoBehaviour</code>. Por tanto, <code>MonoBehaviour</code> hereda directamente de <code>Behaviour</code>."
+    },
+    {
+      "id": "her_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Considera: <code>class A { } class B : A { } class C : B { }</code>. ¿Cuántos niveles de herencia tiene <code>C</code> (sin contar <code>object</code>)?",
+      "options": [
+        "2",
+        "1",
+        "3",
+        "0",
+        "4"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>C</code> hereda de <code>B</code>, y <code>B</code> hereda de <code>A</code>. Eso son <strong>2 niveles</strong> de herencia (sin contar la raíz implícita <code>object</code>). A esto se le llama <em>herencia multinivel</em>."
+    },
+    {
+      "id": "her_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Vehicle\n{\n    public string Brand;\n    protected int Speed;\n    private float _fuel;\n\n    public Vehicle(string brand)\n    {\n        Brand = brand;\n        Speed = 0;\n        _fuel = 100f;\n    }\n}\n\npublic class Car : Vehicle\n{\n    public int Doors;\n\n    public Car(string brand, int doors) : base(brand)\n    {\n        Doors = doors;\n    }\n}",
+      "question": "¿Qué término describe la relación que tiene <code>Car</code> con <code>Vehicle</code>?",
+      "target": "clase derivada",
+      "acceptedAnswers": ["clase derivada", "clase hija", "subclase", "derived class", "child class"],
+      "hints": [
+        "Car usa los dos puntos (:) para conectarse con Vehicle",
+        "Vehicle es la clase padre; ¿cómo se llama la clase hijo?",
+        "La clase que hereda se llama clase ___"
+      ],
+      "explanation": "<code>Car</code> es la <strong>clase derivada</strong> (también llamada clase hija o subclase) porque usa la sintaxis <code>: Vehicle</code> para heredar de <code>Vehicle</code>, que es la clase base."
+    },
+    {
+      "id": "her_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Weapon\n{\n    public string WeaponName;\n    protected int Damage;\n    private int _durability;\n\n    public void ShowName()\n    {\n        Debug.Log(WeaponName);\n    }\n}\n\npublic class Sword : Weapon\n{\n    public float SwingSpeed;\n}",
+      "question": "¿A cuáles miembros de <code>Weapon</code> puede acceder directamente <code>Sword</code>? Lista todos.",
+      "target": "WeaponName, Damage, ShowName",
+      "acceptedAnswers": ["WeaponName, Damage, ShowName", "Damage, WeaponName, ShowName", "WeaponName Damage ShowName"],
+      "hints": [
+        "Los miembros private NO son accesibles desde clases derivadas",
+        "Los miembros public y protected SÍ son accesibles",
+        "Hay dos campos accesibles y un método accesible"
+      ],
+      "explanation": "<code>Sword</code> puede acceder a <code>WeaponName</code> (public), <code>Damage</code> (protected) y <code>ShowName()</code> (public). El campo <code>_durability</code> es <strong>private</strong> y no es accesible desde la clase derivada."
+    },
+    {
+      "id": "her_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Enemy\n{\n    public string EnemyName;\n    public int Health;\n\n    public Enemy(string name, int health)\n    {\n        EnemyName = name;\n        Health = health;\n    }\n}\n\npublic class Goblin : Enemy\n{\n    public int GoldDrop;\n\n    public Goblin(string name, int gold) : base(name, 50)\n    {\n        GoldDrop = gold;\n    }\n}",
+      "question": "¿Qué hace la llamada <code>base(name, 50)</code> en el constructor de <code>Goblin</code>?",
+      "target": "llama al constructor de Enemy",
+      "acceptedAnswers": ["llama al constructor de Enemy", "invoca el constructor de la clase base", "llama al constructor base", "ejecuta el constructor de Enemy"],
+      "hints": [
+        "base() se refiere a la clase de la que hereda Goblin",
+        "Se ejecuta ANTES del cuerpo del constructor de Goblin",
+        "Inicializa los campos de Enemy con name y 50"
+      ],
+      "explanation": "<code>base(name, 50)</code> <strong>llama al constructor de la clase base</strong> (<code>Enemy</code>) pasando <code>name</code> y <code>50</code> como argumentos. Esto inicializa <code>EnemyName</code> y <code>Health</code> antes de que el cuerpo del constructor de <code>Goblin</code> se ejecute."
+    },
+    {
+      "id": "her_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public sealed class FinalBoss : Enemy\n{\n    public FinalBoss(string name) : base(name, 9999) { }\n}",
+      "question": "¿Qué implica la palabra clave <code>sealed</code> en la clase <code>FinalBoss</code>?",
+      "target": "no puede ser heredada",
+      "acceptedAnswers": ["no puede ser heredada", "ninguna clase puede heredar de FinalBoss", "no se puede extender", "cannot be inherited"],
+      "hints": [
+        "sealed significa 'sellada' o 'cerrada'",
+        "Piensa en una caja sellada que no se puede abrir",
+        "Ninguna clase puede hacer : FinalBoss"
+      ],
+      "explanation": "La palabra clave <code>sealed</code> indica que <code>FinalBoss</code> <strong>no puede ser heredada</strong>. Si intentas crear <code>class SuperBoss : FinalBoss</code>, el compilador generará un error."
+    },
+    {
+      "id": "her_id_005",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Animal { }\npublic class Dog : Animal { }\npublic class GoldenRetriever : Dog { }",
+      "question": "¿Cómo se llama este patrón donde <code>GoldenRetriever</code> hereda de <code>Dog</code> que hereda de <code>Animal</code>?",
+      "target": "herencia multinivel",
+      "acceptedAnswers": ["herencia multinivel", "multi-level inheritance", "herencia en cadena", "cadena de herencia"],
+      "hints": [
+        "Hay más de un nivel de herencia",
+        "Es una cadena: A → B → C",
+        "Se llama herencia _______nivel"
+      ],
+      "explanation": "Cuando la cadena de herencia tiene más de un nivel (A → B → C), se denomina <strong>herencia multinivel</strong>. <code>GoldenRetriever</code> hereda de <code>Dog</code>, que a su vez hereda de <code>Animal</code>."
+    },
+    {
+      "id": "her_id_006",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class PlayerController : MonoBehaviour\n{\n    void Start()\n    {\n        Debug.Log(\"Player ready!\");\n    }\n}",
+      "question": "¿Por qué <code>PlayerController</code> puede usar el método <code>Debug.Log</code> y ser añadida como componente en Unity?",
+      "target": "hereda de MonoBehaviour",
+      "acceptedAnswers": ["hereda de MonoBehaviour", "porque hereda de MonoBehaviour", "extiende MonoBehaviour", "es una clase derivada de MonoBehaviour"],
+      "hints": [
+        "Observa el : después del nombre de la clase",
+        "MonoBehaviour proporciona los métodos de Unity",
+        "Sin herencia, Unity no reconocería esta clase como componente"
+      ],
+      "explanation": "<code>PlayerController</code> puede usar los métodos de Unity y ser añadida como componente porque <strong>hereda de <code>MonoBehaviour</code></strong>. A través de la herencia, obtiene todos los métodos del ciclo de vida de Unity como <code>Start()</code>, <code>Update()</code>, etc."
+    },
+    {
+      "id": "her_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración para que la clase <code>Cat</code> herede de la clase <code>Animal</code>:",
+      "codeTemplate": "public class Cat ________ Animal\n{\n    public string Color;\n}",
+      "expectedAnswer": ":",
+      "alternateAnswers": [],
+      "placeholder": "símbolo de herencia",
+      "hints": [
+        "En C#, la herencia usa un símbolo de puntuación",
+        "No es 'extends' como en Java",
+        "Es el mismo símbolo que separa minutos de segundos en un reloj"
+      ],
+      "explanation": "En C#, la herencia se indica con <strong>dos puntos (<code>:</code>)</strong>. La sintaxis completa es <code>public class Cat : Animal</code>."
+    },
+    {
+      "id": "her_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el constructor de <code>Warrior</code> para que llame al constructor de su clase base <code>Character</code> pasando el parámetro <code>name</code>:",
+      "codeTemplate": "public class Character\n{\n    public string Name;\n    public Character(string name) { Name = name; }\n}\n\npublic class Warrior : Character\n{\n    public int Strength;\n    public Warrior(string name, int str) : ________(name)\n    {\n        Strength = str;\n    }\n}",
+      "expectedAnswer": "base",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave",
+      "hints": [
+        "Esta palabra clave hace referencia a la clase padre",
+        "Se usa seguida de paréntesis con los argumentos",
+        "Es opuesta a 'this'"
+      ],
+      "explanation": "La palabra clave <code>base</code> se usa para llamar al constructor de la clase base. <code>: base(name)</code> invoca <code>Character(string name)</code> antes de ejecutar el cuerpo del constructor de <code>Warrior</code>."
+    },
+    {
+      "id": "her_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración completa de una clase <code>Wizard</code> que herede de <code>Character</code>. Solo la primera línea (sin llaves ni cuerpo).",
+      "codeTemplate": null,
+      "expectedAnswer": "public class Wizard : Character",
+      "alternateAnswers": ["public class Wizard: Character", "public class Wizard :Character"],
+      "placeholder": "public class ...",
+      "hints": [
+        "Necesitas: modificador de acceso, palabra clave class, nombre, símbolo de herencia, clase base",
+        "El modificador de acceso es 'public'",
+        "La sintaxis es: public class NombreClase : ClaseBase"
+      ],
+      "explanation": "La declaración es <code>public class Wizard : Character</code>. Incluye el modificador de acceso <code>public</code>, la palabra clave <code>class</code>, el nombre <code>Wizard</code>, los dos puntos <code>:</code> y el nombre de la clase base <code>Character</code>."
+    },
+    {
+      "id": "her_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código para que <code>EliteGoblin</code> herede de <code>Goblin</code> y su constructor llame al constructor base con <code>name</code> y <code>200</code>:",
+      "codeTemplate": "public class EliteGoblin ________ Goblin\n{\n    public EliteGoblin(string name) : ________(name, 200)\n    {\n        Debug.Log(\"Elite Goblin created!\");\n    }\n}",
+      "expectedAnswer": ": | base",
+      "alternateAnswers": [],
+      "placeholder": "símbolo | palabra clave",
+      "hints": [
+        "El primer hueco es el símbolo de herencia",
+        "El segundo hueco llama al constructor del padre",
+        "Primer hueco: ':', Segundo hueco: 'base'"
+      ],
+      "explanation": "El primer hueco es <code>:</code> para indicar herencia, y el segundo es <code>base</code> para llamar al constructor de <code>Goblin</code>. Resultado: <code>public class EliteGoblin : Goblin</code> con <code>: base(name, 200)</code>."
+    },
+    {
+      "id": "her_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración de clase completa para crear una clase <code>FireDragon</code> que herede de <code>Dragon</code> y sea sellada (no pueda ser heredada).",
+      "codeTemplate": null,
+      "expectedAnswer": "public sealed class FireDragon : Dragon",
+      "alternateAnswers": ["sealed public class FireDragon : Dragon"],
+      "placeholder": "public ...",
+      "hints": [
+        "Necesitas el modificador 'sealed' además de 'public'",
+        "sealed va entre public y class (o antes de public)",
+        "La sintaxis es: public sealed class Nombre : Base"
+      ],
+      "explanation": "La declaración es <code>public sealed class FireDragon : Dragon</code>. La palabra clave <code>sealed</code> evita que cualquier clase pueda heredar de <code>FireDragon</code>."
+    },
+    {
+      "id": "her_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el campo de la clase <code>Enemy</code> para que sea accesible desde clases derivadas pero NO desde fuera de la jerarquía:",
+      "codeTemplate": "public class Enemy\n{\n    ________ int Health;\n    public string EnemyName;\n}",
+      "expectedAnswer": "protected",
+      "alternateAnswers": [],
+      "placeholder": "modificador de acceso",
+      "hints": [
+        "No es 'public' porque no queremos acceso desde fuera",
+        "No es 'private' porque las clases derivadas necesitan accederlo",
+        "Hay un modificador especial para la jerarquía de herencia"
+      ],
+      "explanation": "<code>protected</code> es el modificador de acceso que permite el acceso desde la clase base y todas sus clases derivadas, pero <strong>no</strong> desde código externo a la jerarquía."
+    }
+  ]
+}

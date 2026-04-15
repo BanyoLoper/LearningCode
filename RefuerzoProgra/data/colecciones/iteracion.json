@@ -1,0 +1,369 @@
+{
+  "id": "iteracion",
+  "title": "Iteración de Colecciones",
+  "icon": "🔄",
+  "color": "#4CAF50",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "foreach: la forma más limpia de iterar",
+        "type": "code",
+        "content": "List<Enemy> enemies = new List<Enemy>();\n// ... (suponemos que ya tiene elementos)\n\n// foreach recorre cada elemento sin necesidad de índices\nforeach (Enemy enemy in enemies)\n{\n    enemy.TakeDamage(10);\n    Debug.Log(enemy.name);\n}\n\n// foreach con array\nstring[] nombres = { \"Ana\", \"Luis\", \"Mia\" };\nforeach (string nombre in nombres)\n{\n    Debug.Log(nombre);\n}\n\n// foreach con Dictionary: usa KeyValuePair\nDictionary<string, int> stats = new Dictionary<string, int>();\nstats[\"vida\"] = 100;\nstats[\"mana\"] = 50;\n\nforeach (KeyValuePair<string, int> par in stats)\n{\n    Debug.Log(par.Key + \": \" + par.Value);\n}"
+      },
+      {
+        "id": "doc-2",
+        "title": "for con índice en listas",
+        "type": "code",
+        "content": "List<GameObject> proyectiles = new List<GameObject>();\n\n// for con índice: útil cuando necesitas el índice durante la iteración\nfor (int i = 0; i < proyectiles.Count; i++)\n{\n    Debug.Log(\"Proyectil \" + i + \": \" + proyectiles[i].name);\n}\n\n// Cuándo usar for vs foreach:\n// - Usa foreach cuando solo necesitas LEER o procesar cada elemento.\n// - Usa for cuando necesitas el ÍNDICE del elemento durante la iteración.\n// - IMPORTANTE: Si necesitas ELIMINAR elementos, itera la lista al revés\n//   o usa una lista temporal; nunca modifiques la colección en un foreach.\n\n// Iteración inversa para eliminar elementos de forma segura:\nfor (int i = proyectiles.Count - 1; i >= 0; i--)\n{\n    if (proyectiles[i] == null)\n    {\n        proyectiles.RemoveAt(i);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "NUNCA modifiques una colección durante foreach",
+        "type": "note",
+        "content": "Modificar una <code>List&lt;T&gt;</code> (agregar o eliminar elementos) <strong>mientras la recorres con foreach</strong> lanza una <strong><code>InvalidOperationException</code></strong> con el mensaje <em>\"Collection was modified; enumeration operation may not execute\"</em>. Soluciones seguras:<br><br>1. <strong>Lista temporal:</strong> recorre el foreach y agrega los elementos a eliminar en otra lista; luego elimínalos.<br>2. <strong>Iterar hacia atrás:</strong> usa un <code>for</code> desde <code>Count - 1</code> hasta <code>0</code> y llama a <code>RemoveAt(i)</code>.<br>3. <strong>RemoveAll():</strong> <code>lista.RemoveAll(e => condicion);</code> es la forma más limpia."
+      },
+      {
+        "id": "doc-4",
+        "title": "Iteración de Dictionary con KeyValuePair",
+        "type": "code",
+        "content": "Dictionary<string, float> cooldowns = new Dictionary<string, float>();\ncooldowns[\"Fireball\"] = 3.0f;\ncooldowns[\"Heal\"] = 5.0f;\ncooldowns[\"Dash\"] = 1.5f;\n\n// Recorrer todos los pares clave-valor\nforeach (KeyValuePair<string, float> kvp in cooldowns)\n{\n    Debug.Log(kvp.Key + \" -> \" + kvp.Value + \"s\");\n}\n\n// Recorrer solo las claves\nforeach (string habilidad in cooldowns.Keys)\n{\n    Debug.Log(\"Habilidad: \" + habilidad);\n}\n\n// Recorrer solo los valores\nforeach (float tiempo in cooldowns.Values)\n{\n    Debug.Log(\"Cooldown: \" + tiempo);\n}\n\n// También puedes usar var para simplificar el tipo\nforeach (var kvp in cooldowns)\n{\n    Debug.Log(kvp.Key + \": \" + kvp.Value);\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Rendimiento en Unity: evita LINQ en Update()",
+        "type": "note",
+        "content": "<strong>LINQ</strong> (como <code>.Where()</code>, <code>.FirstOrDefault()</code>, <code>.Select()</code>) es muy conveniente para consultas sobre colecciones, pero <strong>genera allocations de memoria (garbage)</strong> cada vez que se llama. En Unity, si usas LINQ dentro de <code>Update()</code> (que se ejecuta 60+ veces por segundo), provocarás picos de <em>Garbage Collection</em> que causarán microfreezes en el juego.<br><br><strong>Regla:</strong> usa LINQ en <code>Start()</code>, <code>Awake()</code> o al cargar niveles (una sola vez), pero <strong>evítalo en <code>Update()</code>, <code>FixedUpdate()</code> o <code>LateUpdate()</code></strong>. Para búsquedas frecuentes, prefiere un <code>for</code> o mantén referencias directas."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "col_mc_025",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la sintaxis correcta de un foreach para recorrer una `List<Enemy>` llamada `enemies`?",
+      "options": [
+        "foreach (Enemy e in enemies) { }",
+        "foreach (enemies as Enemy e) { }",
+        "for each (Enemy e in enemies) { }",
+        "foreach (e in enemies: Enemy) { }",
+        "foreach Enemy e (enemies) { }"
+      ],
+      "correctIndex": 0,
+      "explanation": "La sintaxis correcta del <code>foreach</code> en C# es: <strong><code>foreach (Tipo variable in coleccion)</code></strong>. Por lo tanto: <code>foreach (Enemy e in enemies)</code>. La variable <code>e</code> toma el valor de cada elemento de la lista en cada iteración."
+    },
+    {
+      "id": "col_mc_026",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué excepción lanza C# si agregas un elemento a una `List<T>` mientras la estás recorriendo con `foreach`?",
+      "options": [
+        "InvalidOperationException",
+        "IndexOutOfRangeException",
+        "ArgumentException",
+        "NullReferenceException",
+        "StackOverflowException"
+      ],
+      "correctIndex": 0,
+      "explanation": "Modificar una colección durante un <code>foreach</code> lanza <strong><code>InvalidOperationException</code></strong> con el mensaje \"Collection was modified; enumeration operation may not execute\". Soluciones: iterar hacia atrás con <code>for</code>, usar lista temporal, o <code>RemoveAll()</code>."
+    },
+    {
+      "id": "col_mc_027",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo es mejor usar un `for` con índice en lugar de `foreach` para recorrer una lista?",
+      "options": [
+        "Cuando necesitas conocer la posición (índice) de cada elemento durante la iteración.",
+        "Cuando la lista contiene objetos de tipo class.",
+        "Cuando la lista tiene más de 100 elementos.",
+        "Cuando los elementos son de tipo string.",
+        "Cuando quieres que sea más legible el código."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usa <code>for</code> con índice cuando necesitas el <strong>número de posición</strong> del elemento, por ejemplo para compararlos por posición o para eliminar elementos de forma segura iterando al revés. Si solo necesitas procesar cada elemento, <code>foreach</code> es más limpio."
+    },
+    {
+      "id": "col_mc_028",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Al iterar un `Dictionary<string, int>` con `foreach`, ¿qué tipo tiene cada elemento del bucle?",
+      "options": [
+        "KeyValuePair<string, int>",
+        "string",
+        "int",
+        "DictionaryEntry",
+        "Tuple<string, int>"
+      ],
+      "correctIndex": 0,
+      "explanation": "Al iterar un <code>Dictionary&lt;TKey, TValue&gt;</code> con <code>foreach</code>, cada elemento es de tipo <strong><code>KeyValuePair&lt;TKey, TValue&gt;</code></strong>. Accedes a la clave con <code>.Key</code> y al valor con <code>.Value</code>: <code>foreach (KeyValuePair&lt;string, int&gt; kvp in dict)</code>."
+    },
+    {
+      "id": "col_mc_029",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué devuelve `lista.FirstOrDefault(e => e.vida <= 0)` de LINQ si ningún elemento cumple la condición?",
+      "options": [
+        "null (o el valor por defecto del tipo)",
+        "Lanza una excepción",
+        "El último elemento de la lista",
+        "-1",
+        "false"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>FirstOrDefault()</code> devuelve el <strong>primer elemento que cumple la condición</strong>, o el <em>valor por defecto del tipo</em> si ninguno la cumple. Para tipos referencia (clases) como <code>Enemy</code>, el valor por defecto es <code>null</code>. Siempre verifica si el resultado es <code>null</code> antes de usarlo."
+    },
+    {
+      "id": "col_mc_030",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En Unity, ¿por qué es problemático usar LINQ (como `.Where()`) dentro del método `Update()`?",
+      "options": [
+        "Genera allocations de memoria en cada frame que acumulan Garbage Collection y causan microfreezes.",
+        "LINQ no compila correctamente en proyectos de Unity.",
+        "Update() no permite el uso de lambdas ni expresiones LINQ.",
+        "LINQ solo funciona con arrays, no con List<T>.",
+        "El resultado de LINQ en Update() siempre es incorrecto."
+      ],
+      "correctIndex": 0,
+      "explanation": "LINQ genera <strong>allocations de memoria (garbage)</strong> en cada llamada. <code>Update()</code> se ejecuta decenas de veces por segundo, acumulando basura rápidamente. El Garbage Collector de Unity eventualmente limpia esa memoria, causando <em>microfreezes</em> perceptibles. Usa LINQ en <code>Start()</code>/<code>Awake()</code>, no en <code>Update()</code>."
+    },
+    {
+      "id": "col_mc_031",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la forma SEGURA de eliminar elementos de una `List<T>` mientras la recorres?",
+      "options": [
+        "Iterar con un for de mayor a menor índice y usar RemoveAt(i).",
+        "Usar foreach y llamar Remove() dentro del cuerpo del bucle.",
+        "Iterar con foreach y agregar los elementos a eliminar en la misma lista.",
+        "No es posible eliminar elementos de una List<T> durante iteración.",
+        "Usar for de menor a mayor y llamar RemoveAt(i) directamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "La forma más segura con <code>for</code> es <strong>iterar de mayor a menor</strong>: <code>for (int i = lista.Count - 1; i >= 0; i--)</code>. Al eliminar hacia atrás, los índices de los elementos no procesados no se alteran. También puedes usar una lista temporal o <code>RemoveAll()</code>."
+    },
+    {
+      "id": "col_mc_032",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué propiedad de `KeyValuePair<string, int>` contiene la clave del par?",
+      "options": [
+        "Key",
+        "Value",
+        "First",
+        "Item1",
+        "Index"
+      ],
+      "correctIndex": 0,
+      "explanation": "En un <code>KeyValuePair&lt;TKey, TValue&gt;</code>, la clave se accede con la propiedad <strong><code>Key</code></strong> y el valor con <strong><code>Value</code></strong>. Ejemplo: si <code>kvp</code> es el par <code>(\"vida\", 100)</code>, entonces <code>kvp.Key</code> es <code>\"vida\"</code> y <code>kvp.Value</code> es <code>100</code>."
+    },
+    {
+      "id": "col_id_019",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "List<string> misiones = new List<string>();\nmisiones.Add(\"Rescatar aldeano\");\nmisiones.Add(\"Derrotar jefe\");\nmisiones.Add(\"Explorar cueva\");\n\nforeach (string mision in misiones)\n{\n    Debug.Log(mision);\n}",
+      "question": "¿Cuántas veces se ejecuta el cuerpo del foreach?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres"],
+      "hints": [
+        "El foreach itera una vez por cada elemento de la colección.",
+        "¿Cuántos elementos tiene la lista después de los tres Add()?",
+        "Hay 3 elementos en la lista."
+      ],
+      "explanation": "La lista tiene 3 elementos (después de 3 llamadas a <code>Add()</code>). El <code>foreach</code> ejecuta su cuerpo <strong>una vez por cada elemento</strong>, es decir, <strong>3 veces</strong> en total."
+    },
+    {
+      "id": "col_id_020",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código problemático:",
+      "code": "List<Enemy> enemies = GetActiveEnemies();\n\nforeach (Enemy enemy in enemies)\n{\n    if (enemy.IsDead())\n    {\n        enemies.Remove(enemy); // <-- problema aquí\n    }\n}",
+      "question": "¿Qué excepción se lanza al intentar eliminar un elemento de la lista durante el foreach?",
+      "target": "InvalidOperationException",
+      "acceptedAnswers": ["InvalidOperationException", "Invalid Operation Exception"],
+      "hints": [
+        "Modificar una colección durante foreach está prohibido en C#.",
+        "La excepción tiene 'Operation' en su nombre.",
+        "No es IndexOutOfRange ni ArgumentException."
+      ],
+      "explanation": "Modificar una <code>List&lt;T&gt;</code> (con <code>Add()</code>, <code>Remove()</code>, etc.) mientras se recorre con <code>foreach</code> lanza <strong><code>InvalidOperationException</code></strong>. Solución: usa un <code>for</code> hacia atrás o <code>enemies.RemoveAll(e => e.IsDead())</code>."
+    },
+    {
+      "id": "col_id_021",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Dictionary<string, int> inventario = new Dictionary<string, int>();\ninventario[\"Espada\"] = 1;\ninventario[\"Pocion\"] = 5;\ninventario[\"Flecha\"] = 30;\n\nforeach (KeyValuePair<string, int> kvp in inventario)\n{\n    Debug.Log(kvp.Key + \": \" + kvp.Value);\n}",
+      "question": "¿Qué propiedad de `kvp` contiene el número (por ejemplo, 5 para \"Pocion\")?",
+      "target": "Value",
+      "acceptedAnswers": ["Value", "kvp.Value", ".Value"],
+      "hints": [
+        "KeyValuePair tiene dos propiedades: una para la clave y otra para el valor.",
+        "La clave está en .Key, el número está en...",
+        "En inglés, 'valor' es 'value'."
+      ],
+      "explanation": "En <code>KeyValuePair&lt;TKey, TValue&gt;</code>, el dato asociado a la clave se accede con la propiedad <strong><code>Value</code></strong>. Entonces <code>kvp.Value</code> contiene el número (5 para \"Pocion\", 30 para \"Flecha\", etc.)."
+    },
+    {
+      "id": "col_id_022",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de Unity:",
+      "code": "void Update()\n{\n    // Este código se llama 60 veces por segundo\n    Enemy nearest = enemies.FirstOrDefault(e => e.IsAlive());\n    if (nearest != null)\n    {\n        MoveTowards(nearest);\n    }\n}",
+      "question": "¿Qué problema de rendimiento tiene este código en Unity?",
+      "target": "garbage collection",
+      "acceptedAnswers": ["garbage collection", "GC", "allocations", "memory allocation", "LINQ en Update", "genera basura"],
+      "hints": [
+        "FirstOrDefault() es un método de LINQ.",
+        "Update() se ejecuta muchas veces por segundo.",
+        "LINQ genera objetos temporales en memoria en cada llamada."
+      ],
+      "explanation": "Usar LINQ (<code>FirstOrDefault()</code>) dentro de <code>Update()</code> genera <strong>allocations de memoria (garbage)</strong> en cada frame. A 60fps, esto acumula rápidamente y activa el Garbage Collector de Unity, causando <em>microfreezes</em>. Solución: cachea la referencia o usa un <code>for</code> manual."
+    },
+    {
+      "id": "col_id_023",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este patrón de iteración segura:",
+      "code": "List<Bullet> bullets = GetActiveBullets();\n\nfor (int i = bullets.Count - 1; i >= 0; i--)\n{\n    if (bullets[i].HasExpired())\n    {\n        bullets.RemoveAt(i);\n    }\n}",
+      "question": "¿Por qué el for itera desde `bullets.Count - 1` hacia atrás (hasta 0) en lugar de hacia adelante?",
+      "target": "los índices no se desplazan",
+      "acceptedAnswers": [
+        "los índices no se desplazan",
+        "no afecta índices no procesados",
+        "evita saltar elementos",
+        "al eliminar hacia atrás los índices anteriores no cambian",
+        "para no alterar los índices de los elementos restantes"
+      ],
+      "hints": [
+        "Cuando eliminas un elemento de una lista, los índices de los elementos siguientes cambian.",
+        "Si eliminas el elemento 2 y luego vas al índice 3, ¿cuál elemento estás mirando realmente?",
+        "Al recorrer al revés y eliminar, ¿afecta eso a los elementos que aún no procesaste?"
+      ],
+      "explanation": "Al eliminar un elemento con <code>RemoveAt(i)</code> en un <code>for</code> hacia adelante, los índices de los elementos posteriores se reducen en 1, lo que causa que se <em>salten</em> elementos. Al iterar <strong>hacia atrás</strong>, cuando eliminas el elemento en la posición <code>i</code>, los elementos con índice menor a <code>i</code> (los que aún no se procesaron) no se ven afectados."
+    },
+    {
+      "id": "col_id_024",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "List<int> numeros = new List<int>() { 2, 4, 6, 8, 10 };\nint suma = 0;\n\nforeach (int n in numeros)\n{\n    suma += n;\n}\n\nDebug.Log(suma);",
+      "question": "¿Qué valor imprime `Debug.Log(suma)` al final?",
+      "target": "30",
+      "acceptedAnswers": ["30"],
+      "hints": [
+        "El foreach suma todos los elementos de la lista.",
+        "Los elementos son: 2, 4, 6, 8 y 10.",
+        "2 + 4 + 6 + 8 + 10 = ?"
+      ],
+      "explanation": "El <code>foreach</code> suma todos los elementos: <code>2 + 4 + 6 + 8 + 10 = <strong>30</strong></code>. La variable <code>suma</code> empieza en 0 y acumula cada elemento de la lista."
+    },
+    {
+      "id": "col_cw_019",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el foreach para recorrer la lista `items` donde cada elemento es de tipo `string`:",
+      "codeTemplate": "foreach (__________ item in items)\n{\n    Debug.Log(item);\n}",
+      "expectedAnswer": "string",
+      "alternateAnswers": ["var"],
+      "placeholder": "¿Qué tipo tiene cada elemento?",
+      "hints": [
+        "El tipo de la variable de iteración debe coincidir con el tipo de la lista.",
+        "Si la lista es List<string>, cada elemento es de tipo...",
+        "El tipo para texto en C# es 'string'."
+      ],
+      "explanation": "Si la lista es <code>List&lt;string&gt;</code>, cada elemento es de tipo <strong><code>string</code></strong>. La variable <code>item</code> tomará el valor de cada string de la lista en cada iteración. También puedes usar <code>var</code> y C# inferirá el tipo automáticamente."
+    },
+    {
+      "id": "col_cw_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el for para recorrer la lista `enemies` desde el ÚLTIMO elemento hacia el primero (iteración inversa):",
+      "codeTemplate": "for (int i = enemies.__________ - 1; i >= 0; i--)\n{\n    if (enemies[i].IsDead()) enemies.RemoveAt(i);\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué propiedad da el tamaño de la lista?",
+      "hints": [
+        "Necesitas saber cuántos elementos tiene la lista.",
+        "La propiedad de tamaño de List<T> no es Length.",
+        "Empieza con C mayúscula."
+      ],
+      "explanation": "La propiedad <strong><code>Count</code></strong> devuelve el número de elementos de la lista. El índice del último elemento es <code>Count - 1</code>, por eso la inicialización es <code>i = enemies.Count - 1</code>."
+    },
+    {
+      "id": "col_cw_021",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el foreach para iterar sobre el diccionario `puntuaciones` de tipo `Dictionary<string, int>`, usando KeyValuePair:",
+      "codeTemplate": "foreach (KeyValuePair<string, int> __________ in puntuaciones)\n{\n    Debug.Log(kvp.Key + \": \" + kvp.Value);\n}",
+      "expectedAnswer": "kvp",
+      "alternateAnswers": ["par", "entry", "item"],
+      "placeholder": "¿Cómo se llama la variable de iteración?",
+      "hints": [
+        "El nombre de la variable de iteración debe coincidir con el que se usa dentro del cuerpo.",
+        "Dentro del cuerpo se usa 'kvp.Key' y 'kvp.Value'.",
+        "La variable se llama 'kvp'."
+      ],
+      "explanation": "La variable de iteración debe llamarse <strong><code>kvp</code></strong> para que coincida con su uso dentro del cuerpo (<code>kvp.Key</code>, <code>kvp.Value</code>). <code>kvp</code> es la abreviatura convencional de <em>Key-Value Pair</em>."
+    },
+    {
+      "id": "col_cw_022",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un foreach completo que recorra la lista `nombres` (de tipo `List<string>`) e imprima cada nombre con `Debug.Log()`:",
+      "codeTemplate": null,
+      "expectedAnswer": "foreach (string nombre in nombres) { Debug.Log(nombre); }",
+      "alternateAnswers": [
+        "foreach (var nombre in nombres) { Debug.Log(nombre); }",
+        "foreach (string n in nombres)\n{\n    Debug.Log(n);\n}"
+      ],
+      "placeholder": "Escribe el foreach completo...",
+      "hints": [
+        "La estructura es: foreach (Tipo variable in coleccion) { cuerpo }",
+        "El tipo de cada elemento es string.",
+        "La colección se llama 'nombres'."
+      ],
+      "explanation": "La estructura del foreach es: <code>foreach (<strong>string nombre</strong> in <strong>nombres</strong>) { Debug.Log(nombre); }</code>. En cada iteración, <code>nombre</code> contiene el valor del elemento actual de la lista."
+    },
+    {
+      "id": "col_cw_023",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el uso de LINQ `FirstOrDefault` para encontrar el primer enemigo con vida menor que 10 en la lista `enemies`:",
+      "codeTemplate": "Enemy debil = enemies.FirstOrDefault(e => e.vida __________ 10);",
+      "expectedAnswer": "<",
+      "alternateAnswers": ["<="],
+      "placeholder": "¿Qué operador compara 'menor que'?",
+      "hints": [
+        "Necesitas un operador de comparación.",
+        "La condición es: la vida es menor que 10.",
+        "El símbolo 'menor que' es <"
+      ],
+      "explanation": "Para verificar 'menor que 10' se usa el operador <strong><code>&lt;</code></strong>. La lambda completa <code>e =&gt; e.vida &lt; 10</code> se evalúa para cada enemigo, y <code>FirstOrDefault()</code> devuelve el primero que la cumpla, o <code>null</code> si ninguno la cumple."
+    },
+    {
+      "id": "col_cw_024",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el foreach que recorre SOLO las claves del diccionario `inventario`:",
+      "codeTemplate": "foreach (string item in inventario.__________)\n{\n    Debug.Log(item);\n}",
+      "expectedAnswer": "Keys",
+      "alternateAnswers": [],
+      "placeholder": "¿Cómo accedes solo a las claves del diccionario?",
+      "hints": [
+        "Un Dictionary tiene dos colecciones separadas: una para claves y otra para valores.",
+        "La propiedad que contiene todas las claves del diccionario se llama...",
+        "En inglés, 'claves' es 'keys'."
+      ],
+      "explanation": "La propiedad <strong><code>Keys</code></strong> del diccionario devuelve una colección con todas las claves. Puedes iterar sobre ella con <code>foreach</code>. De forma similar, <code>inventario.Values</code> te daría solo los valores."
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+{
+  "id": "cf_exam",
+  "title": "Examen Final: Control de Flujo",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "cf_ex_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el operador de comparación para que el código verifique si `health` es menor o igual a 0:",
+      "codeTemplate": "if (health __________ 0)\n{\n    Die();\n}",
+      "expectedAnswer": "<=",
+      "alternateAnswers": ["< 1"],
+      "placeholder": "Escribe el operador...",
+      "hints": ["El operador 'menor o igual a' en C# usa dos caracteres", "Es < seguido de ="],
+      "explanation": "El operador <code>&lt;=</code> (menor o igual a) verifica que health sea 0 o cualquier valor negativo. Es preferible a <code>== 0</code> porque si por algún motivo health llega a -5 (por daño de área, por ejemplo), también activaría la muerte."
+    },
+    {
+      "id": "cf_ex_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición para verificar que `isAlive` sea verdadero Y `hasAmmo` también sea verdadero:",
+      "codeTemplate": "if (isAlive __________ hasAmmo)\n{\n    Shoot();\n}",
+      "expectedAnswer": "&&",
+      "alternateAnswers": ["&& "],
+      "placeholder": "Escribe el operador lógico...",
+      "hints": ["El operador lógico AND en C# son dos caracteres iguales", "Significa 'y además'"],
+      "explanation": "El operador <code>&&</code> (AND lógico) requiere que <strong>ambas</strong> condiciones sean verdaderas. Si isAlive es false O hasAmmo es false, la condición completa es false y Shoot() no se llama."
+    },
+    {
+      "id": "cf_ex_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el operador ternario para asignar \"vivo\" si `health > 0`, y \"muerto\" si no:",
+      "codeTemplate": "string status = health > 0 __________ \"vivo\" __________ \"muerto\";",
+      "expectedAnswer": "? : ",
+      "alternateAnswers": ["?  :"],
+      "placeholder": "Escribe los dos operadores del ternario separados por espacio...",
+      "hints": [
+        "El operador ternario tiene tres partes: condición ? valor_si_true : valor_si_false",
+        "Necesitas el símbolo ? y después el símbolo :"
+      ],
+      "explanation": "El operador ternario: <code>condición ? valor_true : valor_false</code>. Si health > 0, status = \"vivo\"; si no, status = \"muerto\". Equivale a un if/else comprimido en una línea."
+    },
+    {
+      "id": "cf_ex_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un `if/else if/else` que imprima con Debug.Log: \"Experto\" si score >= 90, \"Aprobado\" si score >= 60, y \"Reprobado\" en cualquier otro caso.",
+      "expectedAnswer": "if (score >= 90) { Debug.Log(\"Experto\"); } else if (score >= 60) { Debug.Log(\"Aprobado\"); } else { Debug.Log(\"Reprobado\"); }",
+      "alternateAnswers": [
+        "if (score >= 90) Debug.Log(\"Experto\"); else if (score >= 60) Debug.Log(\"Aprobado\"); else Debug.Log(\"Reprobado\");"
+      ],
+      "placeholder": "Escribe la estructura if/else if/else completa...",
+      "hints": [
+        "Primero verifica el caso más alto (>= 90), luego el intermedio (>= 60), luego el else",
+        "El orden importa: si primero verificas >= 60, todos los >= 90 también entrarían ahí"
+      ],
+      "explanation": "El orden de las condiciones es crucial: verificar primero <code>>= 90</code> garantiza que los puntajes altos se clasifiquen correctamente. Si invirtieras el orden y primero verificaras <code>>= 60</code>, un score de 95 sería clasificado como 'Aprobado' en lugar de 'Experto'."
+    },
+    {
+      "id": "cf_ex_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la palabra clave para iniciar una estructura de selección múltiple según el valor de `gameState`:",
+      "codeTemplate": "__________ (gameState)\n{\n    case \"playing\":\n        UpdateGame();\n        break;\n    default:\n        break;\n}",
+      "expectedAnswer": "switch",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["Esta estructura evalúa una variable contra múltiples casos posibles", "Se usa cuando tienes muchas opciones para comparar"],
+      "explanation": "La palabra clave <code>switch</code> inicia la estructura de selección múltiple. <code>switch(gameState)</code> evalúa el valor de gameState y salta al <code>case</code> que coincida. Es más legible que múltiples <code>else if</code> cuando hay muchos casos posibles."
+    },
+    {
+      "id": "cf_ex_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la instrucción requerida al final del case para evitar el fall-through:",
+      "codeTemplate": "switch (direction)\n{\n    case \"north\":\n        MoveNorth();\n        __________;\n    case \"south\":\n        MoveSouth();\n        __________;\n}",
+      "expectedAnswer": "break",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": ["Esta instrucción termina el case y evita caer al siguiente", "C# la requiere obligatoriamente en cada case con código"],
+      "explanation": "C# requiere <code>break</code> al final de cada <code>case</code> con código. Previene el <em>fall-through</em> (que la ejecución continúe en el siguiente case). Sin él, el compilador da error — a diferencia de C/C++/Java donde el fall-through es implícito."
+    },
+    {
+      "id": "cf_ex_007",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un `for` loop que cuente del 1 al 10 e imprima cada número con `Debug.Log(i)`.",
+      "expectedAnswer": "for (int i = 1; i <= 10; i++) { Debug.Log(i); }",
+      "alternateAnswers": [
+        "for (int i = 1; i <= 10; i++)\n{\n    Debug.Log(i);\n}",
+        "for (int i = 1; i < 11; i++) { Debug.Log(i); }"
+      ],
+      "placeholder": "Escribe el for loop completo...",
+      "hints": [
+        "El for tiene 3 partes: inicialización (i=1), condición (i<=10), incremento (i++)",
+        "Para incluir el 10, la condición debe ser i <= 10 (o i < 11)"
+      ],
+      "explanation": "<code>for (int i = 1; i &lt;= 10; i++)</code>: inicia en 1, continúa mientras i sea <= 10, incrementa 1 cada vez. Esto imprime 1, 2, 3, ..., 10. La condición <code>i &lt;= 10</code> incluye el 10; si fuera <code>i &lt; 10</code>, el último valor impreso sería 9."
+    },
+    {
+      "id": "cf_ex_008",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición del `while` para que siga ejecutándose mientras `enemies > 0`:",
+      "codeTemplate": "while (__________)\n{\n    KillEnemy();\n    enemies--;\n}",
+      "expectedAnswer": "enemies > 0",
+      "alternateAnswers": ["(enemies > 0)"],
+      "placeholder": "Escribe la condición...",
+      "hints": ["La condición del while va entre paréntesis", "El bucle debe continuar MIENTRAS haya enemigos — es decir, mientras enemies sea mayor a 0"],
+      "explanation": "<code>while (enemies > 0)</code>: el bucle sigue ejecutándose mientras enemies sea positivo. Cada iteración mata un enemigo y decrementa el contador. Cuando enemies llega a 0, la condición es false y el bucle termina."
+    },
+    {
+      "id": "cf_ex_009",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el `for` loop que itera sobre un array `waypoints` usando su índice y longitud:",
+      "codeTemplate": "for (int i = 0; i < __________; i++)\n{\n    MoveTo(waypoints[i]);\n}",
+      "expectedAnswer": "waypoints.Length",
+      "alternateAnswers": ["waypoints.length"],
+      "placeholder": "Escribe la propiedad de longitud del array...",
+      "hints": ["Los arrays en C# tienen una propiedad para conocer cuántos elementos tienen", "La propiedad se llama Length (con L mayúscula)"],
+      "explanation": "<code>waypoints.Length</code> devuelve el número de elementos del array. La condición <code>i &lt; waypoints.Length</code> asegura que no se acceda a un índice fuera de rango (el último índice válido es Length-1)."
+    },
+    {
+      "id": "cf_ex_010",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la instrucción para saltar la iteración actual cuando el enemigo está muerto:",
+      "codeTemplate": "foreach (Enemy e in enemies)\n{\n    if (e.IsDead) __________;\n    e.UpdateAI();\n}",
+      "expectedAnswer": "continue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": ["No quieres terminar el bucle — solo saltar este enemigo", "La instrucción que pasa a la siguiente iteración es..."],
+      "explanation": "<code>continue</code> salta el resto del cuerpo del bucle para esta iteración (UpdateAI no se llama) y pasa al siguiente enemigo. El bucle sigue recorriendo todos los enemigos — solo los muertos son ignorados."
+    },
+    {
+      "id": "cf_ex_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para salir del bucle en cuanto se encuentre el primer item con precio menor a 5:",
+      "codeTemplate": "foreach (Item item in shop)\n{\n    if (item.price < 5)\n    {\n        cheapItem = item;\n        __________;\n    }\n}",
+      "expectedAnswer": "break",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": ["Ya encontraste lo que buscabas — no necesitas seguir recorriendo la lista", "La instrucción que termina el bucle completamente es..."],
+      "explanation": "<code>break</code> sale del bucle inmediatamente. Una vez encontrado el primer item barato, seguir recorriendo la lista sería innecesario. Sin <code>break</code>, cheapItem terminaría con el <em>último</em> item barato, no el primero."
+    },
+    {
+      "id": "cf_ex_012",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un `do-while` que ejecute `TryConnect()` y repita mientras `connected` sea false y `attempts` sea menor a 3. (Asume que TryConnect() asigna `connected`.)",
+      "expectedAnswer": "do { TryConnect(); attempts++; } while (!connected && attempts < 3);",
+      "alternateAnswers": [
+        "do {\n    TryConnect();\n    attempts++;\n} while (!connected && attempts < 3);"
+      ],
+      "placeholder": "Escribe el do-while completo...",
+      "hints": [
+        "La sintaxis es: do { cuerpo; } while (condición);",
+        "La condición para continuar es: que NO esté conectado Y que los intentos sean menores a 3"
+      ],
+      "explanation": "<code>do { ... } while (!connected && attempts &lt; 3)</code>: el <code>do-while</code> ejecuta el cuerpo al menos una vez antes de verificar la condición. Ideal aquí porque siempre se intenta conectar al menos una vez. La condición <code>&&</code> requiere ambas: sin conexión Y con intentos disponibles."
+    },
+    {
+      "id": "cf_ex_013",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la parte de incremento del `for` para avanzar de 2 en 2 (0, 2, 4, 6, ...):",
+      "codeTemplate": "for (int i = 0; i < 10; __________)\n{\n    Debug.Log(i);\n}",
+      "expectedAnswer": "i += 2",
+      "alternateAnswers": ["i = i + 2"],
+      "placeholder": "Escribe la expresión de incremento...",
+      "hints": ["i++ incrementa de 1 en 1; para incrementar de 2 en 2 necesitas otro operador", "El operador += suma y asigna en una sola operación"],
+      "explanation": "<code>i += 2</code> es equivalente a <code>i = i + 2</code>. El for imprimirá: 0, 2, 4, 6, 8. La condición <code>i &lt; 10</code> excluye el 10 — el último valor será 8."
+    },
+    {
+      "id": "cf_ex_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el operador lógico para que el código ejecute la acción si `hasKey` es verdadero OR `hasPicklock` es verdadero:",
+      "codeTemplate": "if (hasKey __________ hasPicklock)\n{\n    OpenDoor();\n}",
+      "expectedAnswer": "||",
+      "alternateAnswers": ["|| "],
+      "placeholder": "Escribe el operador lógico OR...",
+      "hints": ["El operador OR lógico en C# son dos caracteres iguales", "Permite la condición si AL MENOS UNO de los dos es verdadero"],
+      "explanation": "<code>||</code> (OR lógico): la condición es true si <strong>al menos uno</strong> es verdadero. Si el jugador tiene la llave O tiene la ganzúa (o ambas), puede abrir la puerta. Solo falla si ambos son false."
+    },
+    {
+      "id": "cf_ex_015",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el `default` case en este switch para manejar cualquier estado no reconocido:",
+      "codeTemplate": "switch (state)\n{\n    case \"idle\": Idle(); break;\n    case \"run\":  Run();  break;\n    __________:\n        Debug.LogWarning(\"Estado desconocido\");\n        break;\n}",
+      "expectedAnswer": "default",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["Este case especial se ejecuta cuando ningún otro case coincide", "Su nombre en inglés significa 'por defecto'"],
+      "explanation": "<code>default</code> es el case especial que se ejecuta cuando ningún otro <code>case</code> coincide. Es opcional pero recomendable para manejar valores inesperados. Equivale al <code>else</code> en una cadena <code>if/else if</code>."
+    },
+    {
+      "id": "cf_ex_016",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea completa con el operador ternario que asigna a `lives` el valor de `currentLives` si es mayor que 0, o 0 en caso contrario (para evitar vidas negativas).",
+      "expectedAnswer": "lives = currentLives > 0 ? currentLives : 0;",
+      "alternateAnswers": ["int lives = currentLives > 0 ? currentLives : 0;"],
+      "placeholder": "Escribe la asignación con ternario...",
+      "hints": [
+        "Estructura: variable = condición ? valor_si_true : valor_si_false;",
+        "Si currentLives > 0, usa currentLives; si no, usa 0"
+      ],
+      "explanation": "<code>lives = currentLives > 0 ? currentLives : 0</code>: si currentLives es positivo, se usa ese valor; si es 0 o negativo, se asigna 0. Este patrón de 'clamp a mínimo 0' es muy común en juegos para evitar valores negativos."
+    },
+    {
+      "id": "cf_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para que el bucle `for` recorra el array `enemies` correctamente (de índice 0 hasta el último):",
+      "codeTemplate": "for (int i = __________; i < enemies.Length; i++)\n{\n    enemies[i].UpdateAI();\n}",
+      "expectedAnswer": "0",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el valor inicial del índice...",
+      "hints": ["Los arrays en C# comienzan en el índice 0, no en 1", "El primer elemento es enemies[0]"],
+      "explanation": "Los arrays en C# son 0-based: el primer elemento es <code>enemies[0]</code> y el último es <code>enemies[enemies.Length - 1]</code>. Por eso el for empieza en <code>0</code> y la condición es <code>i &lt; enemies.Length</code> (no <=)."
+    },
+    {
+      "id": "cf_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el operador NOT para verificar que el jugador NO está en el suelo:",
+      "codeTemplate": "if (__________isGrounded)\n{\n    ApplyGravity();\n}",
+      "expectedAnswer": "!",
+      "alternateAnswers": ["! "],
+      "placeholder": "Escribe el operador NOT...",
+      "hints": ["El operador de negación lógica en C# es un solo símbolo", "Invierte el valor booleano: true → false, false → true"],
+      "explanation": "El operador <code>!</code> (NOT lógico) invierte un booleano: <code>!isGrounded</code> es true cuando isGrounded es false (el jugador está en el aire). Este patrón es muy común: <code>if (!flag)</code> equivale a <code>if (flag == false)</code>."
+    },
+    {
+      "id": "cf_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un `switch` completo con 3 cases para la variable `rarity`: \"común\" llama a `ApplyCommonEffect()`, \"raro\" llama a `ApplyRareEffect()`, y `default` llama a `ApplyDefaultEffect()`. Todos con break.",
+      "expectedAnswer": "switch (rarity) { case \"común\": ApplyCommonEffect(); break; case \"raro\": ApplyRareEffect(); break; default: ApplyDefaultEffect(); break; }",
+      "alternateAnswers": [
+        "switch (rarity) {\n    case \"común\": ApplyCommonEffect(); break;\n    case \"raro\": ApplyRareEffect(); break;\n    default: ApplyDefaultEffect(); break;\n}"
+      ],
+      "placeholder": "Escribe el switch completo...",
+      "hints": [
+        "Estructura: switch(variable) { case \"valor\": acción(); break; ... default: acción(); break; }",
+        "No olvides el break al final de cada case, incluyendo el default"
+      ],
+      "explanation": "El <code>switch</code> evalúa <code>rarity</code> y salta al <code>case</code> que coincida. El <code>default</code> maneja cualquier valor no esperado. Cada <code>case</code> requiere <code>break</code> obligatorio en C#."
+    },
+    {
+      "id": "cf_ex_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el bucle `while(true)` con una condición de salida usando `break` cuando `score` alcance o supere 100:",
+      "codeTemplate": "while (true)\n{\n    score += GetPoints();\n    if (score __________ 100)\n        __________;\n}",
+      "expectedAnswer": ">= 100) break",
+      "alternateAnswers": [">=100) break"],
+      "placeholder": "Escribe el operador y la instrucción de salida...",
+      "hints": [
+        "La condición es: score mayor o igual a 100",
+        "La instrucción que sale del bucle es break"
+      ],
+      "explanation": "<code>if (score >= 100) break;</code> es la condición de salida del bucle infinito. El patrón <code>while(true) + break</code> se usa cuando la condición de salida está en medio del cuerpo del bucle, no al inicio o al final."
+    }
+  ]
+}

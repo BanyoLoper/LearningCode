@@ -1,0 +1,295 @@
+{
+  "id": "her_exam",
+  "title": "Examen Final: Herencia y Polimorfismo",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "her_ex_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el símbolo que indica herencia para que `Dog` herede de `Animal`:",
+      "codeTemplate": "public class Dog __________ Animal\n{\n}",
+      "expectedAnswer": ":",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el símbolo de herencia...",
+      "hints": ["En C#, la herencia usa el mismo símbolo que implementar interfaces", "Es el símbolo de dos puntos"],
+      "explanation": "El símbolo <code>:</code> (dos puntos) indica herencia en C#. <code>class Dog : Animal</code> significa que Dog hereda todos los miembros públicos y protegidos de Animal. Es diferente a Java que usa la palabra <code>extends</code>."
+    },
+    {
+      "id": "her_ex_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para llamar al constructor de la clase base `Animal` desde el constructor de `Dog`, pasando el parámetro `name`:",
+      "codeTemplate": "public class Dog : Animal\n{\n    public Dog(string name) __________(name)\n    {\n    }\n}",
+      "expectedAnswer": ": base",
+      "alternateAnswers": [":base"],
+      "placeholder": "Escribe la llamada al constructor base...",
+      "hints": [
+        "La llamada al constructor padre se escribe después de los parámetros del constructor hijo",
+        "En C# se usa la palabra 'base' con dos puntos antes"
+      ],
+      "explanation": "<code>: base(name)</code> llama al constructor de la clase base (Animal) pasándole el name. Esto garantiza que Animal se inicialice correctamente antes de que el cuerpo del constructor de Dog se ejecute."
+    },
+    {
+      "id": "her_ex_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la palabra clave en la clase base para que el método `Attack` pueda ser sobreescrito por clases hijas:",
+      "codeTemplate": "public class Enemy\n{\n    public __________ void Attack()\n    {\n        Debug.Log(\"Ataque básico\");\n    }\n}",
+      "expectedAnswer": "virtual",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["Esta palabra clave indica que el método PUEDE ser sobreescrito", "Se usa en la clase BASE (no en la derivada)"],
+      "explanation": "<code>virtual</code> en la clase base indica que el método <em>puede</em> ser sobreescrito en clases derivadas. Sin <code>virtual</code>, las clases hijas no pueden usar <code>override</code> — solo podrían usar <code>new</code> para ocultar el método (que es diferente)."
+    },
+    {
+      "id": "her_ex_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la palabra clave en la clase derivada para sobreescribir el método `Attack`:",
+      "codeTemplate": "public class Boss : Enemy\n{\n    public __________ void Attack()\n    {\n        Debug.Log(\"Ataque poderoso\");\n    }\n}",
+      "expectedAnswer": "override",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["Esta palabra clave indica que el método REEMPLAZA al del padre", "Se usa en la clase DERIVADA (no en la base)"],
+      "explanation": "<code>override</code> en la clase derivada reemplaza la implementación del método virtual de la clase base. El polimorfismo funciona con <code>virtual</code> + <code>override</code>: si tienes una referencia de tipo Enemy que apunta a un Boss, se llamará el Attack del Boss."
+    },
+    {
+      "id": "her_ex_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para llamar al método `Attack` de la clase padre desde el método Override de la clase hija:",
+      "codeTemplate": "public override void Attack()\n{\n    __________.Attack();  // Llama al ataque del padre\n    FireLaser();           // Agrega comportamiento extra\n}",
+      "expectedAnswer": "base",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la referencia al padre...",
+      "hints": ["La palabra que hace referencia a la clase base (padre) en C# es...", "Es la misma que se usa en los constructores con base()"],
+      "explanation": "<code>base.Attack()</code> llama al método <code>Attack</code> de la clase padre. Es muy útil cuando quieres <em>extender</em> el comportamiento (ejecutar el padre + algo más) en lugar de reemplazarlo completamente. Primero el padre, luego el comportamiento extra."
+    },
+    {
+      "id": "her_ex_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa las palabras clave para declarar una clase abstracta `Character`:",
+      "codeTemplate": "public __________ class Character\n{\n    public abstract void PerformAction();\n}",
+      "expectedAnswer": "abstract",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["Las clases que no pueden instanciarse directamente y tienen métodos sin implementación usan esta palabra", "Es la misma palabra que se usa en los métodos abstractos"],
+      "explanation": "<code>abstract</code> en la declaración de clase indica que la clase <strong>no puede instanciarse directamente</strong> y puede contener métodos abstractos (sin cuerpo). Las clases abstractas sirven como plantillas para sus subclases."
+    },
+    {
+      "id": "her_ex_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para declarar un método abstracto `TakeDamage` en una clase abstracta (sin cuerpo):",
+      "codeTemplate": "public abstract class EnemyBase\n{\n    public __________ void TakeDamage(int amount);\n}",
+      "expectedAnswer": "abstract",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave del método...",
+      "hints": ["Los métodos sin cuerpo (sin llaves {}) en clases abstractas usan esta palabra", "La misma que se usa para la clase"],
+      "explanation": "Un método <code>abstract</code> no tiene cuerpo — termina en <code>;</code> directamente. Las clases que hereden de <code>EnemyBase</code> <strong>deben</strong> implementar <code>TakeDamage</code> con <code>override</code>, o ellas mismas ser abstractas."
+    },
+    {
+      "id": "her_ex_008",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración completa de una clase abstracta `Vehicle` con un método abstracto `Move()` que no devuelve nada.",
+      "expectedAnswer": "public abstract class Vehicle { public abstract void Move(); }",
+      "alternateAnswers": [
+        "public abstract class Vehicle\n{\n    public abstract void Move();\n}"
+      ],
+      "placeholder": "Escribe la clase abstracta completa...",
+      "hints": [
+        "Necesitas la palabra 'abstract' tanto en la clase como en el método",
+        "El método abstracto no tiene cuerpo — termina en ;"
+      ],
+      "explanation": "<code>public abstract class Vehicle { public abstract void Move(); }</code>. Doble uso de <code>abstract</code>: en la clase (no instanciable) y en el método (sin implementación, obligatorio en subclases)."
+    },
+    {
+      "id": "her_ex_009",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la palabra clave para declarar una interface `IDamageable`:",
+      "codeTemplate": "public __________ IDamageable\n{\n    void TakeDamage(int amount);\n}",
+      "expectedAnswer": "interface",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["No es 'class' ni 'abstract class' — es un tipo especial de contrato", "Permite herencia múltiple de comportamiento"],
+      "explanation": "La palabra clave <code>interface</code> declara un contrato puro. A diferencia de las clases abstractas, las interfaces solo tienen firmas de métodos (sin implementación ni campos) y permiten que una clase implemente múltiples interfaces."
+    },
+    {
+      "id": "her_ex_010",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la declaración para que `Player` herede de `MonoBehaviour` e implemente `IDamageable`:",
+      "codeTemplate": "public class Player __________ MonoBehaviour, IDamageable\n{\n}",
+      "expectedAnswer": ":",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el símbolo...",
+      "hints": ["El mismo símbolo de herencia (:) se usa también para implementar interfaces", "Todo va después del símbolo, separado por comas"],
+      "explanation": "El <code>:</code> sirve tanto para herencia como para implementar interfaces. <code>class Player : MonoBehaviour, IDamageable</code> hereda de MonoBehaviour e implementa IDamageable. La clase base va primero, las interfaces después, todo separado por comas."
+    },
+    {
+      "id": "her_ex_011",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una clase `Goblin` que herede de `Enemy` y sobreescriba el método virtual `Attack()` imprimiendo 'Ataque Goblin' con Debug.Log.",
+      "expectedAnswer": "public class Goblin : Enemy { public override void Attack() { Debug.Log(\"Ataque Goblin\"); } }",
+      "alternateAnswers": [
+        "public class Goblin : Enemy\n{\n    public override void Attack()\n    {\n        Debug.Log(\"Ataque Goblin\");\n    }\n}"
+      ],
+      "placeholder": "Escribe la clase Goblin completa...",
+      "hints": [
+        "Goblin hereda de Enemy con ':'",
+        "El método sobreescrito usa 'override' y tiene el mismo nombre y firma que el virtual del padre"
+      ],
+      "explanation": "La clase derivada usa <code>: Enemy</code> para heredar y <code>public override void Attack()</code> para sobreescribir el método virtual. Sin <code>override</code> (usando solo <code>public void Attack()</code>), el compilador advertiría que estás ocultando el método, no sobreescribiéndolo."
+    },
+    {
+      "id": "her_ex_012",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para implementar el método `TakeDamage` de la interface `IDamageable` en la clase `Enemy`:",
+      "codeTemplate": "public class Enemy : MonoBehaviour, IDamageable\n{\n    private int health = 100;\n    public __________ void TakeDamage(int amount)\n    {\n        health -= amount;\n    }\n}",
+      "expectedAnswer": "void",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de retorno del método...",
+      "hints": ["La interface declaró: void TakeDamage(int amount)", "La implementación debe tener el mismo tipo de retorno que la declaración de la interface"],
+      "explanation": "El tipo de retorno debe coincidir con la declaración de la interface: <code>void</code>. La firma completa del método implementado (<code>public void TakeDamage(int amount)</code>) debe ser idéntica a la de la interface, o el compilador reportará que la interface no está completamente implementada."
+    },
+    {
+      "id": "her_ex_013",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración completa de la interface `IMovable` con un único método `Move` que recibe un `Vector3` llamado `direction` y no devuelve nada.",
+      "expectedAnswer": "public interface IMovable { void Move(Vector3 direction); }",
+      "alternateAnswers": [
+        "public interface IMovable\n{\n    void Move(Vector3 direction);\n}",
+        "interface IMovable { void Move(Vector3 direction); }"
+      ],
+      "placeholder": "Escribe la interface completa...",
+      "hints": [
+        "Estructura: public interface INombre { tipoRetorno Metodo(params); }",
+        "Los métodos de interface no tienen cuerpo — terminan en ;"
+      ],
+      "explanation": "<code>public interface IMovable { void Move(Vector3 direction); }</code>. El método <code>void Move(Vector3 direction)</code> es solo una firma — no tiene llaves ni código, termina en punto y coma."
+    },
+    {
+      "id": "her_ex_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para usar polimorfismo: recorre un array de `Animal` y llama `MakeSound()` en cada uno (que es virtual en Animal y override en Dog/Cat):",
+      "codeTemplate": "Animal[] animals = { new Dog(), new Cat(), new Dog() };\nforeach (__________ a in animals)\n{\n    a.MakeSound();\n}",
+      "expectedAnswer": "Animal",
+      "alternateAnswers": ["var"],
+      "placeholder": "Escribe el tipo de la variable del foreach...",
+      "hints": ["El array es de tipo Animal — el foreach itera con variables de ese tipo", "Aunque los objetos son Dog y Cat, el array los almacena como Animal"],
+      "explanation": "<code>foreach (Animal a in animals)</code> — la variable es de tipo <code>Animal</code>. Gracias al polimorfismo, aunque <code>a</code> se declara como Animal, en runtime se llama al <code>MakeSound()</code> específico de cada objeto (Dog o Cat). Esto es el despacho dinámico (dynamic dispatch)."
+    },
+    {
+      "id": "her_ex_015",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la palabra clave que impide que una clase pueda ser heredada:",
+      "codeTemplate": "public __________ class Singleton\n{\n    // Esta clase no puede tener subclases\n}",
+      "expectedAnswer": "sealed",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave...",
+      "hints": ["Esta palabra clave 'sella' la clase — nadie puede heredar de ella", "En inglés 'sealed' significa sellado"],
+      "explanation": "<code>sealed</code> impide que la clase sea heredada. <code>class Singleton</code> sellada no puede tener subclases. También se puede usar en métodos virtuales sobreescritos (<code>public sealed override void Method()</code>) para impedir que clases más derivadas lo sobreescriban nuevamente."
+    },
+    {
+      "id": "her_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el modificador de acceso para un campo de clase base que sea accesible en clases derivadas pero NO en código externo:",
+      "codeTemplate": "public class Animal\n{\n    __________ int health = 100;  // Visible en subclases, no fuera\n}",
+      "expectedAnswer": "protected",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el modificador de acceso...",
+      "hints": ["No es public (demasiado abierto) ni private (cerrado a subclases)", "Hay un modificador intermedio que permite acceso solo dentro de la jerarquía de herencia"],
+      "explanation": "<code>protected</code> permite que el campo sea accesible en la clase misma y en todas sus clases derivadas, pero no desde código externo. Es ideal para campos que las subclases necesitan pero que no deben ser parte de la API pública."
+    },
+    {
+      "id": "her_ex_017",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una clase abstracta `EnemyBase` que herede de `MonoBehaviour` y tenga: (1) un campo protected `int health = 100`, y (2) un método abstracto `void Attack()`.",
+      "expectedAnswer": "public abstract class EnemyBase : MonoBehaviour { protected int health = 100; public abstract void Attack(); }",
+      "alternateAnswers": [
+        "public abstract class EnemyBase : MonoBehaviour\n{\n    protected int health = 100;\n    public abstract void Attack();\n}"
+      ],
+      "placeholder": "Escribe la clase abstracta completa...",
+      "hints": [
+        "abstract en la clase y en el método",
+        "health es protected, Attack() es abstract (sin cuerpo)"
+      ],
+      "explanation": "Combina tres conceptos: herencia de MonoBehaviour (<code>: MonoBehaviour</code>), clase abstracta (<code>abstract class</code>), campo protegido (<code>protected int health</code>) y método abstracto (<code>public abstract void Attack();</code>). Este es un patrón muy común en Unity para sistemas de enemigos."
+    },
+    {
+      "id": "her_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para usar GetComponent con la interface IDamageable en Unity (para dañar cualquier objeto que implemente la interface):",
+      "codeTemplate": "IDamageable target = other.GetComponent<__________>();\nif (target != null) target.TakeDamage(25);",
+      "expectedAnswer": "IDamageable",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de la interface...",
+      "hints": ["GetComponent<T> puede usarse con interfaces igual que con tipos concretos", "El tipo genérico entre <> es la interface que buscas"],
+      "explanation": "<code>GetComponent&lt;IDamageable&gt;()</code> busca cualquier componente en el objeto que implemente <code>IDamageable</code>. Esto funciona con Enemy, Player, BreakableBarrel — cualquier clase que implemente la interface. Es polimorfismo con interfaces en acción."
+    },
+    {
+      "id": "her_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la clase `Boss` que: (1) herede de `Enemy`, (2) sobreescriba `Attack()` llamando primero a `base.Attack()` y luego a `SpawnMinions()`.",
+      "expectedAnswer": "public class Boss : Enemy { public override void Attack() { base.Attack(); SpawnMinions(); } }",
+      "alternateAnswers": [
+        "public class Boss : Enemy\n{\n    public override void Attack()\n    {\n        base.Attack();\n        SpawnMinions();\n    }\n}"
+      ],
+      "placeholder": "Escribe la clase Boss completa...",
+      "hints": [
+        "Boss hereda de Enemy con ':'",
+        "override Attack() llama primero a base.Attack() para ejecutar el comportamiento del padre"
+      ],
+      "explanation": "Este patrón de <code>base.Attack()</code> + comportamiento extra es muy común: el Boss hace todo lo que hace un Enemy normal (<code>base.Attack()</code>) y además invoca esbirros. Extender sin duplicar código."
+    },
+    {
+      "id": "her_ex_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para hacer un cast de un objeto Animal a Dog (cast explícito) para acceder a métodos específicos de Dog:",
+      "codeTemplate": "Animal a = new Dog();\nDog d = (__________) a;\nd.Fetch();  // Método solo de Dog",
+      "expectedAnswer": "Dog",
+      "alternateAnswers": ["(Dog)a"],
+      "placeholder": "Escribe el tipo para el cast...",
+      "hints": [
+        "Para hacer un cast explícito en C# se pone el tipo deseado entre paréntesis antes del objeto",
+        "El objeto es realmente un Dog almacenado como Animal — el cast lo 'revela'"
+      ],
+      "explanation": "<code>(Dog) a</code> es un cast explícito (downcast): convierte la referencia de tipo <code>Animal</code> al tipo específico <code>Dog</code>. Es seguro aquí porque sabemos que <code>a</code> es realmente un Dog. Si no fuera un Dog, lanzaría <code>InvalidCastException</code>. Para cast seguro sin excepción, usa: <code>Dog d = a as Dog; if (d != null) d.Fetch();</code>"
+    }
+  ]
+}

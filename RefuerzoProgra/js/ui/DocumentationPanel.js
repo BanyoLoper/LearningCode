@@ -77,6 +77,45 @@ export class DocumentationPanel {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  /**
+   * Collapses all doc sections and groups, then expands and scrolls to the target section.
+   * Called when the user clicks a section in the sidebar.
+   */
+  focusSection(sectionId) {
+    const target = this.#container.querySelector(`#doc-${sectionId}`);
+    if (!target) return;
+
+    // Collapse all section bodies and reset their toggles
+    this.#container.querySelectorAll('.doc-section-body').forEach(body => {
+      body.style.display = 'none';
+    });
+    this.#container.querySelectorAll('.doc-section-toggle').forEach(t => {
+      t.setAttribute('aria-expanded', 'false');
+      t.textContent = '▶';
+    });
+
+    // Expand all group bodies (keep groups open so the section is visible)
+    this.#container.querySelectorAll('.doc-group-body').forEach(body => {
+      body.style.display = '';
+    });
+    this.#container.querySelectorAll('.doc-group-toggle').forEach(t => {
+      t.setAttribute('aria-expanded', 'true');
+      t.textContent = '▼';
+    });
+
+    // Expand the target section
+    const targetBody = target.querySelector('.doc-section-body');
+    const targetToggle = target.querySelector('.doc-section-toggle');
+    if (targetBody) targetBody.style.display = '';
+    if (targetToggle) {
+      targetToggle.setAttribute('aria-expanded', 'true');
+      targetToggle.textContent = '▼';
+    }
+
+    // Scroll to it
+    setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
   // ─── Private ─────────────────────────────────────────────────────────────────
 
   #buildControls() {

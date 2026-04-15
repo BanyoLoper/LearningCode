@@ -1,0 +1,376 @@
+{
+  "id": "condicionales",
+  "title": "Condicionales",
+  "icon": "🔀",
+  "color": "#FF5722",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un if?",
+        "type": "definition",
+        "content": "Un <strong>if</strong> es una instrucción que permite ejecutar un bloque de código <em>solo si</em> una condición es verdadera. Si la condición es <code>false</code>, el bloque se omite. Opcionalmente, un <code>else</code> define qué hacer cuando la condición no se cumple. En Unity, los condicionales controlan todo: desde la muerte del jugador hasta la detección de input."
+      },
+      {
+        "id": "doc-2",
+        "title": "Operadores de comparación",
+        "type": "list",
+        "items": [
+          "== (igual a): health == 0",
+          "!= (diferente de): tag != \"Enemy\"",
+          "< (menor que): score < 50",
+          "> (mayor que): speed > 10f",
+          "<= (menor o igual): health <= 0",
+          ">= (mayor o igual): level >= 5",
+          "&& (AND lógico): isAlive && hasAmmo",
+          "|| (OR lógico): isGrounded || isSwimming",
+          "! (NOT lógico): !isDead"
+        ]
+      },
+      {
+        "id": "doc-3",
+        "title": "if / else if / else y operador ternario",
+        "type": "code",
+        "content": "// Cadena if / else if / else\nif (health <= 0)\n{\n    Die();\n}\nelse if (health < 25)\n{\n    PlayLowHealthSound();\n}\nelse\n{\n    // salud normal\n}\n\n// Operador ternario: condicion ? valorSiTrue : valorSiFalse\nstring status = (health > 0) ? \"Vivo\" : \"Muerto\";\nint damage = isCritical ? baseDamage * 2 : baseDamage;"
+      },
+      {
+        "id": "doc-4",
+        "title": "If anidado y operadores lógicos",
+        "type": "code",
+        "content": "// If anidado\nif (isGrounded)\n{\n    if (Input.GetKeyDown(KeyCode.Space))\n    {\n        Jump();\n    }\n}\n\n// Con operadores lógicos (equivalente, más limpio)\nif (isGrounded && Input.GetKeyDown(KeyCode.Space))\n{\n    Jump();\n}\n\n// OR: actúa si cualquiera es true\nif (health <= 0 || fellOffMap)\n{\n    Respawn();\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Analogía Unity: verificación de salud",
+        "type": "analogy",
+        "content": "Imagina que eres el <strong>director de un videojuego</strong>. Cada frame, debes revisar el estado del jugador: <em>¿sigue vivo? ¿tiene poca salud? ¿tocó un enemigo?</em> Los condicionales son exactamente esas decisiones. En Unity, típicamente se usan en <code>Update()</code> para reaccionar a cambios de estado: <code>if (health &lt;= 0) Die();</code> es la línea más importante de cualquier juego."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "cf_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la sintaxis correcta de un `if` básico en C#?",
+      "options": [
+        "if (condicion) { }",
+        "if condicion { }",
+        "if [condicion] { }",
+        "if condicion then { }",
+        "if: condicion { }"
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, la condición del <code>if</code> <strong>siempre va entre paréntesis</strong>: <code>if (condicion) { }</code>. A diferencia de Python, los paréntesis son obligatorios."
+    },
+    {
+      "id": "cf_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué operador se usa para verificar si dos valores son IGUALES en C#?",
+      "options": [
+        "==",
+        "=",
+        "===",
+        "equals",
+        "is"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>==</code> es el operador de <strong>comparación de igualdad</strong>. El signo <code>=</code> solo asigna un valor. Usar <code>=</code> dentro de un <code>if</code> causará un error de compilación en C# (a diferencia de C/C++)."
+    },
+    {
+      "id": "cf_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En Unity, ¿en qué método se colocan típicamente los condicionales para verificar la salud del jugador cada frame?",
+      "options": [
+        "Update()",
+        "Start()",
+        "Awake()",
+        "OnEnable()",
+        "FixedUpdate()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Update()</code> se ejecuta <strong>cada frame</strong>, por lo que es el lugar ideal para verificar condiciones que cambian constantemente, como la salud. <code>Start()</code> y <code>Awake()</code> solo se ejecutan una vez al inicio."
+    },
+    {
+      "id": "cf_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace el operador ternario `string msg = (score >= 100) ? \"Ganaste\" : \"Sigue intentando\";`?",
+      "options": [
+        "Asigna \"Ganaste\" si score es 100 o más, si no asigna \"Sigue intentando\"",
+        "Siempre asigna \"Ganaste\"",
+        "Compara dos strings",
+        "Asigna \"Sigue intentando\" si score es 100 o más",
+        "Genera un error porque el ternario no funciona con strings"
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador ternario tiene la forma <code>condicion ? valorTrue : valorFalse</code>. Si <code>score &gt;= 100</code> es verdadero, <code>msg</code> recibe <strong>\"Ganaste\"</strong>; de lo contrario recibe <strong>\"Sigue intentando\"</strong>."
+    },
+    {
+      "id": "cf_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estas condiciones verifica correctamente que un enemigo está VIVO Y a menos de 10 unidades de distancia?",
+      "options": [
+        "if (enemy.isAlive && distance < 10f)",
+        "if (enemy.isAlive || distance < 10f)",
+        "if (enemy.isAlive & distance < 10f)",
+        "if (!enemy.isAlive && distance < 10f)",
+        "if (enemy.isAlive == true & distance < 10f)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>&&</code> es el operador <strong>AND lógico</strong>: ambas condiciones deben ser verdaderas. <code>||</code> sería OR (al menos una). <code>&</code> funciona pero no hace short-circuit evaluation. <code>!enemy.isAlive</code> invertiría la condición."
+    },
+    {
+      "id": "cf_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué se imprime con este código? `int x = 5; if (x > 3) { Debug.Log(\"A\"); } else if (x > 4) { Debug.Log(\"B\"); } else { Debug.Log(\"C\"); }`",
+      "options": [
+        "A",
+        "B",
+        "A y B",
+        "C",
+        "Nada, hay un error"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <code>if</code>/<code>else if</code>/<code>else</code> evalúa de <strong>arriba hacia abajo</strong> y ejecuta solo el <em>primer</em> bloque verdadero. Como <code>x > 3</code> es verdadero (5 > 3), se imprime <strong>\"A\"</strong> y se ignoran los demás bloques, aunque <code>x > 4</code> también sea verdadero."
+    },
+    {
+      "id": "cf_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el resultado de: `bool result = !(health > 0 && hasAmmo);` cuando `health = 10` y `hasAmmo = false`?",
+      "options": [
+        "true",
+        "false",
+        "Error de compilación",
+        "null",
+        "Depende del tipo de health"
+      ],
+      "correctIndex": 0,
+      "explanation": "Primero se evalúa el interior: <code>health &gt; 0</code> es <code>true</code>, <code>hasAmmo</code> es <code>false</code>. <code>true &amp;&amp; false</code> = <code>false</code>. Luego el <code>!</code> niega: <code>!false</code> = <strong>true</strong>. El operador <code>!</code> tiene mayor precedencia que <code>&amp;&amp;</code> cuando no hay paréntesis, pero aquí los paréntesis agrupan primero."
+    },
+    {
+      "id": "cf_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En C#, ¿qué ocurre si usas `if (health = 0)` (un solo `=`) en lugar de `if (health == 0)`?",
+      "options": [
+        "Error de compilación: no se puede usar asignación como condición booleana directamente",
+        "Funciona igual que ==",
+        "Siempre evalúa como true",
+        "Siempre evalúa como false",
+        "Funciona solo si health es bool"
+      ],
+      "correctIndex": 0,
+      "explanation": "C# <strong>no permite</strong> usar una asignación de entero directamente como condición booleana (a diferencia de C/C++). El compilador generará un error porque <code>int</code> no es implícitamente convertible a <code>bool</code>. Esto es una protección del lenguaje contra errores comunes."
+    },
+    {
+      "id": "cf_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de Unity:",
+      "code": "void Update()\n{\n    float dist = Vector3.Distance(transform.position, player.position);\n    if (dist <= attackRange && isAlive)\n    {\n        Attack();\n    }\n}",
+      "question": "¿Cómo se llama el operador `&&` usado en la condición?",
+      "target": "AND lógico",
+      "acceptedAnswers": ["AND lógico", "AND", "operador AND", "operador lógico AND", "conjunción lógica", "&&"],
+      "hints": [
+        "Requiere que AMBAS condiciones sean verdaderas",
+        "Su símbolo son dos ampersands seguidos",
+        "Lo opuesto sería el OR lógico (||)"
+      ],
+      "explanation": "El operador <code>&amp;&amp;</code> se llama <strong>AND lógico</strong>. Devuelve <code>true</code> solo cuando <em>ambas</em> condiciones son verdaderas. En este caso, el enemigo ataca solo si el jugador está en rango <strong>Y</strong> el enemigo está vivo."
+    },
+    {
+      "id": "cf_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta expresión de C#:",
+      "code": "int damage = isCritical ? baseDamage * 2 : baseDamage;",
+      "question": "¿Cómo se llama el operador `? :` utilizado en esta línea?",
+      "target": "operador ternario",
+      "acceptedAnswers": ["operador ternario", "ternario", "operador condicional", "condicional ternario", "? :"],
+      "hints": [
+        "Es una forma compacta de escribir un if/else en una sola línea",
+        "Tiene tres partes: condición, valor si true, valor si false",
+        "Su nombre viene del latín 'ternarius' (de tres)"
+      ],
+      "explanation": "El <strong>operador ternario</strong> (<code>? :</code>) es una forma abreviada de <code>if/else</code>. Su estructura es: <code>condicion ? valorSiVerdadero : valorSiFalso</code>. Muy usado en Unity para asignaciones condicionales en una sola línea."
+    },
+    {
+      "id": "cf_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Estudia este fragmento de código:",
+      "code": "if (health <= 0)\n{\n    isDead = true;\n    animator.SetTrigger(\"Death\");\n    GetComponent<Collider>().enabled = false;\n}",
+      "question": "¿Cómo se llama la estructura que agrupa múltiples instrucciones dentro de las llaves `{ }`?",
+      "target": "bloque de código",
+      "acceptedAnswers": ["bloque de código", "bloque", "block", "cuerpo del if", "cuerpo"],
+      "hints": [
+        "Las llaves { } lo delimitan",
+        "Todas las instrucciones dentro se ejecutan juntas si la condición es true",
+        "También existe en for, while, métodos y clases"
+      ],
+      "explanation": "El <strong>bloque de código</strong> es el conjunto de instrucciones encerradas entre <code>{ }</code>. Cuando la condición del <code>if</code> es verdadera, se ejecutan <em>todas</em> las instrucciones del bloque. Sin llaves, solo la siguiente línea formaría parte del <code>if</code>."
+    },
+    {
+      "id": "cf_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza esta cadena de condicionales:",
+      "code": "if (score >= 90)\n    grade = \"A\";\nelse if (score >= 80)\n    grade = \"B\";\nelse if (score >= 70)\n    grade = \"C\";\nelse\n    grade = \"F\";",
+      "question": "¿Cómo se llama esta estructura de múltiples condiciones encadenadas con `else if`?",
+      "target": "cadena if-else if-else",
+      "acceptedAnswers": ["cadena if-else if-else", "if else if", "cadena de condicionales", "escalera if-else", "if-else encadenado", "else if chain"],
+      "hints": [
+        "Evalúa condiciones en orden, de arriba hacia abajo",
+        "Solo ejecuta el primer bloque cuya condición sea verdadera",
+        "El else final actúa como caso por defecto"
+      ],
+      "explanation": "La <strong>cadena if-else if-else</strong> (también llamada 'escalera if-else') permite evaluar múltiples condiciones mutuamente excluyentes. Se evalúan en orden y solo se ejecuta el <em>primer</em> bloque verdadero. Es ideal para rangos de valores como puntuaciones o niveles de dificultad."
+    },
+    {
+      "id": "cf_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Examina este código con if anidado:",
+      "code": "if (isPlayerAlive)\n{\n    if (isGrounded)\n    {\n        if (Input.GetKeyDown(KeyCode.Space))\n        {\n            Jump();\n        }\n    }\n}",
+      "question": "¿Cómo se llama la técnica de colocar un `if` dentro de otro `if`?",
+      "target": "if anidado",
+      "acceptedAnswers": ["if anidado", "condicional anidado", "nested if", "anidamiento", "if dentro de if"],
+      "hints": [
+        "Una condición está 'adentro' de otra",
+        "La palabra 'nested' en inglés describe esta técnica",
+        "Cada nivel requiere que todas las condiciones anteriores sean true"
+      ],
+      "explanation": "El <strong>if anidado</strong> (nested if) coloca un condicional dentro de otro. Para llegar al código más interno, <em>todas</em> las condiciones externas deben ser verdaderas. En el ejemplo, el salto solo ocurre si: el jugador está vivo, <strong>Y</strong> está en el suelo, <strong>Y</strong> presionó Space."
+    },
+    {
+      "id": "cf_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa este operador en una condición:",
+      "code": "if (!isGameOver && !isPaused)\n{\n    UpdateGameLogic();\n}",
+      "question": "¿Cómo se llama el operador `!` usado antes de las variables?",
+      "target": "NOT lógico",
+      "acceptedAnswers": ["NOT lógico", "NOT", "negación lógica", "operador de negación", "operador NOT", "negación", "!"],
+      "hints": [
+        "Invierte el valor booleano",
+        "Convierte true en false y false en true",
+        "Su nombre en inglés es la palabra para 'no'"
+      ],
+      "explanation": "El operador <code>!</code> se llama <strong>NOT lógico</strong> o negación lógica. Invierte el valor booleano: <code>!true</code> = <code>false</code> y <code>!false</code> = <code>true</code>. En el ejemplo, <code>!isGameOver</code> significa 'el juego NO ha terminado' y <code>!isPaused</code> significa 'NO está pausado'."
+    },
+    {
+      "id": "cf_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el condicional para que el jugador muera cuando su salud sea menor o igual a cero:",
+      "codeTemplate": "if (health ______ 0)\n{\n    Die();\n}",
+      "expectedAnswer": "<= 0)",
+      "alternateAnswers": ["<= 0) {", "<=0)"],
+      "placeholder": "Escribe el operador y valor...",
+      "hints": [
+        "Necesitas verificar si health es 0 o menos",
+        "El operador 'menor o igual' usa dos caracteres",
+        "Es: símbolo menor + símbolo igual"
+      ],
+      "explanation": "El operador <code>&lt;=</code> (<strong>menor o igual que</strong>) verifica si el valor de la izquierda es menor O igual al de la derecha. <code>health &lt;= 0</code> es verdadero cuando la salud es 0 o negativa (lo que puede ocurrir si el daño supera la salud restante)."
+    },
+    {
+      "id": "cf_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el operador ternario para asignar el color rojo si la salud es crítica (menor a 25), o verde si no:",
+      "codeTemplate": "Color hpColor = (health < 25) ______ Color.red ______ Color.green;",
+      "expectedAnswer": "? Color.red : Color.green",
+      "alternateAnswers": ["?Color.red:Color.green", "? Color.red: Color.green"],
+      "placeholder": "Escribe los símbolos del operador ternario...",
+      "hints": [
+        "El operador ternario tiene dos símbolos especiales",
+        "El primero separa la condición del valor verdadero",
+        "El segundo separa el valor verdadero del valor falso: ? y :"
+      ],
+      "explanation": "El operador ternario usa <code>?</code> para separar la condición del valor verdadero, y <code>:</code> para separar el valor verdadero del falso. Resultado: si <code>health &lt; 25</code> es <code>true</code>, <code>hpColor</code> = <code>Color.red</code>; si es <code>false</code>, <code>hpColor</code> = <code>Color.green</code>."
+    },
+    {
+      "id": "cf_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición para que el enemigo ataque SOLO si el jugador está vivo Y la distancia es menor a 5:",
+      "codeTemplate": "if (player.isAlive ______ distance < 5f)\n{\n    Attack();\n}",
+      "expectedAnswer": "&&",
+      "alternateAnswers": ["&& distance", "and"],
+      "placeholder": "Escribe el operador lógico...",
+      "hints": [
+        "Ambas condiciones deben ser verdaderas simultáneamente",
+        "No es OR (||), porque ambas deben cumplirse",
+        "Son dos ampersands seguidos"
+      ],
+      "explanation": "El operador <code>&amp;&amp;</code> (AND lógico) garantiza que <strong>ambas</strong> condiciones sean verdaderas. El enemigo solo ataca si el jugador está vivo <em>y además</em> está cerca. Si usáramos <code>||</code>, atacaría si cualquiera de las dos fuera verdadera."
+    },
+    {
+      "id": "cf_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un if/else completo: si `score` es mayor o igual a 60, imprime \"Aprobado\" con Debug.Log; si no, imprime \"Reprobado\":",
+      "expectedAnswer": "if (score >= 60) { Debug.Log(\"Aprobado\"); } else { Debug.Log(\"Reprobado\"); }",
+      "alternateAnswers": [
+        "if (score >= 60)\n{\n    Debug.Log(\"Aprobado\");\n}\nelse\n{\n    Debug.Log(\"Reprobado\");\n}",
+        "if(score>=60){Debug.Log(\"Aprobado\");}else{Debug.Log(\"Reprobado\");}"
+      ],
+      "placeholder": "Escribe el if/else completo...",
+      "hints": [
+        "Usa el operador >= para mayor o igual",
+        "El if va primero, luego el else",
+        "Debug.Log(\"texto\") imprime en la consola de Unity"
+      ],
+      "explanation": "La estructura completa es: <code>if (score &gt;= 60) { Debug.Log(\"Aprobado\"); } else { Debug.Log(\"Reprobado\"); }</code>. El operador <code>&gt;=</code> cubre tanto el caso exacto de 60 como cualquier valor superior."
+    },
+    {
+      "id": "cf_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una cadena if/else if/else que asigne a la variable `zone` el string \"Danger\" si health < 25, \"Warning\" si health < 50, o \"Safe\" en cualquier otro caso:",
+      "expectedAnswer": "if (health < 25) { zone = \"Danger\"; } else if (health < 50) { zone = \"Warning\"; } else { zone = \"Safe\"; }",
+      "alternateAnswers": [
+        "if (health < 25)\n{\n    zone = \"Danger\";\n}\nelse if (health < 50)\n{\n    zone = \"Warning\";\n}\nelse\n{\n    zone = \"Safe\";\n}",
+        "if(health<25){zone=\"Danger\";}else if(health<50){zone=\"Warning\";}else{zone=\"Safe\";}"
+      ],
+      "placeholder": "Escribe la cadena if/else if/else completa...",
+      "hints": [
+        "Empieza con la condición más restrictiva (< 25)",
+        "Usa else if para la segunda condición (< 50)",
+        "El else final no necesita condición, es el caso por defecto"
+      ],
+      "explanation": "El orden importa: al verificar primero <code>&lt; 25</code>, si llegamos al segundo <code>else if</code> ya sabemos que <code>health &gt;= 25</code>, así que solo necesitamos verificar <code>&lt; 50</code>. Si los ordenamos al revés, el rango \"Danger\" nunca se alcanzaría."
+    },
+    {
+      "id": "cf_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea completa usando el operador ternario para asignar a `speed` el valor 10f si `isSprinting` es true, o 5f si es false:",
+      "expectedAnswer": "float speed = isSprinting ? 10f : 5f;",
+      "alternateAnswers": [
+        "speed = isSprinting ? 10f : 5f;",
+        "var speed = isSprinting ? 10f : 5f;"
+      ],
+      "placeholder": "Escribe la línea con el operador ternario...",
+      "hints": [
+        "Declara la variable float antes del operador ternario",
+        "La condición es isSprinting (ya es bool, no necesita == true)",
+        "Formato: tipo nombre = condicion ? valorTrue : valorFalse;"
+      ],
+      "explanation": "La línea completa es <code>float speed = isSprinting ? 10f : 5f;</code>. Como <code>isSprinting</code> ya es un <code>bool</code>, no necesitas compararlo con <code>true</code>. La <code>f</code> al final de los números indica que son <code>float</code> y no <code>double</code>."
+    }
+  ]
+}

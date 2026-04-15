@@ -1,7 +1,7 @@
 {
   "title": "POO en C# para Unity",
   "subtitle": "Refuerzo de Programación Orientada a Objetos",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "groups": [
     {
       "id": "poo",
@@ -59,6 +59,242 @@
         "dataFile": "data/poo/exam.json",
         "color": "#FFD700",
         "unlockRequirement": "methods",
+        "isExam": true
+      }
+    },
+    {
+      "id": "control_flujo",
+      "title": "Control de Flujo",
+      "icon": "🔀",
+      "description": "Condicionales, bucles y control del flujo de ejecución en C#",
+      "color": "#FF5722",
+      "sections": [
+        {
+          "id": "condicionales",
+          "title": "Condicionales",
+          "icon": "🔀",
+          "description": "if, else if, else y el operador ternario",
+          "dataFile": "data/control_flujo/condicionales.json",
+          "color": "#FF5722",
+          "unlockRequirement": "poo_exam",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "switch_case",
+          "title": "Switch / Case",
+          "icon": "🔀",
+          "description": "Selección múltiple con switch y case",
+          "dataFile": "data/control_flujo/switch_case.json",
+          "color": "#F44336",
+          "unlockRequirement": "condicionales",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "bucles",
+          "title": "Bucles",
+          "icon": "🔁",
+          "description": "for, while y do-while para repetir acciones",
+          "dataFile": "data/control_flujo/bucles.json",
+          "color": "#E91E63",
+          "unlockRequirement": "switch_case",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "break_continue",
+          "title": "Break y Continue",
+          "icon": "⏭️",
+          "description": "Control de flujo dentro de los bucles",
+          "dataFile": "data/control_flujo/break_continue.json",
+          "color": "#9C27B0",
+          "unlockRequirement": "bucles",
+          "correctAnswersToUnlockNext": 5
+        }
+      ],
+      "exam": {
+        "id": "cf_exam",
+        "title": "Examen Final: Control de Flujo",
+        "icon": "🎓",
+        "description": "20 desafíos de código para dominar el control de flujo en C#",
+        "dataFile": "data/control_flujo/exam.json",
+        "color": "#FFD700",
+        "unlockRequirement": "break_continue",
+        "isExam": true
+      }
+    },
+    {
+      "id": "colecciones",
+      "title": "Colecciones",
+      "icon": "📦",
+      "description": "Arrays, Listas y Diccionarios para manejar grupos de datos",
+      "color": "#3F51B5",
+      "sections": [
+        {
+          "id": "arrays",
+          "title": "Arrays",
+          "icon": "🗂️",
+          "description": "Arreglos de tamaño fijo para almacenar múltiples valores",
+          "dataFile": "data/colecciones/arrays.json",
+          "color": "#3F51B5",
+          "unlockRequirement": "cf_exam",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "listas",
+          "title": "Listas",
+          "icon": "📋",
+          "description": "List<T>: colecciones dinámicas de tamaño variable",
+          "dataFile": "data/colecciones/listas.json",
+          "color": "#2196F3",
+          "unlockRequirement": "arrays",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "diccionarios",
+          "title": "Diccionarios",
+          "icon": "📖",
+          "description": "Dictionary<K,V>: acceso rápido por clave",
+          "dataFile": "data/colecciones/diccionarios.json",
+          "color": "#009688",
+          "unlockRequirement": "listas",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "iteracion",
+          "title": "Iteración",
+          "icon": "🔄",
+          "description": "foreach y patrones para recorrer colecciones",
+          "dataFile": "data/colecciones/iteracion.json",
+          "color": "#4CAF50",
+          "unlockRequirement": "diccionarios",
+          "correctAnswersToUnlockNext": 5
+        }
+      ],
+      "exam": {
+        "id": "col_exam",
+        "title": "Examen Final: Colecciones",
+        "icon": "🎓",
+        "description": "20 desafíos de código para dominar arrays, listas y diccionarios",
+        "dataFile": "data/colecciones/exam.json",
+        "color": "#FFD700",
+        "unlockRequirement": "iteracion",
+        "isExam": true
+      }
+    },
+    {
+      "id": "herencia",
+      "title": "Herencia y Polimorfismo",
+      "icon": "🧬",
+      "description": "Herencia, virtual/override, clases abstractas e interfaces",
+      "color": "#673AB7",
+      "sections": [
+        {
+          "id": "herencia",
+          "title": "Herencia",
+          "icon": "🧬",
+          "description": "Reutiliza y extiende clases con la relación 'es un'",
+          "dataFile": "data/herencia/herencia.json",
+          "color": "#673AB7",
+          "unlockRequirement": "col_exam",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "virtual_override",
+          "title": "Virtual y Override",
+          "icon": "🔧",
+          "description": "Polimorfismo en acción: redefinir comportamiento",
+          "dataFile": "data/herencia/virtual_override.json",
+          "color": "#3F51B5",
+          "unlockRequirement": "herencia",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "clases_abstractas",
+          "title": "Clases Abstractas",
+          "icon": "📋",
+          "description": "Contratos parciales que obligan a implementar comportamiento",
+          "dataFile": "data/herencia/clases_abstractas.json",
+          "color": "#E91E63",
+          "unlockRequirement": "virtual_override",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "interfaces",
+          "title": "Interfaces",
+          "icon": "🔌",
+          "description": "Contratos puros que permiten herencia múltiple de comportamiento",
+          "dataFile": "data/herencia/interfaces.json",
+          "color": "#00BCD4",
+          "unlockRequirement": "clases_abstractas",
+          "correctAnswersToUnlockNext": 5
+        }
+      ],
+      "exam": {
+        "id": "her_exam",
+        "title": "Examen Final: Herencia y Polimorfismo",
+        "icon": "🎓",
+        "description": "20 desafíos de código para dominar herencia, polimorfismo e interfaces",
+        "dataFile": "data/herencia/exam.json",
+        "color": "#FFD700",
+        "unlockRequirement": "interfaces",
+        "isExam": true
+      }
+    },
+    {
+      "id": "patrones_unity",
+      "title": "Patrones Unity",
+      "icon": "🎮",
+      "description": "MonoBehaviour, Componentes, Prefabs y ScriptableObjects",
+      "color": "#FF5722",
+      "sections": [
+        {
+          "id": "monobehaviour",
+          "title": "MonoBehaviour",
+          "icon": "🎮",
+          "description": "Ciclo de vida de Unity: Awake, Start, Update y más",
+          "dataFile": "data/patrones_unity/monobehaviour.json",
+          "color": "#FF5722",
+          "unlockRequirement": "her_exam",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "componentes",
+          "title": "Componentes",
+          "icon": "🧩",
+          "description": "GetComponent, RequireComponent y composición en Unity",
+          "dataFile": "data/patrones_unity/componentes.json",
+          "color": "#9C27B0",
+          "unlockRequirement": "monobehaviour",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "prefabs",
+          "title": "Prefabs e Instanciación",
+          "icon": "🏭",
+          "description": "Instantiate, Destroy y spawning de GameObjects",
+          "dataFile": "data/patrones_unity/prefabs.json",
+          "color": "#FF9800",
+          "unlockRequirement": "componentes",
+          "correctAnswersToUnlockNext": 5
+        },
+        {
+          "id": "scriptableobjects",
+          "title": "ScriptableObjects",
+          "icon": "📄",
+          "description": "Datos compartidos y configuración desacoplada del escenario",
+          "dataFile": "data/patrones_unity/scriptableobjects.json",
+          "color": "#00BCD4",
+          "unlockRequirement": "prefabs",
+          "correctAnswersToUnlockNext": 5
+        }
+      ],
+      "exam": {
+        "id": "unity_exam",
+        "title": "Examen Final: Patrones Unity",
+        "icon": "🎮",
+        "description": "20 desafíos de código para dominar los patrones de Unity",
+        "dataFile": "data/patrones_unity/exam.json",
+        "color": "#FFD700",
+        "unlockRequirement": "scriptableobjects",
         "isExam": true
       }
     }

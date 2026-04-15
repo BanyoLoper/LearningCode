@@ -42,6 +42,9 @@ export class CodeWritingHandler {
       onSubmit(value);
       btn.disabled = false;
     });
+
+    // Auto-focus so the student can type immediately
+    requestAnimationFrame(() => input.focus());
   }
 
   showHint(container, question, hintIndex) {

@@ -1,0 +1,404 @@
+{
+  "id": "prefabs",
+  "title": "Prefabs e Instanciación",
+  "icon": "🏭",
+  "color": "#FF9800",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Prefab?",
+        "type": "definition",
+        "content": "Un <strong>Prefab</strong> es una <em>plantilla reutilizable</em> de GameObject guardada como asset en el proyecto. Contiene la configuración completa del objeto: componentes, valores, hijos y scripts.<br><br><strong>Analogía con POO</strong>: El Prefab es como una <strong>clase</strong>, y cada vez que lo instancias en la escena es como crear un <strong>objeto</strong> con <code>new</code>. Puedes tener 100 balas en pantalla, todas instanciadas del mismo Prefab de bala.<br><br>Ventajas: cambiar el Prefab original actualiza <em>todas</em> las instancias de la escena automáticamente."
+      },
+      {
+        "id": "doc-2",
+        "title": "Instantiate: Creando Objetos en Runtime",
+        "type": "code",
+        "content": "using UnityEngine;\n\npublic class Shooter : MonoBehaviour\n{\n    [SerializeField] private GameObject bulletPrefab;\n    [SerializeField] private Transform firePoint;\n    [SerializeField] private float bulletSpeed = 20f;\n\n    void Update()\n    {\n        if (Input.GetKeyDown(KeyCode.Space))\n        {\n            SpawnBullet();\n        }\n    }\n\n    void SpawnBullet()\n    {\n        // Instantiate(prefab) — en la posición y rotación del prefab original\n        // GameObject obj = Instantiate(bulletPrefab);\n\n        // Instantiate(prefab, position, rotation) — forma más común\n        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);\n\n        // Guardar la referencia para manipular la instancia\n        Rigidbody rb = bullet.GetComponent<Rigidbody>();\n        if (rb != null)\n        {\n            rb.linearVelocity = firePoint.forward * bulletSpeed;\n        }\n\n        // Instantiate con parent: el nuevo objeto será hijo del transform indicado\n        // GameObject bullet2 = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation, transform);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Destroy: Eliminando Objetos",
+        "type": "code",
+        "content": "using UnityEngine;\n\npublic class Bullet : MonoBehaviour\n{\n    [SerializeField] private float lifetime = 3f;\n\n    void Start()\n    {\n        // Destroy con delay: elimina el objeto después de N segundos\n        Destroy(gameObject, lifetime);\n    }\n\n    void OnCollisionEnter(Collision collision)\n    {\n        // Destroy(gameObject): elimina el objeto inmediatamente\n        Destroy(gameObject);\n\n        // Destroy(this): elimina SOLO este componente, el GameObject sigue existiendo\n        // Destroy(this);\n\n        // Destroy otro objeto:\n        // Destroy(collision.gameObject);\n    }\n}\n\n// Spawner: crea enemigos periódicamente\npublic class EnemySpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject enemyPrefab;\n    [SerializeField] private float spawnInterval = 2f;\n    private float timer;\n\n    void Update()\n    {\n        timer += Time.deltaTime;\n        if (timer >= spawnInterval)\n        {\n            timer = 0f;\n            Vector3 pos = new Vector3(Random.Range(-5f, 5f), 0, 0);\n            Instantiate(enemyPrefab, pos, Quaternion.identity);\n        }\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "Analogía: Prefab = Clase, Instantiate = new",
+        "type": "analogy",
+        "content": "Piensa en la analogía con POO que ya conoces:<br><ul><li><strong>Prefab</strong> = la <em>clase</em> <code>Bullet</code> que defines</li><li><strong>Instantiate(bulletPrefab)</strong> = <code>new Bullet()</code></li><li><strong>Cada bala en pantalla</strong> = un <em>objeto</em> (instancia) independiente</li><li><strong>Destroy(gameObject)</strong> = eliminar el objeto de memoria</li></ul>Diferencia clave: en Unity los objetos <strong>no se destruyen por garbage collection</strong> automáticamente — debes llamar <code>Destroy()</code> explícitamente cuando ya no se necesiten."
+      },
+      {
+        "id": "doc-5",
+        "title": "Rendimiento: Por qué Instantiate/Destroy es Costoso",
+        "type": "note",
+        "content": "<strong>Problema</strong>: Llamar <code>Instantiate()</code> y <code>Destroy()</code> frecuentemente (ej: muchas balas por segundo) es costoso porque:<br><ul><li>Instantiate aloca memoria nueva cada vez</li><li>Destroy activa el Garbage Collector de C#, causando <em>stutters</em> (micro-congeladas)</li></ul><strong>Solución: Object Pooling</strong><br>En vez de crear y destruir, <em>desactiva</em> los objetos con <code>SetActive(false)</code> y cuando los necesites, <em>reactívalos</em> con <code>SetActive(true)</code>. Un pool pre-crea N instancias al inicio y las reutiliza. Unity 2021+ incluye <code>ObjectPool&lt;T&gt;</code> integrado."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "unity_mc_017",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la sintaxis correcta para instanciar un prefab en una posición y rotación específicas?",
+      "options": [
+        "Instantiate(prefab, position, rotation)",
+        "new GameObject(prefab, position, rotation)",
+        "prefab.Spawn(position, rotation)",
+        "GameObject.Create(prefab, position, rotation)",
+        "Instantiate(position, prefab, rotation)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Instantiate(prefab, position, rotation)</code> es la sobrecarga más común. Crea una nueva instancia del prefab en la posición y rotación dadas. El tipo de retorno es <code>GameObject</code> (o el tipo del componente si se pasa un componente como prefab)."
+    },
+    {
+      "id": "unity_mc_018",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia entre Destroy(gameObject) y Destroy(this)?",
+      "options": [
+        "Destroy(gameObject) elimina el GameObject completo con todos sus componentes; Destroy(this) elimina solo este componente del MonoBehaviour",
+        "Destroy(gameObject) es inmediato; Destroy(this) tiene un delay de un frame",
+        "Son equivalentes, ambos eliminan el GameObject completo",
+        "Destroy(this) elimina todos los objetos del mismo tipo en la escena",
+        "Destroy(gameObject) solo funciona en prefabs; Destroy(this) funciona en cualquier objeto"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Destroy(gameObject)</code> elimina el <em>GameObject completo</em> (el objeto con todos sus componentes). <code>Destroy(this)</code> elimina solo <em>este script/componente</em> del objeto — el GameObject sigue existiendo con los demás componentes intactos."
+    },
+    {
+      "id": "unity_mc_019",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué retorna Instantiate() en Unity?",
+      "options": [
+        "Una referencia al nuevo GameObject instanciado (o al componente si se instancia por componente)",
+        "Un índice entero que identifica al nuevo objeto",
+        "Nada (void); el objeto se crea pero no se puede referenciar",
+        "Un bool indicando si la instanciación fue exitosa",
+        "El Prefab original, no la instancia"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Instantiate()</code> retorna el objeto instanciado. Si pasas un <code>GameObject</code>, retorna un <code>GameObject</code>. Si pasas un componente (ej: <code>Bullet bullet = Instantiate(bulletPrefab)</code>), retorna ese tipo de componente directamente. Esta referencia es esencial para manipular la instancia recién creada."
+    },
+    {
+      "id": "unity_mc_020",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia entre un Prefab y un GameObject en la escena?",
+      "options": [
+        "El Prefab es una plantilla asset en el proyecto; el GameObject de escena es una instancia activa. Cambiar el Prefab actualiza todas sus instancias",
+        "No hay diferencia; un Prefab es solo un GameObject guardado con otro nombre",
+        "El Prefab existe en memoria siempre; el GameObject de escena solo existe durante la ejecución",
+        "Los Prefabs no pueden tener scripts; los GameObjects de escena sí",
+        "Un Prefab solo puede tener un componente; un GameObject puede tener varios"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>Prefab</strong> es un asset (plantilla) guardado en el proyecto — como una clase. Los <strong>GameObjects en escena</strong> son instancias de esa plantilla. La ventaja clave: modificar el Prefab original propaga los cambios a <em>todas</em> sus instancias en todas las escenas."
+    },
+    {
+      "id": "unity_mc_021",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes un sistema de balas que dispara 10 veces por segundo. ¿Cuál es el problema de usar Instantiate/Destroy para cada bala?",
+      "options": [
+        "Genera presión constante en el Garbage Collector causando stutters; la solución es Object Pooling",
+        "Instantiate solo puede llamarse máximo 60 veces por segundo por limitaciones de Unity",
+        "Destroy no funciona correctamente con objetos que tienen Rigidbody",
+        "Instantiate no puede crear objetos desde scripts, solo desde el Editor",
+        "No hay problema; Instantiate/Destroy es siempre la mejor solución"
+      ],
+      "correctIndex": 0,
+      "explanation": "Crear y destruir objetos frecuentemente genera <em>garbage</em> que acumula trabajo para el <strong>Garbage Collector</strong>. Cuando el GC corre, puede causar <em>stutters</em> (congeladas de milisegundos). La solución es <strong>Object Pooling</strong>: pre-crear objetos, desactivarlos con <code>SetActive(false)</code> y reactivarlos en lugar de crear/destruir."
+    },
+    {
+      "id": "unity_mc_022",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cómo se almacena la referencia al objeto instanciado para manipularlo después?",
+      "options": [
+        "Asignando el retorno de Instantiate() a una variable: GameObject obj = Instantiate(prefab, pos, rot);",
+        "Instantiate() no retorna nada; se debe usar FindObjectOfType() para buscarlo después",
+        "Se guarda automáticamente en una lista interna de Unity accesible por índice",
+        "Usando la propiedad lastInstantiated de Unity",
+        "No es posible guardar referencias a objetos instanciados en runtime"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Instantiate()</code> retorna la referencia al objeto creado. Almacenándola: <code>GameObject bullet = Instantiate(bulletPrefab, pos, rot);</code> puedes manipular la instancia inmediatamente — obtener sus componentes, cambiar su velocidad, etc."
+    },
+    {
+      "id": "unity_mc_023",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cómo se elimina un objeto después de 3 segundos en Unity?",
+      "options": [
+        "Destroy(gameObject, 3f)",
+        "Destroy(gameObject); Wait(3f);",
+        "StartCoroutine(DestroyAfter(3f))",
+        "gameObject.SetActive(false, 3f)",
+        "Destroy(3f, gameObject)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Destroy(gameObject, 3f)</code> programa la destrucción del objeto después de 3 segundos. Es la forma más simple. El objeto sigue existiendo y funcionando normalmente hasta que se cumple el tiempo. El segundo parámetro es el delay en segundos (float)."
+    },
+    {
+      "id": "unity_mc_024",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cómo se instancia un prefab como hijo de otro transform?",
+      "options": [
+        "Instantiate(prefab, position, rotation, parentTransform)",
+        "Instantiate(prefab, position, rotation); luego bullet.transform.parent = parentTransform;",
+        "Ambas formas son válidas y equivalentes",
+        "Solo la segunda forma es correcta; Instantiate no acepta un transform padre",
+        "No es posible instanciar objetos como hijos; deben ser raíz primero"
+      ],
+      "correctIndex": 2,
+      "explanation": "Ambas formas son válidas: <code>Instantiate(prefab, pos, rot, parent)</code> crea directamente como hijo, o puedes asignar <code>transform.parent</code> después. La primera es más concisa; la segunda es útil si el parent no se conoce al momento de instanciar."
+    },
+    {
+      "id": "unity_id_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script de un proyectil:",
+      "code": "public class Projectile : MonoBehaviour\n{\n    void Start()\n    {\n        Destroy(gameObject, 5f);\n    }\n\n    void OnTriggerEnter(Collider other)\n    {\n        Destroy(gameObject);\n    }\n}",
+      "question": "¿Qué hace el segundo parámetro en Destroy(gameObject, 5f)?",
+      "target": "delay",
+      "acceptedAnswers": [
+        "delay",
+        "tiempo de espera",
+        "espera 5 segundos",
+        "destruye después de 5 segundos",
+        "tiempo antes de destruir"
+      ],
+      "hints": [
+        "Es un número float (5f)",
+        "¿Qué unidad de tiempo usa Unity en general?",
+        "El objeto no se destruye inmediatamente"
+      ],
+      "explanation": "El segundo parámetro de <code>Destroy()</code> es un <strong>delay en segundos</strong>. <code>Destroy(gameObject, 5f)</code> programa la destrucción del objeto 5 segundos después. Útil para auto-destruir proyectiles si no impactan nada. Si impacta (<code>OnTriggerEnter</code>), se destruye inmediatamente con <code>Destroy(gameObject)</code>."
+    },
+    {
+      "id": "unity_id_014",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este spawner de enemigos:",
+      "code": "public class WaveSpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject enemyPrefab;\n\n    public void SpawnWave(int count)\n    {\n        for (int i = 0; i < count; i++)\n        {\n            Vector3 pos = GetRandomSpawnPoint();\n            Instantiate(enemyPrefab, pos, Quaternion.identity);\n        }\n    }\n}",
+      "question": "¿Qué representa Quaternion.identity como parámetro de rotación en Instantiate?",
+      "target": "Quaternion.identity",
+      "acceptedAnswers": [
+        "Quaternion.identity",
+        "sin rotación",
+        "rotación cero",
+        "rotación por defecto",
+        "rotación inicial"
+      ],
+      "hints": [
+        "En matemáticas, 'identity' es el valor neutro (como el 0 en suma o el 1 en multiplicación)",
+        "¿Qué rotación tiene un objeto que no ha sido rotado?",
+        "Es equivalente a (0, 0, 0) en ángulos de Euler"
+      ],
+      "explanation": "<code>Quaternion.identity</code> representa <strong>sin rotación</strong> — la rotación por defecto de un objeto (0, 0, 0 en ángulos de Euler). Se usa cuando quieres que el objeto instanciado apunte en la dirección 'hacia adelante' estándar sin heredar ninguna rotación especial."
+    },
+    {
+      "id": "unity_id_015",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código con un problema de rendimiento:",
+      "code": "public class BulletHell : MonoBehaviour\n{\n    [SerializeField] private GameObject bulletPrefab;\n\n    void Update()\n    {\n        for (int i = 0; i < 20; i++)\n        {\n            float angle = i * 18f;\n            Vector3 dir = Quaternion.Euler(0, angle, 0) * Vector3.forward;\n            GameObject b = Instantiate(bulletPrefab, transform.position, Quaternion.identity);\n            // Las balas se destruyen solas después de 2s\n        }\n    }\n}",
+      "question": "¿Qué patrón de optimización debería aplicarse aquí y por qué?",
+      "target": "Object Pooling",
+      "acceptedAnswers": [
+        "Object Pooling",
+        "object pooling",
+        "pool de objetos",
+        "pooling",
+        "Object Pool"
+      ],
+      "hints": [
+        "Se crean 20 balas POR FRAME (1200 balas/segundo a 60fps)",
+        "¿Qué problema causa crear y destruir tantos objetos?",
+        "El patrón reutiliza objetos en lugar de crear y destruir"
+      ],
+      "explanation": "Esto necesita <strong>Object Pooling</strong>. Crear 20 × 60fps = 1200 objetos por segundo con <code>Instantiate</code> y destruirlos después genera enorme presión en el Garbage Collector, causando stutters constantes. El pool pre-crea las balas, las desactiva con <code>SetActive(false)</code> al 'destruirlas' y las reactiva al 'crearlas'."
+    },
+    {
+      "id": "unity_id_016",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "public class PickupSpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject coinPrefab;\n    [SerializeField] private Transform spawnContainer;\n\n    public GameObject SpawnCoin(Vector3 position)\n    {\n        return Instantiate(coinPrefab, position, Quaternion.identity, spawnContainer);\n    }\n}",
+      "question": "¿Qué hace el cuarto parámetro 'spawnContainer' en Instantiate?",
+      "target": "parent",
+      "acceptedAnswers": [
+        "parent",
+        "padre",
+        "transform padre",
+        "hacer hijo de spawnContainer",
+        "establece el objeto padre",
+        "el objeto instanciado será hijo de spawnContainer"
+      ],
+      "hints": [
+        "En Unity, los objetos tienen jerarquía padre-hijo en la escena",
+        "¿Qué relación establece entre coinPrefab y spawnContainer?",
+        "Ayuda a organizar los objetos instanciados en la jerarquía de la escena"
+      ],
+      "explanation": "El cuarto parámetro de <code>Instantiate()</code> establece el <strong>Transform padre</strong> del objeto instanciado. La moneda creada aparecerá como <em>hijo</em> de <code>spawnContainer</code> en la jerarquía de la escena. Útil para organizar objetos instanciados bajo un contenedor y que hereden transformaciones del padre."
+    },
+    {
+      "id": "unity_id_017",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de Unity:",
+      "code": "void OnTriggerEnter(Collider other)\n{\n    Destroy(gameObject, 2.0f);\n}",
+      "question": "¿Qué hace el segundo parámetro (2.0f) en la llamada a Destroy?",
+      "target": "2.0f",
+      "acceptedAnswers": [
+        "retraso",
+        "delay",
+        "tiempo de espera",
+        "segundos de retraso",
+        "demora",
+        "espera 2 segundos"
+      ],
+      "hints": [
+        "El primer parámetro es el objeto a destruir, ¿qué controla el segundo?",
+        "Este valor está en segundos — indica cuánto tiempo Unity debe esperar antes de destruir",
+        "Se destruirá 2 segundos después de que se ejecute esta línea"
+      ],
+      "explanation": "El segundo parámetro de <code>Destroy()</code> es el <strong>retraso</strong> (delay) en segundos. <code>Destroy(gameObject, 2.0f)</code> destruye el objeto 2 segundos después de que se llama la función. Útil para efectos de muerte, explosiones o desapariciones con animación."
+    },
+    {
+      "id": "unity_id_018",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de un prefab de explosión:",
+      "code": "public class Explosion : MonoBehaviour\n{\n    [SerializeField] private ParticleSystem particles;\n\n    void Start()\n    {\n        particles.Play();\n        Destroy(gameObject, particles.main.duration);\n    }\n}",
+      "question": "¿Qué analogía de POO representa la relación entre el Prefab de Explosion y cada instancia creada en pantalla?",
+      "target": "clase e instancia",
+      "acceptedAnswers": [
+        "clase e instancia",
+        "clase y objeto",
+        "clase/objeto",
+        "plantilla y objeto",
+        "tipo e instancia",
+        "el prefab es la clase y cada explosion es un objeto"
+      ],
+      "hints": [
+        "En C# cuando defines 'class Explosion', ¿qué es la clase respecto a los objetos?",
+        "Con 'new Explosion()' creas un objeto; ¿qué hace Instantiate(explosionPrefab)?",
+        "El Prefab es la plantilla; cada explosión en pantalla es una..."
+      ],
+      "explanation": "El Prefab es análogo a una <strong>clase</strong> y cada instancia creada con <code>Instantiate()</code> es análoga a un <strong>objeto</strong>. Así como una clase define la estructura y puedes crear muchos objetos con <code>new</code>, el Prefab define la plantilla y puedes crear muchas instancias independientes con <code>Instantiate()</code>."
+    },
+    {
+      "id": "unity_cw_013",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para instanciar bulletPrefab en la posición y rotación del firePoint:",
+      "codeTemplate": "GameObject bullet = __________(bulletPrefab, firePoint.position, firePoint.rotation);",
+      "expectedAnswer": "Instantiate",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "El método crea una nueva instancia de un prefab",
+        "En inglés significa 'instanciar'",
+        "Es un método estático de la clase Object de Unity"
+      ],
+      "explanation": "<code>Instantiate(prefab, position, rotation)</code> crea una nueva instancia del prefab en la posición y rotación especificadas. Retorna el GameObject creado, que aquí se almacena en <code>bullet</code>."
+    },
+    {
+      "id": "unity_cw_014",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 1,
+      "instruction": "Escribe la línea para destruir el gameObject actual después de 2 segundos:",
+      "expectedAnswer": "Destroy(gameObject, 2f);",
+      "alternateAnswers": [
+        "Destroy(gameObject, 2);",
+        "Destroy(this.gameObject, 2f);"
+      ],
+      "placeholder": "Destroy(...)",
+      "hints": [
+        "Usa el método Destroy de Unity",
+        "El primer parámetro es el objeto a destruir",
+        "El segundo parámetro es el delay en segundos (float)"
+      ],
+      "explanation": "<code>Destroy(gameObject, 2f);</code> destruye el GameObject actual después de 2 segundos. El objeto sigue siendo funcional durante esos 2 segundos. Omitir el segundo parámetro destruye inmediatamente."
+    },
+    {
+      "id": "unity_cw_015",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el Instantiate para crear el enemyPrefab en 'spawnPos' con rotación cero (sin rotación):",
+      "codeTemplate": "Instantiate(enemyPrefab, spawnPos, __________);",
+      "expectedAnswer": "Quaternion.identity",
+      "alternateAnswers": [],
+      "placeholder": "Rotación sin rotación",
+      "hints": [
+        "Representa 'sin rotación' o rotación cero",
+        "En matemáticas, el elemento neutro se llama 'identity'",
+        "Es una propiedad estática de la estructura Quaternion"
+      ],
+      "explanation": "<code>Quaternion.identity</code> representa rotación cero (0, 0, 0). Es el valor más común cuando quieres instanciar un objeto sin rotación especial. Equivale a <code>Quaternion.Euler(0, 0, 0)</code>."
+    },
+    {
+      "id": "unity_cw_016",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa para instanciar 'coinPrefab' en la posición 'dropPos', sin rotación, y guardar la referencia en una variable llamada 'coin':",
+      "expectedAnswer": "GameObject coin = Instantiate(coinPrefab, dropPos, Quaternion.identity);",
+      "alternateAnswers": [
+        "var coin = Instantiate(coinPrefab, dropPos, Quaternion.identity);"
+      ],
+      "placeholder": "GameObject coin = ...",
+      "hints": [
+        "Declara la variable como GameObject",
+        "Usa Instantiate con tres parámetros: prefab, posición, rotación",
+        "Para rotación cero usa Quaternion.identity"
+      ],
+      "explanation": "<code>GameObject coin = Instantiate(coinPrefab, dropPos, Quaternion.identity);</code> crea la instancia y guarda la referencia. Esta referencia permite manipular la moneda después (cambiar su velocidad, obtener sus componentes, etc.)."
+    },
+    {
+      "id": "unity_cw_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para destruir el gameObject actual después de 3 segundos:",
+      "codeTemplate": "Destroy(gameObject, __________);",
+      "expectedAnswer": "3f",
+      "alternateAnswers": [
+        "3.0f",
+        "3"
+      ],
+      "placeholder": "Escribe el delay en segundos...",
+      "hints": [
+        "El segundo parámetro de Destroy es el tiempo de espera en segundos",
+        "Los valores de tiempo en Unity se expresan como float (con f al final)"
+      ],
+      "explanation": "<code>Destroy(gameObject, 3f)</code> destruye el GameObject 3 segundos después. El sufijo <code>f</code> indica que es un <code>float</code>. También puedes escribir <code>3.0f</code> o simplemente <code>3</code> (se convierte implícitamente)."
+    },
+    {
+      "id": "unity_cw_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para destruir el 'gameObject' inmediatamente (sin delay):",
+      "codeTemplate": "__________(gameObject);",
+      "expectedAnswer": "Destroy",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "Es el método de Unity para eliminar objetos",
+        "Con un solo parámetro, la destrucción es inmediata",
+        "En inglés significa 'destruir'"
+      ],
+      "explanation": "<code>Destroy(gameObject);</code> elimina el GameObject completo al final del frame actual. Unity no elimina el objeto al instante sino al final del frame para evitar problemas con referencias en el mismo frame."
+    }
+  ]
+}

@@ -1,0 +1,360 @@
+{
+  "id": "clases_abstractas",
+  "title": "Clases Abstractas",
+  "icon": "📋",
+  "color": "#E91E63",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es una clase abstracta?",
+        "type": "definition",
+        "content": "Una <strong>clase abstracta</strong> es una clase que <em>no puede ser instanciada directamente</em>. Se usa como base para otras clases y puede contener tanto métodos concretos (con implementación) como métodos <code>abstract</code> (sin implementación, que las clases derivadas <em>deben</em> implementar obligatoriamente). Una clase abstracta representa un concepto genérico: no tiene sentido crear un objeto <code>Enemy</code> genérico, pero sí un <code>Goblin</code> o un <code>Dragon</code>. Se declara con la palabra clave <code>abstract</code> antes de <code>class</code>."
+      },
+      {
+        "id": "doc-2",
+        "title": "Sintaxis: clase abstracta con métodos abstractos",
+        "type": "code",
+        "content": "// La palabra clave abstract antes de class la hace abstracta\npublic abstract class Enemy\n{\n    public string EnemyName;\n    public int Health;\n\n    public Enemy(string name, int health)\n    {\n        EnemyName = name;\n        Health = health;\n    }\n\n    // Método concreto: tiene implementación, todas las clases derivadas lo heredan\n    public void Die()\n    {\n        Debug.Log(EnemyName + \" has been defeated!\");\n    }\n\n    // Método abstracto: NO tiene cuerpo (sin {}), DEBE ser implementado en clases derivadas\n    public abstract void Attack();\n\n    public abstract void TakeDamage(int dmg);\n}\n\n// Goblin DEBE implementar todos los métodos abstractos\npublic class Goblin : Enemy\n{\n    public Goblin(string name) : base(name, 50) { }\n\n    public override void Attack()\n    {\n        Debug.Log(EnemyName + \" stabs for 8 damage!\");\n    }\n\n    public override void TakeDamage(int dmg)\n    {\n        Health -= dmg;\n        Debug.Log(EnemyName + \" takes \" + dmg + \" damage. HP: \" + Health);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Mezcla de miembros concretos y abstractos",
+        "type": "note",
+        "content": "Una clase <code>abstract</code> puede tener <strong>ambos tipos de miembros</strong>:<br><ul><li><strong>Métodos concretos</strong>: tienen implementación, se heredan igual que en cualquier clase base. Pueden ser <code>virtual</code> para permitir sobrescritura.</li><li><strong>Métodos abstractos</strong>: no tienen cuerpo (<code>;</code> al final), son implícitamente <code>virtual</code>, y las clases derivadas concretas <em>deben</em> implementarlos con <code>override</code>.</li></ul>Un método <code>abstract</code> <strong>solo puede existir dentro de una clase <code>abstract</code></strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "No se puede instanciar una clase abstracta",
+        "type": "note",
+        "content": "Intentar crear una instancia directa de una clase abstracta produce un <strong>error de compilación</strong>:<br><br><code>Enemy e = new Enemy(\"Test\", 100); // ERROR: cannot create instance of abstract class</code><br><br>Sin embargo, una <strong>referencia</strong> de tipo abstracto <em>sí puede apuntar</em> a un objeto de una clase concreta derivada:<br><br><code>Enemy e = new Goblin(\"Bob\"); // OK - polimorfismo</code><br><br>Esto es muy útil para el polimorfismo, igual que con <code>virtual</code>/<code>override</code>."
+      },
+      {
+        "id": "doc-5",
+        "title": "Analogía en Unity",
+        "type": "analogy",
+        "content": "En Unity, un patrón muy común es crear una clase abstracta base para todos los enemigos que hereda de <code>MonoBehaviour</code>:<br><br><code>public abstract class EnemyBase : MonoBehaviour</code><br><br>Esta clase puede tener campos comunes (<code>Health</code>, <code>MoveSpeed</code>), métodos concretos (<code>Die()</code>, <code>Patrol()</code>) y métodos abstractos que cada enemigo debe implementar (<code>abstract void TakeDamage(int dmg)</code>, <code>abstract void Attack()</code>). Luego creas <code>GoblinEnemy : EnemyBase</code>, <code>DragonEnemy : EnemyBase</code>, etc. Nunca pones el componente <code>EnemyBase</code> directamente en un GameObject — usas las clases concretas."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "abs_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la característica principal de una clase abstracta en C#?",
+      "options": [
+        "No puede ser instanciada directamente",
+        "No puede tener métodos con implementación",
+        "No puede ser heredada",
+        "Todos sus métodos deben ser abstractos",
+        "Solo puede tener un método abstracto"
+      ],
+      "correctIndex": 0,
+      "explanation": "La característica principal de una clase <code>abstract</code> es que <strong>no puede ser instanciada directamente</strong>. Solo puede ser usada como clase base. Puede tener tanto métodos concretos (con implementación) como métodos abstractos (sin implementación)."
+    },
+    {
+      "id": "abs_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué debe hacer obligatoriamente una clase concreta (no abstracta) que hereda de una clase abstracta?",
+      "options": [
+        "Implementar todos los métodos abstractos de la clase base",
+        "Declarar al menos un método propio",
+        "Llamar a base() en todos los métodos",
+        "Marcar todos sus métodos como override",
+        "Ser sealed para evitar más herencia"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una clase concreta que hereda de una clase abstracta <strong>debe implementar todos los métodos abstractos</strong> de la clase base, usando <code>override</code>. Si no lo hace, también debe declararse como <code>abstract</code>."
+    },
+    {
+      "id": "abs_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué sucede si intentas ejecutar <code>new Enemy()</code> donde <code>Enemy</code> es una clase abstracta?",
+      "options": [
+        "Error de compilación: no se puede instanciar una clase abstracta",
+        "Se crea una instancia vacía sin métodos",
+        "Se crea una instancia pero los métodos abstractos no funcionan",
+        "Error en tiempo de ejecución (NullReferenceException)",
+        "C# crea automáticamente una clase concreta temporal"
+      ],
+      "correctIndex": 0,
+      "explanation": "El compilador de C# <strong>no permite</strong> instanciar una clase abstracta directamente. El intento produce un <em>error de compilación</em>. Las clases abstractas solo pueden ser referenciadas a través de objetos de sus clases derivadas concretas."
+    },
+    {
+      "id": "abs_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia más importante entre una clase abstracta y una interfaz en C#?",
+      "options": [
+        "Una clase abstracta puede tener campos, constructor e implementaciones; una interfaz solo define contratos (métodos sin cuerpo por defecto)",
+        "Una interfaz puede ser instanciada; una clase abstracta no",
+        "Una clase abstracta no puede tener métodos concretos; una interfaz sí",
+        "No hay diferencia real entre ambas",
+        "Solo las interfaces permiten herencia múltiple de tipos"
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia clave: una <strong>clase abstracta</strong> puede tener <em>campos, constructores, métodos concretos y abstractos</em>. Una <strong>interfaz</strong> define un contrato (solo firmas de métodos, sin campos de instancia ni constructores). Además, C# permite implementar múltiples interfaces pero solo heredar de una clase base."
+    },
+    {
+      "id": "abs_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Puede una clase abstracta tener un constructor en C#?",
+      "options": [
+        "Sí, aunque no puede ser instanciada directamente, su constructor es llamado por las clases derivadas con base()",
+        "No, las clases abstractas no pueden tener constructor",
+        "Solo si el constructor es abstracto también",
+        "Solo si la clase abstracta tiene al menos un método concreto",
+        "Solo con el modificador protected"
+      ],
+      "correctIndex": 0,
+      "explanation": "Sí, una clase abstracta <strong>puede (y generalmente debe) tener constructor</strong>. Aunque no se puede llamar con <code>new AbstractClass()</code>, el constructor es invocado por las clases derivadas a través de <code>base(...)</code>. Esto permite inicializar los campos comunes."
+    },
+    {
+      "id": "abs_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Puede una clase abstracta tener métodos con implementación (métodos concretos)?",
+      "options": [
+        "Sí, una clase abstracta puede mezclar métodos abstractos y métodos concretos",
+        "No, todos los métodos de una clase abstracta deben ser abstractos",
+        "Solo si la clase tiene exactamente un método abstracto",
+        "Solo si los métodos concretos son privados",
+        "No, los métodos concretos solo existen en interfaces"
+      ],
+      "correctIndex": 0,
+      "explanation": "Sí, una clase abstracta puede tener <strong>ambos tipos</strong> de métodos: concretos (con cuerpo, heredados por las derivadas) y abstractos (sin cuerpo, que las derivadas deben implementar). Esto la hace más poderosa que una interfaz pura."
+    },
+    {
+      "id": "abs_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿En qué caso es correcto declarar una clase como abstracta en lugar de concreta en un juego de Unity?",
+      "options": [
+        "Cuando la clase representa un concepto genérico que nunca se usará directamente en la escena, pero define comportamiento común para tipos específicos",
+        "Cuando la clase tiene más de 10 métodos",
+        "Cuando la clase hereda de MonoBehaviour",
+        "Cuando no necesitas instanciarla por razones de rendimiento",
+        "Cuando quieres evitar que la clase pueda ser eliminada"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una clase abstracta es apropiada cuando representa un <em>concepto genérico</em> que no tiene sentido usar directamente. Por ejemplo, <code>EnemyBase</code> define comportamiento común (moverse, morir) pero nunca se coloca en la escena. En cambio, <code>GoblinEnemy</code> y <code>DragonEnemy</code> sí se colocan como componentes."
+    },
+    {
+      "id": "abs_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cómo se escribe un método abstracto en C#?",
+      "options": [
+        "public abstract void Attack();  (sin cuerpo, con punto y coma)",
+        "public abstract void Attack() { }  (con llaves vacías)",
+        "public virtual void Attack();  (sin cuerpo)",
+        "abstract public void Attack() => null;",
+        "public void Attack() abstract;"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un método abstracto se declara con <code>abstract</code>, sin cuerpo y terminando en <code>;</code>: <code>public abstract void Attack();</code>. No tiene llaves <code>{ }</code>. Si intentas agregar un cuerpo a un método abstracto, el compilador dará error."
+    },
+    {
+      "id": "abs_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public abstract class Vehicle\n{\n    public int Speed;\n\n    public abstract void Move();\n\n    public void Refuel()\n    {\n        Debug.Log(\"Refueling...\");\n    }\n}",
+      "question": "¿Cuántos métodos abstractos y cuántos métodos concretos tiene <code>Vehicle</code>?",
+      "target": "1 abstracto, 1 concreto",
+      "acceptedAnswers": ["1 abstracto, 1 concreto", "uno abstracto y uno concreto", "1 abstract 1 concrete", "un método abstracto y un método concreto"],
+      "hints": [
+        "Un método abstracto no tiene cuerpo (termina en ;)",
+        "Un método concreto sí tiene cuerpo (tiene {})",
+        "Cuenta los métodos con y sin implementación"
+      ],
+      "explanation": "<code>Vehicle</code> tiene <strong>1 método abstracto</strong> (<code>Move()</code>, sin cuerpo) y <strong>1 método concreto</strong> (<code>Refuel()</code>, con implementación). Esta es la mezcla típica de una clase abstracta."
+    },
+    {
+      "id": "abs_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public abstract class Shape\n{\n    public abstract float CalculateArea();\n}\n\npublic class Circle : Shape\n{\n    public float Radius;\n    // No implementa CalculateArea()\n}",
+      "question": "¿Qué problema tiene este código y cuál sería la solución?",
+      "target": "Circle no implementa CalculateArea",
+      "acceptedAnswers": ["Circle no implementa CalculateArea", "falta implementar CalculateArea en Circle", "Circle must implement CalculateArea", "Circle no sobrescribe el método abstracto"],
+      "hints": [
+        "Shape tiene un método que Circle DEBE implementar",
+        "Una clase concreta no puede ignorar los métodos abstractos del padre",
+        "Circle necesita agregar override void CalculateArea"
+      ],
+      "explanation": "<code>Circle</code> hereda de <code>Shape</code> pero <strong>no implementa <code>CalculateArea()</code></strong>, que es un método abstracto. Esto produce un error de compilación. La solución es agregar <code>public override float CalculateArea() { return Mathf.PI * Radius * Radius; }</code> en <code>Circle</code>, o declarar <code>Circle</code> también como <code>abstract</code>."
+    },
+    {
+      "id": "abs_id_003",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public abstract class EnemyBase : MonoBehaviour\n{\n    public int Health = 100;\n\n    public abstract void TakeDamage(int dmg);\n    public abstract void Attack();\n\n    public void Die()\n    {\n        Destroy(gameObject);\n    }\n}\n\npublic class SkeletonEnemy : EnemyBase\n{\n    public override void TakeDamage(int dmg) { Health -= dmg; }\n    public override void Attack() { Debug.Log(\"Skeleton attacks!\"); }\n}",
+      "question": "¿Por qué <code>EnemyBase</code> hereda de <code>MonoBehaviour</code> si es una clase abstracta?",
+      "target": "para que sus clases derivadas puedan ser componentes de Unity",
+      "acceptedAnswers": ["para que sus clases derivadas puedan ser componentes de Unity", "para heredar los métodos de Unity en las clases derivadas", "para que SkeletonEnemy pueda ser un componente", "para acceder a Start Update y métodos de Unity"],
+      "hints": [
+        "MonoBehaviour permite que una clase sea añadida como componente a un GameObject",
+        "EnemyBase nunca se añade directamente, pero SkeletonEnemy sí",
+        "A través de la herencia, SkeletonEnemy hereda de EnemyBase que hereda de MonoBehaviour"
+      ],
+      "explanation": "<code>EnemyBase</code> hereda de <code>MonoBehaviour</code> para que todas sus clases derivadas (como <code>SkeletonEnemy</code>) hereden automáticamente la funcionalidad de Unity (Start, Update, GetComponent, etc.) y puedan ser añadidas como componentes a GameObjects."
+    },
+    {
+      "id": "abs_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public abstract class Animal\n{\n    public abstract void MakeSound();\n}\n\npublic abstract class Pet : Animal\n{\n    public string OwnerName;\n    // No implementa MakeSound()\n}\n\npublic class Dog : Pet\n{\n    public override void MakeSound()\n    {\n        Debug.Log(\"Woof!\");\n    }\n}",
+      "question": "¿Por qué <code>Pet</code> puede no implementar <code>MakeSound()</code> aunque hereda de <code>Animal</code>?",
+      "target": "Pet es abstracta",
+      "acceptedAnswers": ["Pet es abstracta", "porque Pet también es abstract", "una clase abstracta no está obligada a implementar métodos abstractos", "Pet es abstract y puede delegar la implementación"],
+      "hints": [
+        "Observa la declaración de Pet",
+        "Solo las clases CONCRETAS deben implementar todos los métodos abstractos",
+        "Pet tiene la misma palabra clave que Animal"
+      ],
+      "explanation": "<code>Pet</code> también es <code>abstract</code>, por lo que <strong>no está obligada</strong> a implementar los métodos abstractos heredados. Solo las clases <em>concretas</em> (como <code>Dog</code>) deben implementar todos los métodos abstractos pendientes de la cadena de herencia."
+    },
+    {
+      "id": "abs_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public abstract class Spell\n{\n    public string SpellName;\n    public int ManaCost;\n\n    public Spell(string name, int mana)\n    {\n        SpellName = name;\n        ManaCost = mana;\n    }\n\n    public abstract void Cast(GameObject target);\n}",
+      "question": "¿Qué keyword en la declaración del método <code>Cast</code> lo hace obligatorio de implementar en las clases derivadas?",
+      "target": "abstract",
+      "acceptedAnswers": ["abstract"],
+      "hints": [
+        "Busca la palabra clave modificadora del método",
+        "Es la misma palabra que hace abstracta a la clase",
+        "Está entre 'public' y 'void'"
+      ],
+      "explanation": "La palabra clave <code>abstract</code> en <code>public abstract void Cast(GameObject target)</code> hace que el método <strong>no tenga implementación</strong> en <code>Spell</code> y sea <em>obligatorio</em> implementarlo en cualquier clase concreta que herede de <code>Spell</code>."
+    },
+    {
+      "id": "abs_id_006",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public abstract class Collectible : MonoBehaviour\n{\n    public abstract void OnCollect(GameObject player);\n\n    void OnTriggerEnter(Collider other)\n    {\n        if (other.CompareTag(\"Player\"))\n        {\n            OnCollect(other.gameObject);\n            Destroy(gameObject);\n        }\n    }\n}",
+      "question": "¿Cuál es la ventaja de diseñar <code>Collectible</code> como clase abstracta con <code>OnCollect</code> abstracto?",
+      "target": "cada tipo de coleccionable define su propio efecto sin duplicar la lógica de colisión",
+      "acceptedAnswers": ["cada tipo de coleccionable define su propio efecto sin duplicar la lógica de colisión", "reutiliza la lógica de colisión y obliga a cada subclase a definir su efecto", "evita duplicar OnTriggerEnter en cada coleccionable"],
+      "hints": [
+        "OnTriggerEnter ya está implementado en la base para todos",
+        "OnCollect será diferente en cada tipo de coleccionable",
+        "Piensa en CoinCollectible, HealthCollectible, etc."
+      ],
+      "explanation": "La ventaja es que la lógica de detección de colisión (<code>OnTriggerEnter</code>) se escribe <strong>una sola vez</strong> en la clase base. Cada subclase (<code>CoinCollectible</code>, <code>HealthPotion</code>, etc.) solo implementa <code>OnCollect</code> con su efecto específico, sin repetir el código de colisión."
+    },
+    {
+      "id": "abs_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración para que <code>Character</code> sea una clase abstracta:",
+      "codeTemplate": "public ________ class Character\n{\n    public string Name;\n}",
+      "expectedAnswer": "abstract",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave",
+      "hints": [
+        "La palabra clave va entre 'public' y 'class'",
+        "Significa 'abstracto'",
+        "La misma palabra que usa un método sin cuerpo"
+      ],
+      "explanation": "La palabra clave <code>abstract</code> antes de <code>class</code> convierte a <code>Character</code> en una clase abstracta que no puede ser instanciada directamente."
+    },
+    {
+      "id": "abs_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración del método <code>Attack()</code> para que sea un método abstracto (sin cuerpo, que las clases derivadas deben implementar):",
+      "codeTemplate": "public abstract class Enemy\n{\n    public ________ void Attack()________\n}",
+      "expectedAnswer": "abstract | ;",
+      "alternateAnswers": [],
+      "placeholder": "keyword | terminador",
+      "hints": [
+        "Primer hueco: la palabra clave que hace al método abstracto",
+        "Segundo hueco: un método abstracto no tiene cuerpo ni llaves",
+        "Un método abstracto termina con punto y coma"
+      ],
+      "explanation": "Un método abstracto usa la palabra clave <code>abstract</code> y termina en <code>;</code> (sin llaves ni cuerpo): <code>public abstract void Attack();</code>"
+    },
+    {
+      "id": "abs_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración completa de una clase abstracta llamada <code>Projectile</code> que herede de <code>MonoBehaviour</code>. Solo la primera línea.",
+      "codeTemplate": null,
+      "expectedAnswer": "public abstract class Projectile : MonoBehaviour",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "Necesitas: public, abstract, class, nombre, herencia",
+        "abstract va entre public y class",
+        "Hereda de MonoBehaviour con dos puntos"
+      ],
+      "explanation": "La declaración es <code>public abstract class Projectile : MonoBehaviour</code>. Combina <code>abstract</code> (no puede instanciarse directamente) con la herencia de <code>MonoBehaviour</code> (sus clases derivadas serán componentes de Unity)."
+    },
+    {
+      "id": "abs_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración del método abstracto <code>OnHit(GameObject target)</code> que devuelve <code>void</code> y va dentro de una clase abstracta. Solo la firma con el terminador correcto.",
+      "codeTemplate": null,
+      "expectedAnswer": "public abstract void OnHit(GameObject target);",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "Los métodos abstractos no tienen cuerpo",
+        "Necesitas: public, abstract, tipo retorno, nombre, parámetros, terminador",
+        "Termina con ; no con {}"
+      ],
+      "explanation": "La declaración correcta es <code>public abstract void OnHit(GameObject target);</code>. Los métodos abstractos usan <code>abstract</code>, no tienen cuerpo y terminan con punto y coma."
+    },
+    {
+      "id": "abs_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la implementación del método abstracto en la clase derivada <code>FireProjectile</code>:",
+      "codeTemplate": "public class FireProjectile : Projectile\n{\n    public ________ void OnHit(GameObject target)\n    {\n        Debug.Log(\"Fire damage!\");\n    }\n}",
+      "expectedAnswer": "override",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave",
+      "hints": [
+        "Al implementar un método abstracto en la clase derivada, usas la misma palabra que para virtual",
+        "No usas 'abstract' aquí porque sí tiene cuerpo",
+        "La palabra que indica 'sobrescribir'"
+      ],
+      "explanation": "Los métodos abstractos se implementan en clases derivadas usando <code>override</code>: <code>public override void OnHit(GameObject target)</code>. Un método abstracto es implícitamente virtual, así que se usa <code>override</code> para implementarlo."
+    },
+    {
+      "id": "abs_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración completa de la clase abstracta <code>UIPanel</code> que hereda de <code>MonoBehaviour</code> con un único método abstracto <code>Show()</code> que devuelve <code>void</code>. Escribe solo las dos líneas: la declaración de clase y la declaración del método abstracto (sin llaves externas).",
+      "codeTemplate": null,
+      "expectedAnswer": "public abstract class UIPanel : MonoBehaviour\npublic abstract void Show();",
+      "alternateAnswers": ["public abstract class UIPanel : MonoBehaviour\n    public abstract void Show();"],
+      "placeholder": "public abstract class ...\npublic abstract ...",
+      "hints": [
+        "Primera línea: declaración de clase abstracta que hereda de MonoBehaviour",
+        "Segunda línea: método abstracto sin cuerpo",
+        "El método abstracto termina en punto y coma"
+      ],
+      "explanation": "Las dos líneas son: <code>public abstract class UIPanel : MonoBehaviour</code> y <code>public abstract void Show();</code>. Combinan la clase abstracta (no instanciable, hereda de MonoBehaviour) con un método abstracto (obliga a las subclases a implementar su propia versión de Show)."
+    }
+  ]
+}

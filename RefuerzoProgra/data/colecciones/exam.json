@@ -1,0 +1,295 @@
+{
+  "id": "col_exam",
+  "title": "Examen Final: Colecciones",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "col_ex_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para declarar un array de 5 enteros llamado `scores`:",
+      "codeTemplate": "int[] scores = new int[__________];",
+      "expectedAnswer": "5",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tamaño del array...",
+      "hints": ["El número entre corchetes define cuántos elementos puede almacenar el array", "Para 5 elementos, el tamaño es..."],
+      "explanation": "<code>new int[5]</code> crea un array de 5 enteros con índices de 0 a 4. El tamaño se especifica al crear el array y no puede cambiarse después (a diferencia de List&lt;T&gt;)."
+    },
+    {
+      "id": "col_ex_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para acceder al PRIMER elemento del array `waypoints`:",
+      "codeTemplate": "Vector3 first = waypoints[__________];",
+      "expectedAnswer": "0",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el índice...",
+      "hints": ["Los arrays en C# comienzan en el índice 0", "El primer elemento siempre está en la posición..."],
+      "explanation": "El primer elemento de cualquier array o lista en C# está en el índice <code>0</code>. <code>waypoints[0]</code> accede al primer waypoint. El último elemento está en <code>waypoints[waypoints.Length - 1]</code>."
+    },
+    {
+      "id": "col_ex_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la propiedad que devuelve el número de elementos de un array `enemies`:",
+      "codeTemplate": "int total = enemies.__________;",
+      "expectedAnswer": "Length",
+      "alternateAnswers": ["Length;"],
+      "placeholder": "Escribe el nombre de la propiedad...",
+      "hints": ["La propiedad de los arrays que devuelve cuántos elementos tienen empieza con L mayúscula", "Es diferente a la propiedad de List<T> que se llama Count"],
+      "explanation": "<code>Array.Length</code> devuelve el número total de elementos. Para arrays, es <code>Length</code>; para listas y colecciones genéricas, es <code>Count</code>. Esta diferencia es una fuente común de confusión."
+    },
+    {
+      "id": "col_ex_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea que declara e inicializa un array de strings con 3 nombres: \"Goblin\", \"Orc\", \"Dragon\".",
+      "expectedAnswer": "string[] names = new string[] { \"Goblin\", \"Orc\", \"Dragon\" };",
+      "alternateAnswers": [
+        "string[] names = { \"Goblin\", \"Orc\", \"Dragon\" };",
+        "var names = new string[] { \"Goblin\", \"Orc\", \"Dragon\" };"
+      ],
+      "placeholder": "Escribe la declaración e inicialización...",
+      "hints": [
+        "Sintaxis de inicialización: new Tipo[] { val1, val2, val3 }",
+        "O forma corta: Tipo[] nombre = { val1, val2, val3 };"
+      ],
+      "explanation": "<code>string[] names = new string[] { \"Goblin\", \"Orc\", \"Dragon\" }</code> — o la forma más corta <code>string[] names = { \"Goblin\", \"Orc\", \"Dragon\" }</code>. El array tendrá Length = 3, con índices 0, 1, 2."
+    },
+    {
+      "id": "col_ex_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para declarar una lista de enemigos llamada `enemies`:",
+      "codeTemplate": "List<Enemy> enemies = new __________<Enemy>();",
+      "expectedAnswer": "List",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de colección...",
+      "hints": ["La colección dinámica genérica de C# se llama...", "Está en el namespace System.Collections.Generic"],
+      "explanation": "<code>new List&lt;Enemy&gt;()</code> crea una lista dinámica vacía que puede contener objetos Enemy. A diferencia de los arrays, la lista puede crecer y decrecer con Add() y Remove()."
+    },
+    {
+      "id": "col_ex_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para agregar un enemigo al final de la lista `enemies`:",
+      "codeTemplate": "enemies.__________(newEnemy);",
+      "expectedAnswer": "Add",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["El método de List<T> para añadir un elemento al final tiene 3 letras", "¿Cómo se dice 'añadir' en inglés?"],
+      "explanation": "<code>List.Add(item)</code> añade el elemento al <strong>final</strong> de la lista. La lista crece automáticamente. No hay un índice máximo predefinido como en los arrays."
+    },
+    {
+      "id": "col_ex_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la propiedad que devuelve cuántos elementos hay en la lista `enemies`:",
+      "codeTemplate": "int total = enemies.__________;",
+      "expectedAnswer": "Count",
+      "alternateAnswers": ["Count;"],
+      "placeholder": "Escribe el nombre de la propiedad...",
+      "hints": ["La propiedad de List<T> para el número de elementos empieza con C mayúscula", "Es diferente a Length de los arrays"],
+      "explanation": "<code>List.Count</code> devuelve el número de elementos actuales en la lista. A diferencia de <code>Array.Length</code>, <code>Count</code> cambia dinámicamente al agregar o eliminar elementos."
+    },
+    {
+      "id": "col_ex_008",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para eliminar un enemigo específico de la lista (por referencia al objeto):",
+      "codeTemplate": "enemies.__________(deadEnemy);",
+      "expectedAnswer": "Remove",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["El método para eliminar por referencia al objeto (no por índice) es...", "Remove vs RemoveAt: uno recibe el objeto, el otro recibe el índice"],
+      "explanation": "<code>List.Remove(item)</code> elimina el <strong>primer</strong> elemento que sea igual al objeto dado. Si el mismo objeto aparece varias veces, solo elimina la primera ocurrencia. Para eliminar por índice, usarías <code>RemoveAt(i)</code>."
+    },
+    {
+      "id": "col_ex_009",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la línea que verifica si la lista `inventory` contiene el objeto `sword` y lo imprime con Debug.Log si está presente.",
+      "expectedAnswer": "if (inventory.Contains(sword)) Debug.Log(\"Tiene espada\");",
+      "alternateAnswers": [
+        "if (inventory.Contains(sword)) { Debug.Log(\"Tiene espada\"); }",
+        "if (inventory.Contains(sword)) Debug.Log(sword);"
+      ],
+      "placeholder": "Escribe la verificación con Contains...",
+      "hints": [
+        "El método de List<T> para comprobar si existe un elemento es Contains(item)",
+        "Devuelve bool — úsalo directamente en un if"
+      ],
+      "explanation": "<code>inventory.Contains(sword)</code> devuelve <code>true</code> si sword está en la lista. Este método es de complejidad O(n) — revisa cada elemento. Para búsquedas frecuentes en listas grandes, considera usar un HashSet o Dictionary."
+    },
+    {
+      "id": "col_ex_010",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para declarar un diccionario que mapea nombres de jugadores (string) a sus puntuaciones (int):",
+      "codeTemplate": "Dictionary<__________, __________> scores = new Dictionary<string, int>();",
+      "expectedAnswer": "string, int",
+      "alternateAnswers": ["string,int"],
+      "placeholder": "Escribe los tipos clave y valor separados por coma...",
+      "hints": [
+        "Un diccionario tiene dos tipos genéricos: el tipo de la CLAVE y el tipo del VALOR",
+        "Las claves son nombres (string), los valores son puntuaciones (int)"
+      ],
+      "explanation": "<code>Dictionary&lt;string, int&gt;</code>: el primer tipo genérico es la clave (string — el nombre del jugador) y el segundo es el valor (int — su puntuación). Los diccionarios permiten acceso en O(1) por clave, mucho más rápido que buscar en una lista."
+    },
+    {
+      "id": "col_ex_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para agregar la entrada `\"Mario\" → 500` al diccionario `scores`:",
+      "codeTemplate": "scores.__________(\"Mario\", 500);",
+      "expectedAnswer": "Add",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["El método para agregar una entrada clave-valor a un diccionario es el mismo que en List", "Pero recibe DOS parámetros: la clave y el valor"],
+      "explanation": "<code>scores.Add(\"Mario\", 500)</code> agrega la entrada. Si ya existe la clave \"Mario\", lanza una <code>ArgumentException</code>. Para actualizar o agregar sin error, usa la asignación directa: <code>scores[\"Mario\"] = 500</code>."
+    },
+    {
+      "id": "col_ex_012",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para leer el valor asociado a la clave `\"Mario\"` del diccionario `scores`:",
+      "codeTemplate": "int puntos = scores[__________];",
+      "expectedAnswer": "\"Mario\"",
+      "alternateAnswers": ["'Mario'"],
+      "placeholder": "Escribe la clave entre comillas...",
+      "hints": ["Para acceder al valor de un diccionario, se usa la clave entre corchetes", "La clave es el string con el nombre del jugador"],
+      "explanation": "<code>scores[\"Mario\"]</code> devuelve el entero asociado a la clave \"Mario\". Si la clave no existe, lanza <code>KeyNotFoundException</code>. Para acceso seguro sin excepción, usa <code>TryGetValue(\"Mario\", out int puntos)</code>."
+    },
+    {
+      "id": "col_ex_013",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el método de acceso seguro al diccionario que no lanza excepción si la clave no existe:",
+      "codeTemplate": "int puntos;\nif (scores.__________(\"Mario\", out puntos))\n{\n    Debug.Log(\"Puntos: \" + puntos);\n}",
+      "expectedAnswer": "TryGetValue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método seguro...",
+      "hints": ["Este método 'intenta' obtener el valor y devuelve bool indicando si encontró la clave", "Su nombre empieza con 'Try'"],
+      "explanation": "<code>TryGetValue(clave, out valor)</code> devuelve <code>true</code> si la clave existe y asigna el valor a la variable out. Si no existe, devuelve <code>false</code> y el valor queda en su valor por defecto (0 para int). Nunca lanza excepción — es la forma segura de leer un Dictionary."
+    },
+    {
+      "id": "col_ex_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para verificar si la clave `\"Mario\"` existe en el diccionario `scores` antes de acceder:",
+      "codeTemplate": "if (scores.__________(\"Mario\"))\n{\n    Debug.Log(scores[\"Mario\"]);\n}",
+      "expectedAnswer": "ContainsKey",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": ["El método para verificar si existe una clave en el diccionario contiene la palabra 'Key'", "Empieza con 'Contains'"],
+      "explanation": "<code>ContainsKey(clave)</code> devuelve <code>true</code> si la clave existe. Combinarlo con el acceso por corchetes (primero verificar, luego acceder) es seguro pero hace dos búsquedas. <code>TryGetValue</code> hace una sola búsqueda y es más eficiente."
+    },
+    {
+      "id": "col_ex_015",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un `foreach` que itere sobre la lista `enemies` y llame a `e.TakeDamage(10)` en cada enemigo.",
+      "expectedAnswer": "foreach (Enemy e in enemies) { e.TakeDamage(10); }",
+      "alternateAnswers": [
+        "foreach (Enemy e in enemies)\n{\n    e.TakeDamage(10);\n}",
+        "foreach (var e in enemies) { e.TakeDamage(10); }"
+      ],
+      "placeholder": "Escribe el foreach completo...",
+      "hints": [
+        "Sintaxis: foreach (Tipo variable in colección) { cuerpo; }",
+        "El tipo de la variable debe ser Enemy (o var)"
+      ],
+      "explanation": "<code>foreach (Enemy e in enemies)</code> itera sobre cada elemento de la lista. La variable <code>e</code> toma el valor de cada Enemy en cada iteración. Es la forma más legible de recorrer colecciones cuando no necesitas el índice."
+    },
+    {
+      "id": "col_ex_016",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un `foreach` que itere sobre el diccionario `scores` (Dictionary<string,int>) e imprima cada par clave-valor con `Debug.Log(pair.Key + \": \" + pair.Value)`.",
+      "expectedAnswer": "foreach (KeyValuePair<string, int> pair in scores) { Debug.Log(pair.Key + \": \" + pair.Value); }",
+      "alternateAnswers": [
+        "foreach (var pair in scores) { Debug.Log(pair.Key + \": \" + pair.Value); }",
+        "foreach (KeyValuePair<string,int> pair in scores) { Debug.Log(pair.Key+\": \"+pair.Value); }"
+      ],
+      "placeholder": "Escribe el foreach completo con KeyValuePair...",
+      "hints": [
+        "Para iterar un Dictionary, la variable del foreach es de tipo KeyValuePair<K,V>",
+        "Usa pair.Key para la clave y pair.Value para el valor"
+      ],
+      "explanation": "<code>KeyValuePair&lt;string, int&gt;</code> es el tipo de cada elemento al iterar un diccionario. Cada par tiene <code>.Key</code> (la clave) y <code>.Value</code> (el valor). Alternativamente, <code>var pair</code> funciona igual gracias a la inferencia de tipos."
+    },
+    {
+      "id": "col_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para eliminar de la lista los enemigos muertos durante el foreach. ¿Qué error ocurriría si modificaras la lista mientras iteras con foreach? Completa con la instrucción correcta para acumular los muertos en otra lista:",
+      "codeTemplate": "List<Enemy> toRemove = new List<Enemy>();\nforeach (Enemy e in enemies)\n{\n    if (e.IsDead) toRemove.__________(e);\n}\nforeach (Enemy dead in toRemove)\n    enemies.Remove(dead);",
+      "expectedAnswer": "Add",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para acumular...",
+      "hints": ["Primero acumula los muertos en otra lista con Add", "Luego en un segundo foreach los eliminas de la lista principal"],
+      "explanation": "<code>toRemove.Add(e)</code> acumula los enemigos a eliminar. Modificar la colección mientras se itera con <code>foreach</code> lanzaría <code>InvalidOperationException</code>. El patrón correcto es: recopilar en una lista separada, luego eliminar en un segundo recorrido."
+    },
+    {
+      "id": "col_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para acceder al ÚLTIMO elemento del array `checkpoints` usando su propiedad de longitud:",
+      "codeTemplate": "Vector3 last = checkpoints[checkpoints.__________ - 1];",
+      "expectedAnswer": "Length",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad de longitud de arrays...",
+      "hints": ["La propiedad del array que da el número de elementos es Length", "El último índice siempre es Length - 1 (porque los índices van de 0 a Length-1)"],
+      "explanation": "<code>checkpoints[checkpoints.Length - 1]</code> accede al último elemento. Si Length es 5, los índices son 0,1,2,3,4 — por eso el último es <code>Length - 1 = 4</code>. Acceder a <code>[Length]</code> lanzaría <code>IndexOutOfRangeException</code>."
+    },
+    {
+      "id": "col_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe las dos líneas necesarias para: (1) declarar una lista `List<string>` llamada `log`, y (2) agregar el string `\"Partida iniciada\"` a esa lista.",
+      "expectedAnswer": "List<string> log = new List<string>();\nlog.Add(\"Partida iniciada\");",
+      "alternateAnswers": [
+        "List<string> log = new List<string>(); log.Add(\"Partida iniciada\");"
+      ],
+      "placeholder": "Escribe las dos líneas...",
+      "hints": [
+        "Línea 1: declara la lista con new List<string>()",
+        "Línea 2: usa .Add() para agregar el string"
+      ],
+      "explanation": "Primero se declara: <code>List&lt;string&gt; log = new List&lt;string&gt;();</code> — crea una lista vacía. Luego se agrega: <code>log.Add(\"Partida iniciada\");</code> — la lista ahora tiene Count == 1."
+    },
+    {
+      "id": "col_ex_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para usar un `for` con índice (no foreach) sobre la lista `waypoints`, accediendo a cada elemento por índice:",
+      "codeTemplate": "for (int i = 0; i < waypoints.__________; i++)\n{\n    MoveTo(waypoints[i]);\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad que da el tamaño de la lista...",
+      "hints": ["Para List<T>, la propiedad que da el número de elementos es Count (no Length)", "Length es para arrays, Count es para listas y otras colecciones genéricas"],
+      "explanation": "Para <code>List&lt;T&gt;</code>, el tamaño es <code>Count</code>, no <code>Length</code>. Usar <code>for</code> con índice sobre una lista se hace igual que con arrays: <code>waypoints[i]</code> para acceder. La ventaja sobre <code>foreach</code> es que tienes acceso al índice <code>i</code>."
+    }
+  ]
+}

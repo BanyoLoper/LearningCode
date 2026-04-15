@@ -1,0 +1,360 @@
+{
+  "id": "virtual_override",
+  "title": "Virtual y Override",
+  "icon": "🔧",
+  "color": "#3F51B5",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "La palabra clave virtual",
+        "type": "definition",
+        "content": "La palabra clave <code>virtual</code> se aplica a un método de la <strong>clase base</strong> para indicar que las clases derivadas <em>pueden</em> reemplazar (sobrescribir) su implementación. Un método <code>virtual</code> ya tiene un cuerpo con comportamiento por defecto; la clase derivada puede usarlo tal cual o reemplazarlo con <code>override</code>. Sin <code>virtual</code>, el método no puede ser sobrescrito. Esto es el fundamento del <strong>polimorfismo en tiempo de ejecución</strong>."
+      },
+      {
+        "id": "doc-2",
+        "title": "virtual y override en acción",
+        "type": "code",
+        "content": "public class Animal\n{\n    public string Name;\n\n    public Animal(string name)\n    {\n        Name = name;\n    }\n\n    // virtual: las clases derivadas PUEDEN sobrescribir este método\n    public virtual void MakeSound()\n    {\n        Debug.Log(Name + \" makes a generic sound.\");\n    }\n\n    public virtual void Attack()\n    {\n        Debug.Log(Name + \" attacks for 10 damage.\");\n    }\n}\n\npublic class Dog : Animal\n{\n    public Dog(string name) : base(name) { }\n\n    // override: reemplaza la implementación de Animal.MakeSound\n    public override void MakeSound()\n    {\n        Debug.Log(Name + \" says: Woof!\");\n    }\n\n    // Dog no sobrescribe Attack(), usa la versión de Animal\n}\n\npublic class Cat : Animal\n{\n    public Cat(string name) : base(name) { }\n\n    public override void MakeSound()\n    {\n        Debug.Log(Name + \" says: Meow!\");\n    }\n\n    public override void Attack()\n    {\n        // base.Attack() llama a la implementación del padre ANTES de agregar lógica propia\n        base.Attack();\n        Debug.Log(Name + \" scratches for 5 extra damage!\");\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Llamar al padre con base.Method()",
+        "type": "note",
+        "content": "Dentro de un método marcado con <code>override</code>, puedes llamar a la implementación de la clase base usando <code>base.NombreMetodo()</code>. Esto es útil cuando quieres <em>extender</em> el comportamiento del padre en lugar de reemplazarlo completamente. Por ejemplo, <code>base.Attack()</code> ejecuta el daño base y luego puedes agregar el daño extra de la clase derivada."
+      },
+      {
+        "id": "doc-4",
+        "title": "Polimorfismo: el poder del virtual/override",
+        "type": "code",
+        "content": "// Polimorfismo: un array de Animal puede contener Dog y Cat\nAnimal[] animals = new Animal[3];\nanimals[0] = new Animal(\"Generic\");\nanimals[1] = new Dog(\"Rex\");\nanimals[2] = new Cat(\"Whiskers\");\n\n// C# decide en TIEMPO DE EJECUCIÓN qué versión de MakeSound() llamar\nforeach (Animal a in animals)\n{\n    a.MakeSound();\n    // Output:\n    // Generic makes a generic sound.\n    // Rex says: Woof!\n    // Whiskers says: Meow!\n}\n\n// Esto funciona porque MakeSound() es virtual/override\n// Si no fuera virtual, todos llamarían Animal.MakeSound()"
+      },
+      {
+        "id": "doc-5",
+        "title": "Diferencia importante: new vs override",
+        "type": "note",
+        "content": "<strong><code>override</code></strong> reemplaza el método virtual del padre. Cuando usas polimorfismo (referencia de tipo base que apunta a objeto derivado), se llama la versión <em>derivada</em>.<br><br><strong><code>new</code></strong> <em>oculta</em> el método del padre, pero <strong>no</strong> es polimórfico. Si tienes <code>Animal a = new Dog()</code> y <code>Dog.MakeSound()</code> usa <code>new</code>, se llamará <code>Animal.MakeSound()</code>, no <code>Dog.MakeSound()</code>. Esto es <strong>ocultación de método</strong> (<em>method hiding</em>), NO sobrescritura. Casi siempre debes usar <code>override</code> en lugar de <code>new</code>."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "vov_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué indica la palabra clave <code>virtual</code> en un método de la clase base?",
+      "options": [
+        "Que las clases derivadas pueden sobrescribir ese método",
+        "Que el método no tiene implementación y debe ser definido en clases derivadas",
+        "Que el método no puede ser heredado",
+        "Que el método se ejecuta en tiempo de compilación",
+        "Que el método pertenece a una interfaz"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>virtual</code> indica que el método <strong>puede ser sobrescrito</strong> en clases derivadas usando <code>override</code>. A diferencia de <code>abstract</code>, un método <code>virtual</code> <em>sí tiene</em> una implementación por defecto en la clase base."
+    },
+    {
+      "id": "vov_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué palabra clave se usa en la clase derivada para reemplazar la implementación de un método <code>virtual</code> del padre?",
+      "options": [
+        "override",
+        "virtual",
+        "new",
+        "base",
+        "replace"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>override</code> se usa en la clase derivada para indicar que esta versión del método <strong>reemplaza</strong> la implementación virtual del padre. Sin <code>override</code>, el compilador generará una advertencia y el método no participará en el polimorfismo."
+    },
+    {
+      "id": "vov_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia principal entre un método <code>virtual</code> y un método <code>abstract</code>?",
+      "options": [
+        "virtual tiene implementación por defecto; abstract no tiene cuerpo y obliga a las clases derivadas a implementarlo",
+        "virtual no puede ser sobrescrito; abstract sí",
+        "abstract puede tener cuerpo; virtual no",
+        "No hay diferencia, son sinónimos",
+        "virtual solo funciona con clases selladas; abstract funciona con todas"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un método <code>virtual</code> <strong>tiene cuerpo</strong> (implementación por defecto). Un método <code>abstract</code> <strong>no tiene cuerpo</strong> y <em>obliga</em> a las clases derivadas concretas a implementarlo. Además, <code>abstract</code> solo puede estar en clases <code>abstract</code>."
+    },
+    {
+      "id": "vov_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En el siguiente código: <code>public override void Attack() { base.Attack(); Debug.Log(\"Extra!\"); }</code>. ¿Qué hace <code>base.Attack()</code>?",
+      "options": [
+        "Ejecuta la implementación de Attack() de la clase padre antes de agregar lógica extra",
+        "Cancela la sobrescritura y usa solo la versión del padre",
+        "Llama al constructor de la clase base",
+        "Lanza una excepción si el padre no tiene Attack()",
+        "Nada, es código redundante"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>base.Attack()</code> dentro de un método <code>override</code> <strong>ejecuta la implementación del método en la clase padre</strong>. Esto permite <em>extender</em> el comportamiento: primero se hace lo que hace el padre y luego se agrega comportamiento extra."
+    },
+    {
+      "id": "vov_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Dado: <code>Animal a = new Dog(\"Rex\");</code> donde <code>Dog.MakeSound()</code> usa <code>new</code> (no <code>override</code>). ¿Qué versión de <code>MakeSound()</code> se ejecuta al llamar <code>a.MakeSound()</code>?",
+      "options": [
+        "La versión de Animal (ocultación, no polimorfismo)",
+        "La versión de Dog",
+        "Se produce un error de compilación",
+        "Se produce un error en tiempo de ejecución",
+        "Depende del compilador"
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <code>new</code> (ocultación de método), la referencia es de tipo <code>Animal</code>, por lo que se llama <code>Animal.MakeSound()</code>. Esto es <em>method hiding</em>. Con <code>override</code>, C# usa <strong>despacho dinámico</strong> y llamaría <code>Dog.MakeSound()</code>. Esta es la diferencia crucial entre <code>new</code> y <code>override</code>."
+    },
+    {
+      "id": "vov_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué sucede si intentas usar <code>override</code> en un método de la clase derivada, pero el método del padre NO está marcado como <code>virtual</code> ni <code>abstract</code>?",
+      "options": [
+        "Error de compilación: no se puede sobrescribir un método no virtual",
+        "El código compila y funciona igual que con virtual",
+        "El método se convierte automáticamente en virtual",
+        "Se ejecuta el método del padre en su lugar",
+        "Advertencia en tiempo de ejecución"
+      ],
+      "correctIndex": 0,
+      "explanation": "Si el método de la clase base no es <code>virtual</code> ni <code>abstract</code>, intentar usar <code>override</code> en la derivada produce un <strong>error de compilación</strong>. Solo los métodos explícitamente marcados como <code>virtual</code> o <code>abstract</code> pueden ser sobrescritos."
+    },
+    {
+      "id": "vov_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la principal ventaja del polimorfismo con <code>virtual</code>/<code>override</code> al trabajar con un array de tipo base?",
+      "options": [
+        "Cada objeto ejecuta su propia versión del método según su tipo real en tiempo de ejecución",
+        "Todos los objetos ejecutan el mismo método de la clase base",
+        "Se reduce el uso de memoria",
+        "Los métodos se ejecutan más rápido",
+        "Se evita tener que usar herencia"
+      ],
+      "correctIndex": 0,
+      "explanation": "El polimorfismo con <code>virtual</code>/<code>override</code> permite que un array de tipo <code>Animal[]</code> contenga <code>Dog</code>, <code>Cat</code>, etc., y al llamar <code>MakeSound()</code> en cada elemento, C# llama automáticamente la versión correcta según el <strong>tipo real</strong> del objeto en tiempo de ejecución (<em>dynamic dispatch</em>)."
+    },
+    {
+      "id": "vov_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Una clase derivada que tiene un método con <code>override</code>, ¿puede a su vez permitir que sus propias clases derivadas lo sobrescriban?",
+      "options": [
+        "Sí, porque un método override es implícitamente virtual también",
+        "No, override cancela la virtualidad del método",
+        "Solo si se agrega virtual explícitamente",
+        "Solo en clases abstractas",
+        "No es posible en C#"
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, un método marcado con <code>override</code> es <strong>implícitamente virtual</strong>, por lo que las clases que hereden de la derivada también pueden sobrescribirlo con <code>override</code>. Si deseas evitar esto, debes usar <code>sealed override</code>."
+    },
+    {
+      "id": "vov_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Character\n{\n    public virtual void TakeDamage(int dmg)\n    {\n        Debug.Log(\"Character takes \" + dmg + \" damage.\");\n    }\n}\n\npublic class Knight : Character\n{\n    public override void TakeDamage(int dmg)\n    {\n        int reduced = dmg / 2;\n        Debug.Log(\"Knight blocks! Takes only \" + reduced);\n    }\n}",
+      "question": "¿Qué palabra clave en <code>Character.TakeDamage</code> permite que <code>Knight</code> pueda sobrescribirlo?",
+      "target": "virtual",
+      "acceptedAnswers": ["virtual"],
+      "hints": [
+        "Busca la palabra clave entre public y void",
+        "Permite que las clases derivadas puedan reemplazar la implementación",
+        "Es una palabra que significa 'virtual'"
+      ],
+      "explanation": "La palabra clave <code>virtual</code> en <code>public virtual void TakeDamage</code> es la que <strong>permite</strong> que <code>Knight</code> pueda usar <code>override</code> para reemplazar la implementación."
+    },
+    {
+      "id": "vov_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Enemy\n{\n    public string Name;\n    public virtual void Attack()\n    {\n        Debug.Log(Name + \" attacks for 10 damage.\");\n    }\n}\n\npublic class Vampire : Enemy\n{\n    public override void Attack()\n    {\n        base.Attack();\n        Debug.Log(Name + \" drains 5 HP!\");\n    }\n}",
+      "question": "¿Qué hace específicamente <code>base.Attack()</code> dentro de <code>Vampire.Attack()</code>?",
+      "target": "ejecuta el método Attack de Enemy",
+      "acceptedAnswers": ["ejecuta el método Attack de Enemy", "llama a Enemy.Attack()", "ejecuta la implementación del padre", "llama al método Attack del padre"],
+      "hints": [
+        "base hace referencia a la clase padre (Enemy)",
+        "Se ejecuta antes del Debug.Log de Vampire",
+        "Hace que se muestre primero el mensaje del Enemy y luego el del Vampire"
+      ],
+      "explanation": "<code>base.Attack()</code> ejecuta <code>Enemy.Attack()</code>, mostrando el mensaje del daño base. Luego el código de <code>Vampire</code> agrega el drenaje de vida. Esto extiende el comportamiento del padre en lugar de reemplazarlo completamente."
+    },
+    {
+      "id": "vov_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Animal\n{\n    public virtual void MakeSound()\n    {\n        Debug.Log(\"...\");\n    }\n}\n\npublic class Dog : Animal\n{\n    public new void MakeSound()\n    {\n        Debug.Log(\"Woof!\");\n    }\n}\n\n// En otro lugar:\nAnimal a = new Dog();\na.MakeSound();",
+      "question": "¿Qué mensaje se imprime al ejecutar <code>a.MakeSound()</code> y por qué?",
+      "target": "...",
+      "acceptedAnswers": ["...", "\"...\"", "puntos suspensivos", "el mensaje de Animal"],
+      "hints": [
+        "Dog usa 'new', no 'override'",
+        "La variable a es de tipo Animal",
+        "Con 'new' no hay polimorfismo: se usa el tipo de la referencia, no del objeto real"
+      ],
+      "explanation": "Se imprime <code>\"...\"</code> (la versión de <code>Animal</code>) porque <code>Dog</code> usa <code>new</code> en lugar de <code>override</code>. Con <code>new</code> hay <em>ocultación de método</em>, no polimorfismo. La referencia es de tipo <code>Animal</code>, así que C# llama <code>Animal.MakeSound()</code>."
+    },
+    {
+      "id": "vov_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "Animal[] enemies = new Animal[3];\nenemies[0] = new Dog(\"Rex\");\nenemies[1] = new Cat(\"Luna\");\nenemies[2] = new Animal(\"Basic\");\n\nforeach (Animal a in enemies)\n{\n    a.MakeSound();\n}",
+      "question": "¿Qué concepto de POO permite que cada elemento del array llame a su propia versión de <code>MakeSound()</code>?",
+      "target": "polimorfismo",
+      "acceptedAnswers": ["polimorfismo", "polymorphism", "polimorfismo en tiempo de ejecución", "runtime polymorphism"],
+      "hints": [
+        "El array es de tipo Animal[], pero contiene Dog y Cat",
+        "Cada objeto ejecuta su propia implementación del método",
+        "Esta es una de las 4 características fundamentales de la POO"
+      ],
+      "explanation": "El concepto es el <strong>polimorfismo</strong>. Gracias a que <code>MakeSound()</code> es <code>virtual</code> en <code>Animal</code> y cada subclase lo sobrescribe con <code>override</code>, C# determina en tiempo de ejecución qué versión del método ejecutar según el tipo real del objeto."
+    },
+    {
+      "id": "vov_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class Weapon\n{\n    public void Shoot() // Sin virtual\n    {\n        Debug.Log(\"Pew!\");\n    }\n}\n\npublic class RocketLauncher : Weapon\n{\n    public override void Shoot() // Error aquí\n    {\n        Debug.Log(\"BOOM!\");\n    }\n}",
+      "question": "¿Por qué este código produce un error de compilación?",
+      "target": "Shoot no es virtual",
+      "acceptedAnswers": ["Shoot no es virtual", "el método Shoot no está marcado como virtual", "no se puede sobrescribir un método no virtual", "falta virtual en Weapon.Shoot"],
+      "hints": [
+        "override requiere que el método del padre tenga cierta característica",
+        "Observa la declaración de Shoot() en Weapon",
+        "Le falta una palabra clave a Shoot() en Weapon"
+      ],
+      "explanation": "El error ocurre porque <code>Weapon.Shoot()</code> no está marcado como <code>virtual</code>. Para usar <code>override</code> en la clase derivada, el método de la clase base <strong>debe</strong> ser <code>virtual</code> o <code>abstract</code>."
+    },
+    {
+      "id": "vov_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el siguiente código:",
+      "code": "public class A\n{\n    public virtual void DoThing() { Debug.Log(\"A\"); }\n}\n\npublic class B : A\n{\n    public override void DoThing() { Debug.Log(\"B\"); }\n}\n\npublic class C : B\n{\n    public override void DoThing() { Debug.Log(\"C\"); }\n}\n\nA obj = new C();\nobj.DoThing();",
+      "question": "¿Qué se imprime al llamar <code>obj.DoThing()</code>?",
+      "target": "C",
+      "acceptedAnswers": ["C", "\"C\""],
+      "hints": [
+        "obj es de tipo A pero apunta a un objeto C",
+        "El método usa override en toda la cadena",
+        "El polimorfismo usa el tipo REAL del objeto, no el tipo de la referencia"
+      ],
+      "explanation": "Se imprime <code>\"C\"</code>. Aunque la referencia <code>obj</code> es de tipo <code>A</code>, el objeto real es de tipo <code>C</code>. Gracias al polimorfismo con <code>override</code>, C# usa el tipo real del objeto en tiempo de ejecución (<em>dynamic dispatch</em>), llamando <code>C.DoThing()</code>."
+    },
+    {
+      "id": "vov_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método para que pueda ser sobrescrito por clases derivadas:",
+      "codeTemplate": "public class Enemy\n{\n    public ________ void TakeDamage(int dmg)\n    {\n        Debug.Log(\"Ouch! \" + dmg);\n    }\n}",
+      "expectedAnswer": "virtual",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave",
+      "hints": [
+        "Esta palabra clave va entre el modificador de acceso y el tipo de retorno",
+        "Permite que las clases derivadas usen 'override'",
+        "Significa 'virtual'"
+      ],
+      "explanation": "La palabra clave <code>virtual</code> permite que clases derivadas sobrescriban <code>TakeDamage</code> usando <code>override</code>. Sin <code>virtual</code>, el método no puede ser sobrescrito."
+    },
+    {
+      "id": "vov_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método en la clase derivada para que sobrescriba la implementación del padre:",
+      "codeTemplate": "public class Boss : Enemy\n{\n    public ________ void TakeDamage(int dmg)\n    {\n        Debug.Log(\"Boss takes reduced damage: \" + dmg / 2);\n    }\n}",
+      "expectedAnswer": "override",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave",
+      "hints": [
+        "Esta palabra clave va entre el modificador de acceso y el tipo de retorno",
+        "Indica que esta versión reemplaza la implementación virtual del padre",
+        "Significa 'sobrescribir'"
+      ],
+      "explanation": "La palabra clave <code>override</code> indica que este método <strong>reemplaza</strong> la implementación <code>virtual</code> de <code>Enemy.TakeDamage</code>. Esto activa el polimorfismo en tiempo de ejecución."
+    },
+    {
+      "id": "vov_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método de <code>Mage</code> para que primero ejecute la lógica de <code>Character.Attack()</code> y luego agregue su propio efecto:",
+      "codeTemplate": "public class Mage : Character\n{\n    public override void Attack()\n    {\n        ________.Attack();\n        Debug.Log(\"Mage adds fire damage!\");\n    }\n}",
+      "expectedAnswer": "base",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave",
+      "hints": [
+        "Para referirte a la implementación del padre, usas una palabra clave especial",
+        "Es la misma palabra que usas en el constructor para llamar al constructor del padre",
+        "La palabra clave es 'base'"
+      ],
+      "explanation": "<code>base.Attack()</code> llama a la implementación de <code>Character.Attack()</code> desde dentro del método sobrescrito. Esto extiende el comportamiento del padre sin reemplazarlo completamente."
+    },
+    {
+      "id": "vov_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración completa del método <code>Heal</code> en la clase base <code>Medic</code> que devuelve <code>void</code>, recibe un parámetro <code>int amount</code> y puede ser sobrescrito. Solo la firma (sin cuerpo).",
+      "codeTemplate": null,
+      "expectedAnswer": "public virtual void Heal(int amount)",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "Necesitas: modificador de acceso, virtual, tipo de retorno, nombre, parámetros",
+        "El modificador es public, el tipo de retorno es void",
+        "La palabra clave para permitir sobrescritura va entre public y void"
+      ],
+      "explanation": "La declaración es <code>public virtual void Heal(int amount)</code>. La palabra clave <code>virtual</code> entre el modificador de acceso y el tipo de retorno es lo que permite que las clases derivadas puedan sobrescribir este método."
+    },
+    {
+      "id": "vov_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración completa del método <code>Heal</code> en la clase derivada <code>SuperMedic : Medic</code> que sobrescribe el método del padre. Solo la firma (sin cuerpo).",
+      "codeTemplate": null,
+      "expectedAnswer": "public override void Heal(int amount)",
+      "alternateAnswers": [],
+      "placeholder": "public ...",
+      "hints": [
+        "La firma debe ser idéntica a la del padre, pero con una palabra clave diferente",
+        "La palabra clave que reemplaza 'virtual' en la clase derivada es...",
+        "Usa 'override' en lugar de 'virtual'"
+      ],
+      "explanation": "La declaración es <code>public override void Heal(int amount)</code>. La firma debe ser idéntica a la del método virtual del padre, pero usando <code>override</code> en lugar de <code>virtual</code>."
+    },
+    {
+      "id": "vov_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el código para que <code>Dragon.Attack()</code> sobrescriba el método virtual del padre Y llame a la implementación del padre al inicio:",
+      "codeTemplate": "public class Dragon : Monster\n{\n    public ________ void Attack()\n    {\n        ________.Attack();\n        Debug.Log(\"Dragon breathes fire!\");\n    }\n}",
+      "expectedAnswer": "override | base",
+      "alternateAnswers": [],
+      "placeholder": "palabra clave | palabra clave",
+      "hints": [
+        "Primer hueco: palabra clave que indica que este método reemplaza al del padre",
+        "Segundo hueco: palabra clave para llamar al método del padre",
+        "Primer hueco: 'override', Segundo hueco: 'base'"
+      ],
+      "explanation": "El primer hueco es <code>override</code> (para indicar que se sobrescribe el método virtual) y el segundo es <code>base</code> (para llamar a <code>Monster.Attack()</code> primero). Resultado: <code>public override void Attack()</code> con <code>base.Attack()</code> adentro."
+    }
+  ]
+}

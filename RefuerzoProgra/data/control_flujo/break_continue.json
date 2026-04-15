@@ -1,0 +1,374 @@
+{
+  "id": "break_continue",
+  "title": "Break y Continue",
+  "icon": "⏭️",
+  "documentation": {
+    "sections": [
+      {
+        "id": "break-def",
+        "title": "La instrucción break",
+        "type": "code",
+        "content": "// break termina el bucle INMEDIATAMENTE\nfor (int i = 0; i < 10; i++)\n{\n    if (i == 5)\n        break;  // Sale del bucle cuando i es 5\n    Debug.Log(i);  // Imprime: 0, 1, 2, 3, 4\n}\n// La ejecución continúa AQUÍ después del break"
+      },
+      {
+        "id": "continue-def",
+        "title": "La instrucción continue",
+        "type": "code",
+        "content": "// continue salta a la siguiente iteración\nfor (int i = 0; i < 5; i++)\n{\n    if (i == 2)\n        continue;  // Salta cuando i es 2\n    Debug.Log(i);  // Imprime: 0, 1, 3, 4  (el 2 se omite)\n}\n// El bucle CONTINÚA — solo se saltan las iteraciones marcadas"
+      },
+      {
+        "id": "break-vs-continue",
+        "title": "Diferencia clave: break vs continue",
+        "type": "note",
+        "content": "<strong>break</strong> — Sale completamente del bucle. El código después del bucle se ejecuta.<br><strong>continue</strong> — Salta el resto de la iteración actual y va a la siguiente. El bucle sigue ejecutándose.<br><br>Regla mnemotécnica: <em>break rompe el bucle</em>, <em>continue continúa el bucle desde la siguiente iteración</em>."
+      },
+      {
+        "id": "return-vs-break",
+        "title": "return vs break",
+        "type": "note",
+        "content": "<strong>return</strong> — Sale del <em>método completo</em> (no solo del bucle).<br><strong>break</strong> — Sale solo del bucle actual, el método sigue ejecutándose.<br><br>Si usas <code>return</code> dentro de un bucle en un método <code>void</code>, el método termina. Si usas <code>break</code>, solo sale del bucle y el código del método después del bucle continúa."
+      },
+      {
+        "id": "unity-pattern",
+        "title": "🎮 Patrones en Unity",
+        "type": "analogy",
+        "content": "En Unity es muy común usar <strong>continue</strong> para saltarse enemigos muertos en un loop:<br><pre>foreach (Enemy e in enemies) {\n    if (e.IsDead) continue;  // Ignora muertos\n    e.UpdateAI();            // Solo procesa vivos\n}</pre><br>Y <strong>break</strong> para encontrar el primer enemigo cercano y dejar de buscar:<br><pre>Enemy nearest = null;\nforeach (Enemy e in enemies) {\n    if (Vector3.Distance(transform.position, e.transform.position) < 5f) {\n        nearest = e;\n        break;  // Encontramos uno, no necesitamos seguir\n    }\n}</pre>"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "bc_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace la instrucción `break` dentro de un bucle `for`?",
+      "options": [
+        "Termina el bucle inmediatamente y el programa continúa después del bucle",
+        "Salta la iteración actual y pasa a la siguiente",
+        "Pausa el bucle hasta que se llame a una instrucción resume",
+        "Reinicia el bucle desde el principio (i = 0 de nuevo)",
+        "Sale del método completo donde está el bucle"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>break</code> termina el bucle <strong>inmediatamente</strong>. La ejecución continúa con el código que está después del cierre del bucle (<code>}</code>). No reinicia el bucle ni salta solo una iteración."
+    },
+    {
+      "id": "bc_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace la instrucción `continue` dentro de un bucle `for`?",
+      "options": [
+        "Termina el bucle y sale de él completamente",
+        "Salta el resto del cuerpo de la iteración actual y pasa a la siguiente iteración",
+        "Hace una pausa de un frame en Unity",
+        "Reinicia el contador del bucle a 0",
+        "Sale del método actual"
+      ],
+      "correctIndex": 1,
+      "explanation": "<code>continue</code> salta el <strong>resto del cuerpo de la iteración actual</strong> y pasa directamente a la siguiente. El bucle no termina — sigue ejecutándose desde la próxima iteración. El código que está después del <code>continue</code> en esa iteración no se ejecuta."
+    },
+    {
+      "id": "bc_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado este código, ¿qué valores se imprimen?\n```\nfor (int i = 0; i < 5; i++) {\n    if (i == 3) break;\n    Debug.Log(i);\n}\n```",
+      "options": [
+        "0, 1, 2, 3, 4",
+        "0, 1, 2",
+        "3, 4",
+        "0, 1, 2, 4",
+        "No se imprime nada"
+      ],
+      "correctIndex": 1,
+      "explanation": "Cuando <code>i == 3</code>, el <code>break</code> termina el bucle antes de imprimir el 3. Se imprimen: 0, 1, 2. El valor 3 nunca llega al <code>Debug.Log</code> porque <code>break</code> ejecuta antes."
+    },
+    {
+      "id": "bc_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Dado este código, ¿qué valores se imprimen?\n```\nfor (int i = 0; i < 5; i++) {\n    if (i == 3) continue;\n    Debug.Log(i);\n}\n```",
+      "options": [
+        "0, 1, 2, 3, 4",
+        "0, 1, 2",
+        "0, 1, 2, 4",
+        "3, 4",
+        "No se imprime nada"
+      ],
+      "correctIndex": 2,
+      "explanation": "Cuando <code>i == 3</code>, el <code>continue</code> salta el <code>Debug.Log(i)</code> para esa iteración y pasa a la siguiente (i=4). Se imprimen: 0, 1, 2, 4. El 3 se omite pero el bucle continúa."
+    },
+    {
+      "id": "bc_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia principal entre `break` y `return` dentro de un bucle?",
+      "options": [
+        "No hay diferencia, ambos hacen exactamente lo mismo",
+        "`break` sale del bucle pero el método continúa; `return` sale del método completo",
+        "`return` sale solo del bucle; `break` sale del método completo",
+        "`break` funciona en for y `return` funciona en while",
+        "`return` salta una iteración; `break` termina el bucle"
+      ],
+      "correctIndex": 1,
+      "explanation": "<code>break</code> sale solo del bucle actual — el código del método que sigue después del bucle continúa ejecutándose. <code>return</code> sale del método completo — nada después de <code>return</code> en el método se ejecuta. En métodos que devuelven valor, <code>return</code> también entrega ese valor."
+    },
+    {
+      "id": "bc_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un bucle `foreach`, ¿qué instrucción usarías para procesar solo los enemigos con vida y saltarte los que están muertos?",
+      "options": [
+        "break",
+        "continue",
+        "return",
+        "skip",
+        "next"
+      ],
+      "correctIndex": 1,
+      "explanation": "<code>continue</code> es ideal para este patrón: <code>if (enemy.IsDead) continue;</code> salta el procesamiento para ese enemigo y pasa al siguiente. El bucle sigue — todos los enemigos son recorridos, pero los muertos son ignorados. <code>break</code> pararía el recorrido por completo."
+    },
+    {
+      "id": "bc_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué pasa con un `break` dentro de un bucle anidado (un for dentro de otro for)?",
+      "options": [
+        "Rompe ambos bucles (el interno y el externo)",
+        "Rompe solo el bucle interno (el más cercano que lo contiene)",
+        "Es un error de compilación — break no puede estar en bucles anidados",
+        "Rompe el bucle externo pero no el interno",
+        "Sale del método completo"
+      ],
+      "correctIndex": 1,
+      "explanation": "En C#, <code>break</code> solo rompe el <strong>bucle más cercano</strong> que lo contiene. Si tienes un <code>for</code> dentro de otro <code>for</code>, el <code>break</code> en el interior solo rompe el bucle interno. Para salir del bucle externo desde el interno necesitarías un flag booleano o restructurar el código."
+    },
+    {
+      "id": "bc_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un `switch`, ¿para qué se usa `break` al final de cada `case`?",
+      "options": [
+        "Para indicar que el case tiene código de ejecución",
+        "Para terminar el case y evitar que la ejecución caiga al siguiente case (fall-through)",
+        "Para saltar a otro case específico",
+        "Para terminar el método que contiene el switch",
+        "Es opcional — C# no requiere break en switch"
+      ],
+      "correctIndex": 1,
+      "explanation": "En C#, <code>break</code> al final de un <code>case</code> evita el <strong>fall-through</strong> (caída al siguiente case). C# requiere <code>break</code> explícito en cada case — no lo poner es error de compilación (a diferencia de C/Java que sí hacen fall-through). Excepción: cases vacíos seguidos pueden omitirlo."
+    },
+    {
+      "id": "bc_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este bucle de búsqueda:",
+      "code": "Enemy firstAlive = null;\nforeach (Enemy e in enemyList)\n{\n    if (!e.IsDead)\n    {\n        firstAlive = e;\n        break;\n    }\n}",
+      "question": "¿Por qué se usa `break` aquí en lugar de `continue`?",
+      "target": "break",
+      "acceptedAnswers": [
+        "encontró lo que busca", "ya encontró el primero", "no necesita seguir buscando",
+        "para salir del bucle al encontrar el primero", "optimización", "para no recorrer todo"
+      ],
+      "hints": [
+        "La variable se llama 'firstAlive' — solo se necesita el primero",
+        "Una vez asignado 'firstAlive', ¿tiene sentido seguir revisando más enemigos?",
+        "break se usa cuando ya se encontró lo que se buscaba y no tiene caso continuar iterando"
+      ],
+      "explanation": "Se usa <code>break</code> porque el objetivo es encontrar el <strong>primer</strong> enemigo vivo. Una vez encontrado y asignado a <code>firstAlive</code>, seguir recorriendo la lista sería innecesario (y menos eficiente). <code>break</code> sale del bucle inmediatamente, ahorrando iteraciones."
+    },
+    {
+      "id": "bc_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este método:",
+      "code": "void ProcessEnemies()\n{\n    foreach (Enemy e in enemies)\n    {\n        if (e.IsDead) continue;\n        e.UpdateAI();\n        e.UpdateAnimation();\n    }\n    SaveProgress();\n}",
+      "question": "Cuando `e.IsDead` es true, ¿se ejecuta `SaveProgress()` en esa iteración?",
+      "target": "continue",
+      "acceptedAnswers": [
+        "sí", "sí se ejecuta", "sí, SaveProgress se ejecuta", "sí siempre",
+        "sí, al final del método"
+      ],
+      "hints": [
+        "continue solo salta el RESTO del cuerpo del bucle en esa iteración",
+        "SaveProgress() está FUERA del bucle foreach — ¿continue lo afecta?",
+        "Piensa: continue solo actúa dentro del bucle, no en el código posterior al bucle"
+      ],
+      "explanation": "Sí, <code>SaveProgress()</code> se ejecuta siempre. <code>continue</code> solo salta el resto del cuerpo del <strong>bucle</strong> (UpdateAI y UpdateAnimation para el enemigo muerto). <code>SaveProgress()</code> está fuera del foreach y siempre se ejecuta al terminar el método."
+    },
+    {
+      "id": "bc_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código con bucles anidados:",
+      "code": "for (int i = 0; i < 3; i++)\n{\n    for (int j = 0; j < 3; j++)\n    {\n        if (j == 1) break;\n        Debug.Log(i + \",\" + j);\n    }\n}",
+      "question": "¿Cuántas líneas imprime este código en total?",
+      "target": "j == 1",
+      "acceptedAnswers": ["3", "tres", "3 líneas", "tres líneas"],
+      "hints": [
+        "El break está en el bucle INTERNO (j) — solo rompe ese bucle",
+        "Para cada valor de i (0,1,2), ¿cuántas veces se imprime antes del break?",
+        "j empieza en 0: imprime (i,0), luego j=1 activa el break — solo 1 impresión por iteración de i"
+      ],
+      "explanation": "Se imprimen <strong>3 líneas</strong>: (0,0), (1,0), (2,0). Para cada valor de i, el bucle j empieza en j=0 (se imprime), luego j=1 activa <code>break</code> saliendo del bucle interno. El bucle externo (i) sigue su curso. 3 iteraciones de i × 1 impresión cada una = 3 líneas."
+    },
+    {
+      "id": "bc_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa estos dos fragmentos y compáralos:",
+      "code": "// Fragmento A\nforeach (Item i in inventory)\n{\n    if (i.IsEquipped) break;\n    i.Decay();\n}\n\n// Fragmento B\nforeach (Item i in inventory)\n{\n    if (i.IsEquipped) continue;\n    i.Decay();\n}",
+      "question": "¿Cuál es la diferencia de comportamiento entre el fragmento A y el B?",
+      "target": "break vs continue",
+      "acceptedAnswers": [
+        "A para el loop, B lo continúa", "A termina al encontrar uno equipado, B lo salta y sigue",
+        "A sale del bucle, B salta ese item", "break vs continue",
+        "A detiene todo, B ignora ese item y sigue"
+      ],
+      "hints": [
+        "En A, cuando encuentra un item equipado, ¿qué le pasa al resto del inventario?",
+        "En B, cuando encuentra un item equipado, ¿qué le pasa al resto del inventario?",
+        "break = stop everything; continue = skip this one, keep going"
+      ],
+      "explanation": "Fragmento A (<code>break</code>): al encontrar el primer item equipado, <strong>para de recorrer el inventario completamente</strong>. Los items restantes no decaen. Fragmento B (<code>continue</code>): al encontrar un item equipado, <strong>solo lo salta</strong> y continúa con el siguiente. Todos los items no equipados decaen, independientemente de cuántos equipados haya."
+    },
+    {
+      "id": "bc_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este método de Unity:",
+      "code": "int FindFirstDeadEnemy(List<Enemy> enemies)\n{\n    for (int i = 0; i < enemies.Count; i++)\n    {\n        if (enemies[i].IsDead)\n            return i;\n    }\n    return -1;\n}",
+      "question": "¿Por qué se usa `return i` en lugar de `break` aquí?",
+      "target": "return i",
+      "acceptedAnswers": [
+        "porque devuelve un valor", "el método devuelve int", "necesita devolver el índice",
+        "para retornar el índice encontrado", "break no puede devolver valores"
+      ],
+      "hints": [
+        "El método tiene tipo de retorno int — necesita devolver algo",
+        "break sale del bucle pero no puede devolver un valor al llamador",
+        "return i hace dos cosas: sale del bucle Y del método devolviendo el valor i"
+      ],
+      "explanation": "Se usa <code>return i</code> porque el método debe <strong>devolver el índice</strong> del enemigo encontrado. <code>break</code> solo saldría del bucle pero el método seguiría y devolvería -1. <code>return i</code> sale del bucle Y del método en una sola instrucción, entregando el índice correcto al llamador."
+    },
+    {
+      "id": "bc_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este bucle while:",
+      "code": "int attempts = 0;\nwhile (true)\n{\n    attempts++;\n    bool success = TrySpawnEnemy();\n    if (success || attempts >= 10)\n        break;\n}",
+      "question": "¿Qué garantiza el `break` en este bucle infinito?",
+      "target": "break",
+      "acceptedAnswers": [
+        "que el bucle termine", "que no sea infinito realmente", "condición de salida",
+        "termina el bucle", "evita un bucle infinito", "sale del while true"
+      ],
+      "hints": [
+        "El while(true) nunca terminaría por su condición — ¿cómo sale entonces?",
+        "El break dentro del if es la única forma de salir del bucle",
+        "Este patrón (while true + break interno) es una forma de tener condición de salida compleja"
+      ],
+      "explanation": "El <code>break</code> garantiza que el bucle <strong>siempre termine</strong>. Sin él, <code>while(true)</code> sería un bucle infinito. El patrón <em>while(true) + break</em> se usa cuando la condición de salida es compleja: aquí sale cuando logra spawnear O cuando alcanza 10 intentos — lo que ocurra primero."
+    },
+    {
+      "id": "bc_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para salir del bucle cuando `health` llega a 0 o menos:",
+      "codeTemplate": "while (health > 0) {\n    health -= damage;\n    if (health <= 0) __________;\n}",
+      "expectedAnswer": "break",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": [
+        "Quieres terminar el bucle completamente cuando la salud llega a 0",
+        "La instrucción que sale del bucle inmediatamente se llama..."
+      ],
+      "explanation": "<code>break</code> sale del <code>while</code> inmediatamente cuando health cae a 0. Sin el break, el bucle comprobaría la condición <code>health > 0</code> en la siguiente iteración y también saldría, pero <code>break</code> es más explícito y eficiente."
+    },
+    {
+      "id": "bc_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para saltarte los enemigos muertos y solo procesar los vivos:",
+      "codeTemplate": "foreach (Enemy e in enemies) {\n    if (e.IsDead) __________;\n    e.UpdateAI();\n}",
+      "expectedAnswer": "continue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": [
+        "Quieres ignorar los muertos pero seguir recorriendo la lista",
+        "La instrucción que salta una iteración y pasa a la siguiente se llama..."
+      ],
+      "explanation": "<code>continue</code> salta <code>e.UpdateAI()</code> para los enemigos muertos y pasa al siguiente. El bucle continúa para todos los demás. Si usáramos <code>break</code>, se detendría al primer enemigo muerto y no procesaría el resto."
+    },
+    {
+      "id": "bc_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un bucle `for` de 0 a 9 que, usando `continue`, imprima solo los números PARES (0, 2, 4, 6, 8). Usa `Debug.Log(i)`.",
+      "expectedAnswer": "for (int i = 0; i < 10; i++) { if (i % 2 != 0) continue; Debug.Log(i); }",
+      "alternateAnswers": [
+        "for (int i = 0; i < 10; i++) {\n    if (i % 2 != 0) continue;\n    Debug.Log(i);\n}",
+        "for (int i = 0; i <= 9; i++) { if (i % 2 != 0) continue; Debug.Log(i); }"
+      ],
+      "placeholder": "Escribe el bucle completo...",
+      "hints": [
+        "Un número es par si i % 2 == 0; es impar si i % 2 != 0",
+        "Si el número es impar (i % 2 != 0), usa continue para saltarlo",
+        "La estructura es: for(...) { if(impar) continue; Debug.Log(i); }"
+      ],
+      "explanation": "El operador módulo <code>%</code> devuelve el resto de la división. Si <code>i % 2 != 0</code>, el número es impar y se salta con <code>continue</code>. Si es par (<code>i % 2 == 0</code>), pasa el <code>continue</code> y se imprime."
+    },
+    {
+      "id": "bc_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa para buscar el primer item con precio menor a 10 y detener la búsqueda:",
+      "codeTemplate": "Item cheapest = null;\nforeach (Item item in shop) {\n    if (item.Price < 10) {\n        cheapest = item;\n        __________;\n    }\n}",
+      "expectedAnswer": "break",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": [
+        "Una vez encontrado el primer item barato, no necesitas seguir buscando",
+        "La instrucción que termina el bucle completamente es..."
+      ],
+      "explanation": "<code>break</code> detiene la búsqueda en cuanto se encuentra el primer item con precio menor a 10. Sin <code>break</code>, el bucle seguiría y <code>cheapest</code> terminaría apuntando al <em>último</em> item barato, no al primero."
+    },
+    {
+      "id": "bc_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "En un switch/case, completa la instrucción necesaria al final de cada case para evitar el fall-through:",
+      "codeTemplate": "switch (state) {\n    case \"idle\":\n        PlayIdleAnim();\n        __________;\n    case \"run\":\n        PlayRunAnim();\n        __________;\n}",
+      "expectedAnswer": "break",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la instrucción...",
+      "hints": [
+        "C# requiere una instrucción al final de cada case que no esté vacío",
+        "Esta instrucción impide que la ejecución 'caiga' al siguiente case"
+      ],
+      "explanation": "En C#, cada <code>case</code> con código debe terminar con <code>break</code> (u otro jump statement como <code>return</code> o <code>goto</code>). Sin él, el compilador da error. <code>break</code> evita el <em>fall-through</em> — que la ejecución continúe en el siguiente case automáticamente."
+    },
+    {
+      "id": "bc_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un bucle `while(true)` que incremente `attempts` en cada iteración y use `break` para salir cuando `attempts` llegue a 5.",
+      "expectedAnswer": "while (true) { attempts++; if (attempts >= 5) break; }",
+      "alternateAnswers": [
+        "while (true) {\n    attempts++;\n    if (attempts >= 5) break;\n}",
+        "while (true) { attempts++; if (attempts == 5) break; }"
+      ],
+      "placeholder": "Escribe el bucle completo...",
+      "hints": [
+        "while(true) es un bucle que nunca termina por su condición — necesita un break interno",
+        "Dentro del bucle: incrementa attempts, luego verifica si llegó a 5 para salir"
+      ],
+      "explanation": "El patrón <code>while(true) + break</code> es útil cuando la condición de salida es compleja o se evalúa en medio del bucle. Aquí <code>break</code> es la única salida. Equivalente a <code>while(attempts < 5) { attempts++; }</code> pero la condición está al final en lugar del inicio."
+    }
+  ]
+}

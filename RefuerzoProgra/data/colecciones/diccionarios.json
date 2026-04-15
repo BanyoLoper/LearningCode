@@ -1,0 +1,373 @@
+{
+  "id": "diccionarios",
+  "title": "Diccionarios",
+  "icon": "📖",
+  "color": "#009688",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Dictionary<K,V>?",
+        "type": "definition",
+        "content": "Un <strong>Dictionary&lt;TKey, TValue&gt;</strong> es una colección de pares <em>clave-valor</em>. Cada elemento tiene una <strong>clave única</strong> (key) que se usa para acceder a su <strong>valor</strong> (value). En lugar de acceder por índice numérico como en listas o arrays, accedes por clave: <code>dict[\"vida\"]</code>. Las claves deben ser únicas; no puede haber dos entradas con la misma clave. Se declara así: <code>Dictionary&lt;string, int&gt; puntuaciones = new Dictionary&lt;string, int&gt;();</code>. Requiere <code>using System.Collections.Generic;</code>."
+      },
+      {
+        "id": "doc-2",
+        "title": "Declaración y Métodos Principales",
+        "type": "code",
+        "content": "using System.Collections.Generic;\n\n// Declarar un diccionario: clave string, valor int\nDictionary<string, int> inventario = new Dictionary<string, int>();\n\n// Agregar pares clave-valor\ninventario.Add(\"Pociones\", 5);\ninventario.Add(\"Flechas\", 30);\ninventario.Add(\"Monedas\", 150);\n\n// Acceder por clave\nDebug.Log(inventario[\"Pociones\"]); // 5\n\n// Modificar un valor existente\ninventario[\"Pociones\"] = 4;\n\n// Verificar si una clave existe (SIEMPRE hacerlo antes de acceder)\nif (inventario.ContainsKey(\"Espada\"))\n{\n    Debug.Log(inventario[\"Espada\"]);\n}\n\n// TryGetValue: forma segura de obtener un valor\nint cantidad;\nif (inventario.TryGetValue(\"Flechas\", out cantidad))\n{\n    Debug.Log(\"Flechas: \" + cantidad);\n}\n\n// Eliminar una entrada\ninventario.Remove(\"Monedas\");\n\n// Cantidad de pares en el diccionario\nDebug.Log(inventario.Count); // 2"
+      },
+      {
+        "id": "doc-3",
+        "title": "ContainsKey vs TryGetValue",
+        "type": "note",
+        "content": "<strong>ContainsKey(clave)</strong>: devuelve <code>true</code> o <code>false</code> indicando si la clave existe. Útil para verificar antes de acceder.<br><br><strong>TryGetValue(clave, out valor)</strong>: intenta obtener el valor de forma segura. Devuelve <code>true</code> y asigna el valor si la clave existe; devuelve <code>false</code> y asigna el valor por defecto si no existe. Es <em>más eficiente</em> que hacer <code>ContainsKey()</code> seguido de una búsqueda, porque solo hace una búsqueda interna en vez de dos. <strong>Importante:</strong> si accedes directamente con <code>dict[\"clave\"]</code> y la clave no existe, C# lanzará una <code>KeyNotFoundException</code>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Analogía en Unity: Sistema de Inventario",
+        "type": "analogy",
+        "content": "Un diccionario es como el <strong>inventario de un RPG</strong>: cada ítem tiene un nombre (clave) y una cantidad (valor). <code>Dictionary&lt;string, int&gt; inventario</code>. Cuando el jugador recoge una poción: <code>inventario[\"Pocion\"] += 1;</code>. Cuando la usa: <code>inventario[\"Pocion\"] -= 1;</code>. Cuando quieres saber si tiene un ítem: <code>inventario.ContainsKey(\"LlaveDorada\")</code>. También podrías mapear nombres de habilidades a su cooldown: <code>Dictionary&lt;string, float&gt; cooldowns</code>, o IDs de enemigos a sus GameObjects: <code>Dictionary&lt;int, GameObject&gt; enemigosActivos</code>."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Dictionary",
+        "type": "list",
+        "items": [
+          "Las claves deben ser únicas; agregar una clave duplicada con Add() lanza ArgumentException.",
+          "Acceder a una clave inexistente con dict[key] lanza KeyNotFoundException.",
+          "Usa ContainsKey() o TryGetValue() para acceder de forma segura.",
+          "TryGetValue() es más eficiente que ContainsKey() + acceso porque hace una sola búsqueda.",
+          "Count devuelve el número de pares clave-valor en el diccionario.",
+          "El orden de los elementos no está garantizado (no uses Dictionary si necesitas orden).",
+          "Requiere using System.Collections.Generic;"
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "col_mc_017",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué estructura de datos en C# almacena pares de clave-valor donde cada clave es única?",
+      "options": [
+        "Dictionary<TKey, TValue>",
+        "List<T>",
+        "Array",
+        "HashSet<T>",
+        "Queue<T>"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>Dictionary&lt;TKey, TValue&gt;</code></strong> es la colección de pares clave-valor de C#. Cada clave es única y se usa para acceder directamente a su valor, de forma similar a un diccionario real donde buscas por palabra para encontrar su definición."
+    },
+    {
+      "id": "col_mc_018",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado `Dictionary<string, int> stats`, ¿cómo accedes al valor asociado a la clave `\"vida\"`?",
+      "options": [
+        "stats[\"vida\"]",
+        "stats.Get(\"vida\")",
+        "stats.Value(\"vida\")",
+        "stats(\"vida\")",
+        "stats.Find(\"vida\")"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para acceder a un valor en un diccionario se usan corchetes con la clave: <strong><code>stats[\"vida\"]</code></strong>. Si la clave no existe, esto lanzará una <code>KeyNotFoundException</code>, por eso se recomienda verificar con <code>ContainsKey()</code> o usar <code>TryGetValue()</code> antes."
+    },
+    {
+      "id": "col_mc_019",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué método de Dictionary es más seguro para obtener un valor cuando no estás seguro si la clave existe?",
+      "options": [
+        "TryGetValue(clave, out valor)",
+        "ContainsKey(clave) solamente",
+        "Get(clave)",
+        "dict[clave] con try-catch",
+        "Find(clave)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>TryGetValue(clave, out valor)</code></strong> es la forma más segura y eficiente: devuelve <code>true</code> y asigna el valor si la clave existe, o devuelve <code>false</code> sin lanzar excepción si no existe. Es mejor que <code>ContainsKey()</code> + acceso porque hace solo una búsqueda interna."
+    },
+    {
+      "id": "col_mc_020",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué excepción lanza C# si intentas agregar una clave que ya existe usando `dict.Add(clave, valor)`?",
+      "options": [
+        "ArgumentException",
+        "KeyNotFoundException",
+        "InvalidOperationException",
+        "DuplicateKeyException",
+        "IndexOutOfRangeException"
+      ],
+      "correctIndex": 0,
+      "explanation": "Si intentas usar <code>Add()</code> con una clave que ya existe, C# lanza <strong><code>ArgumentException</code></strong>. Para actualizar el valor de una clave existente, simplemente usa la sintaxis de asignación: <code>dict[\"clave\"] = nuevoValor;</code> (esto crea la clave si no existe, o actualiza si ya existe)."
+    },
+    {
+      "id": "col_mc_021",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué devuelve `dict.ContainsKey(\"oro\")` si la clave `\"oro\"` NO está en el diccionario?",
+      "options": [
+        "false",
+        "true",
+        "null",
+        "-1",
+        "Lanza KeyNotFoundException"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>ContainsKey()</code> devuelve un <strong>bool</strong>: <code>true</code> si la clave existe, <code>false</code> si no existe. Nunca lanza excepción; es seguro llamarlo con cualquier clave. Úsalo antes de acceder con <code>dict[clave]</code> para evitar <code>KeyNotFoundException</code>."
+    },
+    {
+      "id": "col_mc_022",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo conviene usar `Dictionary<string, int>` en lugar de `List<int>` para un sistema de puntuaciones?",
+      "options": [
+        "Cuando necesitas acceder a la puntuación de un jugador específico por su nombre.",
+        "Cuando la lista de jugadores tiene exactamente el mismo tamaño siempre.",
+        "Cuando quieres mantener las puntuaciones en orden de mayor a menor.",
+        "Cuando todos los jugadores tienen el mismo nombre.",
+        "Cuando hay menos de 5 jugadores en el juego."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usa <code>Dictionary&lt;string, int&gt;</code> cuando necesitas <strong>buscar por identificador</strong> (el nombre del jugador). Con <code>scores[\"Ana\"]</code> obtienes la puntuación de Ana directamente, sin recorrer toda la colección. Con <code>List&lt;int&gt;</code> necesitarías saber el índice numérico."
+    },
+    {
+      "id": "col_mc_023",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la diferencia entre `dict.Add(\"vida\", 100)` y `dict[\"vida\"] = 100`?",
+      "options": [
+        "Add() falla si la clave ya existe; la sintaxis [] crea o actualiza sin error.",
+        "Son exactamente equivalentes en todos los casos.",
+        "La sintaxis [] falla si la clave ya existe; Add() actualiza el valor.",
+        "Add() solo funciona con tipos primitivos; [] funciona con cualquier tipo.",
+        "Add() es más rápido que [] para nuevas claves."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Add()</code> lanza <code>ArgumentException</code> si la clave ya existe. La sintaxis <strong><code>dict[clave] = valor</code></strong> es más flexible: si la clave no existe la crea, y si ya existe actualiza su valor sin lanzar excepción. Para agregar claves nuevas con seguridad, la sintaxis <code>[]</code> es preferible."
+    },
+    {
+      "id": "col_mc_024",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué imprime este código?\n```\nvar d = new Dictionary<string, int>();\nd[\"x\"] = 5;\nd[\"x\"] = 10;\nDebug.Log(d[\"x\"]);\n```",
+      "options": [
+        "10",
+        "5",
+        "15",
+        "Lanza ArgumentException",
+        "Lanza KeyNotFoundException"
+      ],
+      "correctIndex": 0,
+      "explanation": "La sintaxis <code>d[\"x\"] = 10;</code> <strong>actualiza</strong> el valor de la clave <code>\"x\"</code> sin lanzar excepción, incluso si ya existía. El valor final es <strong>10</strong>. Si en lugar de <code>d[\"x\"] = 10</code> se hubiera usado <code>d.Add(\"x\", 10)</code>, entonces sí habría lanzado <code>ArgumentException</code>."
+    },
+    {
+      "id": "col_id_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Dictionary<string, int> inventario = new Dictionary<string, int>();\ninventario.Add(\"Pocion\", 3);\ninventario.Add(\"Flecha\", 20);\nDebug.Log(inventario.Count);",
+      "question": "¿Qué valor imprime `inventario.Count`?",
+      "target": "2",
+      "acceptedAnswers": ["2"],
+      "hints": [
+        "Count devuelve el número de pares clave-valor.",
+        "Se llamó Add() dos veces.",
+        "Cada Add() agrega un par."
+      ],
+      "explanation": "Se agregaron dos pares clave-valor con <code>Add()</code>: <code>\"Pocion\"</code> y <code>\"Flecha\"</code>. La propiedad <strong><code>Count</code></strong> devuelve el número de pares, que es <code>2</code>."
+    },
+    {
+      "id": "col_id_014",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Dictionary<string, float> stats = new Dictionary<string, float>();\nstats.Add(\"vida\", 100f);\nstats.Add(\"mana\", 50f);\n\nfloat valor;\nbool encontrado = stats.TryGetValue(\"stamina\", out valor);\nDebug.Log(encontrado);",
+      "question": "¿Qué valor imprime `Debug.Log(encontrado)` dado que \"stamina\" no está en el diccionario?",
+      "target": "False",
+      "acceptedAnswers": ["False", "false"],
+      "hints": [
+        "TryGetValue devuelve true o false.",
+        "La clave 'stamina' no fue agregada al diccionario.",
+        "Si la clave no existe, TryGetValue devuelve..."
+      ],
+      "explanation": "<code>TryGetValue()</code> devuelve <strong><code>false</code></strong> cuando la clave no existe en el diccionario. No lanza excepción: simplemente devuelve <code>false</code> y asigna el valor por defecto del tipo (<code>0f</code> para float) a la variable <code>out</code>."
+    },
+    {
+      "id": "col_id_015",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Identifica el error en este código:",
+      "code": "Dictionary<string, int> puntos = new Dictionary<string, int>();\npuntos.Add(\"Ana\", 100);\npuntos.Add(\"Luis\", 200);\npuntos.Add(\"Ana\", 150); // <-- esta línea",
+      "question": "¿Qué excepción lanza la tercera llamada a Add() con la clave \"Ana\" que ya existe?",
+      "target": "ArgumentException",
+      "acceptedAnswers": ["ArgumentException", "Argument Exception"],
+      "hints": [
+        "No puedes agregar dos entradas con la misma clave en un Dictionary.",
+        "La clave 'Ana' ya fue agregada antes.",
+        "Add() lanza una excepción cuando la clave ya existe."
+      ],
+      "explanation": "En un <code>Dictionary</code>, todas las claves deben ser únicas. Intentar agregar <code>\"Ana\"</code> por segunda vez con <code>Add()</code> lanza una <strong><code>ArgumentException</code></strong>. Para actualizar un valor existente, usa la sintaxis: <code>puntos[\"Ana\"] = 150;</code>."
+    },
+    {
+      "id": "col_id_016",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Dictionary<string, int> items = new Dictionary<string, int>();\nitems[\"Espada\"] = 1;\nitems[\"Escudo\"] = 1;\nitems.Remove(\"Escudo\");\nbool tieneEscudo = items.ContainsKey(\"Escudo\");",
+      "question": "¿Qué valor tiene `tieneEscudo` después de ejecutar todo el código?",
+      "target": "false",
+      "acceptedAnswers": ["false", "False"],
+      "hints": [
+        "Remove() elimina la entrada con esa clave.",
+        "Después de Remove('Escudo'), ¿sigue existiendo esa clave?",
+        "ContainsKey devuelve true o false según si la clave existe."
+      ],
+      "explanation": "Después de <code>Remove(\"Escudo\")</code>, la clave <code>\"Escudo\"</code> ya no existe en el diccionario. Por lo tanto, <code>ContainsKey(\"Escudo\")</code> devuelve <strong><code>false</code></strong>."
+    },
+    {
+      "id": "col_id_017",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de Unity que gestiona un sistema de cooldowns:",
+      "code": "Dictionary<string, float> cooldowns = new Dictionary<string, float>();\ncooldowns.Add(\"Fireball\", 3.0f);\ncooldowns.Add(\"Heal\", 5.0f);\n\nvoid UseAbility(string abilityName)\n{\n    float cd;\n    if (cooldowns.TryGetValue(abilityName, out cd))\n    {\n        Debug.Log(\"Cooldown: \" + cd);\n    }\n}",
+      "question": "¿Qué ventaja tiene usar `TryGetValue` en lugar de `cooldowns[abilityName]` directamente en el método `UseAbility`?",
+      "target": "no lanza excepción",
+      "acceptedAnswers": ["no lanza excepción", "no lanza KeyNotFoundException", "evita KeyNotFoundException", "es más seguro", "no falla si la clave no existe", "safe access"],
+      "hints": [
+        "¿Qué pasa si abilityName no está en el diccionario?",
+        "El acceso directo con [] lanza una excepción si la clave no existe.",
+        "TryGetValue devuelve false en lugar de lanzar excepción."
+      ],
+      "explanation": "<code>TryGetValue()</code> es seguro: si <code>abilityName</code> no existe en el diccionario, devuelve <code>false</code> sin lanzar excepción. En cambio, <code>cooldowns[abilityName]</code> lanzaría <strong><code>KeyNotFoundException</code></strong> si la habilidad no está registrada, lo que causaría un error en Unity."
+    },
+    {
+      "id": "col_id_018",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Dictionary<int, string> niveles = new Dictionary<int, string>();\nniveles.Add(1, \"Bosque\");\nniveles.Add(2, \"Cueva\");\nniveles.Add(3, \"Castillo\");\nniveles[2] = \"Mina\";\nDebug.Log(niveles[2]);",
+      "question": "¿Qué valor imprime `Debug.Log(niveles[2])`?",
+      "target": "Mina",
+      "acceptedAnswers": ["Mina", "\"Mina\""],
+      "hints": [
+        "La clave 2 fue asociada a 'Cueva' inicialmente.",
+        "Luego se reasignó el valor con niveles[2] = 'Mina'.",
+        "La asignación con [] actualiza el valor de la clave."
+      ],
+      "explanation": "La línea <code>niveles[2] = \"Mina\";</code> <strong>actualiza</strong> el valor asociado a la clave <code>2</code>, reemplazando <code>\"Cueva\"</code> por <code>\"Mina\"</code>. Por eso <code>niveles[2]</code> devuelve <strong><code>\"Mina\"</code></strong>."
+    },
+    {
+      "id": "col_cw_013",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un Dictionary que mapea strings a ints, llamado `puntuaciones`:",
+      "codeTemplate": "Dictionary<string, __________> puntuaciones = new Dictionary<string, int>();",
+      "expectedAnswer": "int",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué tipo de valor almacena?",
+      "hints": [
+        "El tipo de valor es el segundo parámetro genérico.",
+        "El diccionario mapea nombres (string) a puntuaciones numéricas enteras.",
+        "El tipo entero en C# es 'int'."
+      ],
+      "explanation": "El tipo del valor (segundo parámetro genérico) es <strong><code>int</code></strong>. La declaración completa es <code>Dictionary&lt;string, int&gt; puntuaciones = new Dictionary&lt;string, int&gt;();</code>."
+    },
+    {
+      "id": "col_cw_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para acceder al valor con clave `\"mana\"` en el diccionario `stats`:",
+      "codeTemplate": "float manaActual = stats[__________];",
+      "expectedAnswer": "\"mana\"",
+      "alternateAnswers": ["\"mana\""],
+      "placeholder": "¿Cuál es la clave a usar?",
+      "hints": [
+        "Los diccionarios se acceden por clave entre corchetes.",
+        "La clave es el string 'mana'.",
+        "Las claves de tipo string van entre comillas dobles."
+      ],
+      "explanation": "Para acceder al valor de la clave <code>\"mana\"</code>, la sintaxis es <code>stats[<strong>\"mana\"</strong>]</code>. La clave debe coincidir exactamente (incluyendo mayúsculas/minúsculas) con la que se usó al agregar el par."
+    },
+    {
+      "id": "col_cw_015",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa que usa TryGetValue para obtener el valor de la clave \"Pocion\" del diccionario `inventario` en la variable `cantidad` (tipo int):",
+      "codeTemplate": null,
+      "expectedAnswer": "inventario.TryGetValue(\"Pocion\", out cantidad);",
+      "alternateAnswers": [
+        "bool ok = inventario.TryGetValue(\"Pocion\", out cantidad);",
+        "if (inventario.TryGetValue(\"Pocion\", out cantidad))"
+      ],
+      "placeholder": "Escribe la llamada a TryGetValue...",
+      "hints": [
+        "TryGetValue recibe la clave y una variable out.",
+        "La variable que recibirá el valor va precedida de la palabra 'out'.",
+        "El patrón es: diccionario.TryGetValue(\"clave\", out variable);"
+      ],
+      "explanation": "La sintaxis de <code>TryGetValue</code> es: <code>inventario.TryGetValue(\"Pocion\", <strong>out cantidad</strong>);</code>. La palabra clave <code>out</code> indica que <code>cantidad</code> recibirá el valor encontrado. El método retorna <code>true</code> si la clave existe."
+    },
+    {
+      "id": "col_cw_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el condicional que verifica si el diccionario `mapa` tiene la clave `\"boss_room\"` antes de cargar ese nivel:",
+      "codeTemplate": "if (mapa.__________(\"boss_room\"))\n{\n    LoadLevel(\"boss_room\");\n}",
+      "expectedAnswer": "ContainsKey",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué método verifica si existe la clave?",
+      "hints": [
+        "Necesitas verificar si la clave existe antes de acceder.",
+        "El método verifica si el diccionario 'contiene la clave'.",
+        "En inglés: 'Contains Key'."
+      ],
+      "explanation": "El método <strong><code>ContainsKey(clave)</code></strong> devuelve <code>true</code> si la clave existe en el diccionario. Es la forma más clara de verificar antes de acceder para evitar una <code>KeyNotFoundException</code>."
+    },
+    {
+      "id": "col_cw_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la llamada para agregar la entrada `\"Espada\"` con valor `1` al diccionario `inventario`:",
+      "codeTemplate": "inventario.__________(\"Espada\", 1);",
+      "expectedAnswer": "Add",
+      "alternateAnswers": [],
+      "placeholder": "¿Cómo se llama el método para agregar?",
+      "hints": [
+        "El método recibe la clave y el valor como argumentos.",
+        "Es el mismo nombre que en List<T> para agregar elementos.",
+        "En inglés, 'agregar' es 'add'."
+      ],
+      "explanation": "El método <strong><code>Add(clave, valor)</code></strong> agrega un nuevo par al diccionario. La llamada <code>inventario.Add(\"Espada\", 1)</code> crea la entrada. Recuerda: si la clave ya existe, <code>Add()</code> lanza <code>ArgumentException</code>."
+    },
+    {
+      "id": "col_cw_018",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la declaración completa de un Dictionary que mapea IDs de enemigos (int) a sus GameObjects, llamado `enemigosActivos`, inicializado vacío:",
+      "codeTemplate": null,
+      "expectedAnswer": "Dictionary<int, GameObject> enemigosActivos = new Dictionary<int, GameObject>();",
+      "alternateAnswers": [
+        "var enemigosActivos = new Dictionary<int, GameObject>();"
+      ],
+      "placeholder": "Escribe la declaración completa...",
+      "hints": [
+        "La clave es de tipo int (el ID), el valor es de tipo GameObject.",
+        "El patrón es: Dictionary<TipoLlave, TipoValor> nombre = new Dictionary<TipoLlave, TipoValor>();",
+        "Los paréntesis vacíos () crean el diccionario vacío."
+      ],
+      "explanation": "La declaración correcta es <code>Dictionary&lt;int, GameObject&gt; enemigosActivos = new Dictionary&lt;int, GameObject&gt;();</code>. El primer tipo genérico (<code>int</code>) es la clave (ID), y el segundo (<code>GameObject</code>) es el valor almacenado."
+    }
+  ]
+}

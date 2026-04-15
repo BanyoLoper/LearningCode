@@ -1,0 +1,368 @@
+{
+  "id": "arrays",
+  "title": "Arrays",
+  "icon": "🗂️",
+  "color": "#3F51B5",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Array?",
+        "type": "definition",
+        "content": "Un <strong>array</strong> es una colección de elementos del <strong>mismo tipo</strong> almacenados en posiciones contiguas de memoria. Su tamaño es <em>fijo</em>: una vez declarado, no puede cambiar. En C# se declara especificando el tipo seguido de corchetes: <code>int[] numeros = new int[5];</code> crea un array de 5 enteros. También puedes usar la sintaxis de inicializador para asignar valores al mismo tiempo: <code>int[] numeros = new int[]{ 1, 2, 3, 4, 5 };</code> o la forma abreviada <code>int[] numeros = { 1, 2, 3, 4, 5 };</code>."
+      },
+      {
+        "id": "doc-2",
+        "title": "Declaración y Acceso por Índice",
+        "type": "code",
+        "content": "// Declarar un array de 5 enteros (todos inician en 0)\nint[] puntos = new int[5];\n\n// Inicializar con valores\nstring[] nombres = new string[] { \"Ana\", \"Luis\", \"Mia\" };\n\n// Acceder por índice (¡los índices empiezan en 0!)\nDebug.Log(nombres[0]); // \"Ana\"\nDebug.Log(nombres[1]); // \"Luis\"\nDebug.Log(nombres[2]); // \"Mia\"\n\n// Modificar un elemento\npuntos[0] = 100;\npuntos[4] = 50; // último elemento de un array de tamaño 5\n\n// Recorrer con for\nfor (int i = 0; i < puntos.Length; i++)\n{\n    Debug.Log(\"Punto \" + i + \": \" + puntos[i]);\n}\n\n// Array multidimensional (tabla 3x3)\nint[,] tablero = new int[3, 3];\ntablero[0, 0] = 1;\ntablero[2, 2] = 9;"
+      },
+      {
+        "id": "doc-3",
+        "title": "Analogía en Unity",
+        "type": "analogy",
+        "content": "Imagina que tu personaje tiene <strong>exactamente 4 puntos de patrulla</strong> en el nivel. Nunca van a cambiar: siempre serán 4. Un array es perfecto para esto: <code>Transform[] waypoints = new Transform[4];</code>. También puedes guardar todas las hitboxes de un enemigo complejo: <code>Collider[] hitboxes = GetComponentsInChildren&lt;Collider&gt;();</code>. Unity devuelve arrays en muchos de sus métodos, como <code>Physics.RaycastAll()</code> o <code>GetComponentsInChildren()</code>, porque la cantidad de resultados es fija en ese momento."
+      },
+      {
+        "id": "doc-4",
+        "title": "Propiedad Length y Acceso Fuera de Rango",
+        "type": "note",
+        "content": "<strong>Length</strong> te da el número total de elementos del array: si declaraste <code>new int[5]</code>, entonces <code>arr.Length == 5</code>. Los índices válidos van de <code>0</code> hasta <code>arr.Length - 1</code>. Si intentas acceder a <code>arr[5]</code> en un array de tamaño 5, C# lanzará una <strong>IndexOutOfRangeException</strong> en tiempo de ejecución. Siempre verifica que tu índice esté dentro del rango antes de acceder: <code>if (i >= 0 && i &lt; arr.Length)</code>."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Arrays",
+        "type": "list",
+        "items": [
+          "El índice siempre comienza en 0, no en 1.",
+          "El último índice válido es array.Length - 1.",
+          "El tamaño es fijo: no puedes añadir ni quitar elementos después de crear el array.",
+          "Todos los elementos deben ser del mismo tipo.",
+          "Acceder fuera del rango lanza IndexOutOfRangeException.",
+          "Para tamaños dinámicos, usa List<T> en lugar de arrays."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "col_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la característica principal que diferencia un array de una List<T>?",
+      "options": [
+        "El array tiene tamaño fijo; no puede crecer ni reducirse después de crearse.",
+        "El array solo puede almacenar tipos primitivos como int o float.",
+        "El array no se puede recorrer con un bucle for.",
+        "El array siempre comienza en el índice 1.",
+        "El array ocupa más memoria que una List<T> siempre."
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia fundamental es que un <strong>array tiene tamaño fijo</strong>. Al escribir <code>new int[5]</code>, ese array siempre tendrá 5 elementos. Si necesitas agregar o quitar elementos dinámicamente, debes usar <code>List&lt;T&gt;</code>."
+    },
+    {
+      "id": "col_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado el array `string[] colores = { \"rojo\", \"verde\", \"azul\" };`, ¿cuál expresión devuelve `\"verde\"`?",
+      "options": [
+        "colores[1]",
+        "colores[2]",
+        "colores[0]",
+        "colores.Get(1)",
+        "colores[\"verde\"]"
+      ],
+      "correctIndex": 0,
+      "explanation": "Los arrays en C# usan <strong>indexación base cero</strong>. <code>colores[0]</code> es <code>\"rojo\"</code>, <code>colores[1]</code> es <code>\"verde\"</code> y <code>colores[2]</code> es <code>\"azul\"</code>. Por eso la respuesta correcta es <code>colores[1]</code>."
+    },
+    {
+      "id": "col_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué propiedad de un array te indica cuántos elementos contiene?",
+      "options": [
+        "Length",
+        "Count",
+        "Size",
+        "Capacity",
+        "Total"
+      ],
+      "correctIndex": 0,
+      "explanation": "La propiedad <strong><code>Length</code></strong> de un array devuelve el número total de elementos. Nota: en <code>List&lt;T&gt;</code> se usa <code>Count</code>, pero en los arrays nativos de C# siempre es <code>Length</code>."
+    },
+    {
+      "id": "col_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de las siguientes declaraciones crea correctamente un array de 3 floats con valores iniciales?",
+      "options": [
+        "float[] velocidades = new float[] { 1.5f, 2.0f, 3.5f };",
+        "float[] velocidades = new float[1.5f, 2.0f, 3.5f];",
+        "float velocidades[] = { 1.5f, 2.0f, 3.5f };",
+        "Array<float> velocidades = new Array<float>(3);",
+        "float[] velocidades = float[3]{ 1.5f, 2.0f, 3.5f };"
+      ],
+      "correctIndex": 0,
+      "explanation": "La sintaxis correcta usa <code>new float[]</code> seguido de los valores entre llaves: <code>float[] velocidades = new float[] { 1.5f, 2.0f, 3.5f };</code>. También es válida la forma abreviada <code>float[] velocidades = { 1.5f, 2.0f, 3.5f };</code>."
+    },
+    {
+      "id": "col_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué excepción lanza C# si intentas acceder a un índice que no existe en el array?",
+      "options": [
+        "IndexOutOfRangeException",
+        "NullReferenceException",
+        "InvalidOperationException",
+        "ArraySizeException",
+        "OutOfMemoryException"
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando accedes a un índice fuera del rango válido (menor que 0 o mayor/igual a <code>Length</code>), C# lanza una <strong><code>IndexOutOfRangeException</code></strong> en tiempo de ejecución. Esto detiene la ejecución del juego en Unity con un error en la consola."
+    },
+    {
+      "id": "col_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes `int[] nums = new int[4];`. ¿Cuál es el índice del ÚLTIMO elemento válido?",
+      "options": [
+        "3",
+        "4",
+        "0",
+        "5",
+        "-1"
+      ],
+      "correctIndex": 0,
+      "explanation": "Si el array tiene <code>Length == 4</code>, los índices válidos son <strong>0, 1, 2 y 3</strong>. El último es siempre <code>Length - 1 = 4 - 1 = 3</code>. Acceder a <code>nums[4]</code> lanzaría <code>IndexOutOfRangeException</code>."
+    },
+    {
+      "id": "col_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿en qué situación sería más adecuado usar un array en lugar de una List<T>?",
+      "options": [
+        "Guardar los puntos de patrulla fijos de un enemigo que nunca cambian.",
+        "Guardar enemigos que aparecen y desaparecen durante la partida.",
+        "Guardar ítems del inventario que el jugador puede recoger o soltar.",
+        "Guardar los mensajes de un chat que pueden crecer indefinidamente.",
+        "Guardar participantes de una partida multijugador que pueden unirse o salir."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los arrays son ideales cuando la <strong>cantidad de elementos es fija y conocida de antemano</strong>, como los waypoints de patrulla de un enemigo. Para colecciones que crecen o se reducen dinámicamente (inventario, enemigos activos), es mejor <code>List&lt;T&gt;</code>."
+    },
+    {
+      "id": "col_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué imprime este código?\n```\nint[] arr = { 10, 20, 30 };\nDebug.Log(arr[arr.Length - 1]);\n```",
+      "options": [
+        "30",
+        "10",
+        "20",
+        "3",
+        "IndexOutOfRangeException"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>arr.Length</code> es 3, entonces <code>arr.Length - 1 = 2</code>. <code>arr[2]</code> es el tercer elemento (recuerda: base cero), que vale <strong>30</strong>. Este es el patrón estándar para acceder al último elemento de cualquier array."
+    },
+    {
+      "id": "col_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "string[] armas = { \"Espada\", \"Arco\", \"Magia\" };\nDebug.Log(armas[0]);",
+      "question": "¿Qué valor imprime la línea `Debug.Log(armas[0])`?",
+      "target": "Espada",
+      "acceptedAnswers": ["Espada", "\"Espada\"", "armas[0]"],
+      "hints": [
+        "Los arrays en C# usan índices que empiezan desde cero.",
+        "El primer elemento tiene índice 0.",
+        "Cuenta los elementos desde el inicio: el primero es índice 0."
+      ],
+      "explanation": "Como los arrays son <strong>base cero</strong>, <code>armas[0]</code> accede al primer elemento del array, que es <code>\"Espada\"</code>."
+    },
+    {
+      "id": "col_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "float[] tiempos = { 1.2f, 3.4f, 5.6f };\nDebug.Log(tiempos.Length);",
+      "question": "¿Qué valor imprime `tiempos.Length`?",
+      "target": "3",
+      "acceptedAnswers": ["3"],
+      "hints": [
+        "Length devuelve la cantidad total de elementos.",
+        "Cuenta cuántos valores hay entre las llaves.",
+        "Hay tres valores: 1.2f, 3.4f y 5.6f."
+      ],
+      "explanation": "La propiedad <strong><code>Length</code></strong> devuelve el número total de elementos del array. El array <code>tiempos</code> tiene 3 elementos, por lo que <code>tiempos.Length</code> es <code>3</code>."
+    },
+    {
+      "id": "col_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código y encuentra el error:",
+      "code": "int[] puntos = new int[3];\npuntos[0] = 10;\npuntos[1] = 20;\npuntos[2] = 30;\npuntos[3] = 40; // <-- esta línea",
+      "question": "¿Qué excepción se lanza en la última línea marcada?",
+      "target": "IndexOutOfRangeException",
+      "acceptedAnswers": ["IndexOutOfRangeException", "index out of range", "out of range"],
+      "hints": [
+        "El array se creó con tamaño 3.",
+        "Los índices válidos son 0, 1 y 2.",
+        "¿Qué pasa cuando intentas acceder al índice 3 en un array de tamaño 3?"
+      ],
+      "explanation": "El array <code>puntos</code> tiene tamaño 3, por lo que los índices válidos son <strong>0, 1 y 2</strong>. Intentar escribir en <code>puntos[3]</code> lanza una <code><strong>IndexOutOfRangeException</strong></code> porque el índice 3 está fuera del rango."
+    },
+    {
+      "id": "col_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "// Declaración de array multidimensional\nint[,] mapa = new int[4, 4];\nmapa[2, 3] = 99;",
+      "question": "¿Cómo se llama el tipo de array que usa la sintaxis `[,]` para representar filas y columnas?",
+      "target": "multidimensional",
+      "acceptedAnswers": ["multidimensional", "bidimensional", "array multidimensional", "2D", "two-dimensional", "matriz"],
+      "hints": [
+        "Tiene más de una dimensión, como una tabla o cuadrícula.",
+        "Piensa en filas y columnas.",
+        "Se usa para representar mapas o tableros de juego."
+      ],
+      "explanation": "El array <code>int[,]</code> es un array <strong>multidimensional</strong> (bidimensional en este caso). Se accede con dos índices separados por coma: <code>mapa[fila, columna]</code>. Es muy útil para representar mapas en juegos."
+    },
+    {
+      "id": "col_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de Unity:",
+      "code": "public class PatrolEnemy : MonoBehaviour\n{\n    public Transform[] waypoints;\n\n    void Update()\n    {\n        // Mueve el enemigo entre waypoints\n    }\n}",
+      "question": "¿Por qué se usa un array en lugar de una List<Transform> para los waypoints en este caso?",
+      "target": "tamaño fijo",
+      "acceptedAnswers": ["tamaño fijo", "size fijo", "fixed size", "no cambia", "cantidad fija", "no se modifica"],
+      "hints": [
+        "Los waypoints de patrulla se definen en el editor y no cambian durante el juego.",
+        "Piensa en cuándo es apropiado usar algo que no puede crecer ni reducirse.",
+        "Si la cantidad es constante y conocida, ¿qué estructura es más apropiada?"
+      ],
+      "explanation": "Se usa un array porque la cantidad de waypoints es <strong>fija</strong>: se define en el Inspector de Unity antes de ejecutar el juego y no cambia en tiempo de ejecución. Para colecciones que crecen o se reducen dinámicamente, se usaría <code>List&lt;Transform&gt;</code>."
+    },
+    {
+      "id": "col_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este bucle:",
+      "code": "int[] scores = { 5, 15, 25, 35 };\nfor (int i = 0; i < scores.Length; i++)\n{\n    scores[i] = scores[i] * 2;\n}",
+      "question": "¿Qué valor tendrá `scores[2]` al terminar el bucle?",
+      "target": "50",
+      "acceptedAnswers": ["50"],
+      "hints": [
+        "scores[2] empieza con el valor 25.",
+        "El bucle multiplica cada elemento por 2.",
+        "25 * 2 = ?"
+      ],
+      "explanation": "<code>scores[2]</code> inicialmente vale <strong>25</strong>. El bucle multiplica cada elemento por 2, entonces <code>scores[2] = 25 * 2 = <strong>50</strong></code>. El array final queda <code>{ 10, 30, 50, 70 }</code>."
+    },
+    {
+      "id": "col_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un array de 6 enteros llamado `enemigos`:",
+      "codeTemplate": "int[] enemigos = new int[__________];",
+      "expectedAnswer": "6",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tamaño del array...",
+      "hints": [
+        "El número entre corchetes define cuántos elementos tendrá el array.",
+        "Necesitas 6 espacios para 6 enteros."
+      ],
+      "explanation": "Para crear un array de 6 enteros, escribe el tamaño <strong>6</strong> entre los corchetes: <code>new int[6]</code>. Esto reserva espacio para 6 elementos, todos inicializados en 0."
+    },
+    {
+      "id": "col_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el acceso al TERCER elemento del array `nombres`:",
+      "codeTemplate": "string tercero = nombres[__________];",
+      "expectedAnswer": "2",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el índice correcto...",
+      "hints": [
+        "Los índices empiezan en 0, no en 1.",
+        "Primero=0, Segundo=1, Tercero=?"
+      ],
+      "explanation": "Los arrays son <strong>base cero</strong>: el primer elemento es índice 0, el segundo es 1, y el <strong>tercero es índice 2</strong>. Por eso <code>nombres[2]</code> accede al tercer elemento."
+    },
+    {
+      "id": "col_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición del for para recorrer el array `items` correctamente sin salirse de rango:",
+      "codeTemplate": "for (int i = 0; i < __________; i++)\n{\n    Debug.Log(items[i]);\n}",
+      "expectedAnswer": "items.Length",
+      "alternateAnswers": [],
+      "placeholder": "¿Cuál es el límite del bucle?",
+      "hints": [
+        "Necesitas saber cuántos elementos tiene el array.",
+        "Los arrays tienen una propiedad que te da su tamaño.",
+        "Esa propiedad se llama Length."
+      ],
+      "explanation": "La propiedad <strong><code>Length</code></strong> devuelve el número de elementos del array. Usando <code>i < items.Length</code> el bucle recorre los índices 0 hasta <code>Length - 1</code>, que es exactamente el rango válido."
+    },
+    {
+      "id": "col_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que declara e inicializa un array de strings con los valores \"Fuego\", \"Agua\" y \"Tierra\":",
+      "codeTemplate": null,
+      "expectedAnswer": "string[] elementos = new string[] { \"Fuego\", \"Agua\", \"Tierra\" };",
+      "alternateAnswers": [
+        "string[] elementos = { \"Fuego\", \"Agua\", \"Tierra\" };",
+        "var elementos = new string[] { \"Fuego\", \"Agua\", \"Tierra\" };"
+      ],
+      "placeholder": "Escribe la declaración completa...",
+      "hints": [
+        "El tipo es string[], seguido del nombre de la variable.",
+        "Usa new string[] { } o la forma abreviada { }.",
+        "Los strings van entre comillas dobles."
+      ],
+      "explanation": "La forma estándar es <code>string[] elementos = new string[] { \"Fuego\", \"Agua\", \"Tierra\" };</code>. También es válida la forma abreviada <code>string[] elementos = { \"Fuego\", \"Agua\", \"Tierra\" };</code> cuando el tipo se puede inferir."
+    },
+    {
+      "id": "col_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la línea para acceder al ÚLTIMO elemento del array `puntos` usando su propiedad Length:",
+      "codeTemplate": "int ultimo = puntos[__________];",
+      "expectedAnswer": "puntos.Length - 1",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la expresión de índice...",
+      "hints": [
+        "El último índice válido siempre es Length menos 1.",
+        "Si Length es 5, el último índice es 4.",
+        "Usa puntos.Length y réstale 1."
+      ],
+      "explanation": "El último elemento siempre está en el índice <strong><code>Length - 1</code></strong>. Así que <code>puntos[puntos.Length - 1]</code> accede al último elemento sin importar el tamaño del array."
+    },
+    {
+      "id": "col_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa la declaración del array 2D (multidimensional) de Unity para un mapa de 5 filas y 5 columnas:",
+      "codeTemplate": "int[__________] mapa = new int[5, 5];",
+      "expectedAnswer": ",",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué va dentro de los corchetes de la declaración?",
+      "hints": [
+        "Un array 2D en C# se declara con una coma dentro de los corchetes.",
+        "La coma separa las dos dimensiones.",
+        "int[,] indica que es bidimensional."
+      ],
+      "explanation": "Un array bidimensional en C# se declara con <strong><code>[,]</code></strong>: la coma dentro de los corchetes indica que tiene dos dimensiones. El tipo completo es <code>int[,]</code>, y se crea con <code>new int[filas, columnas]</code>."
+    }
+  ]
+}

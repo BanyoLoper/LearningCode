@@ -42,6 +42,9 @@ export class IdentificationHandler {
       onSubmit(value);
       btn.disabled = false;
     });
+
+    // Auto-focus so the student can type immediately
+    requestAnimationFrame(() => input.focus());
   }
 
   /** Shows a hint (hintIndex = 0, 1, 2). */

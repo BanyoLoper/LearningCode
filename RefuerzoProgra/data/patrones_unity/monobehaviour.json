@@ -1,0 +1,368 @@
+{
+  "id": "monobehaviour",
+  "title": "MonoBehaviour",
+  "icon": "🎮",
+  "color": "#FF5722",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Ciclo de Vida de MonoBehaviour",
+        "type": "list",
+        "items": [
+          "Awake() — Se llama una vez al crear el objeto, antes que Start y antes que otros objetos inicialicen",
+          "OnEnable() — Se llama cada vez que el objeto se activa",
+          "Start() — Se llama una vez en el primer frame, después de todos los Awake()",
+          "Update() — Se llama cada frame (depende del framerate)",
+          "LateUpdate() — Se llama cada frame, después de todos los Update()",
+          "FixedUpdate() — Se llama en intervalos fijos de física (independiente del framerate)",
+          "OnDisable() — Se llama cada vez que el objeto se desactiva",
+          "OnDestroy() — Se llama cuando el objeto es destruido"
+        ]
+      },
+      {
+        "id": "doc-2",
+        "title": "Awake vs Start vs Update vs FixedUpdate",
+        "type": "note",
+        "content": "<strong>Awake()</strong>: Usa para auto-inicialización (cachear componentes propios, inicializar variables). Se ejecuta incluso si el objeto está desactivado.<br><br><strong>Start()</strong>: Usa para referencias cruzadas entre objetos (cuando otros objetos ya hicieron su Awake). Se ejecuta solo si el objeto está activo.<br><br><strong>Update()</strong>: Input, animaciones, lógica de juego. Varía con el framerate.<br><br><strong>FixedUpdate()</strong>: Física (<code>Rigidbody</code>, fuerzas). Intervalo fijo (por defecto 0.02s). Nunca pongas física en Update()."
+      },
+      {
+        "id": "doc-3",
+        "title": "Patrones Comunes: Caching y Física",
+        "type": "code",
+        "content": "using UnityEngine;\n\npublic class PlayerController : MonoBehaviour\n{\n    // Cachear en Awake, no buscar cada frame\n    private Rigidbody rb;\n    private Animator animator;\n\n    void Awake()\n    {\n        // Auto-inicialización: cachear componentes propios\n        rb = GetComponent<Rigidbody>();\n        animator = GetComponent<Animator>();\n    }\n\n    void Start()\n    {\n        // Referencias cruzadas: otros objetos ya hicieron Awake\n        // Ej: buscar al GameManager que ya se inicializó\n    }\n\n    void Update()\n    {\n        // Input cada frame\n        float h = Input.GetAxis(\"Horizontal\");\n        animator.SetFloat(\"Speed\", Mathf.Abs(h));\n    }\n\n    void FixedUpdate()\n    {\n        // Física en FixedUpdate, no en Update\n        float h = Input.GetAxis(\"Horizontal\");\n        rb.AddForce(Vector3.right * h * 10f);\n    }\n\n    void LateUpdate()\n    {\n        // Cámara o lógica que depende de posiciones ya actualizadas\n    }\n\n    void OnDestroy()\n    {\n        // Limpiar suscripciones a eventos, liberar recursos\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "Jerarquía de MonoBehaviour",
+        "type": "note",
+        "content": "La herencia completa es: <code>MonoBehaviour → Behaviour → Component → Object</code><br><br>Como hereda de <strong>Component</strong>, tiene acceso a <code>gameObject</code>, <code>transform</code>, <code>GetComponent()</code>.<br>Como hereda de <strong>Behaviour</strong>, puede ser habilitado/deshabilitado (<code>enabled = false</code>).<br><br><em>Nota:</em> Nunca uses <code>new PlayerController()</code> — los MonoBehaviour solo se crean mediante <code>AddComponent&lt;T&gt;()</code> o asignándolos en el Inspector."
+      },
+      {
+        "id": "doc-5",
+        "title": "Analogía: MonoBehaviour como Actor de Teatro",
+        "type": "analogy",
+        "content": "Imagina un <strong>actor de teatro</strong>:<br><ul><li><strong>Awake</strong> = El actor llega al camerino y se prepara (antes de que abra el telón)</li><li><strong>Start</strong> = El actor entra al escenario (cuando empieza la obra)</li><li><strong>Update</strong> = Cada segundo del espectáculo, el actor reacciona al público</li><li><strong>FixedUpdate</strong> = El metrónomo del teatro: pasos exactos de baile en ritmo fijo</li><li><strong>LateUpdate</strong> = El director toma nota de todo lo que pasó en ese segundo</li><li><strong>OnDestroy</strong> = El actor abandona el teatro y devuelve el vestuario</li></ul>"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "unity_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es el orden correcto del ciclo de vida de MonoBehaviour al iniciar una escena?",
+      "options": [
+        "Awake → OnEnable → Start → Update",
+        "Start → Awake → OnEnable → Update",
+        "OnEnable → Awake → Start → Update",
+        "Awake → Start → OnEnable → Update",
+        "Start → Update → Awake → OnEnable"
+      ],
+      "correctIndex": 0,
+      "explanation": "El orden correcto es <strong>Awake → OnEnable → Start → Update</strong>. Awake es el primero (auto-init), luego OnEnable cuando el objeto se activa, después Start (cross-references), y finalmente Update cada frame."
+    },
+    {
+      "id": "unity_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre Awake() y Start()?",
+      "options": [
+        "Awake se llama antes que Start; Awake sirve para auto-inicialización, Start para referencias cruzadas entre objetos",
+        "Start se llama antes que Awake; Start es para física y Awake para input",
+        "Ambos se llaman al mismo tiempo pero en objetos diferentes",
+        "Awake solo se llama si el objeto está activo, Start se llama siempre",
+        "No hay diferencia, son equivalentes"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Awake</strong> se llama primero y se usa para inicializar el propio objeto (cachear componentes). <strong>Start</strong> se llama después de todos los Awake, ideal para referencias a otros objetos que ya se inicializaron. Además, Awake se llama incluso si el objeto está desactivado; Start no."
+    },
+    {
+      "id": "unity_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de MonoBehaviour se recomienda colocar el código de física (Rigidbody, fuerzas)?",
+      "options": [
+        "FixedUpdate()",
+        "Update()",
+        "LateUpdate()",
+        "Start()",
+        "Awake()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate()</strong> se ejecuta en intervalos de tiempo fijos (por defecto cada 0.02 segundos), sincronizado con el motor de física de Unity. Colocar física en <code>Update()</code> causa comportamientos inconsistentes porque Update varía con el framerate."
+    },
+    {
+      "id": "unity_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirve LateUpdate() y cuál es su caso de uso más común?",
+      "options": [
+        "Se ejecuta después de todos los Update(); es ideal para que la cámara siga al jugador (cuando el jugador ya se movió)",
+        "Se ejecuta antes de Update(); sirve para preparar la física",
+        "Solo se llama en el último frame antes de destruir el objeto",
+        "Se usa para lógica de UI y menús",
+        "Es equivalente a Update() pero solo en móviles"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>LateUpdate()</strong> se ejecuta una vez por frame, pero <em>después</em> de que todos los <code>Update()</code> hayan corrido. El caso clásico es la cámara que sigue al jugador: el jugador se mueve en Update, y la cámara ajusta su posición en LateUpdate para evitar jitter."
+    },
+    {
+      "id": "unity_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo se llama OnDestroy()?",
+      "options": [
+        "Cuando el objeto es destruido con Destroy() o al descargar la escena",
+        "Cuando el objeto se desactiva con SetActive(false)",
+        "Cada frame antes de que el objeto sea renderizado",
+        "Solo cuando se cierra la aplicación",
+        "Cuando el componente se elimina del Inspector"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnDestroy()</strong> se llama cuando el GameObject es destruido (por <code>Destroy(gameObject)</code>) o cuando la escena que lo contiene es descargada. Es el lugar correcto para cancelar suscripciones a eventos y liberar recursos externos."
+    },
+    {
+      "id": "unity_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué NO se recomienda llamar GetComponent<T>() dentro de Update()?",
+      "options": [
+        "Porque GetComponent busca el componente cada frame, lo que es costoso en rendimiento; se debe cachear en Awake()",
+        "Porque GetComponent no funciona en tiempo de ejecución, solo en el Inspector",
+        "Porque Update() no tiene acceso a los componentes del GameObject",
+        "Porque puede causar un NullReferenceException automáticamente",
+        "No hay ninguna razón, es perfectamente válido"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>GetComponent&lt;T&gt;()</code> realiza una búsqueda en el objeto cada vez que se llama. Hacerlo en <strong>Update()</strong> (60+ veces por segundo) es muy costoso. La solución es cachear la referencia en <strong>Awake()</strong> y reutilizarla."
+    },
+    {
+      "id": "unity_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la jerarquía de herencia correcta de MonoBehaviour?",
+      "options": [
+        "MonoBehaviour → Behaviour → Component → Object",
+        "MonoBehaviour → Component → Behaviour → Object",
+        "MonoBehaviour → Object → Component → Behaviour",
+        "MonoBehaviour → ScriptableObject → Component → Object",
+        "MonoBehaviour → GameObject → Transform → Object"
+      ],
+      "correctIndex": 0,
+      "explanation": "La cadena de herencia es <strong>MonoBehaviour → Behaviour → Component → Object</strong>. Esto le da acceso a <code>gameObject</code> y <code>transform</code> (de Component), y a <code>enabled</code> (de Behaviour)."
+    },
+    {
+      "id": "unity_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué ocurre si defines un método llamado Update() en tu script de MonoBehaviour y también lo llamas manualmente desde otro método?",
+      "options": [
+        "Update() se ejecuta normalmente cada frame por Unity, y también se ejecuta cuando tú lo llamas manualmente; son llamadas independientes",
+        "Unity detecta la llamada manual y lanza una excepción",
+        "La llamada manual sobreescribe el comportamiento automático de Unity",
+        "Update() solo funciona si es llamado manualmente, Unity no lo llama automáticamente",
+        "Nada, Unity ignora métodos Update() que sean llamados manualmente"
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, <code>Update()</code> es un método normal. Unity lo llama automáticamente cada frame usando reflection. Si tú también lo llamas manualmente, simplemente se ejecuta esa vez extra. No hay magia especial que lo bloquee, son ejecuciones independientes."
+    },
+    {
+      "id": "unity_id_001",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script:",
+      "code": "public class Enemy : MonoBehaviour\n{\n    private NavMeshAgent agent;\n\n    void Awake()\n    {\n        agent = GetComponent<NavMeshAgent>();\n    }\n\n    void Start()\n    {\n        agent.SetDestination(Vector3.zero);\n    }\n}",
+      "question": "¿Por qué se cachea el NavMeshAgent en Awake() y no en Start()?",
+      "target": "Awake",
+      "acceptedAnswers": ["Awake", "awake", "en Awake", "método Awake"],
+      "hints": [
+        "Piensa en qué método se ejecuta primero en el ciclo de vida",
+        "Start() puede referenciar a otros objetos porque ya hicieron su Awake",
+        "Awake es para inicialización propia; aquí agent es un componente del mismo objeto"
+      ],
+      "explanation": "Se cachea en <strong>Awake()</strong> porque es la auto-inicialización del propio objeto: el <code>NavMeshAgent</code> pertenece al mismo GameObject. En <strong>Start()</strong> ya podemos usar <code>agent</code> porque Awake ya corrió. Esta separación garantiza que cuando <em>otro</em> script llame a este Enemy en su Start(), el agent ya esté listo."
+    },
+    {
+      "id": "unity_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script de cámara:",
+      "code": "public class CameraFollow : MonoBehaviour\n{\n    public Transform target;\n    public Vector3 offset;\n\n    void LateUpdate()\n    {\n        transform.position = target.position + offset;\n    }\n}",
+      "question": "¿Por qué se usa LateUpdate() y no Update() para seguir al jugador?",
+      "target": "LateUpdate",
+      "acceptedAnswers": ["LateUpdate", "lateupdate", "Late Update", "porque LateUpdate corre después de Update"],
+      "hints": [
+        "¿Cuándo se mueve el jugador — en qué método?",
+        "LateUpdate se ejecuta después de todos los Update()",
+        "Si la cámara se mueve en el mismo ciclo que el jugador, ¿qué problema puede ocurrir?"
+      ],
+      "explanation": "Se usa <strong>LateUpdate()</strong> porque el jugador (target) se mueve en <code>Update()</code>. Si la cámara también usara <code>Update()</code>, no habría garantía de cuál se ejecuta primero — podría haber jitter (temblor). Con LateUpdate(), la cámara siempre lee la posición <em>final</em> del jugador en ese frame."
+    },
+    {
+      "id": "unity_id_003",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este script con un bug de rendimiento:",
+      "code": "public class Shooter : MonoBehaviour\n{\n    void Update()\n    {\n        Rigidbody rb = GetComponent<Rigidbody>();\n        if (Input.GetKeyDown(KeyCode.Space))\n        {\n            rb.AddForce(Vector3.up * 500f);\n        }\n    }\n}",
+      "question": "¿Qué problema de rendimiento tiene este código y en qué método debería corregirse?",
+      "target": "Awake",
+      "acceptedAnswers": ["Awake", "awake", "cachear en Awake", "mover GetComponent a Awake"],
+      "hints": [
+        "¿Cuántas veces por segundo se llama Update()?",
+        "¿GetComponent hace una búsqueda cada vez que se llama?",
+        "¿Dónde deberías guardar la referencia al Rigidbody para reutilizarla?"
+      ],
+      "explanation": "El problema es que <code>GetComponent&lt;Rigidbody&gt;()</code> se llama <strong>cada frame</strong> (60+ veces/segundo), aunque solo se necesite cuando se presiona Space. La solución es cachear el Rigidbody en <strong>Awake()</strong>: <code>private Rigidbody rb; void Awake() { rb = GetComponent&lt;Rigidbody&gt;(); }</code>"
+    },
+    {
+      "id": "unity_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "public class AudioManager : MonoBehaviour\n{\n    void OnEnable()\n    {\n        GameEvents.OnPlayerDied += PlayDeathSound;\n    }\n\n    void OnDisable()\n    {\n        GameEvents.OnPlayerDied -= PlayDeathSound;\n    }\n\n    void PlayDeathSound() { /* ... */ }\n}",
+      "question": "¿Qué patrón implementan OnEnable() y OnDisable() en este script?",
+      "target": "suscripción a eventos",
+      "acceptedAnswers": ["suscripción a eventos", "subscripción a eventos", "event subscription", "suscribirse y desuscribirse", "patrón de eventos"],
+      "hints": [
+        "Observa los operadores += y -=",
+        "¿Qué hace OnEnable con el evento? ¿Y OnDisable?",
+        "Este patrón evita que el objeto responda a eventos cuando está desactivado"
+      ],
+      "explanation": "Implementan el patrón de <strong>suscripción a eventos</strong>: en <code>OnEnable()</code> se suscribe al evento (<code>+=</code>) y en <code>OnDisable()</code> se desuscribe (<code>-=</code>). Esto es crítico para evitar <em>memory leaks</em> y llamadas a objetos destruidos. Si el AudioManager se desactiva, deja de escuchar el evento."
+    },
+    {
+      "id": "unity_id_005",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este fragmento:",
+      "code": "public class GameManager : MonoBehaviour\n{\n    void Awake()\n    {\n        // Se llama incluso si el objeto está desactivado\n        Debug.Log(\"GameManager inicializado\");\n    }\n\n    void Start()\n    {\n        // Aquí otros objetos ya hicieron su Awake\n        Player player = FindObjectOfType<Player>();\n        player.Initialize(this);\n    }\n}",
+      "question": "¿Por qué se llama a FindObjectOfType<Player>() en Start() y no en Awake()?",
+      "target": "Start",
+      "acceptedAnswers": ["Start", "start", "en Start", "porque en Start otros objetos ya hicieron su Awake"],
+      "hints": [
+        "¿Cuándo garantiza Unity que todos los Awake() han corrido?",
+        "Si buscas al Player en Awake(), ¿habrá corrido el Awake del Player ya?",
+        "Start() se llama después de que TODOS los Awake() del frame inicial hayan corrido"
+      ],
+      "explanation": "Se usa <strong>Start()</strong> porque Unity garantiza que para cuando Start() corre, <em>todos</em> los Awake() de la escena ya se ejecutaron. Si se llamara a <code>FindObjectOfType&lt;Player&gt;()</code> en Awake(), el Player podría no estar inicializado aún (dependiendo del orden de ejecución de scripts)."
+    },
+    {
+      "id": "unity_id_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este script:",
+      "code": "public class Projectile : MonoBehaviour\n{\n    void OnDestroy()\n    {\n        ObjectPool.Instance.ReturnBullet(gameObject);\n    }\n}",
+      "question": "¿Qué problema potencial tiene llamar a ObjectPool.Instance desde OnDestroy()?",
+      "target": "NullReferenceException",
+      "acceptedAnswers": ["NullReferenceException", "null reference", "el singleton puede ser nulo", "ObjectPool puede no existir", "error si la escena se descarga"],
+      "hints": [
+        "¿Cuándo se llama OnDestroy()? ¿Solo con Destroy() o también al cambiar de escena?",
+        "Si se descarga la escena, ¿en qué orden se destruyen los objetos?",
+        "¿Qué pasa si ObjectPool.Instance ya fue destruido antes que este objeto?"
+      ],
+      "explanation": "El problema es que <strong>OnDestroy()</strong> también se llama al descargar la escena. Si <code>ObjectPool</code> fue destruido antes que este <code>Projectile</code>, <code>ObjectPool.Instance</code> será <code>null</code> y lanzará un <strong>NullReferenceException</strong>. La solución es verificar: <code>if (ObjectPool.Instance != null)</code> antes de llamarlo."
+    },
+    {
+      "id": "unity_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre del método que Unity llama automáticamente cada frame:",
+      "codeTemplate": "void __________()\n{\n    transform.Translate(Vector3.forward * speed * Time.deltaTime);\n}",
+      "expectedAnswer": "Update",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "Es el método más común en MonoBehaviour",
+        "Se llama una vez por frame, a la velocidad del framerate",
+        "Su nombre en inglés significa 'actualizar'"
+      ],
+      "explanation": "<strong>Update()</strong> es llamado por Unity cada frame. Para movimiento independiente del framerate se multiplica por <code>Time.deltaTime</code> (tiempo transcurrido desde el último frame)."
+    },
+    {
+      "id": "unity_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre del método que se llama UNA vez, antes que Start(), para inicializar el objeto:",
+      "codeTemplate": "private Rigidbody rb;\n\nvoid __________()\n{\n    rb = GetComponent<Rigidbody>();\n}",
+      "expectedAnswer": "Awake",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "Se ejecuta antes que Start()",
+        "Es ideal para cachear componentes del propio objeto",
+        "En inglés significa 'despertar'"
+      ],
+      "explanation": "<strong>Awake()</strong> es el primer método del ciclo de vida. Se usa para auto-inicialización — cachear componentes propios con <code>GetComponent</code> es el patrón más común aquí."
+    },
+    {
+      "id": "unity_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre del método para física que se ejecuta en intervalos de tiempo FIJOS (no dependiente del framerate):",
+      "codeTemplate": "void __________()\n{\n    rb.AddForce(Vector3.up * jumpForce);\n}",
+      "expectedAnswer": "FixedUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "Tiene 'Fixed' en el nombre",
+        "Se sincroniza con el motor de física de Unity",
+        "Por defecto se llama cada 0.02 segundos"
+      ],
+      "explanation": "<strong>FixedUpdate()</strong> se ejecuta a intervalos fijos de tiempo (por defecto 50 veces por segundo). Todo código de física (<code>Rigidbody.AddForce</code>, etc.) debe ir aquí para resultados consistentes."
+    },
+    {
+      "id": "unity_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método que se llama después de todos los Update(), ideal para que la cámara siga al jugador:",
+      "codeTemplate": "void __________()\n{\n    transform.position = target.position + offset;\n}",
+      "expectedAnswer": "LateUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "Tiene 'Late' en el nombre",
+        "Se ejecuta una vez por frame pero después de Update()",
+        "Evita jitter en la cámara"
+      ],
+      "explanation": "<strong>LateUpdate()</strong> garantiza que cuando corre, todos los <code>Update()</code> de ese frame ya finalizaron. La cámara lee la posición final del jugador, evitando el jitter que ocurriría si ambos usaran <code>Update()</code>."
+    },
+    {
+      "id": "unity_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa para cachear el componente Rigidbody en una variable privada llamada 'rb' dentro de Awake():",
+      "expectedAnswer": "rb = GetComponent<Rigidbody>();",
+      "alternateAnswers": ["rb = GetComponent<Rigidbody>() ;", "this.rb = GetComponent<Rigidbody>();"],
+      "placeholder": "rb = ...",
+      "hints": [
+        "Usa el método GetComponent con el tipo genérico",
+        "El tipo entre <> es Rigidbody",
+        "Termina con punto y coma"
+      ],
+      "explanation": "<code>rb = GetComponent&lt;Rigidbody&gt;();</code> busca el componente Rigidbody en el mismo GameObject y guarda la referencia. Al hacerlo en Awake(), la referencia está disponible desde el primer frame sin costo repetido."
+    },
+    {
+      "id": "unity_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el nombre del método que se llama cuando el objeto es destruido o la escena se descarga:",
+      "codeTemplate": "void __________()\n{\n    GameEvents.OnPlayerDied -= HandlePlayerDied;\n}",
+      "expectedAnswer": "OnDestroy",
+      "alternateAnswers": [],
+      "placeholder": "Nombre del método",
+      "hints": [
+        "Tiene 'Destroy' en el nombre",
+        "Es el último método en el ciclo de vida",
+        "Se usa para limpiar suscripciones a eventos y liberar recursos"
+      ],
+      "explanation": "<strong>OnDestroy()</strong> es el último método del ciclo de vida. Desuscribirse de eventos aquí (<code>-=</code>) es una buena práctica para evitar memory leaks y errores de referencia nula después de que el objeto sea destruido."
+    }
+  ]
+}
