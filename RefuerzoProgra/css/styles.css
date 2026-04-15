@@ -247,6 +247,7 @@ code, pre { font-family: var(--font-mono); }
 
 /* ─── Sidebar ────────────────────────────────── */
 #sidebar {
+  min-width: 0;
   background: var(--bg-surface);
   border-right: 1px solid var(--border);
   display: flex;
@@ -599,6 +600,7 @@ code, pre { font-family: var(--font-mono); }
 
 /* ─── Documentation Panel ────────────────────── */
 #documentation-panel {
+  min-width: 0;
   background: var(--bg-surface);
   border-left: 1px solid var(--border);
   display: flex;
@@ -876,6 +878,68 @@ code, pre { font-family: var(--font-mono); }
 }
 .question-text strong { color: var(--text-main); }
 
+/* ─── Panel toggle buttons ────────────────────── */
+.panel-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.panel-toggle-btn:hover { background: var(--bg-hover); color: var(--text-main); }
+
+/* Make h2 in panels flex so the toggle btn can be positioned */
+#sidebar h2 {
+  display: flex;
+  align-items: center;
+}
+#sidebar h2 .panel-toggle-btn { margin-left: auto; }
+
+#documentation-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+#documentation-panel h2 .panel-toggle-btn { margin-right: 0.25rem; }
+
+/* Restore buttons — shown outside panels when collapsed */
+.panel-restore-btn {
+  display: none;
+  position: fixed;
+  top: calc(var(--header-h) + 1rem);
+  z-index: 150;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 20px;
+  padding: 10px 3px;
+  font-size: 0.65rem;
+  line-height: 1;
+  transition: var(--transition);
+}
+.panel-restore-btn:hover { background: var(--bg-hover); color: var(--text-main); }
+.panel-restore-left  { left: 0;  border-left: none;  border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.panel-restore-right { right: 0; border-right: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+
+/* Smooth column transitions for desktop collapses */
+#app-main { transition: grid-template-columns 250ms ease; }
+
+#app-main.sidebar-collapsed {
+  grid-template-columns: 0 1fr var(--docs-w);
+}
+#app-main.docs-collapsed {
+  grid-template-columns: var(--sidebar-w) 1fr 0;
+}
+
+/* ─── Mobile Navigation Bar ─────────────────── */
+#mobile-nav { display: none; }
+
 /* ─── Responsive ─────────────────────────────── */
 @media (max-width: 1100px) {
   :root { --docs-w: 260px; }
@@ -885,6 +949,48 @@ code, pre { font-family: var(--font-mono); }
   #documentation-panel { display: none; }
 }
 @media (max-width: 600px) {
-  #app-main { grid-template-columns: 1fr; }
+  /* Only evaluation panel visible by default; JS switches panels */
+  #app-main {
+    grid-template-columns: 1fr;
+    padding-bottom: 56px;
+    height: calc(100vh - var(--header-h) - 56px);
+  }
   #sidebar { display: none; }
+  #documentation-panel { display: none; }
+
+  /* Hide desktop toggle/restore buttons on mobile */
+  .panel-toggle-btn, .panel-restore-btn { display: none !important; }
+
+  /* Mobile bottom nav */
+  #mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    z-index: 200;
+  }
+  #mobile-nav button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-top: 2px solid transparent;
+    color: var(--text-muted);
+    padding: 4px 0.5rem;
+    font-size: 0.68rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-family: var(--font-ui);
+  }
+  #mobile-nav button span:first-child { font-size: 1.15rem; }
+  #mobile-nav button.active {
+    color: var(--blue);
+    border-top-color: var(--blue);
+  }
 }
