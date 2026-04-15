@@ -1,12 +1,17 @@
 /**
  * ProgressTracker — Single Responsibility: persists all progress data to localStorage.
  * Knows nothing about UI or game logic — only reads and writes progress state.
+ *
+ * Optional: pass an `onSave` callback to be notified after every write.
+ * Used by app.js to debounce remote sync to the D1 database.
  */
 export class ProgressTracker {
   #STORAGE_KEY = 'poo_unity_v1';
   #data;
+  #onSave;
 
-  constructor() {
+  constructor({ onSave } = {}) {
+    this.#onSave = onSave ?? null;
     this.#data = this.#load();
   }
 
@@ -20,6 +25,23 @@ export class ProgressTracker {
 
   #save() {
     localStorage.setItem(this.#STORAGE_KEY, JSON.stringify(this.#data));
+    this.#onSave?.();
+  }
+
+  /** Returns the full progress state (for remote sync). */
+  getState() {
+    return this.#data;
+  }
+
+  /**
+   * Replaces the in-memory state with externally loaded data (e.g. from D1).
+   * Also updates localStorage so offline fallback stays current.
+   */
+  loadState(data) {
+    if (data && typeof data === 'object') {
+      this.#data = data;
+      localStorage.setItem(this.#STORAGE_KEY, JSON.stringify(this.#data));
+    }
   }
 
   /** Returns progress state for a section, initializing if not present. */

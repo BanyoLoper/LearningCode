@@ -1,0 +1,17 @@
+# Wrangler local state (API tokens, local D1 data, cache)
+.wrangler/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

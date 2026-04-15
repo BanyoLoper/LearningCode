@@ -90,8 +90,141 @@ code, pre { font-family: var(--font-mono); }
   width: 0%;
   transition: width 500ms ease;
 }
-#overall-progress-text { font-size: 0.75rem; color: var(--text-muted); }
+#btn-help {
+  background: rgba(88, 166, 255, 0.1);
+  border: 1px solid rgba(88, 166, 255, 0.4);
+  color: var(--blue);
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+#btn-help:hover {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: var(--blue);
+}
+
+#btn-bug {
+  background: rgba(248, 81, 73, 0.08);
+  border: 1px solid rgba(248, 81, 73, 0.35);
+  color: var(--red);
+  padding: 5px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+#btn-bug:hover {
+  background: rgba(248, 81, 73, 0.18);
+  border-color: var(--red);
+}
+
+/* ─── SweetAlert2 dark theme override ───────── */
+.swal2-popup {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-ui) !important;
+}
+.swal2-title {
+  color: var(--text-main) !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+}
+.swal2-html-container {
+  color: var(--text-muted) !important;
+  font-size: 0.88rem !important;
+}
+.swal2-html-container strong {
+  color: var(--text-main) !important;
+}
+.swal2-confirm {
+  background: var(--blue) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  padding: 6px 20px !important;
+  box-shadow: none !important;
+}
+.swal2-confirm:focus { box-shadow: 0 0 0 3px rgba(88,166,255,0.3) !important; }
+.swal2-cancel {
+  background: var(--bg-hover) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  padding: 6px 20px !important;
+  box-shadow: none !important;
+}
+.swal2-cancel:hover { background: var(--border) !important; color: var(--text-main) !important; }
+.swal2-validation-message {
+  background: rgba(248, 81, 73, 0.1) !important;
+  color: var(--red) !important;
+  border: 1px solid rgba(248, 81, 73, 0.25) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 0.8rem !important;
+}
+
+/* ─── Bug report form ────────────────────────── */
+.bug-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  text-align: left;
+}
+.bug-form label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bug-form select,
+.bug-form textarea {
+  width: 100%;
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  padding: 8px 10px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.bug-form select:focus,
+.bug-form textarea:focus { border-color: var(--blue); }
+.bug-form select option { background: var(--bg-card); }
+.bug-form textarea { resize: vertical; min-height: 90px; }
+.bug-disclaimer {
+  font-size: 0.75rem;
+  color: var(--yellow);
+  background: rgba(210, 153, 34, 0.08);
+  border: 1px solid rgba(210, 153, 34, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  line-height: 1.55;
+  margin-top: 0.25rem;
+}
+
 .header-right { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+
+.user-email {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8b949e);
+  background: var(--bg-card, #0d1117);
+  border: 1px solid var(--border, #30363d);
+  border-radius: 999px;
+  padding: 2px 10px;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
 #btn-reset {
   background: transparent;
   border: 1px solid var(--border);

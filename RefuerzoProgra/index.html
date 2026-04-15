@@ -15,13 +15,12 @@
     <div class="header-left">
       <h1>🎮 POO en C# para Unity</h1>
     </div>
-    <div class="header-center">
-      <div id="overall-progress-bar" title="Progreso general del curso">
-        <div id="overall-progress-fill"></div>
-      </div>
-      <span id="overall-progress-text">Cargando…</span>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button id="btn-help" title="Instrucciones">Ayuda?</button>
+      <button id="btn-bug"  title="Reportar un bug">🐛 Bug</button>
     </div>
     <div class="header-right">
+      <span id="user-email" class="user-email" title=""></span>
       <button id="btn-reset" title="Reiniciar todo el progreso">↺ Reset</button>
     </div>
   </header>
@@ -66,6 +65,97 @@
     <div class="loading-spinner"></div>
     <p>Cargando curso…</p>
   </div>
+
+  <!-- Help modal — SweetAlert2 -->
+  <script>
+    document.getElementById('btn-help').addEventListener('click', () => {
+      Swal.fire({
+        title: '📖 Instrucciones',
+        html: `
+          <ul style="text-align:left;padding-left:1.2rem;line-height:1.8;margin:0">
+            <li>Responde las preguntas para <strong>desbloquear temas</strong>.</li>
+            <li>Cada sección tiene <strong>20 preguntas</strong> pero solo debes responder <strong>5 correctas</strong> para pasar al siguiente nivel.</li>
+            <li>Al final de cada sección hay un <strong>examen final de 20 preguntas</strong>.</li>
+            <li>Puedes navegar en la <strong>documentación de la derecha</strong> en todo momento.</li>
+          </ul>`,
+        confirmButtonText: 'Entendido',
+      });
+    });
+  </script>
+
+  <!-- Bug report modal — Web3Forms -->
+  <script>
+    const BUG_ACCESS_KEY = '9c20ede2-cd21-42dd-be82-a26dd6832f08';
+
+    document.getElementById('btn-bug').addEventListener('click', () => {
+      Swal.fire({
+        title: '🐛 Reportar Bug',
+        html: `
+          <div class="bug-form">
+            <label for="swal-bug-type">Tipo de bug</label>
+            <select id="swal-bug-type">
+              <option value="">— Selecciona un tipo —</option>
+              <option value="Funcionalidad">Funcionalidad</option>
+              <option value="Respuesta a preguntas">Respuesta a preguntas</option>
+              <option value="Acceso">Acceso</option>
+              <option value="Otro">Otro</option>
+            </select>
+
+            <label for="swal-bug-desc">Descripción del bug</label>
+            <textarea id="swal-bug-desc" rows="4"
+              placeholder="Describe el problema con el mayor detalle posible…"></textarea>
+
+            <p class="bug-disclaimer">
+              ⚠️ Los bugs serán revisados en un lapso menor de 2 días.
+              Reportes falsos o bromas de issues podrán revocar tu acceso a la aplicación.
+            </p>
+          </div>`,
+        confirmButtonText: 'Enviar reporte',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
+        focusConfirm: false,
+        preConfirm: async () => {
+          const type = document.getElementById('swal-bug-type').value;
+          const desc = document.getElementById('swal-bug-desc').value.trim();
+          if (!type) {
+            Swal.showValidationMessage('Selecciona un tipo de bug.');
+            return false;
+          }
+          if (desc.length < 10) {
+            Swal.showValidationMessage('La descripción debe tener al menos 10 caracteres.');
+            return false;
+          }
+          try {
+            const res = await fetch('https://api.web3forms.com/submit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                access_key: BUG_ACCESS_KEY,
+                subject: `[Bug] ${type} — RefuerzoProgra`,
+                from_name: 'RefuerzoProgra',
+                message: `Tipo: ${type}\n\nDescripción:\n${desc}`,
+              }),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Error desconocido');
+            return true;
+          } catch (err) {
+            Swal.showValidationMessage(`No se pudo enviar: ${err.message}`);
+            return false;
+          }
+        },
+      }).then(result => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Reporte enviado!',
+            text: 'Gracias. Revisaremos el problema en menos de 2 días.',
+            confirmButtonText: 'Cerrar',
+          });
+        }
+      });
+    });
+  </script>
 
   <!-- App entry point — type="module" enables ES6 imports -->
   <script type="module" src="js/app.js?v=8"></script>

@@ -11,3 +11,13 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Wrangler local state (API tokens, local D1 data, cache)
+.wrangler/
+.wrangler/*
+
+# Environment / secrets — never commit these
+.env
+.env.*
+!.env.example
+.dev.vars
