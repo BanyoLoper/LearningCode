@@ -1,7 +1,7 @@
 # Cloudflare Pages + D1 configuration for RefuerzoProgra
 # Docs: https://developers.cloudflare.com/pages/functions/bindings/#d1-databases
 
-name                  = "refuerzo-progra"
+name                  = "learning-code"
 compatibility_date    = "2024-09-23"
 pages_build_output_dir = "."
 

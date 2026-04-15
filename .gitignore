@@ -1,5 +1,6 @@
 # Wrangler local state (API tokens, local D1 data, cache)
 .wrangler/
+wrangler.jsonc
 
 # Environment / secrets
 .env
