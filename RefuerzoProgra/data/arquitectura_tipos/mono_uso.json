@@ -1,0 +1,367 @@
+{
+  "id": "mono_uso",
+  "title": "MonoBehaviour — Cuándo Sí y Cuándo No",
+  "icon": "🎮",
+  "color": "#283593",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "El Anti-patrón: God MonoBehaviour",
+        "type": "definition",
+        "content": "Un <strong>God MonoBehaviour</strong> es un script que acumula demasiadas responsabilidades: maneja input, aplica física, gestiona stats, controla animaciones, guarda datos y conecta con la UI, todo en la misma clase. Un script de 400+ líneas que hace de todo es el síntoma principal. El nombre viene del <em>anti-patrón God Object</em>: una clase que 'sabe todo y hace todo'. En Unity, es tentador agregar código al mismo <code>MonoBehaviour</code> porque 'ya está ahí', pero el resultado es un código frágil, difícil de testear y casi imposible de reutilizar."
+      },
+      {
+        "id": "doc-2",
+        "title": "Separar Lógica: POCO + MonoBehaviour como Fachada",
+        "type": "code",
+        "content": "// ❌ Anti-patrón: God MonoBehaviour de 400 líneas\npublic class PlayerController : MonoBehaviour\n{\n    // Input, movimiento, stats, combate, inventario, UI... todo mezclado\n    void Update() { /* 150 líneas */ }\n    void HandleCombat() { /* 100 líneas */ }\n    void ManageInventory() { /* 80 líneas */ }\n}\n\n// ✅ Patrón correcto: separación de responsabilidades\npublic class MovementLogic        // POCO — lógica de movimiento pura\n{\n    public Vector3 ComputeVelocity(Vector3 input, float speed) =>\n        input.normalized * speed;\n}\n\npublic class CombatSystem         // POCO — lógica de combate pura\n{\n    private DamageCalculator _dmg = new DamageCalculator(15);\n    public int Attack(int raw, bool crit) => _dmg.Calculate(raw, crit);\n}\n\npublic class PlayerFacade : MonoBehaviour  // Fachada liviana\n{\n    private MovementLogic _movement = new MovementLogic();\n    private CombatSystem _combat = new CombatSystem();\n    private Rigidbody _rb;\n\n    void Start() => _rb = GetComponent<Rigidbody>();\n\n    void Update()\n    {\n        Vector3 input = new Vector3(Input.GetAxis(\"Horizontal\"), 0,\n                                    Input.GetAxis(\"Vertical\"));\n        _rb.velocity = _movement.ComputeVelocity(input, 5f);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "GetComponent como Inyección de Dependencias",
+        "type": "analogy",
+        "content": "Imagina que <code>PlayerFacade</code> necesita un <code>Animator</code> para reproducir animaciones. En lugar de heredar de una clase hipotética <code>AnimatedEntity</code>, usas <code>GetComponent&lt;Animator&gt;</code> en <code>Start()</code>. Esto es <strong>composición sobre herencia</strong>: tu script <em>tiene</em> un <code>Animator</code> en lugar de <em>ser</em> un <code>Animator</code>. <code><strong>GetComponent</strong></code> actúa como inyección de dependencia: obtiene el componente que necesitas en el momento que lo necesitas. Esta es una de las razones por las que Unity favorece la composición: puedes combinar <code>Rigidbody</code>, <code>Animator</code> y tus propios scripts sin restricciones de herencia simple."
+      },
+      {
+        "id": "doc-4",
+        "title": "Cuándo SÍ usar MonoBehaviour",
+        "type": "note",
+        "content": "<strong>Sí</strong> usa <code>MonoBehaviour</code> cuando necesitas: (1) Ciclo de vida Unity: <code>Start</code>, <code>Update</code>, <code>FixedUpdate</code>, <code>OnDestroy</code>; (2) Callbacks de física: <code>OnCollisionEnter</code>, <code>OnTriggerEnter</code>; (3) Callbacks de Input (legacy: <code>OnMouseDown</code>); (4) Corutinas con <code>StartCoroutine</code>; (5) Aparecer en el Inspector de Unity (campos <code>[SerializeField]</code>); (6) Ser adjuntado a un <strong>GameObject</strong>. <strong>No</strong> uses <code>MonoBehaviour</code> solo por costumbre: si la clase es lógica pura sin necesidad del ciclo de vida de Unity, un <strong>POCO</strong> es la opción correcta."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave: MonoBehaviour y Composición",
+        "type": "list",
+        "items": [
+          "Un God MonoBehaviour de 400+ líneas es una señal de que el código necesita refactorización.",
+          "Separa la lógica en POCOs y convierte el MonoBehaviour en una fachada liviana.",
+          "GetComponent<T> obtiene componentes en tiempo de ejecución — úsalo en Start(), no en Update().",
+          "Composición sobre herencia: el script tiene componentes en lugar de heredar de ellos.",
+          "MonoBehaviour es necesario para ciclo de vida, física, corutinas y el Inspector.",
+          "Los POCOs dentro de un MonoBehaviour pueden testearse de forma aislada."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "mu_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la señal más clara de que un `MonoBehaviour` se ha convertido en un **God MonoBehaviour** (anti-patrón)?",
+      "options": [
+        "El script supera las 400 líneas y mezcla input, física, stats, combate e inventario en la misma clase.",
+        "El script tiene más de 5 métodos públicos que pueden ser llamados desde otros scripts.",
+        "El script usa GetComponent más de 3 veces en el método Start.",
+        "El script tiene variables SerializeField que se configuran desde el Inspector.",
+        "El script sobreescribe Update, FixedUpdate y LateUpdate al mismo tiempo."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>God MonoBehaviour</strong> se identifica por acumular demasiadas responsabilidades en una sola clase: input, física, lógica de negocio, UI y persistencia mezclados. Las líneas de código son síntoma, no causa: lo real es la mezcla de responsabilidades."
+    },
+    {
+      "id": "mu_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuándo es correcto usar `GetComponent<T>()` según las buenas prácticas de Unity?",
+      "options": [
+        "En Start() o Awake() para cachear el componente en una variable privada, y usarlo después sin llamar a GetComponent nuevamente.",
+        "Dentro de Update() en cada frame porque garantiza que siempre tenemos la referencia más actual.",
+        "Solo desde otros GameObjects usando FindObjectOfType, nunca desde el mismo GameObject.",
+        "Solo en editor tools, nunca en código de runtime porque es demasiado costoso.",
+        "Siempre directamente en el lugar donde se necesita para mayor claridad de código."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>GetComponent</strong> tiene un costo de búsqueda. La práctica correcta es cachearlo en <code>Start()</code> o <code>Awake()</code>: <code>private Rigidbody _rb; void Start() { _rb = GetComponent&lt;Rigidbody&gt;(); }</code>. Llamarlo en <code>Update()</code> cada frame es un error de rendimiento común."
+    },
+    {
+      "id": "mu_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué principio de diseño aplica cuando un script de Unity usa composición (`GetComponent<Animator>()`) en lugar de heredar de una clase base que tiene Animator?",
+      "options": [
+        "Composición sobre herencia: el script tiene un Animator en lugar de ser uno.",
+        "Herencia múltiple: el script accede a Animator sin la restricción de C# de una sola clase base.",
+        "Polimorfismo: GetComponent permite que distintos tipos de Animator respondan igual.",
+        "Encapsulamiento: GetComponent oculta la implementación del Animator al script.",
+        "Abstracción: el script no necesita conocer los detalles internos del Animator."
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>composición sobre herencia</strong> significa que un objeto <em>tiene</em> otro objeto en lugar de <em>ser</em> ese objeto. En Unity, <code>GetComponent&lt;Animator&gt;()</code> obtiene el componente que 'tiene' el GameObject. Esto es más flexible que la herencia: puedes combinar cualquier componente sin restricciones de herencia simple."
+    },
+    {
+      "id": "mu_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes un `PlayerController : MonoBehaviour` de 400 líneas. ¿Cuál es la estrategia de refactorización correcta?",
+      "options": [
+        "Extraer la lógica pura (movimiento, combate, stats) a POCOs separados y dejar PlayerController como una fachada que los coordina.",
+        "Dividir el MonoBehaviour en 4 archivos parciales (partial class) para que cada archivo tenga 100 líneas.",
+        "Convertir PlayerController en clase abstract y crear subclases para cada responsabilidad.",
+        "Mover todo el código a un ScriptableObject para separarlo del GameObject.",
+        "Eliminar todos los métodos privados y hacerlos públicos para que otros MonoBehaviours puedan llamarlos."
+      ],
+      "correctIndex": 0,
+      "explanation": "La refactorización correcta extrae lógica pura a <strong>POCOs</strong> (<code>MovementLogic</code>, <code>CombatSystem</code>) y convierte <code>PlayerController</code> en una <strong>fachada</strong> liviana que conecta estos <strong>POCOs</strong> con Unity. Las clases <code>partial</code> solo dividen el archivo pero no la responsabilidad."
+    },
+    {
+      "id": "mu_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estos casos justifica claramente el uso de `MonoBehaviour` en lugar de un POCO?",
+      "options": [
+        "Un script que necesita detectar colisiones con OnCollisionEnter y reaccionar aplicando daño.",
+        "Una clase que calcula el daño final aplicando modificadores de stats.",
+        "Una clase que representa la información de un ítem: nombre, peso y valor.",
+        "Una clase que gestiona el estado de una quest: activa, completada o fallida.",
+        "Una clase que contiene una lista de enemigos derrotados para guardar en save file."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>OnCollisionEnter</code> es un callback del motor de física de Unity y solo está disponible en <strong>MonoBehaviour</strong>. Los demás casos (cálculo de daño, datos de ítem, estado de quest, lista de enemies) son lógica pura que pertenece a <strong>POCOs</strong>."
+    },
+    {
+      "id": "mu_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué es preferible usar `GetComponent<T>` (composición) en lugar de herencia para obtener un `Rigidbody` en Unity?",
+      "options": [
+        "Porque C# solo permite una clase base, y la composición permite combinar cualquier componente sin esa restricción.",
+        "Porque GetComponent es más rápido que la herencia en tiempo de ejecución.",
+        "Porque los MonoBehaviours no pueden heredar de clases que no sean de Unity.",
+        "Porque GetComponent permite herencia múltiple desde varios Rigidbody simultáneamente.",
+        "Porque la herencia de Rigidbody está desactivada en versiones de Unity superiores a 2020."
+      ],
+      "correctIndex": 0,
+      "explanation": "C# tiene <strong>herencia simple</strong>: un <code>MonoBehaviour</code> ya hereda de <code>MonoBehaviour</code> y no puede heredar de <code>Rigidbody</code> también. La <strong>composición</strong> vía <code>GetComponent&lt;Rigidbody&gt;()</code> es la solución: tu script <em>tiene</em> un <code>Rigidbody</code> sin las restricciones de herencia."
+    },
+    {
+      "id": "mu_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un `EnemyBrain : MonoBehaviour` de 500 líneas maneja: pathfinding, percepción (vista/oído), toma de decisiones y animaciones. ¿Cómo lo refactorizarías para cumplir el principio de responsabilidad única?",
+      "options": [
+        "Crear POCOs: PathfindingAgent, PerceptionSystem, DecisionMaker; y un AnimatorController; EnemyBrain queda como fachada que los coordina.",
+        "Crear una jerarquía de herencia: EnemyBase → EnemyWithPerception → EnemyWithPathfinding → EnemyBrain.",
+        "Convertir EnemyBrain en abstract y mover cada responsabilidad a una subclase concreta.",
+        "Dividir EnemyBrain en cuatro MonoBehaviours separados adjuntados al mismo GameObject.",
+        "Usar un ScriptableObject para cada responsabilidad y referenciarlos desde EnemyBrain."
+      ],
+      "correctIndex": 0,
+      "explanation": "La refactorización correcta crea <strong>POCOs</strong> independientes con responsabilidad única: <code>PathfindingAgent</code>, <code>PerceptionSystem</code>, <code>DecisionMaker</code>. <code>EnemyBrain</code> queda como <strong>fachada</strong> que los instancia, conecta sus outputs e interfaces con Unity (ciclo de vida, componentes)."
+    },
+    {
+      "id": "mu_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el problema de llamar a `GetComponent<Rigidbody>()` dentro del método `Update()` en lugar de cachearlo en `Start()`?",
+      "options": [
+        "GetComponent realiza una búsqueda por tipo en el GameObject cada vez que se llama, lo que es costoso ejecutarlo 60 veces por segundo.",
+        "GetComponent en Update devuelve null después del primer frame porque Unity libera la caché.",
+        "GetComponent solo puede llamarse desde coroutines, no desde Update.",
+        "Llamar GetComponent en Update desactiva la optimización de batching de Unity.",
+        "Update corre en un thread secundario y GetComponent no es thread-safe."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>GetComponent</strong> realiza una búsqueda por tipo en los componentes del <strong>GameObject</strong> en cada llamada. Hacerlo en <code>Update()</code> (60 veces por segundo o más) es un costo innecesario. La solución es cachearlo: <code>private Rigidbody _rb; void Start() { _rb = GetComponent&lt;Rigidbody&gt;(); }</code>"
+    },
+    {
+      "id": "mu_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "question": "¿Cómo se llama el anti-patrón en que un MonoBehaviour acumula demasiadas responsabilidades (input, física, stats, UI, audio) en una sola clase?",
+      "target": "God MonoBehaviour",
+      "acceptedAnswers": ["God MonoBehaviour", "God Object", "god monobehaviour", "god object", "God Script", "clase dios"],
+      "hints": [
+        "El nombre viene de una deidad que 'lo sabe todo y lo puede todo'.",
+        "En inglés, el anti-patrón general se llama 'God Object'.",
+        "En Unity específicamente, al ser un script de MonoBehaviour se le llama 'God MonoBehaviour'."
+      ],
+      "explanation": "El <strong>God MonoBehaviour</strong> (derivado del anti-patrón <strong>God Object</strong>) es un script que viola el principio de responsabilidad única al concentrar múltiples responsabilidades. Resulta en código difícil de mantener, testear y reutilizar."
+    },
+    {
+      "id": "mu_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código:",
+      "code": "public class Player : MonoBehaviour\n{\n    private Rigidbody _rb;\n    private Animator _anim;\n\n    void Start()\n    {\n        _rb = GetComponent<Rigidbody>();\n        _anim = GetComponent<Animator>();\n    }\n}",
+      "question": "¿En qué método de Unity se cachean las referencias a componentes en este script?",
+      "target": "Start",
+      "acceptedAnswers": ["Start", "void Start", "Start()", "el método Start"],
+      "hints": [
+        "Es el método que se ejecuta una sola vez antes del primer Update.",
+        "Su nombre es una palabra en inglés que significa 'inicio'.",
+        "Es el lugar correcto para cachear GetComponent, no en Update."
+      ],
+      "explanation": "Las referencias se cachean en <strong><code>Start()</code></strong>, que se ejecuta una sola vez al inicio. Llamar <code>GetComponent</code> en <code>Start</code> y guardar el resultado en campos privados evita el costo de búsqueda repetida en cada frame de <code>Update</code>."
+    },
+    {
+      "id": "mu_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "question": "¿Qué principio de diseño orientado a objetos establece que es mejor que un objeto tenga (use) otros objetos que heredar de ellos?",
+      "target": "composición sobre herencia",
+      "acceptedAnswers": ["composición sobre herencia", "composition over inheritance", "composicion sobre herencia", "favor composition over inheritance"],
+      "hints": [
+        "Es un principio clásico de diseño OOP que Unity aplica en su sistema de componentes.",
+        "Describe la preferencia de usar 'has-a' (tiene un) en lugar de 'is-a' (es un).",
+        "En inglés se dice 'Composition over Inheritance'."
+      ],
+      "explanation": "El principio de <strong>composición sobre herencia</strong> (Composition over Inheritance) prefiere que los objetos se construyan combinando comportamientos (vía <code>GetComponent</code>, POCOs, interfaces) en lugar de usar jerarquías de herencia profundas. Unity está diseñado alrededor de este principio."
+    },
+    {
+      "id": "mu_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este código:",
+      "code": "public class EnemyFacade : MonoBehaviour\n{\n    private DamageSystem _damage = new DamageSystem();\n    private MovementAI _ai = new MovementAI();\n\n    void OnCollisionEnter(Collision col)\n    {\n        if (col.gameObject.CompareTag(\"Bullet\"))\n            _damage.ApplyDamage(10);\n    }\n\n    void Update()\n    {\n        _ai.UpdatePath(transform.position);\n    }\n}",
+      "question": "¿Qué rol cumple EnemyFacade en este diseño respecto a los POCOs DamageSystem y MovementAI?",
+      "target": "fachada",
+      "acceptedAnswers": ["fachada", "façade", "facade", "MonoBehaviour fachada", "intermediario", "coordinador"],
+      "hints": [
+        "EnemyFacade no contiene lógica propia: solo recibe eventos de Unity y los delega.",
+        "El patrón de diseño que describe una interfaz simplificada hacia subsistemas complejos se llama...",
+        "En arquitectura de software, la 'cara visible' de un edificio o sistema se llama 'fachada'."
+      ],
+      "explanation": "<code>EnemyFacade</code> cumple el rol de <strong>fachada</strong>: recibe los eventos de Unity (<code>OnCollisionEnter</code>, <code>Update</code>) y los delega a los <strong>POCOs</strong> que contienen la lógica real. No calcula nada por sí mismo: es un puente entre Unity y la lógica pura."
+    },
+    {
+      "id": "mu_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento de código:",
+      "code": "public class EnemyShooter : MonoBehaviour\n{\n    private WeaponLogic _weapon = new WeaponLogic();\n    private TargetingSystem _targeting = new TargetingSystem();\n    private ReloadHandler _reload = new ReloadHandler();\n\n    void Update()\n    {\n        if (_targeting.HasTarget())\n            _weapon.Fire(_targeting.GetTarget());\n\n        if (_weapon.NeedsReload())\n            _reload.Reload(_weapon);\n    }\n}",
+      "question": "¿Cuántas responsabilidades distintas tiene EnemyShooter directamente en su código? Responde con un número.",
+      "target": "0",
+      "acceptedAnswers": ["0", "cero", "ninguna", "ninguna responsabilidad propia"],
+      "hints": [
+        "Cuenta cuántas operaciones de lógica hace EnemyShooter por sí mismo (no sus POCOs).",
+        "EnemyShooter solo llama métodos de sus POCOs — no calcula ni decide nada.",
+        "Si toda la lógica está en los POCOs y EnemyShooter solo coordina, ¿cuántas responsabilidades de lógica tiene?"
+      ],
+      "explanation": "<code>EnemyShooter</code> tiene <strong>0</strong> responsabilidades de lógica propias: toda la lógica real está en <code>WeaponLogic</code>, <code>TargetingSystem</code> y <code>ReloadHandler</code>. <code>EnemyShooter</code> es una <strong>fachada</strong> pura que solo coordina el flujo de eventos de Unity."
+    },
+    {
+      "id": "mu_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este MonoBehaviour:",
+      "code": "public class GameManager : MonoBehaviour\n{\n    public static GameManager Instance;\n    void Awake() { Instance = this; }\n}",
+      "question": "¿Qué patrón de diseño implementa este MonoBehaviour con la variable estática `Instance`?",
+      "target": "Singleton",
+      "acceptedAnswers": ["Singleton", "singleton", "patrón Singleton", "patron singleton"],
+      "hints": [
+        "Este patrón garantiza que solo exista una instancia de la clase.",
+        "Se accede a la instancia globalmente a través de una variable estática llamada convencionalmente 'Instance'.",
+        "Su nombre viene de 'single' (único): siempre hay una sola instancia."
+      ],
+      "explanation": "El código implementa el patrón <strong>Singleton</strong>: guarda la única instancia en <code>Instance</code> estática al inicializarse (<code>Awake</code>). Permite acceso global con <code>GameManager.Instance</code>. En Unity, los <code>MonoBehaviour</code> Singleton deben considerar <code>DontDestroyOnLoad</code> para persistir entre escenas."
+    },
+    {
+      "id": "mu_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método Start para cachear el componente Rigidbody correctamente:",
+      "codeTemplate": "public class PlayerMover : MonoBehaviour\n{\n    private Rigidbody _rb;\n\n    void Start()\n    {\n        _rb = __________;\n    }\n}",
+      "expectedAnswer": "GetComponent<Rigidbody>()",
+      "alternateAnswers": ["GetComponent<Rigidbody>()"],
+      "placeholder": "Escribe la llamada a GetComponent...",
+      "hints": [
+        "El método para obtener componentes del mismo GameObject es GetComponent<T>().",
+        "El tipo entre <> es el nombre del componente que buscas.",
+        "GetComponent<Rigidbody>() busca y retorna el Rigidbody del GameObject."
+      ],
+      "explanation": "<code>GetComponent&lt;Rigidbody&gt;()</code> busca el componente <code>Rigidbody</code> en el mismo <strong>GameObject</strong>. Al cachearlo en <code>Start()</code>, la búsqueda ocurre una sola vez. Usar <code>_rb</code> en <code>Update()</code> es eficiente porque ya tenemos la referencia."
+    },
+    {
+      "id": "mu_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la implementación del Singleton básico de Unity con DontDestroyOnLoad:",
+      "codeTemplate": "public class AudioManager : MonoBehaviour\n{\n    public static AudioManager Instance;\n\n    void Awake()\n    {\n        Instance = this;\n        __________;\n    }\n}",
+      "expectedAnswer": "DontDestroyOnLoad(gameObject)",
+      "alternateAnswers": ["DontDestroyOnLoad(this.gameObject)", "DontDestroyOnLoad(this)"],
+      "placeholder": "Escribe la llamada para persistir entre escenas...",
+      "hints": [
+        "El método de Unity que evita que un GameObject sea destruido al cambiar de escena empieza con DontDestroy.",
+        "Se pasa el gameObject (o this) como parámetro.",
+        "El método completo es DontDestroyOnLoad(gameObject)."
+      ],
+      "explanation": "<code>DontDestroyOnLoad(gameObject)</code> marca el <strong>GameObject</strong> para que persista entre cambios de escena. Sin esta llamada, el <strong>Singleton</strong> se destruiría al cargar una nueva escena y <code>Instance</code> quedaría como referencia nula."
+    },
+    {
+      "id": "mu_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un MonoBehaviour `EnemyFacade` que use un POCO `HealthSystem` (que ya existe con método `TakeDamage(int)`). El MonoBehaviour debe instanciar el POCO en un campo privado y llamar TakeDamage desde OnTriggerEnter.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class EnemyFacade : MonoBehaviour { private HealthSystem _health = new HealthSystem(); void OnTriggerEnter(Collider other) { _health.TakeDamage(10); } }",
+      "alternateAnswers": [
+        "public class EnemyFacade : MonoBehaviour\n{\n    private HealthSystem _health = new HealthSystem();\n\n    void OnTriggerEnter(Collider other)\n    {\n        _health.TakeDamage(10);\n    }\n}"
+      ],
+      "placeholder": "Escribe el MonoBehaviour completo...",
+      "hints": [
+        "El MonoBehaviour hereda de MonoBehaviour y tiene el POCO como campo privado instanciado con new.",
+        "El callback de Unity para triggers es void OnTriggerEnter(Collider other).",
+        "Dentro de OnTriggerEnter, llama a _health.TakeDamage(valor)."
+      ],
+      "explanation": "<code>EnemyFacade</code> actúa como <strong>fachada</strong>: el campo <code>_health = new HealthSystem()</code> instancia el <strong>POCO</strong>, y <code>OnTriggerEnter</code> (callback de Unity) delega a <code>_health.TakeDamage(10)</code>. El <code>MonoBehaviour</code> no contiene lógica propia."
+    },
+    {
+      "id": "mu_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la refactorización: el MonoBehaviour debe delegar el cálculo de velocidad al POCO `MovementLogic` en lugar de calcularlo él mismo:",
+      "codeTemplate": "public class PlayerFacade : MonoBehaviour\n{\n    private MovementLogic _mov = new MovementLogic();\n    private Rigidbody _rb;\n\n    void Start() => _rb = GetComponent<Rigidbody>();\n\n    void Update()\n    {\n        Vector3 input = new Vector3(Input.GetAxis(\"Horizontal\"),\n                                    0, Input.GetAxis(\"Vertical\"));\n        _rb.velocity = _mov.__________;\n    }\n}",
+      "expectedAnswer": "ComputeVelocity(input, 5f)",
+      "alternateAnswers": ["ComputeVelocity(input, 5.0f)", "ComputeVelocity(input, speed)"],
+      "placeholder": "Llama al método del POCO con los parámetros correctos...",
+      "hints": [
+        "MovementLogic tiene un método llamado ComputeVelocity.",
+        "El método recibe dos parámetros: el input (Vector3) y la velocidad (float).",
+        "La llamada es _mov.ComputeVelocity(input, velocidad)."
+      ],
+      "explanation": "<code>_mov.ComputeVelocity(input, 5f)</code> delega el cálculo al <strong>POCO</strong>. El <code>MonoBehaviour</code> solo lee el Input de Unity, obtiene el resultado del <strong>POCO</strong> y lo aplica al <code>Rigidbody</code>. La lógica real vive en el <strong>POCO</strong> testeable."
+    },
+    {
+      "id": "mu_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Refactoriza este código extrayendo la lógica de puntuación a un POCO. Escribe solo el POCO `ScoreLogic` con campo `score` (int) y método `AddPoints(int pts, float multiplier)` que retorna el score actualizado.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class ScoreLogic { public int score; public int AddPoints(int pts, float multiplier) { score += (int)(pts * multiplier); return score; } }",
+      "alternateAnswers": [
+        "public class ScoreLogic\n{\n    public int score;\n    public int AddPoints(int pts, float multiplier)\n    {\n        score += (int)(pts * multiplier);\n        return score;\n    }\n}"
+      ],
+      "placeholder": "Escribe el POCO ScoreLogic completo...",
+      "hints": [
+        "El POCO no hereda de MonoBehaviour. Tiene un campo público int score.",
+        "El método AddPoints recibe int pts y float multiplier, calcula (int)(pts * multiplier) y lo suma a score.",
+        "El método debe retornar el score actualizado (int)."
+      ],
+      "explanation": "<code>ScoreLogic</code> encapsula la lógica de puntuación como <strong>POCO</strong>. El cast <code>(int)(pts * multiplier)</code> es necesario para convertir el float a int. El <code>MonoBehaviour</code> puede usar este POCO: <code>private ScoreLogic _score = new ScoreLogic(); void OnEnemyKill(int pts) { uiScore.text = _score.AddPoints(pts, 1.5f).ToString(); }</code>"
+    },
+    {
+      "id": "mu_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el Singleton robusto que evita duplicados: si ya existe una instancia, destruye el GameObject duplicado:",
+      "codeTemplate": "public class GameManager : MonoBehaviour\n{\n    public static GameManager Instance;\n\n    void Awake()\n    {\n        if (Instance != null)\n        {\n            __________(gameObject);\n            return;\n        }\n        Instance = this;\n        DontDestroyOnLoad(gameObject);\n    }\n}",
+      "expectedAnswer": "Destroy",
+      "alternateAnswers": ["Destroy"],
+      "placeholder": "Escribe el método para destruir el duplicado...",
+      "hints": [
+        "Si ya existe una instancia y llega un segundo GameManager, el segundo debe ser eliminado.",
+        "El método de Unity para destruir un GameObject es de 4 palabras en inglés... en realidad una sola.",
+        "El método para eliminar un objeto de la escena se llama Destroy."
+      ],
+      "explanation": "<code>Destroy(gameObject)</code> elimina el duplicado inmediatamente. Este patrón de <strong>Singleton</strong> robusto evita que dos <code>GameManager</code> coexistan: el primero en inicializarse es la instancia real; cualquier duplicado (por recargar escena o error de configuración) se destruye automáticamente."
+    }
+  ]
+}

@@ -1,0 +1,389 @@
+{
+  "id": "so_datos",
+  "title": "ScriptableObjects como Datos",
+  "icon": "📋",
+  "color": "#004D40",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un ScriptableObject?",
+        "type": "definition",
+        "content": "Un <strong>ScriptableObject</strong> es un asset de Unity que almacena datos independientemente de las escenas. A diferencia de un <code>MonoBehaviour</code>, no necesita estar adjunto a un GameObject — vive como un archivo <code>.asset</code> en el proyecto. Los <strong>ScriptableObjects</strong> son ideales para datos compartidos: stats de personajes, configuraciones de armas, datos de ítems. Se crean con el atributo <code>[CreateAssetMenu]</code> que añade una opción al menú Assets → Create del Editor de Unity, permitiendo al diseñador crear instancias del asset directamente desde el editor sin escribir código."
+      },
+      {
+        "id": "doc-2",
+        "title": "Crear un ScriptableObject con CreateAssetMenu",
+        "type": "code",
+        "content": "// WeaponData.cs\n[CreateAssetMenu(fileName = \"NewWeapon\", menuName = \"Game Data/Weapon\")]\npublic class WeaponData : ScriptableObject\n{\n    public string weaponName;\n    public int damage;\n    public float attackSpeed;\n    public float range;\n    public Sprite icon;       // ← referencia a un asset de Unity\n    public AudioClip hitSound; // ← referencia a un AudioClip\n}\n\n// WeaponController.cs — usa el ScriptableObject\npublic class WeaponController : MonoBehaviour\n{\n    [SerializeField] private WeaponData weaponData; // se asigna en el Inspector\n\n    void Attack()\n    {\n        DealDamage(weaponData.damage);\n        AudioSource.PlayClipAtPoint(weaponData.hitSound, transform.position);\n    }\n}\n\n// Múltiples MonoBehaviours pueden referenciar el MISMO ScriptableObject\n// Si cambias weaponData.damage, todos los que lo usen verán el cambio"
+      },
+      {
+        "id": "doc-3",
+        "title": "ScriptableObject vs JSON: ¿Cuándo usar cada uno?",
+        "type": "analogy",
+        "content": "Imagina que tienes datos de un arma: daño, velocidad, icono, sonido de golpe. El icono es un <code>Sprite</code> y el sonido es un <code>AudioClip</code> — son <strong>assets de Unity</strong>. Un <strong>JSON</strong> no puede referenciar assets de Unity directamente; solo guarda texto y números. Un <strong>ScriptableObject</strong> sí puede referenciar un <code>Sprite</code> o <code>AudioClip</code> directamente desde el Inspector. Por otro lado, si los datos vienen de un servidor web o deben actualizarse sin generar una nueva build (<em>hot-reload</em>), solo <strong>JSON</strong> puede hacer esto — los <strong>ScriptableObjects</strong> están compilados dentro del proyecto de Unity."
+      },
+      {
+        "id": "doc-4",
+        "title": "Datos Compartidos entre Escenas sin Singleton",
+        "type": "code",
+        "content": "// PlayerStats.cs — ScriptableObject para datos del jugador\n[CreateAssetMenu(fileName = \"PlayerStats\", menuName = \"Game Data/Player Stats\")]\npublic class PlayerStats : ScriptableObject\n{\n    public int maxHp;\n    public int currentHp;\n    public int level;\n    public int experience;\n}\n\n// HealthBar.cs (en escena de combate)\npublic class HealthBar : MonoBehaviour\n{\n    [SerializeField] private PlayerStats stats; // mismo asset\n    void Update() => slider.value = (float)stats.currentHp / stats.maxHp;\n}\n\n// SaveSystem.cs (en escena de menú)\npublic class SaveSystem : MonoBehaviour\n{\n    [SerializeField] private PlayerStats stats; // mismo asset\n    void Save() => PlayerPrefs.SetInt(\"HP\", stats.currentHp);\n}\n\n// Al ser el mismo .asset, ambos scripts leen/escriben los mismos datos\n// sin necesitar un Singleton ni DontDestroyOnLoad"
+      },
+      {
+        "id": "doc-5",
+        "title": "ScriptableObject vs JSON: Tabla de Decisión",
+        "type": "list",
+        "items": [
+          "Usa ScriptableObject cuando: los datos referencian assets de Unity (Sprite, AudioClip, Prefab, Material).",
+          "Usa ScriptableObject cuando: los diseñadores trabajan directamente en el Editor de Unity.",
+          "Usa ScriptableObject cuando: necesitas datos compartidos entre escenas sin Singleton.",
+          "Usa JSON cuando: los datos vienen de un servidor o API externa.",
+          "Usa JSON cuando: necesitas hot-reload (actualizar datos sin recompilar ni publicar nueva build).",
+          "Usa JSON cuando: los datos son generados por herramientas externas (Excel, Google Sheets, editores de nivel personalizados)."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ddds_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿De qué clase debe heredar una clase de C# para convertirse en un **ScriptableObject** en Unity?",
+      "options": [
+        "ScriptableObject",
+        "MonoBehaviour",
+        "Object",
+        "Component",
+        "Behaviour"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para crear un <strong>ScriptableObject</strong>, la clase debe heredar de <code><strong>ScriptableObject</strong></code> (en lugar de <code>MonoBehaviour</code>). Esto le indica a Unity que el objeto debe vivir como un asset <code>.asset</code> en el proyecto, no como un componente adjunto a un GameObject."
+    },
+    {
+      "id": "ddds_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué atributo de Unity permite crear instancias de un **ScriptableObject** directamente desde el menú Assets → Create del Editor?",
+      "options": [
+        "[CreateAssetMenu]",
+        "[MenuItem]",
+        "[Serializable]",
+        "[SerializeField]",
+        "[AssetFactory]"
+      ],
+      "correctIndex": 0,
+      "explanation": "El atributo <code><strong>[CreateAssetMenu]</strong></code> añade una entrada al menú Assets → Create de Unity. Sus parámetros <code>fileName</code> (nombre por defecto del archivo) y <code>menuName</code> (ruta en el menú) le permiten al diseñador crear nuevas instancias del <strong>ScriptableObject</strong> como assets <code>.asset</code> sin escribir código."
+    },
+    {
+      "id": "ddds_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de estas situaciones justifica usar un **ScriptableObject** en lugar de **JSON** para datos de un arma?",
+      "options": [
+        "Los datos del arma incluyen referencias a un Sprite (ícono) y un AudioClip (sonido de golpe) que son assets de Unity.",
+        "Los datos del arma serán descargados desde un servidor remoto al iniciar el juego.",
+        "Los datos del arma necesitan ser modificados por el jugador durante la partida.",
+        "Los datos del arma deben funcionar en un proyecto que no usa Unity.",
+        "Los datos del arma se generan automáticamente desde una hoja de cálculo de Excel."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>ScriptableObjects</strong> son superiores al <strong>JSON</strong> cuando los datos incluyen <strong>referencias a assets de Unity</strong> como <code>Sprite</code>, <code>AudioClip</code>, <code>Prefab</code> o <code>Material</code>. El <strong>JSON</strong> solo puede guardar texto y números — no puede referenciar assets del proyecto directamente."
+    },
+    {
+      "id": "ddds_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la ventaja clave de los **ScriptableObjects** para compartir datos entre múltiples escenas?",
+      "options": [
+        "Un mismo asset ScriptableObject puede ser referenciado desde múltiples MonoBehaviours en distintas escenas, compartiendo datos sin necesitar un Singleton ni DontDestroyOnLoad.",
+        "Los ScriptableObjects persisten automáticamente entre escenas sin configuración adicional.",
+        "Los ScriptableObjects se sincronizan automáticamente con todos los MonoBehaviours de la misma escena.",
+        "Los ScriptableObjects reemplazan completamente al sistema de escenas de Unity.",
+        "Los ScriptableObjects guardan datos en el disco duro del jugador automáticamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un mismo asset <strong>ScriptableObject</strong> puede ser referenciado por múltiples scripts en diferentes escenas. Como el asset vive en el proyecto (no en una escena), sus datos persisten y son compartidos sin necesitar el patrón Singleton ni <code>DontDestroyOnLoad</code>. Es una solución elegante para datos globales del juego."
+    },
+    {
+      "id": "ddds_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo es preferible usar **JSON** sobre **ScriptableObjects** para los datos de configuración de un juego?",
+      "options": [
+        "Cuando los datos deben actualizarse desde un servidor remoto sin publicar una nueva build (hot-reload).",
+        "Cuando los datos incluyen referencias a prefabs del proyecto de Unity.",
+        "Cuando los diseñadores quieren editar los datos desde el Inspector de Unity.",
+        "Cuando los datos se comparten entre múltiples escenas del mismo proyecto.",
+        "Cuando los datos incluyen referencias a AudioClips y Sprites del proyecto."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>JSON</strong> es preferible cuando los datos necesitan <strong>hot-reload</strong>: actualizarse desde un servidor sin generar una nueva build. Esto es clave para juegos en producción que requieren ajustes de balance frecuentes. Los <strong>ScriptableObjects</strong> están compilados en el proyecto y no pueden actualizarse sin una nueva build."
+    },
+    {
+      "id": "ddds_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un **ScriptableObject** `EnemyData` es referenciado por 10 `EnemyController` distintos en la escena. Si se modifica el campo `damage` del ScriptableObject desde código, ¿cuántos controladores verán el cambio?",
+      "options": [
+        "Los 10 — todos referencian el mismo asset y verán el cambio inmediatamente.",
+        "Solo el primero que fue instanciado en la escena.",
+        "Ninguno — los ScriptableObjects son inmutables en runtime.",
+        "Solo los que tienen la referencia como campo public (no SerializeField).",
+        "Depende del orden de ejecución definido en Project Settings."
+      ],
+      "correctIndex": 0,
+      "explanation": "Como todos los <code>EnemyController</code> referencian el <strong>mismo asset</strong> <code>EnemyData</code>, modificar <code>enemyData.damage</code> desde código afecta a los 10 controladores simultáneamente. Esta es la esencia del <strong>dato compartido</strong> con <strong>ScriptableObjects</strong>. Cuidado: los cambios en runtime también persisten en el editor (no en builds)."
+    },
+    {
+      "id": "ddds_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia fundamental entre adjuntar datos a un MonoBehaviour vs usar un ScriptableObject para los mismos datos?",
+      "options": [
+        "El MonoBehaviour con datos necesita un GameObject en escena; el ScriptableObject es un asset independiente reutilizable desde múltiples objetos y escenas.",
+        "El MonoBehaviour puede tener más campos que un ScriptableObject.",
+        "Los datos en MonoBehaviour persisten automáticamente al cerrar Unity; los ScriptableObjects se borran.",
+        "Los ScriptableObjects solo pueden contener tipos primitivos; los MonoBehaviours pueden tener cualquier tipo.",
+        "No hay diferencia práctica; ambos almacenan datos de la misma forma en Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia fundamental es que un <code>MonoBehaviour</code> con datos está ligado a un <strong>GameObject en escena</strong> (si la escena se cierra, se pierde). Un <strong>ScriptableObject</strong> es un <strong>asset del proyecto</strong>, existe independientemente de las escenas y puede ser referenciado desde múltiples objetos y escenas sin duplicar los datos."
+    },
+    {
+      "id": "ddds_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un juego RPG tiene 200 tipos de ítems con Sprite, AudioClip y stats numéricos. El equipo necesita que los diseñadores puedan crear nuevos ítems sin intervención del programador. ¿Qué solución es más adecuada?",
+      "options": [
+        "ScriptableObject con [CreateAssetMenu] — los diseñadores crean nuevos assets directamente desde el Editor de Unity con todos los campos visibles en el Inspector.",
+        "JSON generado manualmente para cada ítem — el diseñador escribe el JSON a mano en un editor de texto.",
+        "Una subclase de MonoBehaviour por ítem adjunta a un GameObject vacío en una escena de datos.",
+        "Un Singleton en código con todos los 200 ítems hardcodeados en el método Awake().",
+        "Una hoja de cálculo de Excel conectada via plugin — es la única forma de manejar 200 ítems."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ScriptableObject</strong> con <code>[CreateAssetMenu]</code> es la solución ideal: el diseñador puede crear nuevos ítems desde el menú del Editor, asignar el <code>Sprite</code> e <code>AudioClip</code> arrastrando assets en el Inspector, y configurar los stats numéricos — todo sin escribir código ni tocar archivos de texto. El programador solo definió la clase una vez."
+    },
+    {
+      "id": "ddds_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta declaración de clase:",
+      "code": "[CreateAssetMenu(fileName = \"NewItem\", menuName = \"Game Data/Item\")]\npublic class ItemData : ScriptableObject\n{\n    public string itemName;\n    public int price;\n    public Sprite icon;\n    public AudioClip pickupSound;\n}",
+      "question": "¿Qué tipo de archivo crea Unity cuando el diseñador usa el menú Assets → Create → Game Data → Item?",
+      "target": ".asset",
+      "acceptedAnswers": [".asset", "archivo .asset", "un .asset", "asset file"],
+      "hints": [
+        "Los ScriptableObjects se guardan como archivos en el proyecto de Unity.",
+        "La extensión de estos archivos es específica de Unity.",
+        "No es .cs, .json ni .prefab — tiene su propia extensión: ."
+      ],
+      "explanation": "Unity crea un archivo con extensión <code><strong>.asset</strong></code> cuando el diseñador usa el menú creado por <code>[CreateAssetMenu]</code>. Este archivo vive en la carpeta <code>Assets/</code> del proyecto y puede ser referenciado desde cualquier <strong>MonoBehaviour</strong> en el Inspector."
+    },
+    {
+      "id": "ddds_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara las dos opciones para almacenar datos de una espada:",
+      "code": "// Opción A: ScriptableObject\n[CreateAssetMenu(...)]\npublic class SwordData : ScriptableObject\n{\n    public Sprite icon;       // ← referencia a asset\n    public AudioClip swingFX; // ← referencia a asset\n    public int damage;\n}\n\n// Opción B: JSON\n// sword_data.json\n// { \"damage\": 30 }\n// (no puede guardar referencias a Sprite ni AudioClip)",
+      "question": "¿Qué ventaja específica tiene el ScriptableObject sobre el JSON para los datos de esta espada?",
+      "target": "puede referenciar assets de Unity como Sprite y AudioClip",
+      "acceptedAnswers": [
+        "puede referenciar assets de Unity como Sprite y AudioClip",
+        "soporta referencias a assets",
+        "referencia a Sprite y AudioClip",
+        "referencia directa a assets",
+        "puede guardar referencias a assets de Unity"
+      ],
+      "hints": [
+        "Observa los campos icon y swingFX en el ScriptableObject.",
+        "¿Pueden estos tipos de datos representarse en un archivo JSON de texto?",
+        "La ventaja está relacionada con los campos de tipo Sprite y AudioClip."
+      ],
+      "explanation": "La ventaja clave es que el <strong>ScriptableObject puede referenciar assets de Unity</strong> como <code>Sprite</code> y <code>AudioClip</code> directamente desde el Inspector. El <strong>JSON</strong> solo puede almacenar texto y números — no tiene forma de apuntar a un archivo de imagen o audio del proyecto de Unity."
+    },
+    {
+      "id": "ddds_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este patrón de datos compartidos:",
+      "code": "[CreateAssetMenu(menuName = \"Game Data/Player Stats\")]\npublic class PlayerStats : ScriptableObject\n{\n    public int currentHp;\n    public int maxHp;\n}\n\n// Script en escena de combate\npublic class HealthUI : MonoBehaviour\n{\n    public PlayerStats stats; // mismo .asset\n}\n\n// Script en escena de guardado\npublic class SaveManager : MonoBehaviour\n{\n    public PlayerStats stats; // mismo .asset\n}",
+      "question": "¿Qué patrón de arquitectura elimina este enfoque al compartir datos via ScriptableObject entre escenas?",
+      "target": "Singleton",
+      "acceptedAnswers": ["Singleton", "el patrón Singleton", "singleton pattern", "DontDestroyOnLoad"],
+      "hints": [
+        "Sin ScriptableObject, se necesitaría un objeto que persista entre escenas.",
+        "El patrón que usa una instancia global única se llama...",
+        "También se elimina la necesidad de DontDestroyOnLoad."
+      ],
+      "explanation": "Este enfoque elimina la necesidad del patrón <strong>Singleton</strong> (y <code>DontDestroyOnLoad</code>) para compartir datos entre escenas. El <strong>ScriptableObject</strong> es un asset del proyecto que ambos scripts pueden referenciar directamente en el Inspector, sin necesitar un objeto persistente en escena."
+    },
+    {
+      "id": "ddds_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este escenario de producción:",
+      "code": "// El juego está publicado en tiendas de aplicaciones.\n// El equipo quiere actualizar los stats de los enemigos\n// para el balance de la Temporada 2 sin publicar una nueva build.\n//\n// Opción A: ScriptableObjects\n// Opción B: JSON descargado desde servidor",
+      "question": "¿Cuál opción (A o B) permite actualizar los datos sin publicar una nueva build del juego?",
+      "target": "JSON",
+      "acceptedAnswers": ["JSON", "opción B", "B", "JSON descargado desde servidor"],
+      "hints": [
+        "Los ScriptableObjects están compilados dentro del proyecto de Unity.",
+        "Para cambiar un ScriptableObject, necesitas recompilar y publicar una nueva versión.",
+        "El otro formato puede descargarse desde internet en runtime."
+      ],
+      "explanation": "Solo <strong>JSON</strong> descargado desde servidor permite <strong>hot-reload</strong>: actualizar datos en producción sin publicar una nueva build. Los <strong>ScriptableObjects</strong> están compilados dentro del ejecutable del juego — cambiarlos requiere generar y publicar una nueva build, lo cual en tiendas de apps puede tomar días."
+    },
+    {
+      "id": "ddds_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa esta clase:",
+      "code": "[CreateAssetMenu(fileName = \"NewBoss\", menuName = \"Enemies/Boss\")]\npublic class BossData : ScriptableObject\n{\n    public string bossName;\n    public int hp;\n    public float speed;\n    public Sprite portrait;\n    public GameObject phaseTransitionVFX;\n    public BossPhaseData[] phases;\n}",
+      "question": "¿Por qué sería difícil o imposible representar todos los campos de `BossData` en un archivo JSON para Unity con JsonUtility?",
+      "target": "porque JSON no puede referenciar assets de Unity como Sprite, GameObject y ScriptableObjects anidados",
+      "acceptedAnswers": [
+        "porque JSON no puede referenciar assets de Unity como Sprite, GameObject y ScriptableObjects anidados",
+        "Sprite y GameObject no son serializables en JSON",
+        "no puede guardar referencias a assets de Unity",
+        "JSON no soporta referencias a prefabs ni sprites"
+      ],
+      "hints": [
+        "Analiza los tipos de los campos: string, int, float, Sprite, GameObject, BossPhaseData[].",
+        "Los tipos primitivos (string, int, float) se pueden guardar en JSON fácilmente.",
+        "¿Qué tipos son assets de Unity que JSON no puede representar como texto?"
+      ],
+      "explanation": "Los campos <code><strong>Sprite portrait</strong></code> y <code><strong>GameObject phaseTransitionVFX</strong></code> son <strong>assets de Unity</strong> que no pueden representarse en <strong>JSON</strong> — un JSON solo puede guardar texto y números. <code>JsonUtility</code> ignora estos campos. Solo el <strong>ScriptableObject</strong> puede referenciar assets de Unity directamente en sus campos."
+    },
+    {
+      "id": "ddds_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de múltiples scripts usando el mismo ScriptableObject:",
+      "code": "[CreateAssetMenu(menuName = \"Game/Weapon\")]\npublic class WeaponData : ScriptableObject\n{\n    public int damage = 30;\n}\n\n// En runtime:\n// weaponA.data y weaponB.data referencian el MISMO .asset\nweaponA.data.damage = 99; // modifica el asset\nDebug.Log(weaponB.data.damage); // ¿qué imprime?",
+      "question": "¿Qué imprime el Debug.Log y qué implicación de diseño tiene esto?",
+      "target": "99 — los cambios en runtime a un ScriptableObject afectan a todos los que lo referencian",
+      "acceptedAnswers": [
+        "99",
+        "99 — todos comparten el mismo asset",
+        "99 porque comparten la misma referencia",
+        "imprime 99 porque ambos referencian el mismo ScriptableObject"
+      ],
+      "hints": [
+        "weaponA.data y weaponB.data apuntan al mismo archivo .asset.",
+        "Si cambias el damage en el asset desde weaponA, ¿qué ve weaponB?",
+        "Comparten la referencia — no hay copia."
+      ],
+      "explanation": "Imprime <strong>99</strong>. Como ambos scripts referencian el <strong>mismo asset</strong> <strong>ScriptableObject</strong>, modificar <code>weaponA.data.damage</code> cambia el asset compartido y <code>weaponB.data.damage</code> también refleja el cambio. Esto es poderoso para datos compartidos, pero requiere cuidado: si no quieres datos compartidos, debes crear instancias separadas con <code>Instantiate(weaponData)</code>."
+    },
+    {
+      "id": "ddds_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la herencia de la clase para que sea un **ScriptableObject** válido en Unity:",
+      "codeTemplate": "public class EnemyData : __________\n{\n    public string enemyName;\n    public int hp;\n    public float speed;\n}",
+      "expectedAnswer": "ScriptableObject",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la clase base de Unity para datos...",
+      "hints": [
+        "Los MonoBehaviours heredan de MonoBehaviour; los datos como assets heredan de otra clase.",
+        "La clase base para assets de datos en Unity se llama igual que el concepto.",
+        "Hereda de ScriptableObject."
+      ],
+      "explanation": "Para que Unity reconozca la clase como un asset de datos, debe heredar de <code><strong>ScriptableObject</strong></code>. A diferencia de <code>MonoBehaviour</code>, no necesita un GameObject — vive como un archivo <code>.asset</code> en el proyecto y puede ser referenciado desde cualquier script en el Inspector."
+    },
+    {
+      "id": "ddds_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el atributo que permite al diseñador crear instancias de `ItemData` desde el menú Assets → Create → \"Game Data/Item\" en Unity:",
+      "codeTemplate": "[__________(fileName = \"NewItem\", menuName = \"Game Data/Item\")]\npublic class ItemData : ScriptableObject\n{\n    public string itemName;\n    public int price;\n}",
+      "expectedAnswer": "CreateAssetMenu",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el atributo para el menú de creación...",
+      "hints": [
+        "El atributo añade una entrada al menú 'Create' de Unity.",
+        "Su nombre describe lo que hace: crear un asset desde el menú.",
+        "Se llama CreateAssetMenu."
+      ],
+      "explanation": "El atributo <code><strong>[CreateAssetMenu]</strong></code> registra la clase en el menú Assets → Create de Unity. El parámetro <code>menuName</code> define la ruta en el menú (puede incluir submenús con <code>/</code>) y <code>fileName</code> es el nombre por defecto del archivo <code>.asset</code> que se crea."
+    },
+    {
+      "id": "ddds_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el campo del MonoBehaviour para que el diseñador pueda asignar el `WeaponData` desde el Inspector de Unity (campo privado pero visible en Inspector):",
+      "codeTemplate": "public class Sword : MonoBehaviour\n{\n    [__________]\n    private WeaponData weaponData;\n\n    void Attack() => DealDamage(weaponData.damage);\n}",
+      "expectedAnswer": "SerializeField",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el atributo para hacer visible el campo privado...",
+      "hints": [
+        "El campo es privado pero necesita ser visible en el Inspector.",
+        "Unity tiene un atributo específico para hacer campos privados visibles en el Inspector.",
+        "Se llama SerializeField."
+      ],
+      "explanation": "<code><strong>[SerializeField]</strong></code> le indica a Unity que serialice un campo privado y lo muestre en el Inspector. Es preferible a hacer el campo <code>public</code> porque mantiene el encapsulamiento: el diseñador puede asignar el <strong>ScriptableObject</strong> desde el Inspector, pero el código externo no puede acceder al campo directamente."
+    },
+    {
+      "id": "ddds_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase completa `EnemyConfig` como **ScriptableObject** con `[CreateAssetMenu]` bajo el menú `\"Enemies/Config\"`, con campos: `enemyName` (string), `hp` (int), `speed` (float) y `dropPrefab` (GameObject):",
+      "codeTemplate": null,
+      "expectedAnswer": "[CreateAssetMenu(fileName = \"NewEnemy\", menuName = \"Enemies/Config\")]\npublic class EnemyConfig : ScriptableObject\n{\n    public string enemyName;\n    public int hp;\n    public float speed;\n    public GameObject dropPrefab;\n}",
+      "alternateAnswers": [
+        "[CreateAssetMenu(menuName = \"Enemies/Config\")]\npublic class EnemyConfig : ScriptableObject\n{\n    public string enemyName;\n    public int hp;\n    public float speed;\n    public GameObject dropPrefab;\n}"
+      ],
+      "placeholder": "Escribe la clase completa con atributo y herencia correcta...",
+      "hints": [
+        "Necesitas [CreateAssetMenu] con menuName = \"Enemies/Config\".",
+        "La clase hereda de ScriptableObject, no de MonoBehaviour.",
+        "El campo dropPrefab es de tipo GameObject — algo que solo SO puede referenciar, no JSON."
+      ],
+      "explanation": "La clase <code><strong>EnemyConfig : ScriptableObject</strong></code> con <code>[CreateAssetMenu]</code> permite al diseñador crear assets desde el Editor. El campo <code><strong>GameObject dropPrefab</strong></code> ilustra la ventaja clave: los <strong>ScriptableObjects</strong> pueden referenciar assets de Unity (Prefabs, Sprites, etc.) directamente, algo imposible con <strong>JSON</strong>."
+    },
+    {
+      "id": "ddds_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un **ScriptableObject** `GameConfig` con `[CreateAssetMenu]` bajo `\"Config/Game\"` que tenga: `masterVolume` (float), `difficultyMultiplier` (float) y `defaultLanguage` (string). Luego escribe cómo lo referencia un MonoBehaviour `AudioManager` con un campo [SerializeField]:",
+      "codeTemplate": null,
+      "expectedAnswer": "[CreateAssetMenu(fileName = \"GameConfig\", menuName = \"Config/Game\")]\npublic class GameConfig : ScriptableObject\n{\n    public float masterVolume;\n    public float difficultyMultiplier;\n    public string defaultLanguage;\n}\n\npublic class AudioManager : MonoBehaviour\n{\n    [SerializeField] private GameConfig config;\n\n    void Start()\n    {\n        AudioListener.volume = config.masterVolume;\n    }\n}",
+      "alternateAnswers": [
+        "[CreateAssetMenu(menuName = \"Config/Game\")]\npublic class GameConfig : ScriptableObject\n{\n    public float masterVolume;\n    public float difficultyMultiplier;\n    public string defaultLanguage;\n}\npublic class AudioManager : MonoBehaviour\n{\n    [SerializeField] private GameConfig config;\n    void Start() { AudioListener.volume = config.masterVolume; }\n}"
+      ],
+      "placeholder": "Escribe el ScriptableObject y el MonoBehaviour que lo usa...",
+      "hints": [
+        "El ScriptableObject hereda de ScriptableObject y tiene [CreateAssetMenu].",
+        "El MonoBehaviour usa [SerializeField] para tener el campo visible en Inspector.",
+        "En Start(), accede a los datos con config.masterVolume."
+      ],
+      "explanation": "Este patrón muestra la relación completa: el <strong>ScriptableObject</strong> <code>GameConfig</code> almacena configuración global del juego, y <code>AudioManager</code> lo referencia con <code>[SerializeField]</code>. Múltiples MonoBehaviours pueden referenciar el mismo <code>GameConfig</code> asset, compartiendo configuración sin Singleton."
+    },
+    {
+      "id": "ddds_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "El diseñador necesita ajustar stats de jefes frecuentemente desde el servidor (hot-reload). Escribe: 1) la clase `BossData` serializable para JSON, 2) el código que la carga desde StreamingAssets, y 3) justifica en un comentario por qué se usa JSON y no ScriptableObject:",
+      "codeTemplate": null,
+      "expectedAnswer": "// JSON se usa porque los datos deben actualizarse desde servidor sin nueva build (hot-reload)\n[System.Serializable]\npublic class BossData\n{\n    public string bossName;\n    public int hp;\n    public float speed;\n    public int damage;\n}\n\n// Carga en runtime desde StreamingAssets\nstring path = Application.streamingAssetsPath + \"/boss_data.json\";\nstring json = System.IO.File.ReadAllText(path);\nBossData data = JsonUtility.FromJson<BossData>(json);",
+      "alternateAnswers": [
+        "[System.Serializable]\npublic class BossData\n{\n    public string bossName;\n    public int hp;\n    public float speed;\n    public int damage;\n}\nstring path = Application.streamingAssetsPath + \"/boss_data.json\";\nstring json = System.IO.File.ReadAllText(path);\nBossData data = JsonUtility.FromJson<BossData>(json);"
+      ],
+      "placeholder": "Escribe la clase [Serializable], la carga desde StreamingAssets y el comentario justificando JSON...",
+      "hints": [
+        "La clase necesita [System.Serializable] (no hereda de ScriptableObject).",
+        "Para hot-reload, se usa StreamingAssets con Application.streamingAssetsPath.",
+        "El comentario debe mencionar hot-reload y la actualización sin nueva build."
+      ],
+      "explanation": "Se usa <strong>JSON</strong> con <strong>StreamingAssets</strong> porque permite <strong>hot-reload</strong>: los archivos en <code>StreamingAssets/</code> pueden reemplazarse después de compilar (o descargarse desde un servidor) sin publicar una nueva build. Un <strong>ScriptableObject</strong> requeriría compilar y publicar una nueva versión del juego para cada cambio de balance."
+    }
+  ]
+}

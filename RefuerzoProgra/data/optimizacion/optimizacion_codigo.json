@@ -1,0 +1,376 @@
+{
+  "id": "optimizacion_codigo",
+  "title": "Optimización de Código en Unity",
+  "icon": "⚡",
+  "color": "#D84315",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Cachear Referencias: El Problema de GetComponent en Update",
+        "type": "definition",
+        "content": "<strong>GetComponent&lt;T&gt;()</strong> es una operación costosa: internamente busca el componente recorriendo la lista de componentes del GameObject. Llamarla en <code>Update()</code> (60 veces por segundo) multiplica ese costo innecesariamente. La solución es <em>cachear</em> la referencia en <code>Awake()</code> o <code>Start()</code>: obtenerla una vez y guardarla en un campo privado. Lo mismo aplica a <code>Camera.main</code> (que internamente hace un <code>FindObjectOfType</code>), <code>GetComponentInChildren</code>, y cualquier búsqueda en la jerarquía."
+      },
+      {
+        "id": "doc-2",
+        "title": "Qué NO Hacer en Update() y Cómo Corregirlo",
+        "type": "code",
+        "content": "// ❌ MAL: GetComponent y Find en Update — muy costoso\nvoid Update()\n{\n    GetComponent<Rigidbody>().AddForce(Vector3.up); // GetComponent 60x/seg\n    GameObject.Find(\"HUD\").SetActive(true);         // Find busca TODA la escena\n    Camera.main.transform.position = ...;           // FindObjectOfType 60x/seg\n}\n\n// ✅ BIEN: cachear en Awake/Start\nprivate Rigidbody _rb;\nprivate GameObject _hud;\nprivate Camera _mainCam;\n\nvoid Awake()\n{\n    _rb = GetComponent<Rigidbody>();\n    _hud = GameObject.Find(\"HUD\"); // una sola vez está bien\n    _mainCam = Camera.main;\n}\n\nvoid Update()\n{\n    _rb.AddForce(Vector3.up);          // ✅ O(1)\n    _hud.SetActive(true);              // ✅ O(1)\n    _mainCam.transform.position = ...; // ✅ O(1)\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "StringBuilder vs Concatenación de Strings",
+        "type": "code",
+        "content": "// ❌ MAL: concatenación de strings en bucle genera basura para el GC\nvoid BuildHUD(List<Enemy> enemies)\n{\n    string result = \"\";\n    foreach (Enemy e in enemies)\n    {\n        result += e.name + \": \" + e.health + \"\\n\"; // crea nuevo string CADA iteración\n    }\n    hudText.text = result;\n}\n// Con 50 enemigos: 50 strings temporales creados y descartados → presión en el GC\n\n// ✅ BIEN: StringBuilder reutiliza el buffer interno\nvoid BuildHUD(List<Enemy> enemies)\n{\n    System.Text.StringBuilder sb = new System.Text.StringBuilder();\n    foreach (Enemy e in enemies)\n    {\n        sb.Append(e.name).Append(\": \").Append(e.health).AppendLine();\n    }\n    hudText.text = sb.ToString(); // una sola conversión a string al final\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "Object Pooling: Reusar en vez de Instanciar",
+        "type": "analogy",
+        "content": "Cada <code>Instantiate()</code> en Unity reserva memoria nueva en el heap, y cada <code>Destroy()</code> deja basura que el <strong>GC</strong> (Garbage Collector) tiene que recolectar. En un juego de acción con muchas balas, esto causa <em>micro-stutters</em> periódicos cuando el <strong>GC</strong> se activa. El patrón <strong>object pooling</strong> resuelve esto: en lugar de crear y destruir objetos, se desactivan (<code>SetActive(false)</code>) y se reactivan (<code>SetActive(true)</code>) cuando se necesitan. El pool se llena al inicio con <code>Instantiate</code>, y en runtime solo se reutilizan objetos existentes — cero presión en el <strong>GC</strong> durante el juego."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Optimización en Unity",
+        "type": "list",
+        "items": [
+          "Nunca llames GetComponent<T>() en Update(): cachea la referencia en Awake().",
+          "Nunca llames GameObject.Find() o Camera.main en Update(): son búsquedas costosas.",
+          "La concatenación de strings en bucles crea objetos temporales que el GC debe limpiar.",
+          "StringBuilder es hasta 10x más eficiente que + concatenation en bucles.",
+          "Object pooling evita Instantiate/Destroy frecuentes y reduce la presión del GC.",
+          "GC (Garbage Collector): pausa la ejecución para limpiar memoria no referenciada.",
+          "Cachear = obtener una referencia una vez y guardarla para reutilizarla.",
+          "SetActive(false/true) es mucho más rápido que Destroy/Instantiate."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "oc_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Por qué es malo llamar a `GetComponent<Rigidbody>()` dentro de `Update()` en Unity?",
+      "options": [
+        "Porque `GetComponent` busca el componente en cada llamada, ejecutándose 60 veces por segundo innecesariamente.",
+        "Porque `GetComponent` solo puede llamarse una vez en todo el juego.",
+        "Porque `Rigidbody` no es compatible con `Update()` en Unity.",
+        "Porque `GetComponent` devuelve null dentro de `Update()`.",
+        "Porque `Update()` es un método privado y `GetComponent` es público."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>GetComponent&lt;T&gt;()</code> recorre la lista de componentes del GameObject en cada llamada. En <code>Update()</code> esto ocurre ~60 veces por segundo sin necesidad. La solución es <em>cachear</em> la referencia en <code>Awake()</code> o <code>Start()</code> y reutilizarla."
+    },
+    {
+      "id": "oc_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de Unity se recomienda cachear las referencias a componentes como `GetComponent<Rigidbody>()`?",
+      "options": [
+        "En `Awake()` o `Start()`, porque se ejecutan una sola vez al iniciar el objeto.",
+        "En `Update()`, porque ahí se usan las referencias.",
+        "En `OnDestroy()`, porque ese es el método de limpieza.",
+        "En `FixedUpdate()`, porque trabaja con física.",
+        "En `LateUpdate()`, porque se ejecuta después de Update."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Awake()</code> y <code>Start()</code> se ejecutan <strong>una sola vez</strong> al inicio del objeto. Cachear referencias ahí significa que <code>GetComponent</code> se llama una vez y la referencia se reutiliza en <code>Update()</code> sin costo adicional."
+    },
+    {
+      "id": "oc_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de las siguientes líneas en `Update()` es la MÁS costosa para el rendimiento?",
+      "options": [
+        "`GameObject.Find(\"Boss\")` — busca en toda la jerarquía de la escena cada frame.",
+        "`transform.position += velocity * Time.deltaTime` — mueve el objeto.",
+        "`if (hp <= 0) Die()` — verifica una condición booleana.",
+        "`Debug.Log(score)` — imprime en la consola.",
+        "`_rb.AddForce(Vector3.up)` — aplica fuerza a un Rigidbody cacheado."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>GameObject.Find()</code> recorre <strong>toda la jerarquía de la escena</strong> buscando por nombre — es <strong>O(n)</strong> donde n es el número de GameObjects en la escena. Llamarlo en <code>Update()</code> es extremadamente costoso. Debe cachearse en <code>Awake()</code>."
+    },
+    {
+      "id": "oc_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué usar **StringBuilder** en vez de concatenación (`+`) de strings dentro de un bucle?",
+      "options": [
+        "Porque cada `+` crea un nuevo objeto string en el heap, generando basura para el **GC**; **StringBuilder** reutiliza su buffer interno.",
+        "Porque **StringBuilder** es más rápido al escribir caracteres individuales.",
+        "Porque el operador `+` no funciona dentro de bucles `foreach` en C#.",
+        "Porque **StringBuilder** es la única forma de crear strings multi-línea en Unity.",
+        "Porque `+` solo funciona con tipos primitivos, no con strings."
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, los strings son <strong>inmutables</strong>: cada <code>+</code> crea un string nuevo y descarta el anterior. En un bucle con N iteraciones se crean N strings temporales. El <strong>GC</strong> debe limpiar esa basura, causando micro-pausas. <strong>StringBuilder</strong> tiene un buffer mutable interno que crece según necesidad — solo al final se convierte a string."
+    },
+    {
+      "id": "oc_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es el patrón **object pooling** y cuál es su principal beneficio en un juego de disparos?",
+      "options": [
+        "Pre-instanciar un conjunto de balas y reutilizarlas con `SetActive(false/true)`, evitando `Instantiate`/`Destroy` frecuentes que presionan el **GC**.",
+        "Guardar todos los objetos en un array para acceso rápido **O(1)**.",
+        "Comprimir texturas y meshes para reducir el tamaño del build.",
+        "Agrupar objetos similares en la misma capa de Unity para mejorar el rendering.",
+        "Usar `DontDestroyOnLoad` para mantener objetos entre escenas."
+      ],
+      "correctIndex": 0,
+      "explanation": "El patrón <strong>object pooling</strong> pre-crea un conjunto de objetos al inicio. En vez de <code>Instantiate</code>/<code>Destroy</code> (costosos para el <strong>GC</strong>), se activan (<code>SetActive(true)</code>) y desactivan (<code>SetActive(false)</code>). Con 20 balas por segundo, esto evita 20 alocaciones de memoria por segundo y las pausas del <strong>GC</strong> asociadas."
+    },
+    {
+      "id": "oc_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es el **GC** (Garbage Collector) en C# y por qué causa problemas en juegos?",
+      "options": [
+        "Es el sistema que libera memoria de objetos no referenciados; puede causar micro-pausas cuando se ejecuta durante el juego.",
+        "Es el sistema de renderizado de Unity que limpia la pantalla cada frame.",
+        "Es un proceso de Windows que limpia archivos temporales del juego.",
+        "Es el sistema de detección de colisiones que elimina objetos que se superponen.",
+        "Es el componente que gestiona la cámara principal en Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>GC</strong> (Garbage Collector) de .NET recolecta automáticamente objetos que ya no tienen referencias. El problema en juegos es que cuando el GC se ejecuta, <em>pausa brevemente</em> el hilo principal — causando micro-stutters visibles. Reducir la creación de objetos temporales (strings, listas intermedias, etc.) minimiza la frecuencia de activación del GC."
+    },
+    {
+      "id": "oc_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál de estas implementaciones de un HUD que muestra la lista de enemigos activos es MÁS eficiente en Unity?",
+      "options": [
+        "Actualizar el texto solo cuando cambia la lista (evento OnEnemyAdded/Removed) usando **StringBuilder**.",
+        "Reconstruir el string completo con `+` en cada `Update()` frame.",
+        "Llamar a `enemies.Find()` en `Update()` para buscar cambios.",
+        "Usar `Instantiate` para crear un texto UI por cada enemigo.",
+        "Llamar a `GetComponent<Text>()` en `Update()` y asignar el string con `+`."
+      ],
+      "correctIndex": 0,
+      "explanation": "La opción correcta combina dos buenas prácticas: (1) actualizar el HUD solo cuando cambia la información (no cada frame), usando eventos o flags; y (2) construir el string con <strong>StringBuilder</strong> para evitar crear objetos temporales. Reconstruir en cada <code>Update()</code> con <code>+</code> crea decenas de strings temporales por frame."
+    },
+    {
+      "id": "oc_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un sistema de **object pooling** para balas tiene un pool de 20 balas. El jugador dispara la bala 21 y no hay disponibles. ¿Cuál es la estrategia más correcta?",
+      "options": [
+        "Reciclar la bala más antigua activa (desactivarla y reutilizarla), o expandir el pool en tiempo de ejecución si la situación es frecuente.",
+        "Llamar a `Instantiate` para crear una bala nueva sin guardarla en el pool.",
+        "Ignorar el disparo — nunca instanciar fuera del pool.",
+        "Destruir el GameObject del jugador para liberar memoria.",
+        "Llamar a `GC.Collect()` manualmente para liberar memoria."
+      ],
+      "correctIndex": 0,
+      "explanation": "Las estrategias más comunes ante pool agotado son: (1) reciclar el objeto más antiguo (aceptable para balas), (2) expandir el pool dinámicamente (si el caso es infrecuente). Instanciar sin guardar en el pool rompe el patrón. Llamar a <code>GC.Collect()</code> manualmente fuerza una pausa mayor — peor que el problema original."
+    },
+    {
+      "id": "oc_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este script de Unity:",
+      "code": "void Update()\n{\n    Rigidbody rb = GetComponent<Rigidbody>(); // ← esta línea\n    rb.AddForce(Vector3.up * 10f);\n}",
+      "question": "¿Qué problema de rendimiento tiene la línea marcada y cómo se llama la solución?",
+      "target": "cachear la referencia",
+      "acceptedAnswers": ["cachear la referencia", "cachear", "caching", "cache", "obtener en Awake"],
+      "hints": [
+        "GetComponent busca el componente cada vez que se llama.",
+        "Update() se ejecuta 60 veces por segundo.",
+        "La solución es obtener la referencia una vez y guardarla en un campo."
+      ],
+      "explanation": "Llamar <code>GetComponent</code> en <code>Update()</code> es costoso porque se ejecuta ~60 veces por segundo. La solución es <strong>cachear la referencia</strong>: declarar un campo privado <code>private Rigidbody _rb;</code> y asignarlo una vez en <code>Awake()</code> con <code>_rb = GetComponent&lt;Rigidbody&gt;();</code>."
+    },
+    {
+      "id": "oc_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de generación de texto para el HUD:",
+      "code": "string hudText = \"\";\nfor (int i = 0; i < 100; i++)\n    hudText += \"Enemigo \" + i + \"\\n\"; // 100 iteraciones",
+      "question": "¿Cuántos objetos string temporales aproximadamente se crean y descartan en este bucle, generando presión en el **GC**?",
+      "target": "100",
+      "acceptedAnswers": ["100", "~100", "aproximadamente 100", "100 strings"],
+      "hints": [
+        "Cada iteración del bucle usa el operador + para concatenar strings.",
+        "Cada uso de + con strings crea un nuevo string objeto.",
+        "El bucle se ejecuta 100 veces."
+      ],
+      "explanation": "Cada iteración crea un nuevo string y descarta el anterior — aproximadamente <strong>100 strings temporales</strong> en el heap. El <strong>GC</strong> debe limpiar todos esos objetos, generando presión. Con <strong>StringBuilder</strong>, se usaría un solo buffer interno y solo se crearía un string al final con <code>sb.ToString()</code>."
+    },
+    {
+      "id": "oc_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este patrón de spawning de balas:",
+      "code": "void Shoot()\n{\n    GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);\n    Destroy(bullet, 3f); // destruye después de 3 segundos\n}",
+      "question": "¿Qué patrón de optimización debería usarse en su lugar para evitar presión en el **GC** cuando el jugador dispara muy frecuentemente?",
+      "target": "object pooling",
+      "acceptedAnswers": ["object pooling", "pool", "pooling", "object pool"],
+      "hints": [
+        "El problema es crear y destruir objetos muy frecuentemente.",
+        "La alternativa es reutilizar objetos existentes en vez de crearlos nuevos.",
+        "El patrón tiene 'pool' en su nombre."
+      ],
+      "explanation": "El patrón <strong>object pooling</strong> pre-crea un conjunto de balas al inicio del juego. En vez de <code>Instantiate</code>/<code>Destroy</code>, se usa <code>SetActive(true)</code> al disparar y <code>SetActive(false)</code> cuando la bala expira. Esto elimina la presión en el <strong>GC</strong> que causan las creaciones/destrucciones frecuentes."
+    },
+    {
+      "id": "oc_id_004",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Observa este campo en una clase de Unity:",
+      "code": "public class PlayerController : MonoBehaviour\n{\n    private Rigidbody _rb;  // ← campo cacheado\n\n    void Awake()\n    {\n        _rb = GetComponent<Rigidbody>(); // ← asignado una vez\n    }\n\n    void Update()\n    {\n        _rb.AddForce(Vector3.up);\n    }\n}",
+      "question": "¿En qué método se inicializa la referencia cacheada y cuántas veces se llama `GetComponent` durante toda la vida del objeto?",
+      "target": "Awake, una vez",
+      "acceptedAnswers": ["Awake, una vez", "En Awake, una sola vez", "Awake una vez", "Awake - 1 vez"],
+      "hints": [
+        "Busca en qué método del ciclo de vida de Unity se asigna _rb.",
+        "Ese método se ejecuta una sola vez cuando el objeto se inicializa.",
+        "GetComponent está solo dentro de ese método, no en Update."
+      ],
+      "explanation": "<code>GetComponent</code> se llama en <code>Awake()</code>, que se ejecuta <strong>una sola vez</strong> al inicio. En <code>Update()</code> (60x/seg) solo se usa la referencia ya cacheada <code>_rb</code>, que es una operación <strong>O(1)</strong>. Este es el patrón correcto para optimizar accesos a componentes."
+    },
+    {
+      "id": "oc_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de pool simplificado:",
+      "code": "public class BulletPool : MonoBehaviour\n{\n    [SerializeField] GameObject bulletPrefab;\n    [SerializeField] int poolSize = 20;\n    private Queue<GameObject> _pool = new Queue<GameObject>();\n\n    void Start()\n    {\n        for (int i = 0; i < poolSize; i++)\n        {\n            var b = Instantiate(bulletPrefab);\n            b.SetActive(false);\n            _pool.Enqueue(b);\n        }\n    }\n\n    public GameObject GetBullet()\n    {\n        if (_pool.Count > 0)\n        {\n            var b = _pool.Dequeue();\n            b.SetActive(true);\n            return b;\n        }\n        return null; // pool agotado\n    }\n\n    public void ReturnBullet(GameObject b)\n    {\n        b.SetActive(false);\n        _pool.Enqueue(b);\n    }\n}",
+      "question": "¿Cuántas veces se llama a `Instantiate` después del método `Start()` cuando el jugador dispara 50 veces asumiendo que siempre devuelve las balas al pool?",
+      "target": "0",
+      "acceptedAnswers": ["0", "cero", "ninguna vez", "nunca"],
+      "hints": [
+        "El pool se llena en Start con 20 instancias.",
+        "GetBullet reactiva un objeto existente con SetActive(true).",
+        "ReturnBullet desactiva y devuelve al pool con SetActive(false).",
+        "Si el jugador siempre devuelve las balas, ¿necesita crear nuevas?"
+      ],
+      "explanation": "<strong>0 veces</strong>. El pool se llena en <code>Start()</code> con 20 instancias (20 llamadas a <code>Instantiate</code> al inicio). Después, <code>GetBullet()</code> usa <code>SetActive(true)</code> y <code>ReturnBullet()</code> usa <code>SetActive(false)</code> — reutilizando objetos existentes. Si el jugador dispara y devuelve las balas correctamente, <code>Instantiate</code> nunca más se llama."
+    },
+    {
+      "id": "oc_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este script y encuentra TODOS los problemas de rendimiento:",
+      "code": "void Update()\n{\n    // Sistema de radar que muestra todos los enemigos\n    string radarText = \"\";\n    Enemy[] allEnemies = FindObjectsOfType<Enemy>(); // busca en toda la escena\n    foreach (Enemy e in allEnemies)\n        radarText += e.name + \" HP:\" + e.health + \"\\n\"; // concatenación\n    GetComponent<Text>().text = radarText; // GetComponent en Update\n}",
+      "question": "¿Cuántos problemas de rendimiento distintos tiene este método `Update()`?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres", "3 problemas"],
+      "hints": [
+        "Hay un método de búsqueda muy costoso que recorre toda la escena.",
+        "Hay concatenación de strings en un bucle.",
+        "Hay una llamada a GetComponent dentro de Update."
+      ],
+      "explanation": "Este <code>Update()</code> tiene <strong>3 problemas</strong>: (1) <code>FindObjectsOfType&lt;Enemy&gt;()</code> busca en toda la escena cada frame — extremadamente costoso; (2) concatenación de strings con <code>+</code> en bucle genera basura para el <strong>GC</strong>; (3) <code>GetComponent&lt;Text&gt;()</code> en <code>Update()</code> busca el componente 60 veces por segundo. Todos deben cachearse."
+    },
+    {
+      "id": "oc_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el script cacheando el `Rigidbody` en `Awake()` para que `Update()` no llame a `GetComponent` cada frame:",
+      "codeTemplate": "public class Player : MonoBehaviour\n{\n    private __________ _rb;\n\n    void Awake()\n    {\n        _rb = GetComponent<__________>();\n    }\n\n    void Update()\n    {\n        _rb.AddForce(Vector3.up * 5f);\n    }\n}",
+      "expectedAnswer": "Rigidbody",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo del componente a cachear...",
+      "hints": [
+        "El campo y el GetComponent deben usar el mismo tipo.",
+        "El componente que queremos cachear es para física de Unity.",
+        "Se llama Rigidbody."
+      ],
+      "explanation": "<code>private Rigidbody _rb;</code> declara el campo cacheado. <code>_rb = GetComponent&lt;Rigidbody&gt;()</code> en <code>Awake()</code> lo inicializa una sola vez. En <code>Update()</code>, usar <code>_rb</code> directamente es <strong>O(1)</strong> — sin búsqueda, solo acceso a un campo."
+    },
+    {
+      "id": "oc_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Reemplaza la concatenación de strings por **StringBuilder** para optimizar la construcción del texto del HUD. Completa los métodos correctos:",
+      "codeTemplate": "System.Text.StringBuilder sb = new System.Text.StringBuilder();\nforeach (Enemy e in activeEnemies)\n{\n    sb.__________(e.name);\n    sb.__________(\": \");\n    sb.__________(e.health);\n    sb.__________();\n}\nhudLabel.text = sb.__________()",
+      "expectedAnswer": "Append",
+      "alternateAnswers": ["AppendLine", "ToString"],
+      "placeholder": "Escribe el método principal de StringBuilder para agregar texto...",
+      "hints": [
+        "StringBuilder tiene un método para agregar texto a su buffer.",
+        "El método principal se llama Append().",
+        "Para agregar con salto de línea al final, existe AppendLine()."
+      ],
+      "explanation": "<code>sb.Append()</code> agrega texto al buffer sin crear un nuevo string. <code>sb.AppendLine()</code> agrega con salto de línea. Al final, <code>sb.ToString()</code> convierte el buffer a string una sola vez. Todo el foreach crea un solo objeto string final, en vez de un string nuevo por cada iteración."
+    },
+    {
+      "id": "oc_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe las dos líneas necesarias para usar correctamente un pool de balas: (1) obtener una bala del pool en la posición `firePoint`, y (2) configurar su posición. El pool está en `bulletPool` de tipo `BulletPool` con método `GetBullet()` que retorna un `GameObject`:",
+      "codeTemplate": null,
+      "expectedAnswer": "GameObject bullet = bulletPool.GetBullet();\nif (bullet != null) bullet.transform.position = firePoint.position;",
+      "alternateAnswers": [
+        "var bullet = bulletPool.GetBullet();\nif (bullet != null) bullet.transform.position = firePoint.position;"
+      ],
+      "placeholder": "Escribe las dos líneas del uso del pool...",
+      "hints": [
+        "Llama a GetBullet() del pool para obtener una bala disponible.",
+        "GetBullet puede retornar null si el pool está agotado, verifica antes de usarla.",
+        "Asigna la posición a bullet.transform.position."
+      ],
+      "explanation": "<code>bulletPool.GetBullet()</code> devuelve una bala del pool (ya activa con <code>SetActive(true)</code>) o <code>null</code> si está agotado. La verificación <code>if (bullet != null)</code> maneja el caso de pool vacío. Este patrón reemplaza <code>Instantiate()</code> y evita presión en el <strong>GC</strong>."
+    },
+    {
+      "id": "oc_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Refactoriza este `Update()` mal implementado para cachear `Camera.main` y `GetComponent<AudioSource>()`. Escribe el `Awake()` correcto y el `Update()` optimizado:",
+      "codeTemplate": "// Original problemático:\n// void Update() {\n//     Camera.main.transform.position = target;\n//     GetComponent<AudioSource>().volume = 0.5f;\n// }\n\n// Tu versión con campos cacheados:",
+      "expectedAnswer": "private Camera _cam;\nprivate AudioSource _audio;\n\nvoid Awake()\n{\n    _cam = Camera.main;\n    _audio = GetComponent<AudioSource>();\n}\n\nvoid Update()\n{\n    _cam.transform.position = target;\n    _audio.volume = 0.5f;\n}",
+      "alternateAnswers": [
+        "private Camera _mainCam;\nprivate AudioSource _audioSource;\nvoid Awake() { _mainCam = Camera.main; _audioSource = GetComponent<AudioSource>(); }\nvoid Update() { _mainCam.transform.position = target; _audioSource.volume = 0.5f; }"
+      ],
+      "placeholder": "Escribe los campos, Awake() y Update() optimizados...",
+      "hints": [
+        "Declara dos campos privados: uno de tipo Camera y otro de AudioSource.",
+        "En Awake(), asigna Camera.main a un campo y GetComponent<AudioSource>() al otro.",
+        "En Update(), usa los campos cacheados directamente."
+      ],
+      "explanation": "Cachear <code>Camera.main</code> y <code>GetComponent&lt;AudioSource&gt;()</code> en <code>Awake()</code> significa que cada búsqueda se hace una sola vez. En <code>Update()</code>, los campos <code>_cam</code> y <code>_audio</code> son referencias directas — acceso <strong>O(1)</strong> sin búsqueda."
+    },
+    {
+      "id": "oc_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este pool básico de proyectiles. El método `ReturnBullet` debe desactivar la bala y regresarla a la cola del pool:",
+      "codeTemplate": "public void ReturnBullet(GameObject bullet)\n{\n    bullet.__________(false);\n    _pool.__________(bullet);\n}",
+      "expectedAnswer": "SetActive",
+      "alternateAnswers": ["Enqueue"],
+      "placeholder": "Escribe el método para desactivar el GameObject...",
+      "hints": [
+        "Para desactivar un GameObject en Unity se usa un método que recibe un bool.",
+        "Desactivar equivale a SetActive(false).",
+        "Luego se agrega de vuelta a la Queue con Enqueue."
+      ],
+      "explanation": "<code>bullet.SetActive(false)</code> desactiva el GameObject (invisible, sin Update, sin colisiones) y <code>_pool.Enqueue(bullet)</code> lo devuelve a la cola para reutilizar. Este par de operaciones es el núcleo del <strong>object pooling</strong>: desactivar en vez de destruir."
+    },
+    {
+      "id": "oc_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un método completo `BuildEnemyStatus(List<Enemy> enemies)` que devuelva un `string` usando **StringBuilder** con el formato `\"Nombre: HP\\n\"` para cada enemigo. Incluye la inicialización del `StringBuilder` y el `return` final:",
+      "codeTemplate": null,
+      "expectedAnswer": "string BuildEnemyStatus(List<Enemy> enemies)\n{\n    System.Text.StringBuilder sb = new System.Text.StringBuilder();\n    foreach (Enemy e in enemies)\n    {\n        sb.Append(e.name);\n        sb.Append(\": \");\n        sb.AppendLine(e.health.ToString());\n    }\n    return sb.ToString();\n}",
+      "alternateAnswers": [
+        "string BuildEnemyStatus(List<Enemy> enemies) {\n    var sb = new System.Text.StringBuilder();\n    foreach (Enemy e in enemies)\n        sb.Append(e.name).Append(\": \").AppendLine(e.health.ToString());\n    return sb.ToString();\n}"
+      ],
+      "placeholder": "Escribe el método completo con StringBuilder...",
+      "hints": [
+        "Declara un StringBuilder al inicio del método.",
+        "En el foreach, usa Append() para nombre y separador, AppendLine() para la vida.",
+        "Al final retorna sb.ToString() para convertir el buffer a string."
+      ],
+      "explanation": "<code>StringBuilder</code> acumula el texto en un buffer interno sin crear strings intermedios. En el bucle, <code>Append()</code> agrega texto y <code>AppendLine()</code> agrega con salto de línea. Solo al final, <code>sb.ToString()</code> crea un único string con todo el contenido — dramáticamente más eficiente que concatenación con <code>+</code>."
+    }
+  ]
+}

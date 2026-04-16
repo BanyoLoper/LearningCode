@@ -1,0 +1,342 @@
+{
+  "id": "data_driven_exam",
+  "title": "Examen Final: Data Driven Design",
+  "icon": "🎓",
+  "color": "#00897B",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "dde_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace exactamente **JsonUtility.FromJson<T>()** en Unity?",
+      "options": [
+        "Convierte un string JSON en un objeto C# del tipo T, mapeando cada campo del JSON al campo correspondiente de la clase.",
+        "Guarda un objeto C# en el disco como archivo .json automáticamente.",
+        "Descarga un archivo JSON desde internet y lo parsea en memoria.",
+        "Convierte un objeto C# en un array de bytes para enviarlo por red.",
+        "Genera código C# automáticamente a partir de la estructura de un JSON."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code><strong>JsonUtility.FromJson&lt;T&gt;(jsonString)</strong></code> toma un <strong>string</strong> con formato JSON y lo <em>deserializa</em>: crea una instancia del tipo <code>T</code> y llena sus campos públicos con los valores del JSON. El tipo <code>T</code> debe tener el atributo <code>[System.Serializable]</code> para que Unity pueda procesarlo."
+    },
+    {
+      "id": "dde_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Para qué se usa **JsonUtility.ToJson()** en el contexto de Data Driven Design?",
+      "options": [
+        "Para serializar un objeto C# a un string en formato JSON, útil para guardar datos de progreso o configuración.",
+        "Para cargar un archivo JSON desde la carpeta Resources del proyecto.",
+        "Para convertir un ScriptableObject en un archivo JSON de forma automática.",
+        "Para validar que un string tenga formato JSON correcto antes de parsearlo.",
+        "Para comparar dos objetos C# y determinar si sus datos son iguales."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code><strong>JsonUtility.ToJson(obj)</strong></code> hace lo inverso a <code>FromJson</code>: toma un objeto C# y lo <em>serializa</em> a un string JSON. Es útil para guardar el estado del juego, exportar configuraciones o enviar datos. El objeto debe ser serializable (<code>[System.Serializable]</code> o heredar de <code>MonoBehaviour</code>/<code>ScriptableObject</code>)."
+    },
+    {
+      "id": "dde_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la función de **[CreateAssetMenu]** en Unity?",
+      "options": [
+        "Añade una opción en el menú contextual de Assets para crear instancias del ScriptableObject directamente desde el Editor de Unity.",
+        "Permite que un MonoBehaviour cree archivos JSON de forma automática al iniciar la escena.",
+        "Serializa todos los campos públicos de un ScriptableObject a un archivo de texto.",
+        "Registra el ScriptableObject en el sistema de escenas de Unity para persistencia automática.",
+        "Genera una interfaz visual en el Inspector para editar el ScriptableObject como formulario web."
+      ],
+      "correctIndex": 0,
+      "explanation": "El atributo <code><strong>[CreateAssetMenu]</strong></code> le indica al Editor de Unity que muestre una opción en el menú <em>Assets → Create</em> (o clic derecho en el Project) para crear un nuevo asset de ese tipo <strong>ScriptableObject</strong>. Sin este atributo, el ScriptableObject existe en código pero no se puede crear como asset desde el Editor."
+    },
+    {
+      "id": "dde_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En el patrón de **Dictionary como base de datos en memoria**, ¿cuál es la ventaja de usar el ID del enemigo como clave del Dictionary?",
+      "options": [
+        "Permite acceder a cualquier EnemyData en tiempo O(1) usando su ID como clave, sin recorrer toda la lista.",
+        "Ordena automáticamente los enemigos por ID al insertarlos en el Dictionary.",
+        "Garantiza que el ID del enemigo sea único y no se repita en el archivo JSON.",
+        "Permite que Unity serialize el Dictionary directamente en el Inspector sin atributos adicionales.",
+        "Hace que el Dictionary funcione como una base de datos relacional con soporte de queries SQL."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <code><strong>Dictionary&lt;string, EnemyData&gt;</strong></code> con el ID como clave permite <em>lookups</em> en tiempo constante <strong>O(1)</strong>: dado un ID, se recupera el dato instantáneamente sin iterar sobre una lista. Esto es clave cuando el juego necesita consultar datos de un enemigo específico en cada frame o al instanciar un enemigo."
+    },
+    {
+      "id": "dde_ex_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué **[System.Serializable]** es obligatorio en una clase de datos que se usa con **JsonUtility.FromJson**?",
+      "options": [
+        "Porque JsonUtility solo puede deserializar clases marcadas con ese atributo; sin él, todos los campos quedarán en su valor por defecto.",
+        "Porque el atributo hace que la clase herede automáticamente de MonoBehaviour, lo cual es requerido por JsonUtility.",
+        "Porque sin el atributo, Unity genera un error de compilación al intentar usar JsonUtility.",
+        "Porque el atributo indica al Editor de Unity que muestre los campos de la clase en el menú Assets.",
+        "Porque el atributo comprime los datos JSON para reducir el tamaño del archivo en disco."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>JsonUtility</code> utiliza el sistema de serialización de Unity para mapear JSON a objetos C#. Ese sistema <strong>solo procesa clases marcadas con <code>[System.Serializable]</code></strong> (o que hereden de <code>UnityEngine.Object</code>). Sin el atributo, Unity no serializa los campos y el objeto resultante tendrá todos sus valores en cero o null."
+    },
+    {
+      "id": "dde_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia principal entre guardar datos en un **ScriptableObject** versus en un archivo **JSON** externo?",
+      "options": [
+        "El ScriptableObject vive como asset dentro del proyecto Unity y se edita en el Inspector; el JSON es un archivo de texto externo editable fuera del Editor.",
+        "El ScriptableObject solo puede almacenar tipos primitivos; el JSON puede almacenar cualquier tipo de dato.",
+        "El JSON se carga más rápido en runtime que el ScriptableObject porque no requiere deserialización.",
+        "El ScriptableObject requiere conexión a internet para sincronizarse; el JSON funciona de forma local.",
+        "No hay diferencia práctica: ambos son equivalentes en todos los aspectos técnicos y de flujo de trabajo."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>ScriptableObject</strong> es un asset de Unity: vive en el proyecto, se edita visualmente en el Inspector y está integrado con el sistema de assets de Unity. Un archivo <strong>JSON</strong> es texto plano externo: puede editarse con cualquier editor de texto, modificarse en producción sin recompilar, y es más portable entre plataformas y proyectos."
+    },
+    {
+      "id": "dde_ex_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Para cargar un **ScriptableObject** desde la carpeta `Resources` en runtime, ¿qué método de Unity se usa y qué tipo debe especificarse?",
+      "options": [
+        "Resources.Load<NombreDelSO>(\"ruta/al/asset\"), donde NombreDelSO es el tipo del ScriptableObject que se quiere cargar.",
+        "AssetDatabase.LoadAssetAtPath<NombreDelSO>(\"Assets/ruta/al/asset.asset\"), que funciona tanto en Editor como en builds.",
+        "File.ReadAllText(Application.dataPath + \"/Resources/asset.json\") seguido de JsonUtility.FromJson.",
+        "ScriptableObject.CreateInstance<NombreDelSO>() carga automáticamente el asset desde Resources.",
+        "GameObject.FindObjectOfType<NombreDelSO>() busca el ScriptableObject activo en la escena actual."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code><strong>Resources.Load&lt;T&gt;(\"ruta\")</strong></code> carga cualquier asset que esté dentro de una carpeta llamada <code>Resources</code> en el proyecto. El tipo <code>T</code> debe coincidir con el tipo del asset — en este caso, el tipo del <strong>ScriptableObject</strong>. La ruta es relativa a la carpeta <code>Resources</code> y sin extensión de archivo."
+    },
+    {
+      "id": "dde_ex_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un sistema de ítems tiene 500 ítems cargados desde JSON en un `List<ItemData>`. Cada frame, el juego busca un ítem por su ID para mostrarlo en el HUD. ¿Cuál es el problema y la solución Data Driven correcta?",
+      "options": [
+        "Buscar en una List es O(n) — lento con 500 ítems. La solución es convertir la List a un Dictionary<string, ItemData> al cargar, para lookups O(1) en cada frame.",
+        "El JSON no puede almacenar 500 ítems; la solución es dividirlos en 10 archivos JSON de 50 ítems cada uno.",
+        "Los ítems deben hardcodearse en un switch-case para garantizar la velocidad de búsqueda en runtime.",
+        "La List debe reemplazarse por un array fijo de tamaño 500 declarado en el código para mejorar el rendimiento.",
+        "El problema no existe: List en C# tiene búsqueda O(1) por ID de forma nativa, igual que un Dictionary."
+      ],
+      "correctIndex": 0,
+      "explanation": "Buscar en una <code>List</code> por ID requiere recorrerla elemento a elemento — complejidad <strong>O(n)</strong>. Con 500 ítems y búsquedas por frame, esto puede causar caídas de FPS. La solución es construir un <code><strong>Dictionary&lt;string, ItemData&gt;</strong></code> al cargar los datos: las búsquedas posteriores son <strong>O(1)</strong>. Es el patrón <em>cache como DB en memoria</em>."
+    },
+    {
+      "id": "dde_ex_009",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este fragmento de código:",
+      "code": "string json = File.ReadAllText(\"enemies.json\");\nEnemyData enemy = JsonUtility.FromJson<EnemyData>(json);",
+      "question": "¿Cómo se llama el proceso de convertir el string JSON en un objeto C# `EnemyData`, que realiza **JsonUtility.FromJson**?",
+      "target": "deserialización",
+      "acceptedAnswers": ["deserialización", "deserializar", "deserializacion", "desserialización", "parsing", "parseo", "parse"],
+      "hints": [
+        "El string JSON se 'transforma' en un objeto C# con sus campos llenos.",
+        "El proceso inverso (objeto → texto) se llama serialización.",
+        "En inglés se llama 'deserialization' — des-serializar."
+      ],
+      "explanation": "El proceso de convertir datos en formato texto/bytes (como un string <strong>JSON</strong>) en un objeto en memoria se llama <strong>deserialización</strong>. <code>JsonUtility.FromJson&lt;T&gt;()</code> lee el JSON y crea una instancia del tipo <code>T</code> con los valores del JSON. El proceso inverso — objeto a JSON — se llama <strong>serialización</strong> y lo hace <code>JsonUtility.ToJson()</code>."
+    },
+    {
+      "id": "dde_ex_010",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este código que construye un sistema de datos en memoria:",
+      "code": "void LoadEnemies()\n{\n    string json = Resources.Load<TextAsset>(\"enemies\").text;\n    EnemyDatabase db = JsonUtility.FromJson<EnemyDatabase>(json);\n\n    enemyCache = new Dictionary<string, EnemyData>();\n    foreach (var enemy in db.enemies)\n    {\n        enemyCache[enemy.id] = enemy;\n    }\n}\n\nEnemyData GetEnemy(string id)\n{\n    return enemyCache[id]; // acceso O(1)\n}",
+      "question": "¿Cómo se llama el patrón en el que se cargan datos desde JSON y se almacenan en un **Dictionary** para acceso rápido durante el juego?",
+      "target": "dictionary como base de datos en memoria",
+      "acceptedAnswers": ["dictionary como base de datos en memoria", "dictionary como db en memoria", "cache en memoria", "cache como db", "base de datos en memoria", "in-memory database", "lookup table", "tabla de búsqueda"],
+      "hints": [
+        "El Dictionary actúa como una base de datos: se consulta por ID.",
+        "Los datos se cargan una sola vez y quedan en memoria RAM para acceso rápido.",
+        "¿Cómo llamarías a un Dictionary que almacena datos para consultas rápidas?"
+      ],
+      "explanation": "Este patrón se llama <strong>Dictionary como base de datos en memoria</strong> (o <em>in-memory cache</em>). Los datos se cargan desde <strong>JSON</strong> una sola vez al iniciar, se indexan en un <code>Dictionary</code> por ID, y luego cualquier sistema del juego puede consultarlos en tiempo <strong>O(1)</strong> sin releer el archivo."
+    },
+    {
+      "id": "dde_ex_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta clase de Unity:",
+      "code": "[CreateAssetMenu(fileName = \"NewWeapon\", menuName = \"Game/Weapon\")]\npublic class WeaponData : ScriptableObject\n{\n    public string weaponName;\n    public int damage;\n    public float fireRate;\n    public Sprite icon;\n}",
+      "question": "¿Qué tipo de clase de Unity es `WeaponData` y cuál es su ventaja principal sobre una clase C# normal con **[System.Serializable]**?",
+      "target": "ScriptableObject",
+      "acceptedAnswers": ["ScriptableObject", "scriptable object", "Scriptable Object", "SO"],
+      "hints": [
+        "La clase hereda de algo que no es MonoBehaviour ni System.Object.",
+        "Puede almacenar referencias a assets de Unity como Sprites, sin necesidad de estar en una escena.",
+        "Se crea como un archivo .asset en el proyecto, editable en el Inspector."
+      ],
+      "explanation": "<code>WeaponData</code> es un <strong>ScriptableObject</strong>. Su ventaja principal sobre una clase <code>[System.Serializable]</code> es que existe como <em>asset independiente</em> en el proyecto: puede referenciar otros assets de Unity (como <code>Sprite</code>, <code>AudioClip</code>), se edita en el Inspector, se puede compartir entre múltiples GameObjects sin duplicar datos, y persiste entre escenas sin necesidad de un GameObject."
+    },
+    {
+      "id": "dde_ex_012",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Considera este escenario de carga de datos:",
+      "code": "// En el proyecto Unity:\n// Assets/Resources/Data/items.json\n\nvoid Start()\n{\n    TextAsset ta = Resources.Load<TextAsset>(\"Data/items\");\n    string json = ta.text;\n    ItemDatabase db = JsonUtility.FromJson<ItemDatabase>(json);\n}",
+      "question": "¿Qué clase de Unity se usa para cargar un archivo de texto (como un JSON) desde la carpeta **Resources**, y cómo se accede al contenido del archivo?",
+      "target": "TextAsset",
+      "acceptedAnswers": ["TextAsset", "Text Asset", "textasset"],
+      "hints": [
+        "Unity tiene una clase especial para representar archivos de texto como assets.",
+        "Se carga con Resources.Load<____>(\"ruta\").",
+        "Para obtener el string del archivo, se accede a la propiedad .text de esta clase."
+      ],
+      "explanation": "<code><strong>TextAsset</strong></code> es la clase de Unity que representa archivos de texto (JSON, XML, CSV, etc.) importados como assets. Se carga con <code>Resources.Load&lt;TextAsset&gt;(\"ruta\")</code> y su propiedad <code>.text</code> devuelve el contenido del archivo como string, que luego se pasa a <code>JsonUtility.FromJson()</code>."
+    },
+    {
+      "id": "dde_ex_013",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa estos dos enfoques para definir stats de personajes:",
+      "code": "// Enfoque A: clase normal serializable\n[System.Serializable]\npublic class HeroStats\n{\n    public int hp;\n    public float speed;\n}\n// Se instancia como campo de un MonoBehaviour.\n// NO puede tener referencias a Sprites, AudioClips, etc.\n\n// Enfoque B: ScriptableObject\n[CreateAssetMenu(menuName = \"Game/HeroStats\")]\npublic class HeroStats : ScriptableObject\n{\n    public int hp;\n    public float speed;\n    public Sprite portrait; // ← referencia a asset de Unity\n}",
+      "question": "¿Qué capacidad específica tiene el **Enfoque B** (ScriptableObject) que el Enfoque A no puede ofrecer?",
+      "target": "referencias a assets de Unity",
+      "acceptedAnswers": ["referencias a assets de Unity", "referenciar assets", "referencias a assets", "referencias a Sprites y AudioClips", "almacenar referencias a assets", "guardar referencias a assets de unity"],
+      "hints": [
+        "El Enfoque B tiene un campo `Sprite portrait` que el Enfoque A no podría tener de la misma manera.",
+        "Los Sprites, AudioClips y Prefabs son 'assets' de Unity.",
+        "Un ScriptableObject puede 'referenciar' otros archivos del proyecto Unity directamente."
+      ],
+      "explanation": "Los <strong>ScriptableObjects</strong> pueden almacenar <strong>referencias a assets de Unity</strong> (Sprites, AudioClips, Prefabs, Materiales, etc.) de forma nativa. Una clase <code>[System.Serializable]</code> usada como campo de un MonoBehaviour también puede hacerlo si está en el Inspector, pero como contenedor puro deserializado desde JSON, solo puede tener tipos primitivos y strings — no referencias a assets."
+    },
+    {
+      "id": "dde_ex_014",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este fragmento y el archivo que referencia:",
+      "code": "// shop_items.json\n{\n  \"items\": [\n    { \"id\": \"sword_01\", \"name\": \"Espada de Hierro\", \"price\": 100 },\n    { \"id\": \"shield_01\", \"name\": \"Escudo de Madera\", \"price\": 75 },\n    { \"id\": \"potion_01\", \"name\": \"Poción de Vida\", \"price\": 50 }\n  ]\n}\n\n// El diseñador cambia el precio de potion_01 a 30.\n// No se toca ningún archivo .cs del proyecto.",
+      "question": "¿Qué principio de Data Driven Design permite al diseñador cambiar el precio de un ítem sin involucrar al programador?",
+      "target": "separación de datos y lógica",
+      "acceptedAnswers": ["separación de datos y lógica", "separacion datos logica", "separación datos/lógica", "separación entre datos y lógica", "datos separados de la lógica", "datos separados del código"],
+      "hints": [
+        "Los precios viven en el archivo JSON, no en el código C#.",
+        "La lógica de la tienda (MonoBehaviour) no define los precios: solo los lee.",
+        "¿Cuál es el principio fundamental de Data Driven Design?"
+      ],
+      "explanation": "El principio es la <strong>separación de datos y lógica</strong>. Los precios, nombres e IDs de ítems son <em>datos</em> que viven en el archivo <strong>JSON</strong>. La lógica de la tienda (código C#) sabe <em>cómo</em> mostrar y vender ítems, pero no define <em>cuáles</em> ni <em>a qué precio</em>. El diseñador puede ajustar los datos de forma autónoma."
+    },
+    {
+      "id": "dde_ex_015",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la llamada a **JsonUtility** para convertir el string `jsonText` en un objeto de tipo `EnemyData`:",
+      "codeTemplate": "string jsonText = File.ReadAllText(\"enemy.json\");\nEnemyData data = JsonUtility.__________<EnemyData>(jsonText);",
+      "expectedAnswer": "FromJson",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método de JsonUtility...",
+      "hints": [
+        "El proceso de convertir un string JSON en un objeto C# se llama deserialización.",
+        "El método de JsonUtility para deserializar empieza con 'From'.",
+        "JsonUtility.____Json convierte texto en objeto."
+      ],
+      "explanation": "<code><strong>JsonUtility.FromJson&lt;T&gt;(string)</strong></code> es el método que <em>deserializa</em> un string JSON en un objeto C# del tipo especificado. <code>From</code> indica que se parte del JSON para llegar al objeto. El método inverso es <code>JsonUtility.ToJson(obj)</code>, que convierte un objeto en string JSON."
+    },
+    {
+      "id": "dde_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo del ScriptableObject para que aparezca en el menú **Assets → Create → Game/Enemy** del Editor de Unity, con nombre de archivo por defecto `NewEnemy`:",
+      "codeTemplate": "[__________( fileName = \"NewEnemy\", menuName = \"Game/Enemy\" )]\npublic class EnemyData : ScriptableObject\n{\n    public string enemyName;\n    public int hp;\n}",
+      "expectedAnswer": "CreateAssetMenu",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del atributo...",
+      "hints": [
+        "El atributo le dice al Editor de Unity que cree un ítem de menú para generar este asset.",
+        "El atributo se llama igual que la acción que habilita: 'crear un asset desde el menú'.",
+        "Empieza con 'Create' y termina con 'Menu'."
+      ],
+      "explanation": "El atributo <code><strong>[CreateAssetMenu]</strong></code> registra el <strong>ScriptableObject</strong> en el menú del Editor de Unity. Los parámetros <code>fileName</code> y <code>menuName</code> controlan el nombre por defecto del archivo creado y la ubicación en el menú <em>Assets → Create</em>, respectivamente."
+    },
+    {
+      "id": "dde_ex_017",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el código completo para cargar un archivo JSON llamado `weapons` desde la carpeta `Resources` de Unity y deserializarlo en un objeto de tipo `WeaponDatabase`:",
+      "codeTemplate": null,
+      "expectedAnswer": "TextAsset ta = Resources.Load<TextAsset>(\"weapons\");\nWeaponDatabase db = JsonUtility.FromJson<WeaponDatabase>(ta.text);",
+      "alternateAnswers": [
+        "TextAsset asset = Resources.Load<TextAsset>(\"weapons\");\nWeaponDatabase db = JsonUtility.FromJson<WeaponDatabase>(asset.text);",
+        "var ta = Resources.Load<TextAsset>(\"weapons\");\nvar db = JsonUtility.FromJson<WeaponDatabase>(ta.text);"
+      ],
+      "placeholder": "Escribe las dos líneas de código necesarias...",
+      "hints": [
+        "Primero carga el archivo de texto con Resources.Load usando el tipo TextAsset.",
+        "Luego usa la propiedad .text del TextAsset para obtener el string JSON.",
+        "Finalmente deserializa el string con JsonUtility.FromJson<WeaponDatabase>()."
+      ],
+      "explanation": "El proceso tiene dos pasos: 1) <code><strong>Resources.Load&lt;TextAsset&gt;(\"weapons\")</strong></code> carga el archivo JSON como un <code>TextAsset</code> de Unity. 2) <code><strong>JsonUtility.FromJson&lt;WeaponDatabase&gt;(ta.text)</strong></code> deserializa el contenido (propiedad <code>.text</code>) en un objeto <code>WeaponDatabase</code>. Ambos pasos son el patrón estándar de carga de datos JSON en Unity."
+    },
+    {
+      "id": "dde_ex_018",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase `ItemDatabase` serializable que Unity pueda usar con **JsonUtility.FromJson**, con un campo `items` que sea un array de `ItemData`:",
+      "codeTemplate": null,
+      "expectedAnswer": "[System.Serializable]\npublic class ItemDatabase\n{\n    public ItemData[] items;\n}",
+      "alternateAnswers": [
+        "[Serializable]\npublic class ItemDatabase\n{\n    public ItemData[] items;\n}",
+        "[System.Serializable]\npublic class ItemDatabase\n{\n    public ItemData[] items;\n}\n"
+      ],
+      "placeholder": "Escribe la clase contenedora con el atributo y el array...",
+      "hints": [
+        "La clase necesita el atributo [System.Serializable] para que JsonUtility pueda procesarla.",
+        "El campo debe ser public y de tipo array: ItemData[].",
+        "Esta clase es el 'sobre' que envuelve al array, porque JsonUtility no parsea arrays directamente en el nivel raíz."
+      ],
+      "explanation": "<code>JsonUtility</code> requiere un <strong>objeto raíz</strong> serializable — no puede deserializar un array directamente. La clase <code><strong>[System.Serializable] ItemDatabase</strong></code> con un campo <code>public ItemData[] items</code> actúa como ese objeto raíz. El JSON correspondiente tendría la forma <code>{ \"items\": [ ... ] }</code>."
+    },
+    {
+      "id": "dde_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `BuildCache` que recibe una `EnemyDatabase` (con campo `public EnemyData[] enemies` donde cada `EnemyData` tiene `public string id`) y devuelve un `Dictionary<string, EnemyData>` con los enemigos indexados por su ID:",
+      "codeTemplate": null,
+      "expectedAnswer": "Dictionary<string, EnemyData> BuildCache(EnemyDatabase db)\n{\n    Dictionary<string, EnemyData> cache = new Dictionary<string, EnemyData>();\n    foreach (EnemyData enemy in db.enemies)\n    {\n        cache[enemy.id] = enemy;\n    }\n    return cache;\n}",
+      "alternateAnswers": [
+        "Dictionary<string, EnemyData> BuildCache(EnemyDatabase db)\n{\n    var cache = new Dictionary<string, EnemyData>();\n    foreach (var enemy in db.enemies)\n    {\n        cache[enemy.id] = enemy;\n    }\n    return cache;\n}",
+        "Dictionary<string, EnemyData> BuildCache(EnemyDatabase db)\n{\n    Dictionary<string, EnemyData> cache = new Dictionary<string, EnemyData>();\n    foreach (var e in db.enemies)\n        cache[e.id] = e;\n    return cache;\n}"
+      ],
+      "placeholder": "Escribe el método completo que construye el Dictionary...",
+      "hints": [
+        "El método recibe un EnemyDatabase y devuelve un Dictionary<string, EnemyData>.",
+        "Usa foreach para recorrer db.enemies e insertar cada enemigo con cache[enemy.id] = enemy.",
+        "Al final retorna el Dictionary construido."
+      ],
+      "explanation": "Este método implementa el patrón <strong>Dictionary como base de datos en memoria</strong>. Recorre el array de enemigos del JSON y los indexa por <code>id</code> en un <code><strong>Dictionary&lt;string, EnemyData&gt;</strong></code>. Una vez construido, cualquier consulta posterior por ID tiene complejidad <strong>O(1)</strong>, a diferencia de buscar en el array original que sería <strong>O(n)</strong>."
+    },
+    {
+      "id": "dde_ex_020",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un **ScriptableObject** completo llamado `SpellData` con el atributo `[CreateAssetMenu]` (menuName: `\"Game/Spell\"`), los campos `spellName` (string), `manaCost` (int), `damage` (float) e `icon` (Sprite), y el método `GetDescription()` que devuelva un string con el nombre y el costo de maná:",
+      "codeTemplate": null,
+      "expectedAnswer": "[CreateAssetMenu(fileName = \"NewSpell\", menuName = \"Game/Spell\")]\npublic class SpellData : ScriptableObject\n{\n    public string spellName;\n    public int manaCost;\n    public float damage;\n    public Sprite icon;\n\n    public string GetDescription()\n    {\n        return spellName + \" - Maná: \" + manaCost;\n    }\n}",
+      "alternateAnswers": [
+        "[CreateAssetMenu(menuName = \"Game/Spell\")]\npublic class SpellData : ScriptableObject\n{\n    public string spellName;\n    public int manaCost;\n    public float damage;\n    public Sprite icon;\n\n    public string GetDescription()\n    {\n        return $\"{spellName} - Maná: {manaCost}\";\n    }\n}",
+        "[CreateAssetMenu(fileName = \"SpellData\", menuName = \"Game/Spell\")]\npublic class SpellData : ScriptableObject\n{\n    public string spellName;\n    public int manaCost;\n    public float damage;\n    public Sprite icon;\n\n    public string GetDescription()\n    {\n        return string.Format(\"{0} - Maná: {1}\", spellName, manaCost);\n    }\n}"
+      ],
+      "placeholder": "Escribe la clase ScriptableObject completa con campos y método...",
+      "hints": [
+        "La clase hereda de ScriptableObject (no de MonoBehaviour).",
+        "El atributo [CreateAssetMenu] va antes de la declaración de clase.",
+        "El campo icon es de tipo Sprite — los ScriptableObjects pueden referenciar assets de Unity.",
+        "GetDescription() puede usar concatenación de strings o interpolación ($\"\")."
+      ],
+      "explanation": "Este ejercicio combina todos los conceptos de <strong>ScriptableObject</strong>: el atributo <code><strong>[CreateAssetMenu]</strong></code> para crearlo desde el Editor, la herencia de <code>ScriptableObject</code>, campos <code>public</code> para que aparezcan en el Inspector (incluyendo una referencia a <code>Sprite</code>), y un método de lógica simple. Los <strong>ScriptableObjects</strong> pueden tener métodos además de datos, lo que los hace más potentes que simples contenedores JSON."
+    }
+  ]
+}

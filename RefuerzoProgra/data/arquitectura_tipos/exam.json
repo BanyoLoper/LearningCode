@@ -1,0 +1,325 @@
+{
+  "id": "arquitectura_exam",
+  "title": "Examen Final: Arquitectura y Tipos",
+  "icon": "🎓",
+  "color": "#5C6BC0",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "arq_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué significa el acrónimo **POCO** en el contexto de Unity y C#?",
+      "options": [
+        "Plain Old C# Object — una clase C# pura que no hereda de MonoBehaviour.",
+        "Prefab Object with Custom Operations — un prefab con scripts personalizados.",
+        "Partially Organized Component Object — un componente de Unity simplificado.",
+        "Pooled C# Object — un objeto reutilizable del sistema de Object Pooling.",
+        "Pure Object-Oriented C# Output — resultado de compilar clases abstractas."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>POCO</strong> significa <strong>Plain Old C# Object</strong>: una clase C# estándar sin herencia de <code>MonoBehaviour</code> ni dependencias del motor de Unity. Se instancia con <code>new MiClase()</code> y puede contener datos y lógica de negocio pura."
+    },
+    {
+      "id": "arq_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre un **struct** y una **class** en C# respecto a cómo se almacenan en memoria?",
+      "options": [
+        "Un struct es un value type (se copia al asignarse); una class es un reference type (se comparte la referencia).",
+        "Un struct se almacena en el heap y una class en el stack.",
+        "Un struct puede heredar de MonoBehaviour y una class no.",
+        "Un struct usa Instantiate() para crearse y una class usa new.",
+        "No hay diferencia real: ambos se comportan igual en tiempo de ejecución."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>structs</strong> son <strong>value types</strong>: al asignarlos o pasarlos como parámetro se crea una copia completa. Las <strong>classes</strong> son <strong>reference types</strong>: se pasa la referencia al mismo objeto en memoria. Esto afecta directamente el comportamiento al modificar datos."
+    },
+    {
+      "id": "arq_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿cuál es el rol correcto de un **MonoBehaviour** cuando se usa el patrón **POCO** + fachada?",
+      "options": [
+        "Actúa como fachada liviana: recibe eventos de Unity (Input, Physics) y delega la lógica a POCOs.",
+        "Contiene toda la lógica del juego para mantener el código centralizado en un solo lugar.",
+        "Es el único tipo de clase que puede declarar variables públicas en Unity.",
+        "Reemplaza al POCO cuando la clase necesita más de cinco métodos.",
+        "Gestiona la serialización JSON de los datos y los guarda en disco."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con el patrón <strong>fachada</strong>, el <code>MonoBehaviour</code> solo coordina: recibe eventos del motor (<code>OnCollisionEnter</code>, <code>Update</code>, <code>Start</code>) y los traduce en llamadas a los <strong>POCOs</strong> que contienen la lógica real. Esto mantiene la lógica testeable e independiente de Unity."
+    },
+    {
+      "id": "arq_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirve el atributo **[System.Serializable]** aplicado a un **POCO** en Unity?",
+      "options": [
+        "Permite que Unity serialice y muestre los campos del POCO en el Inspector del editor.",
+        "Convierte el POCO en un MonoBehaviour automáticamente al compilar.",
+        "Habilita que el POCO use coroutines y el método Update().",
+        "Permite instanciar el POCO con Instantiate() como si fuera un prefab.",
+        "Es obligatorio para que el POCO pueda usar listas y arreglos de C#."
+      ],
+      "correctIndex": 0,
+      "explanation": "El atributo <strong>[System.Serializable]</strong> le indica a Unity que debe serializar los campos públicos (o con <code>[SerializeField]</code>) de ese <strong>POCO</strong>, haciéndolos visibles y editables en el <strong>Inspector</strong>. Sin él, Unity ignora la clase al serializar."
+    },
+    {
+      "id": "arq_ex_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un juego RPG tiene clases `ItemData`, `QuestInfo` y `PlayerStats`. ¿Cuál de estas afirmaciones es correcta respecto a su arquitectura?",
+      "options": [
+        "Las tres deberían ser POCOs: solo contienen datos y no necesitan el ciclo de vida de Unity.",
+        "Las tres deben heredar de MonoBehaviour para poder ser serializadas en Unity.",
+        "Solo PlayerStats debe ser POCO; ItemData y QuestInfo requieren MonoBehaviour.",
+        "Deben heredar de ScriptableObject para funcionar correctamente en cualquier escena.",
+        "Deben ser structs porque los datos de juego son siempre value types."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>ItemData</code>, <code>QuestInfo</code> y <code>PlayerStats</code> son modelos de datos puros: no necesitan <code>Start()</code>, <code>Update()</code> ni acceso a <code>Transform</code>. Como <strong>POCOs</strong>, se instancian con <code>new</code>, se pueden testear de forma unitaria y no generan overhead del motor."
+    },
+    {
+      "id": "arq_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuándo conviene usar un **struct** en lugar de una **class** para datos de juego en Unity?",
+      "options": [
+        "Cuando los datos son pequeños, inmutables y se pasan frecuentemente por valor (ej. Vector2, Color, coordenadas de tile).",
+        "Cuando la clase necesita heredar de MonoBehaviour para acceder a Transform.",
+        "Cuando el objeto necesita ser instanciado con Instantiate() en la escena.",
+        "Cuando los datos cambian constantemente y necesitan ser compartidos por referencia.",
+        "Cuando la clase tiene más de diez campos públicos y necesita más espacio en el heap."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>structs</strong> son ideales para datos pequeños y de corta vida como coordenadas, colores o rangos de daño. Al ser <strong>value types</strong>, su copia es barata y evitan presión al <strong>garbage collector</strong>. Para datos grandes o con identidad compartida, las <strong>classes</strong> son más apropiadas."
+    },
+    {
+      "id": "arq_ex_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En un juego de puzzle, tienes una clase `GridCell` que almacena posición (x, y) y tipo de celda. ¿Qué tipo y modificadores serían más apropiados para sus campos?",
+      "options": [
+        "Un struct con campos readonly: garantiza inmutabilidad y eficiencia al copiar celdas por valor.",
+        "Una class con campos públicos: permite modificar la celda desde cualquier script.",
+        "Un MonoBehaviour con SerializeField: muestra los campos en el Inspector para ajustar en el editor.",
+        "Un ScriptableObject: permite crear assets de celdas reutilizables desde el Project.",
+        "Una class abstracta: permite heredar tipos de celdas especiales como CeldaBomba o CeldaEspecial."
+      ],
+      "correctIndex": 0,
+      "explanation": "Para <code>GridCell</code> en un puzzle, un <strong>struct con campos readonly</strong> es ideal: las celdas son pequeñas, inmutables una vez creadas y se manejan en grandes cantidades (el grid completo). Los campos <code>readonly</code> previenen modificaciones accidentales al copiar celdas."
+    },
+    {
+      "id": "arq_ex_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tu juego de plataformas tiene un `PlayerController : MonoBehaviour` con 500 líneas. Según el principio de **responsabilidad única**, ¿cuál es la refactorización más correcta?",
+      "options": [
+        "Crear POCOs separados: JumpPhysics, GroundDetector, MovementStats; y usar PlayerController solo como fachada que los coordina.",
+        "Dividir el MonoBehaviour en dos scripts de 250 líneas cada uno.",
+        "Mover toda la lógica a un ScriptableObject accesible desde cualquier escena.",
+        "Usar herencia: PlayerControllerBase con las 500 líneas y heredar versiones especializadas.",
+        "Convertir todos los métodos privados en públicos para facilitar el acceso desde otros scripts."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>principio de responsabilidad única</strong> (SRP) pide que cada clase tenga un solo motivo de cambio. <code>JumpPhysics</code>, <code>GroundDetector</code> y <code>MovementStats</code> como <strong>POCOs</strong> son testeables de forma independiente. <code>PlayerController</code> solo coordina sus llamadas desde el ciclo de vida de Unity."
+    },
+    {
+      "id": "arq_ex_009",
+      "type": "identification",
+      "difficulty": 1,
+      "question": "¿Cómo se llama el tipo de dato en C# cuyos valores se copian al asignarse, en contraste con el tipo que comparte referencias? Responde con el término en inglés.",
+      "target": "value type",
+      "acceptedAnswers": ["value type", "value types", "tipo por valor", "tipo de valor", "struct"],
+      "hints": [
+        "En C#, los tipos se dividen en dos categorías según cómo se almacenan y copian.",
+        "Los structs pertenecen a esta categoría: al asignar una variable a otra, se genera una copia completa.",
+        "En inglés se llama 'value type', en contraste con 'reference type'."
+      ],
+      "explanation": "Los <strong>value types</strong> (tipos por valor) se copian íntegramente al asignarse o pasarse como parámetro. Los <strong>structs</strong> en C# son value types. Los <strong>reference types</strong> (clases) comparten la misma instancia en memoria a través de referencias."
+    },
+    {
+      "id": "arq_ex_010",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código:",
+      "code": "[System.Serializable]\npublic class EnemyStats\n{\n    public int maxHealth;\n    public float moveSpeed;\n    public int attackPower;\n}",
+      "question": "¿Este código es un POCO, un MonoBehaviour o un struct? Responde solo con el tipo.",
+      "target": "POCO",
+      "acceptedAnswers": ["POCO", "poco", "Plain Old C# Object", "clase POCO"],
+      "hints": [
+        "Observa la declaración: ¿de qué hereda la clase?",
+        "El atributo [System.Serializable] no convierte una clase en MonoBehaviour.",
+        "Si no hereda de nada de Unity, es una clase C# pura."
+      ],
+      "explanation": "Es un <strong>POCO</strong>: no hereda de <code>MonoBehaviour</code> ni de ninguna clase de Unity. El atributo <code>[System.Serializable]</code> solo le indica a Unity que debe mostrar sus campos en el <strong>Inspector</strong> cuando esta clase esté contenida dentro de un <code>MonoBehaviour</code>."
+    },
+    {
+      "id": "arq_ex_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este struct:",
+      "code": "public struct DamageRange\n{\n    public readonly int min;\n    public readonly int max;\n\n    public DamageRange(int min, int max)\n    {\n        this.min = min;\n        this.max = max;\n    }\n}",
+      "question": "¿Qué palabra clave garantiza que los campos min y max no puedan modificarse después de ser inicializados en el constructor?",
+      "target": "readonly",
+      "acceptedAnswers": ["readonly", "read only", "readonly keyword", "palabra clave readonly"],
+      "hints": [
+        "Es una palabra clave de C# que se coloca antes del tipo del campo.",
+        "Permite inicializar el campo solo en la declaración o en el constructor.",
+        "Su nombre en inglés indica que el campo solo puede ser leído, no modificado."
+      ],
+      "explanation": "La palabra clave <strong>readonly</strong> en C# permite asignar el campo únicamente en su declaración o en el constructor de la clase/struct. Después de eso, cualquier intento de modificarlo genera un error de compilación, lo que garantiza la <strong>inmutabilidad</strong> del dato."
+    },
+    {
+      "id": "arq_ex_012",
+      "type": "identification",
+      "difficulty": 2,
+      "question": "En Unity, ¿qué método se usa para crear una instancia de un prefab en la escena (no de un POCO con new)?",
+      "target": "Instantiate",
+      "acceptedAnswers": ["Instantiate", "Instantiate()", "GameObject.Instantiate", "Object.Instantiate"],
+      "hints": [
+        "Es un método estático disponible en MonoBehaviour y en la clase Object de Unity.",
+        "Se usa para 'clonar' un prefab o un GameObject ya existente en la escena.",
+        "Contrario a 'new', este método crea el objeto dentro del contexto de la escena de Unity."
+      ],
+      "explanation": "<strong>Instantiate()</strong> es el método de Unity para crear copias de prefabs o GameObjects en la escena en tiempo de ejecución. Los <strong>POCOs</strong>, en cambio, se crean con <code>new MiClase()</code> porque no son <code>GameObjects</code> ni necesitan el contexto de la escena."
+    },
+    {
+      "id": "arq_ex_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Dado este fragmento de un juego de plataformas:",
+      "code": "public class JumpController : MonoBehaviour\n{\n    public float jumpForce = 8f;\n    public int maxJumps = 2;\n    private int _jumpsLeft;\n\n    // ¿Este método pertenece aquí o en un POCO?\n    public bool CanJump() => _jumpsLeft > 0;\n\n    void Update()\n    {\n        if (Input.GetKeyDown(KeyCode.Space) && CanJump())\n        {\n            GetComponent<Rigidbody2D>().AddForce(Vector2.up * jumpForce);\n            _jumpsLeft--;\n        }\n    }\n}",
+      "question": "¿Qué campo de Unity (una API específica) hace que Update() NO pueda moverse a un POCO?",
+      "target": "Input",
+      "acceptedAnswers": ["Input", "Input.GetKeyDown", "GetComponent", "Rigidbody2D", "AddForce"],
+      "hints": [
+        "Busca en Update() las llamadas a sistemas de Unity que no existen fuera del motor.",
+        "El método CanJump() sí podría moverse a un POCO porque solo usa lógica booleana.",
+        "Una de las APIs en Update() pertenece al sistema de detección de teclas de Unity."
+      ],
+      "explanation": "<code>Update()</code> usa <strong>Input</strong>.GetKeyDown y <code>GetComponent&lt;Rigidbody2D&gt;()</code>, que son APIs exclusivas de Unity. Esas dependencias impiden moverlo a un <strong>POCO</strong>. Sin embargo, <code>CanJump()</code> solo compara un entero y sí puede extraerse a un <strong>POCO</strong> de lógica de salto."
+    },
+    {
+      "id": "arq_ex_014",
+      "type": "identification",
+      "difficulty": 3,
+      "question": "¿Cuál es el nombre del principio SOLID que justifica separar la lógica de cálculo de daño de un MonoBehaviour hacia un POCO independiente, bajo el argumento de que cada clase debe tener un solo motivo de cambio?",
+      "target": "responsabilidad única",
+      "acceptedAnswers": ["responsabilidad única", "single responsibility", "SRP", "principio de responsabilidad única", "single responsibility principle"],
+      "hints": [
+        "Es el primero de los cinco principios SOLID de diseño orientado a objetos.",
+        "Su sigla en inglés es SRP.",
+        "En español: cada clase debe tener una sola 'responsabilidad' o razón para cambiar."
+      ],
+      "explanation": "El <strong>principio de responsabilidad única</strong> (SRP — Single Responsibility Principle) es la 'S' de SOLID. Establece que una clase debe tener solo un motivo de cambio. Mezclar lógica de daño y coordinación Unity en el mismo <code>MonoBehaviour</code> viola SRP porque ambas responsabilidades cambian por razones distintas."
+    },
+    {
+      "id": "arq_ex_015",
+      "type": "identification",
+      "difficulty": 3,
+      "question": "En un juego RPG, tienes POCOs como `InventorySystem`, `QuestState` y `CharacterStats`. ¿Qué tipo de prueba de software puedes ejecutar sobre ellos SIN necesitar Unity, una escena ni un GameObject?",
+      "target": "unit test",
+      "acceptedAnswers": ["unit test", "unit testing", "prueba unitaria", "pruebas unitarias", "test unitario"],
+      "hints": [
+        "Es un tipo de prueba que verifica una sola 'unidad' de código de forma aislada.",
+        "Se escribe usando frameworks como NUnit o xUnit y corre en milisegundos.",
+        "En inglés: 'unit test'. En español: 'prueba unitaria'."
+      ],
+      "explanation": "Un <strong>unit test</strong> (prueba unitaria) verifica el comportamiento de una unidad de código de forma aislada. Como los <strong>POCOs</strong> no dependen de Unity, puedes escribir <code>var inv = new InventorySystem(); inv.Add(item); Assert.AreEqual(1, inv.Count);</code> y ejecutarlo sin abrir Unity."
+    },
+    {
+      "id": "arq_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la instanciación del **POCO** `EnemyStats` con `maxHealth = 100` usando el constructor correspondiente dentro de un MonoBehaviour:",
+      "codeTemplate": "public class EnemyFacade : MonoBehaviour\n{\n    private EnemyStats _stats = new __________;\n}",
+      "expectedAnswer": "EnemyStats(100)",
+      "alternateAnswers": ["EnemyStats(maxHealth: 100)", "EnemyStats()"],
+      "placeholder": "Escribe el constructor del POCO...",
+      "hints": [
+        "Los POCOs se instancian con new NombreClase(argumentos).",
+        "El constructor de EnemyStats recibe maxHealth como primer parámetro.",
+        "No uses AddComponent ni Instantiate: esos son para MonoBehaviours y prefabs."
+      ],
+      "explanation": "Un <strong>POCO</strong> se instancia con <code>new EnemyStats(100)</code>. No necesitas <code>AddComponent</code> ni <code>Instantiate</code>. El <code>MonoBehaviour</code> guarda la referencia en un campo privado y la usa durante el ciclo de vida del objeto de Unity."
+    },
+    {
+      "id": "arq_ex_017",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el **struct** completo `AttackRange` con dos campos **readonly** (`min` y `max` de tipo **int**) y un constructor que los inicialice. Incluye también un método `Roll()` que retorne un valor aleatorio entre min y max usando `Random.Range`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public struct AttackRange { public readonly int min; public readonly int max; public AttackRange(int min, int max) { this.min = min; this.max = max; } public int Roll() { return Random.Range(min, max + 1); } }",
+      "alternateAnswers": [
+        "public struct AttackRange\n{\n    public readonly int min;\n    public readonly int max;\n    public AttackRange(int min, int max)\n    {\n        this.min = min;\n        this.max = max;\n    }\n    public int Roll() => Random.Range(min, max + 1);\n}"
+      ],
+      "placeholder": "Escribe el struct completo con readonly y Roll()...",
+      "hints": [
+        "Usa la palabra clave struct en lugar de class.",
+        "Los campos readonly solo pueden asignarse en el constructor: this.min = min;",
+        "Random.Range(min, max + 1) genera un entero inclusivo en el rango [min, max]."
+      ],
+      "explanation": "El <strong>struct</strong> con campos <strong>readonly</strong> garantiza inmutabilidad: una vez creado con <code>new AttackRange(5, 15)</code>, sus valores no cambian. El método <code>Roll()</code> usa <code>Random.Range(min, max + 1)</code> porque la sobrecarga de enteros de Unity es exclusiva en el límite superior."
+    },
+    {
+      "id": "arq_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el atributo necesario para que Unity muestre los campos del **POCO** `LevelReward` en el **Inspector** cuando está declarado dentro de un MonoBehaviour:",
+      "codeTemplate": "__________\npublic class LevelReward\n{\n    public int goldAmount;\n    public int expAmount;\n    public string rewardTitle;\n}",
+      "expectedAnswer": "[System.Serializable]",
+      "alternateAnswers": ["[Serializable]"],
+      "placeholder": "Escribe el atributo de serialización...",
+      "hints": [
+        "Es un atributo de C# (no exclusivo de Unity) que habilita la serialización de la clase.",
+        "Se escribe entre corchetes justo encima de la declaración de la clase.",
+        "Unity lo reconoce para mostrar los campos en el Inspector. Su namespace es System."
+      ],
+      "explanation": "<strong>[System.Serializable]</strong> le indica tanto a C# como a Unity que esta clase puede ser serializada. Al declarar <code>public LevelReward reward;</code> en un <code>MonoBehaviour</code>, Unity desplegará los campos <code>goldAmount</code>, <code>expAmount</code> y <code>rewardTitle</code> directamente en el <strong>Inspector</strong>."
+    },
+    {
+      "id": "arq_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el **POCO** completo `PlatformMovement` para un juego de plataformas. Debe tener los campos `speed` (**float**) y `direction` (**int**, puede ser 1 o -1), y un método `GetVelocity()` que retorne `speed * direction` como **float**. La clase NO debe heredar de **MonoBehaviour**.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class PlatformMovement { public float speed; public int direction; public float GetVelocity() { return speed * direction; } }",
+      "alternateAnswers": [
+        "public class PlatformMovement\n{\n    public float speed;\n    public int direction;\n    public float GetVelocity() => speed * direction;\n}",
+        "public class PlatformMovement { public float speed = 5f; public int direction = 1; public float GetVelocity() { return speed * direction; } }"
+      ],
+      "placeholder": "Escribe el POCO PlatformMovement completo...",
+      "hints": [
+        "La clase no hereda de nada: public class PlatformMovement { ... }",
+        "Declara los dos campos: public float speed; y public int direction;",
+        "GetVelocity() retorna el producto speed * direction. El int se convierte a float automáticamente."
+      ],
+      "explanation": "<code>PlatformMovement</code> es un <strong>POCO</strong> puro que encapsula la lógica de movimiento lateral. El <code>MonoBehaviour</code> puede usarlo así: <code>private PlatformMovement _mov = new PlatformMovement { speed = 5f, direction = 1 };</code> y aplicarlo con <code>rb.velocity = new Vector2(_mov.GetVelocity(), rb.velocity.y);</code>."
+    },
+    {
+      "id": "arq_ex_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el **unit test** para el **POCO** `PlatformMovement` que verifica que con `speed = 6f` y `direction = -1` el resultado de `GetVelocity()` es `-6f`:",
+      "codeTemplate": "// NUnit test — no requiere Unity\n[Test]\npublic void PlatformMovement_GetVelocity_ReturnsNegativeWhenDirectionMinus1()\n{\n    var mov = new PlatformMovement { speed = 6f, direction = -1 };\n    float result = mov.GetVelocity();\n    Assert.AreEqual(__________, result);\n}",
+      "expectedAnswer": "-6f",
+      "alternateAnswers": ["-6", "-6.0f", "-6.0"],
+      "placeholder": "Escribe el valor esperado...",
+      "hints": [
+        "El cálculo es speed * direction = 6f * -1.",
+        "Un float negativo en C# se escribe con el sufijo f: -6f.",
+        "6 multiplicado por -1 es igual a -6."
+      ],
+      "explanation": "<code>Assert.AreEqual(-6f, result)</code> verifica que <code>6f * -1 = -6f</code>. Este test corre en milisegundos sin Unity porque <code>PlatformMovement</code> es un <strong>POCO</strong> puro. Si la lógica estuviera en un <code>MonoBehaviour</code>, necesitarías el <strong>Unity Test Runner</strong> en modo Play, lo que es significativamente más lento y frágil."
+    }
+  ]
+}

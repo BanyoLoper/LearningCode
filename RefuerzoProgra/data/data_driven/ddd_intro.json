@@ -1,0 +1,374 @@
+{
+  "id": "ddd_intro",
+  "title": "Introducción a Data Driven",
+  "icon": "🗃️",
+  "color": "#00897B",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es Data Driven Design?",
+        "type": "definition",
+        "content": "<strong>Data Driven Design</strong> (diseño orientado a datos) es una práctica de desarrollo de videojuegos que consiste en <strong>separar los datos de la lógica</strong>. En lugar de escribir valores directamente en el código (<em>hardcoding</em>), los datos (stats de personajes, configuración de niveles, textos de diálogo) se guardan en archivos externos como <strong>JSON</strong>, hojas de cálculo o <strong>ScriptableObjects</strong>. La lógica del juego lee esos datos en <strong>runtime</strong> y los aplica. El resultado es un sistema mucho más flexible y mantenible."
+      },
+      {
+        "id": "doc-2",
+        "title": "Hardcoded vs Data Driven",
+        "type": "code",
+        "content": "// ❌ Enfoque hardcoded: datos mezclados con lógica\npublic class Enemy : MonoBehaviour\n{\n    void Start()\n    {\n        hp = 100;          // ← dato hardcodeado\n        speed = 3.5f;      // ← dato hardcodeado\n        damage = 25;       // ← dato hardcodeado\n        attackRate = 1.2f; // ← dato hardcodeado\n    }\n}\n\n// ✅ Enfoque Data Driven: lógica separada de datos\n[System.Serializable]\npublic class EnemyData\n{\n    public int hp;\n    public float speed;\n    public int damage;\n    public float attackRate;\n}\n\npublic class Enemy : MonoBehaviour\n{\n    public EnemyData data; // datos vienen de fuera (JSON / ScriptableObject)\n\n    void Start()\n    {\n        // La lógica usa los datos, pero no los define\n        ApplyStats(data);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Ventajas para el Equipo de Diseño",
+        "type": "analogy",
+        "content": "Imagina que el diseñador de tu juego quiere que el jefe final tenga 500 HP en lugar de 200. Con <strong>hardcoding</strong> tendría que pedirle al programador que cambie el código, recompile el proyecto y genere una nueva build — un proceso que puede tardar horas. Con <strong>Data Driven Design</strong>, el diseñador simplemente abre el archivo <strong>JSON</strong> (o el <strong>ScriptableObject</strong> en el Inspector de Unity), cambia el valor de <code>\"hp\": 200</code> a <code>\"hp\": 500</code> y el cambio está listo. No se toca una sola línea de código. Esto permite que diseñadores y programadores trabajen en paralelo sin bloquearse mutuamente."
+      },
+      {
+        "id": "doc-4",
+        "title": "Ventajas Técnicas: Tuning sin Recompilar",
+        "type": "note",
+        "content": "Una de las mayores ventajas del enfoque <strong>Data Driven</strong> es que permite hacer <em>balance</em> y <em>tuning</em> del juego <strong>sin recompilar</strong> el proyecto. En Unity, recompilar puede tardar varios segundos o incluso minutos en proyectos grandes. Cuando los datos viven en archivos externos, puedes modificarlos y ver el resultado simplemente reiniciando la escena o, si usas <strong>hot-reload</strong>, incluso sin reiniciar. Esto acelera enormemente el ciclo de iteración del diseño de juego."
+      },
+      {
+        "id": "doc-5",
+        "title": "Casos de Uso Comunes en Unity",
+        "type": "list",
+        "items": [
+          "Stats de enemigos: HP, velocidad, daño, experiencia al derrotar.",
+          "Configuración de niveles: tiempo límite, número de oleadas, posiciones de spawn.",
+          "Item databases: nombre, descripción, precio, efecto de cada ítem.",
+          "Sistemas de diálogo: textos, condiciones, ramas de conversación.",
+          "Balanceo de jefes: stats variables por dificultad sin recompilar.",
+          "Localización: textos en múltiples idiomas cargados desde archivos externos."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "dddi_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es el principio fundamental del enfoque **Data Driven Design**?",
+      "options": [
+        "Separar los datos de la lógica del juego para que puedan modificarse de forma independiente.",
+        "Escribir todos los valores directamente en el código para mayor velocidad de ejecución.",
+        "Usar únicamente bases de datos relacionales para guardar información del juego.",
+        "Eliminar el uso de clases y estructuras en C#.",
+        "Hacer que todos los datos provengan exclusivamente de servidores en la nube."
+      ],
+      "correctIndex": 0,
+      "explanation": "El principio central de <strong>Data Driven Design</strong> es <strong>separar los datos de la lógica</strong>. La lógica del juego (código C#) sabe <em>cómo</em> comportarse; los datos (archivos <strong>JSON</strong>, <strong>ScriptableObjects</strong>) definen <em>con qué valores</em>. Esto permite modificar el comportamiento del juego sin tocar el código."
+    },
+    {
+      "id": "dddi_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Un MonoBehaviour tiene los valores `hp = 100`, `speed = 3.5f` y `damage = 25` escritos directamente en el código. ¿Cómo se llama esta práctica problemática?",
+      "options": [
+        "Hardcoding",
+        "Data binding",
+        "Serialización",
+        "Polimorfismo",
+        "Encapsulamiento"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Hardcoding</strong> es escribir valores fijos directamente en el código fuente. Es problemático porque cada cambio requiere modificar el código, recompilar y generar una nueva build. El enfoque <strong>Data Driven</strong> extrae esos valores a archivos externos."
+    },
+    {
+      "id": "dddi_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la principal ventaja de Data Driven Design para un equipo de diseño de videojuegos?",
+      "options": [
+        "Los diseñadores pueden cambiar stats y configuración sin necesitar que los programadores modifiquen o recompilen el código.",
+        "El juego corre más rápido porque los datos se cargan desde archivos externos.",
+        "Elimina la necesidad de usar Unity como motor de juego.",
+        "Permite que el juego funcione sin necesidad de assets gráficos.",
+        "Los programadores pueden diseñar niveles directamente desde el editor de código."
+      ],
+      "correctIndex": 0,
+      "explanation": "La ventaja clave para el equipo es que <strong>diseñadores y programadores trabajan en paralelo sin bloquearse</strong>. El diseñador modifica datos en archivos externos (sin tocar código), mientras el programador trabaja en la lógica. No se necesita recompilar para ver cambios en el balance del juego."
+    },
+    {
+      "id": "dddi_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En el contexto de Data Driven Design, ¿qué significa que el juego pueda hacer \"tuning sin recompilar\"?",
+      "options": [
+        "Que se pueden ajustar los valores del juego (stats, configuraciones) modificando archivos de datos sin necesidad de cambiar o compilar el código C#.",
+        "Que el motor de juego ajusta automáticamente la dificultad según el rendimiento del jugador.",
+        "Que Unity recompila el código de forma automática en segundo plano.",
+        "Que los shaders del juego se optimizan solos en tiempo de ejecución.",
+        "Que el juego detecta y corrige errores de código sin intervención del programador."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Tuning sin recompilar</strong> significa que se puede ajustar el balance del juego — HP de enemigos, velocidades, precios de ítems — editando solo los archivos de datos. Como el código C# no cambia, no hay necesidad de recompilar. Esto acelera enormemente el ciclo de iteración del diseño."
+    },
+    {
+      "id": "dddi_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Dado este MonoBehaviour con stats hardcodeados, ¿cuál de los siguientes valores debería moverse a datos externos para aplicar Data Driven Design?\n```csharp\npublic class Goblin : MonoBehaviour\n{\n    void Start() {\n        GetComponent<Rigidbody>().mass = 1f;\n        hp = 80;\n        damage = 15;\n        speed = 2.5f;\n    }\n}\n```",
+      "options": [
+        "hp, damage y speed, porque son stats de balance que el diseñador necesita ajustar frecuentemente.",
+        "Solo GetComponent<Rigidbody>().mass, porque es el único valor físico.",
+        "Ninguno, porque los MonoBehaviours siempre deben tener sus datos hardcodeados.",
+        "Solo speed, porque la velocidad es el único parámetro que afecta el gameplay.",
+        "Todos los valores deben permanecer en el código para garantizar la consistencia."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los stats de gameplay como <code>hp</code>, <code>damage</code> y <code>speed</code> son exactamente el tipo de datos que el diseñador necesita ajustar durante el balanceo del juego. Moverlos a un archivo <strong>JSON</strong> o <strong>ScriptableObject</strong> permite modificarlos sin recompilar. La masa del Rigidbody puede dejarse en el Inspector de Unity."
+    },
+    {
+      "id": "dddi_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estos escenarios describe mejor un uso correcto de Data Driven Design en Unity?",
+      "options": [
+        "Los stats de cada tipo de enemigo (HP, daño, velocidad) se guardan en archivos JSON; el script EnemyController lee esos datos al inicializar y los aplica.",
+        "Cada enemigo tiene una subclase de MonoBehaviour diferente donde se sobreescriben todos sus stats con valores fijos.",
+        "Se usa un Singleton con todos los valores de balance del juego escritos en el método Awake().",
+        "Los valores de los enemigos se guardan en comentarios del código para facilitar su localización.",
+        "Cada nivel del juego tiene su propio proyecto de Unity con los valores de balance ya compilados."
+      ],
+      "correctIndex": 0,
+      "explanation": "El escenario correcto es que los datos (stats de enemigos) viven en archivos externos (<strong>JSON</strong>) y la lógica (<code>EnemyController</code>) los lee en <strong>runtime</strong>. Esto cumple el principio de separación: la lógica sabe <em>cómo</em> comportarse, los datos definen <em>con qué valores</em>."
+    },
+    {
+      "id": "dddi_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un equipo de desarrollo de videojuegos, ¿qué problema concreto resuelve Data Driven Design en la colaboración entre roles?",
+      "options": [
+        "Elimina la dependencia del diseñador hacia el programador para ajustar valores de balance, permitiéndoles trabajar en paralelo.",
+        "Permite que el diseñador escriba scripts de C# sin conocer programación orientada a objetos.",
+        "Hace que Unity genere código automáticamente basado en los assets del proyecto.",
+        "Elimina la necesidad de tener un programador en el equipo de desarrollo.",
+        "Permite que el artista 3D defina la lógica de IA de los enemigos mediante archivos de texto."
+      ],
+      "correctIndex": 0,
+      "explanation": "El problema que resuelve es el <strong>bloqueo de dependencias entre roles</strong>. Sin Data Driven Design, el diseñador necesita al programador para cualquier cambio de balance. Con este enfoque, el diseñador edita archivos de datos de forma autónoma, y el programador puede trabajar en nuevas features al mismo tiempo."
+    },
+    {
+      "id": "dddi_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un jefe tiene stats diferentes según la dificultad: fácil (HP:200), normal (HP:400), difícil (HP:800). ¿Cuál es el enfoque Data Driven más adecuado?",
+      "options": [
+        "Definir tres EnemyData en un archivo JSON (uno por dificultad) y cargar el correspondiente en runtime según la configuración actual.",
+        "Crear tres subclases distintas de MonoBehaviour: BossEasy, BossNormal, BossHard, cada una con sus valores fijos.",
+        "Usar un switch-case en el código con los valores de HP escritos directamente para cada nivel de dificultad.",
+        "Permitir que el jugador edite el HP del jefe desde el menú de pausa.",
+        "Calcular el HP del jefe con una fórmula matemática fija en el código que depende de una variable de dificultad."
+      ],
+      "correctIndex": 0,
+      "explanation": "La solución Data Driven correcta es tener los datos de cada variante en el archivo externo y cargar el apropiado en <strong>runtime</strong>. Por ejemplo: <code>boss_easy.json</code>, <code>boss_normal.json</code>, <code>boss_hard.json</code>, o un solo archivo con un array indexado por dificultad. Así se puede ajustar cualquier variante sin tocar el código C#."
+    },
+    {
+      "id": "dddi_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este fragmento de código:",
+      "code": "public class Dragon : MonoBehaviour\n{\n    void Start()\n    {\n        hp = 500;\n        fireRange = 10f;\n        damage = 75;\n    }\n}",
+      "question": "¿Cómo se llama la práctica de escribir los valores de datos directamente en el código, como se ve en este ejemplo?",
+      "target": "hardcoding",
+      "acceptedAnswers": ["hardcoding", "hardcode", "hard coding", "hard-coding", "valores hardcodeados"],
+      "hints": [
+        "Los valores 500, 10f y 75 están escritos 'fijos' directamente en el código.",
+        "Esta práctica hace difícil cambiar los valores sin recompilar.",
+        "En inglés se llama 'hardcoding' — como clavar los datos en el código."
+      ],
+      "explanation": "Esta práctica se llama <strong>hardcoding</strong>: los valores están escritos directamente en el código fuente. El problema es que cualquier cambio de balance requiere editar el código C#, recompilar y generar una nueva build. El enfoque <strong>Data Driven</strong> extrae estos valores a archivos externos."
+    },
+    {
+      "id": "dddi_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Considera este sistema de datos para un juego:",
+      "code": "// goblin.json\n{\n  \"hp\": 80,\n  \"speed\": 2.5,\n  \"damage\": 15\n}\n\n// El diseñador cambia hp a 120 en el archivo JSON.\n// El programador NO toca el código C#.\n// Se reinicia la escena en Unity.",
+      "question": "¿Qué ventaja clave de Data Driven Design ilustra este flujo de trabajo?",
+      "target": "tuning sin recompilar",
+      "acceptedAnswers": ["tuning sin recompilar", "sin recompilar", "no recompila", "cambios sin recompilar", "balance sin recompilar", "ajuste sin recompilar"],
+      "hints": [
+        "El diseñador cambió un valor sin modificar ningún archivo .cs.",
+        "Para que el cambio tenga efecto, no fue necesario compilar el proyecto.",
+        "¿Qué proceso costoso se evitó al no tocar el código?"
+      ],
+      "explanation": "Este flujo ilustra el <strong>tuning sin recompilar</strong>: el diseñador puede ajustar el balance del juego editando solo el archivo <strong>JSON</strong>, sin que el programador tenga que modificar o recompilar el código C#. Esto acelera enormemente el ciclo de iteración del diseño de juego."
+    },
+    {
+      "id": "dddi_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa la estructura de datos:",
+      "code": "[System.Serializable]\npublic class EnemyData\n{\n    public string enemyName;\n    public int hp;\n    public float speed;\n    public int damage;\n    public int expReward;\n}",
+      "question": "En el contexto de Data Driven Design, ¿cómo se llama la clase EnemyData en relación al MonoBehaviour que la usa?",
+      "target": "contenedor de datos",
+      "acceptedAnswers": ["contenedor de datos", "data container", "modelo de datos", "data model", "clase de datos", "data class", "DTO"],
+      "hints": [
+        "Esta clase no hereda de MonoBehaviour y no tiene lógica.",
+        "Solo almacena los campos de datos de un enemigo.",
+        "Su propósito es 'contener' o 'representar' los datos de un enemigo."
+      ],
+      "explanation": "<code>EnemyData</code> es un <strong>contenedor de datos</strong> (o <em>data container / data model</em>). Es una clase simple marcada con <code>[System.Serializable]</code> que solo define la estructura de los datos, sin lógica de juego. Separa la representación de los datos del comportamiento del enemigo."
+    },
+    {
+      "id": "dddi_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este escenario de desarrollo de videojuegos:",
+      "code": "// Semana 1: El programador crea la lógica del enemigo.\n// Semana 2: El diseñador ajusta HP/daño/velocidad en archivos JSON.\n// Semana 2: El programador añade nuevas mecánicas al mismo tiempo.\n// No hay conflictos de merge en git porque trabajan en archivos distintos.",
+      "question": "¿Qué beneficio de colaboración en equipo describe este escenario?",
+      "target": "trabajo en paralelo",
+      "acceptedAnswers": ["trabajo en paralelo", "paralelo", "trabajar en paralelo", "colaboración paralela", "independencia entre roles", "sin bloqueos", "trabajo independiente"],
+      "hints": [
+        "El diseñador y el programador trabajan al mismo tiempo sin bloquearse.",
+        "No hay conflictos de git porque modifican archivos diferentes.",
+        "¿Cómo se llama cuando dos personas trabajan de forma simultánea e independiente?"
+      ],
+      "explanation": "El escenario describe <strong>trabajo en paralelo</strong> entre roles. El diseñador trabaja en archivos de datos (<strong>JSON</strong>) y el programador trabaja en código C# al mismo tiempo, sin bloquearse mutuamente. Esto es una ventaja clave del <strong>Data Driven Design</strong> en equipos de desarrollo."
+    },
+    {
+      "id": "dddi_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de configuración de niveles:",
+      "code": "// level_01.json\n{\n  \"levelName\": \"Bosque Oscuro\",\n  \"timeLimit\": 120,\n  \"spawnPoints\": 4,\n  \"waveCount\": 3,\n  \"bossEnabled\": false\n}\n\n// level_05.json\n{\n  \"levelName\": \"Castillo Final\",\n  \"timeLimit\": 180,\n  \"spawnPoints\": 6,\n  \"waveCount\": 5,\n  \"bossEnabled\": true\n}",
+      "question": "Si el diseñador quiere añadir un campo nuevo `\"musicTrack\": \"boss_theme\"` a todos los niveles, ¿en qué tipo de archivos debe hacer el cambio?",
+      "target": "archivos JSON",
+      "acceptedAnswers": ["archivos JSON", "JSON", "los archivos JSON", "archivos de datos", "archivos de configuración"],
+      "hints": [
+        "Los datos de configuración de niveles se almacenan fuera del código C#.",
+        "El formato de los archivos que ves en el ejemplo es JSON.",
+        "El diseñador no toca archivos .cs para añadir este campo."
+      ],
+      "explanation": "El diseñador solo necesita modificar los <strong>archivos JSON</strong> de configuración de cada nivel — añadiendo el campo <code>\"musicTrack\"</code> a cada uno. No se toca código C# (solo se añade el campo correspondiente a la clase de datos para que Unity pueda leerlo). Esto es la esencia del <strong>Data Driven Design</strong>."
+    },
+    {
+      "id": "dddi_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa estos dos enfoques para definir el daño de un ataque:",
+      "code": "// Enfoque A\nvoid Attack() { enemy.TakeDamage(50); }\n\n// Enfoque B\n[System.Serializable]\npublic class AttackData { public int damage; }\npublic AttackData attackData; // cargado desde JSON\nvoid Attack() { enemy.TakeDamage(attackData.damage); }",
+      "question": "¿Qué problema específico del Enfoque A resuelve el Enfoque B?",
+      "target": "hardcoding",
+      "acceptedAnswers": ["hardcoding", "valor hardcodeado", "dato hardcodeado", "valor fijo en código", "requiere recompilar para cambiar el daño"],
+      "hints": [
+        "En el Enfoque A, el valor 50 está escrito directamente en el método.",
+        "Para cambiar ese 50 a 75 en el Enfoque A, ¿qué proceso sería necesario?",
+        "El Enfoque B permite cambiar el daño sin tocar el código."
+      ],
+      "explanation": "El Enfoque B resuelve el <strong>hardcoding</strong> del Enfoque A. En A, cambiar el daño de 50 a otro valor requiere editar el código C# y recompilar. En B, el valor viene del <strong>JSON</strong> externo; el diseñador lo cambia sin tocar código, cumpliendo el principio Data Driven."
+    },
+    {
+      "id": "dddi_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el atributo necesario para que la clase `EnemyData` sea serializable por Unity (requisito para poder leerla desde JSON con JsonUtility):",
+      "codeTemplate": "[__________]\npublic class EnemyData\n{\n    public string name;\n    public int hp;\n    public float speed;\n}",
+      "expectedAnswer": "System.Serializable",
+      "alternateAnswers": ["Serializable"],
+      "placeholder": "Escribe el atributo de serialización...",
+      "hints": [
+        "Unity necesita que la clase esté marcada con un atributo especial para poder serializarla.",
+        "El atributo indica que los objetos de esta clase pueden ser convertidos a/desde formatos como JSON.",
+        "El atributo se llama Serializable y pertenece al namespace System."
+      ],
+      "explanation": "El atributo <code><strong>[System.Serializable]</strong></code> le indica a Unity y al runtime de C# que esta clase puede ser serializada (convertida a bytes, JSON, etc.). Es necesario para que <code>JsonUtility</code> pueda leer y escribir objetos de este tipo."
+    },
+    {
+      "id": "dddi_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración del campo en el MonoBehaviour para que el diseñador pueda asignar los datos del enemigo desde el Inspector de Unity:",
+      "codeTemplate": "public class EnemyController : MonoBehaviour\n{\n    public __________ data;\n\n    void Start()\n    {\n        hp = data.hp;\n        speed = data.speed;\n    }\n}",
+      "expectedAnswer": "EnemyData",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo del campo de datos...",
+      "hints": [
+        "El campo debe ser del tipo que contiene los stats del enemigo.",
+        "Ya definimos una clase serializable llamada EnemyData.",
+        "El tipo del campo debe coincidir con la clase que contiene los datos."
+      ],
+      "explanation": "El campo debe ser de tipo <code><strong>EnemyData</strong></code>: la clase contenedora de datos definida previamente. Al declararla como <code>public EnemyData data</code>, Unity mostrará sus campos en el Inspector y el diseñador podrá asignar valores sin tocar el código."
+    },
+    {
+      "id": "dddi_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la estructura JSON mínima para representar los stats de un enemigo llamado \"Goblin\" con hp=80, speed=2.5 y damage=15:",
+      "codeTemplate": null,
+      "expectedAnswer": "{\n  \"name\": \"Goblin\",\n  \"hp\": 80,\n  \"speed\": 2.5,\n  \"damage\": 15\n}",
+      "alternateAnswers": [
+        "{\"name\":\"Goblin\",\"hp\":80,\"speed\":2.5,\"damage\":15}",
+        "{ \"name\": \"Goblin\", \"hp\": 80, \"speed\": 2.5, \"damage\": 15 }"
+      ],
+      "placeholder": "Escribe el objeto JSON completo...",
+      "hints": [
+        "Un objeto JSON se delimita con llaves { }.",
+        "Cada campo es un par \"clave\": valor separado por comas.",
+        "Los strings van entre comillas dobles; los números no."
+      ],
+      "explanation": "Un objeto <strong>JSON</strong> válido usa llaves <code>{ }</code>, las claves van entre comillas dobles, y los pares se separan con comas. Los números no llevan comillas. Este objeto puede ser leído directamente por <code>JsonUtility.FromJson&lt;EnemyData&gt;()</code> en Unity."
+    },
+    {
+      "id": "dddi_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la línea para que el EnemyController aplique los datos del EnemyData al inicializar. El campo `data` contiene el HP que debe asignarse a `this.hp`:",
+      "codeTemplate": "void Start()\n{\n    this.hp = __________;\n    this.speed = data.speed;\n    this.damage = data.damage;\n}",
+      "expectedAnswer": "data.hp",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la expresión para leer el HP del contenedor de datos...",
+      "hints": [
+        "El campo de datos del MonoBehaviour se llama 'data'.",
+        "Para acceder al HP, usa el operador punto sobre el campo 'data'.",
+        "La sintaxis es nombreDelCampo.nombreDelAtributo"
+      ],
+      "explanation": "<code><strong>data.hp</strong></code> accede al campo <code>hp</code> del objeto <code>EnemyData</code> referenciado por <code>data</code>. Este es el patrón Data Driven: la lógica (<code>Start()</code>) lee los valores del contenedor de datos en <strong>runtime</strong> y los aplica al comportamiento del enemigo."
+    },
+    {
+      "id": "dddi_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase `LevelConfig` serializable con los campos: `levelName` (string), `timeLimit` (int), `waveCount` (int) y `bossEnabled` (bool), lista para ser leída desde JSON:",
+      "codeTemplate": null,
+      "expectedAnswer": "[System.Serializable]\npublic class LevelConfig\n{\n    public string levelName;\n    public int timeLimit;\n    public int waveCount;\n    public bool bossEnabled;\n}",
+      "alternateAnswers": [
+        "[Serializable]\npublic class LevelConfig\n{\n    public string levelName;\n    public int timeLimit;\n    public int waveCount;\n    public bool bossEnabled;\n}"
+      ],
+      "placeholder": "Escribe la clase completa con el atributo y los campos...",
+      "hints": [
+        "La clase necesita el atributo [System.Serializable] para que JsonUtility pueda procesarla.",
+        "Todos los campos deben ser public para que JsonUtility los lea.",
+        "El tipo bool en C# se escribe en minúsculas: bool bossEnabled;"
+      ],
+      "explanation": "La clase <code><strong>[System.Serializable] LevelConfig</strong></code> con campos <code>public</code> es el patrón estándar para datos <strong>Data Driven</strong> en Unity. El atributo permite la serialización; los campos <code>public</code> son necesarios para que <code>JsonUtility</code> los mapee desde el <strong>JSON</strong>."
+    },
+    {
+      "id": "dddi_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la estructura JSON que representa un array de 2 enemigos: un Goblin (hp:80, damage:15) y un Orc (hp:200, damage:40). Usa un objeto raíz con un campo \"enemies\" que contenga el array:",
+      "codeTemplate": null,
+      "expectedAnswer": "{\n  \"enemies\": [\n    { \"name\": \"Goblin\", \"hp\": 80, \"damage\": 15 },\n    { \"name\": \"Orc\", \"hp\": 200, \"damage\": 40 }\n  ]\n}",
+      "alternateAnswers": [
+        "{\"enemies\":[{\"name\":\"Goblin\",\"hp\":80,\"damage\":15},{\"name\":\"Orc\",\"hp\":200,\"damage\":40}]}"
+      ],
+      "placeholder": "Escribe el JSON con el objeto raíz y el array enemies...",
+      "hints": [
+        "JsonUtility requiere un objeto raíz (no puede parsear un array directamente en el nivel superior).",
+        "Un array JSON se delimita con corchetes [ ] y sus elementos se separan por comas.",
+        "Cada elemento del array es un objeto JSON { } con los campos del enemigo."
+      ],
+      "explanation": "En Unity, <code>JsonUtility</code> no puede hacer <strong>parse</strong> de un array <strong>JSON</strong> en el nivel raíz — necesita un objeto envolvente. Por eso se usa <code>{ \"enemies\": [ ... ] }</code>. El array <code>[ ]</code> contiene los objetos de cada enemigo. La clase C# correspondiente tendría <code>public EnemyData[] enemies;</code>."
+    }
+  ]
+}

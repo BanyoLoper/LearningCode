@@ -1,0 +1,338 @@
+{
+  "id": "matematicas_exam",
+  "title": "Examen Final: Vectores y Matemáticas",
+  "icon": "🎓",
+  "color": "#00BCD4",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "mat_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué propiedad de **Vector3** devuelve un vector con la misma dirección pero con longitud exactamente 1?",
+      "options": [
+        "normalized",
+        "magnitude",
+        "sqrMagnitude",
+        "unit",
+        "direction"
+      ],
+      "correctIndex": 0,
+      "explanation": "La propiedad <strong>normalized</strong> escala el vector para que su <strong>magnitude</strong> sea exactamente 1, conservando la dirección original. Por ejemplo, <code>new Vector3(3,0,4).normalized</code> devuelve <code>(0.6, 0, 0.8)</code>. Se usa para representar puras direcciones, separando la dirección de la magnitud."
+    },
+    {
+      "id": "mat_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué resultado devuelve `Vector3.Dot(a, b)` cuando ambos vectores son normalizados y están en direcciones opuestas?",
+      "options": [
+        "-1",
+        "0",
+        "1",
+        "Un Vector3 perpendicular",
+        "Infinity"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>dot product</strong> de dos vectores normalizados es igual al coseno del ángulo entre ellos. Cuando los vectores apuntan en <strong>direcciones exactamente opuestas</strong>, el ángulo es 180° y <code>cos(180°) = -1</code>. Un resultado de <code>0</code> indica perpendicularidad, y <code>1</code> indica la misma dirección."
+    },
+    {
+      "id": "mat_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En cinemática, si la posición de un objeto cambia de `posA` a `posB` en un tiempo `deltaT`, ¿cuál expresión calcula correctamente su **velocidad** como vector?",
+      "options": [
+        "(posB - posA) / deltaT",
+        "(posA - posB) * deltaT",
+        "posB * deltaT",
+        "Vector3.Distance(posA, posB)",
+        "(posA + posB) / 2f"
+      ],
+      "correctIndex": 0,
+      "explanation": "La velocidad vectorial se define como <strong>Δposición / Δt</strong>, es decir, <code>(posB - posA) / deltaT</code>. El numerador es el desplazamiento (cambio de posición) y el denominador es el intervalo de tiempo. El resultado es un vector que indica tanto la rapidez como la dirección del movimiento."
+    },
+    {
+      "id": "mat_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un objeto tiene masa de 5 kg y se le aplica una fuerza de 20 N hacia adelante. Según la segunda ley de Newton (F = ma), ¿cuál es la aceleración resultante?",
+      "options": [
+        "4 m/s²",
+        "100 m/s²",
+        "0.25 m/s²",
+        "20 m/s²",
+        "5 m/s²"
+      ],
+      "correctIndex": 0,
+      "explanation": "De la segunda ley de Newton <strong>F = ma</strong>, despejando: <code>a = F / m = 20 / 5 = <strong>4 m/s²</strong></code>. En Unity, el componente <strong>Rigidbody</strong> aplica esta física automáticamente: al usar <code>AddForce</code>, Unity divide la fuerza entre la masa configurada en el Rigidbody para calcular la aceleración."
+    },
+    {
+      "id": "mat_ex_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué método de **Quaternion** se usa para crear una rotación que mira desde un punto hacia otro, dado un vector `forward` y un vector `up`?",
+      "options": [
+        "Quaternion.LookRotation(forward, up)",
+        "Quaternion.Euler(forward, up)",
+        "Quaternion.FromToRotation(forward, up)",
+        "Quaternion.Slerp(forward, up, 0.5f)",
+        "Quaternion.identity"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.LookRotation(forward, up)</strong> crea una rotación que orienta el eje Z local del objeto hacia el vector <code>forward</code>, usando <code>up</code> para definir la orientación vertical. Es ideal para hacer que un objeto «mire hacia» un objetivo. Si solo se pasa <code>forward</code>, Unity usa <code>Vector3.up</code> por defecto."
+    },
+    {
+      "id": "mat_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la diferencia clave entre **Quaternion.Slerp** y **Vector3.Lerp**?",
+      "options": [
+        "Slerp interpola rotaciones de forma esférica; Lerp interpola posiciones (o vectores) de forma lineal.",
+        "Slerp es más lento que Lerp porque usa trigonometría.",
+        "Lerp solo funciona con Vector2; Slerp solo con Quaternion.",
+        "Son equivalentes pero Slerp acepta más de dos argumentos.",
+        "Lerp devuelve un Quaternion; Slerp devuelve un Vector3."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Vector3.Lerp</strong> hace interpolación lineal entre dos puntos o vectores: el resultado se mueve en línea recta. <strong>Quaternion.Slerp</strong> hace interpolación esférica entre dos rotaciones: el resultado rota de forma suave siguiendo la trayectoria angular más corta. Usar <code>Lerp</code> para rotaciones produce distorsiones; por eso las rotaciones usan <code>Slerp</code>."
+    },
+    {
+      "id": "mat_ex_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué devuelve `Vector3.Cross(Vector3.forward, Vector3.right)` en Unity?",
+      "options": [
+        "Vector3.down  (0, -1, 0)",
+        "Vector3.up  (0, 1, 0)",
+        "Vector3.zero  (0, 0, 0)",
+        "Vector3.forward  (0, 0, 1)",
+        "Vector3.right  (1, 0, 0)"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>cross product</strong> de <code>forward (0,0,1)</code> y <code>right (1,0,0)</code> da <code>Vector3.down (0,-1,0)</code>. El orden importa: <code>Cross(forward, right)</code> apunta hacia abajo, mientras que <code>Cross(right, forward)</code> apunta hacia arriba. Esto sigue la regla de la mano derecha del sistema de coordenadas de Unity."
+    },
+    {
+      "id": "mat_ex_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Para qué se usa **Quaternion.FromToRotation(fromDir, toDir)** en Unity?",
+      "options": [
+        "Crea la rotación mínima necesaria para alinear el vector fromDir con el vector toDir.",
+        "Convierte un Vector3 en Euler a un Quaternion.",
+        "Interpola entre dos rotaciones usando el parámetro t.",
+        "Devuelve la rotación inversa de un Quaternion.",
+        "Calcula la diferencia angular entre dos Transforms."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.FromToRotation(fromDir, toDir)</strong> crea un <strong>Quaternion</strong> que representa la rotación mínima para girar el vector <code>fromDir</code> hasta que quede alineado con <code>toDir</code>. Es útil para alinear superficies con normales, orientar proyectiles con su velocidad, o redirigir ejes locales de un objeto."
+    },
+    {
+      "id": "mat_ex_009",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este fragmento de cinemática:",
+      "code": "Vector3 posInicial = new Vector3(0f, 0f, 0f);\nVector3 posFinal   = new Vector3(0f, 0f, 10f);\nfloat   tiempo     = 2f;\nVector3 velocidad  = (posFinal - posInicial) / tiempo;\nDebug.Log(velocidad.magnitude);",
+      "question": "¿Qué valor imprime `velocidad.magnitude`?",
+      "target": "5",
+      "acceptedAnswers": ["5", "5.0", "5f"],
+      "hints": [
+        "Calcula el desplazamiento: posFinal - posInicial = (0,0,10).",
+        "Divide ese vector entre el tiempo: (0,0,10) / 2 = ?",
+        "Calcula la magnitude del vector resultante."
+      ],
+      "explanation": "El desplazamiento es <code>(0,0,10)</code>. Dividido entre <code>2</code> da <code>velocidad = (0,0,5)</code>. La <strong>magnitude</strong> de <code>(0,0,5)</code> es <code>sqrt(0+0+25) = <strong>5</strong></code>. Esto representa una rapidez de 5 unidades/segundo en dirección Z."
+    },
+    {
+      "id": "mat_ex_010",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de rotación suave:",
+      "code": "void Update()\n{\n    Quaternion objetivo = Quaternion.LookRotation(target.position - transform.position);\n    transform.rotation = Quaternion.Slerp(\n        transform.rotation,\n        objetivo,\n        5f * Time.deltaTime\n    );\n}",
+      "question": "¿Qué hace el tercer parámetro `5f * Time.deltaTime` en **Quaternion.Slerp**?",
+      "target": "controla la velocidad de rotación haciéndola independiente de la tasa de fotogramas",
+      "acceptedAnswers": [
+        "controla la velocidad de rotación haciéndola independiente de la tasa de fotogramas",
+        "determina qué tan rápido rota hacia el objetivo",
+        "es el factor t de interpolación escalado por deltaTime",
+        "define la velocidad angular de la rotación",
+        "hace que la rotación sea suave y frame-rate independent"
+      ],
+      "hints": [
+        "Slerp toma t en el rango [0,1]: cerca de 0 = muy poco cambio; cerca de 1 = casi completo.",
+        "Time.deltaTime es el tiempo del frame actual en segundos.",
+        "Multiplicar la velocidad por Time.deltaTime hace que el movimiento sea consistente sin importar los FPS."
+      ],
+      "explanation": "El parámetro <code>t</code> de <strong>Slerp</strong> controla cuánta interpolación ocurre en cada llamada. Al multiplicar por <code>Time.deltaTime</code>, la rotación se escala al tiempo real del frame, haciéndola <strong>independiente de la tasa de fotogramas</strong>. El factor <code>5f</code> es la velocidad angular: mayor valor = rotación más rápida."
+    },
+    {
+      "id": "mat_ex_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de interpolación de posición:",
+      "code": "Vector3 inicio = new Vector3(0f, 0f, 0f);\nVector3 fin    = new Vector3(10f, 0f, 0f);\nVector3 medio  = Vector3.Lerp(inicio, fin, 0.5f);\nDebug.Log(medio.x);",
+      "question": "¿Qué valor imprime `medio.x`?",
+      "target": "5",
+      "acceptedAnswers": ["5", "5.0", "5f"],
+      "hints": [
+        "Lerp con t=0.5 devuelve el punto exactamente a la mitad.",
+        "La mitad entre x=0 y x=10 es...",
+        "Los componentes y y z son 0 en ambos extremos, así que solo cambia x."
+      ],
+      "explanation": "<strong>Vector3.Lerp(inicio, fin, t)</strong> calcula <code>inicio + (fin - inicio) * t</code>. Con <code>t = 0.5</code>: <code>(0,0,0) + (10,0,0) * 0.5 = (5,0,0)</code>. Por tanto <code>medio.x = <strong>5</strong></code>. Con <code>t=0</code> devuelve el inicio; con <code>t=1</code> devuelve el fin."
+    },
+    {
+      "id": "mat_ex_012",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de física con Rigidbody:",
+      "code": "public Rigidbody rb;\npublic float fuerza = 100f;\n\nvoid Start()\n{\n    rb.mass = 4f;\n    rb.AddForce(Vector3.forward * fuerza, ForceMode.Force);\n}",
+      "question": "Según F = ma, ¿cuál es la aceleración inicial que experimenta el objeto en m/s²?",
+      "target": "25",
+      "acceptedAnswers": ["25", "25.0", "25 m/s²", "25f"],
+      "hints": [
+        "Usa la fórmula a = F / m.",
+        "La fuerza aplicada es 100 N y la masa es 4 kg.",
+        "100 / 4 = ?"
+      ],
+      "explanation": "Por la segunda ley de Newton <strong>a = F / m = 100 / 4 = <strong>25 m/s²</strong></strong>. Unity usa esta misma relación internamente cuando se llama <code>AddForce</code> con <code>ForceMode.Force</code>: divide la fuerza entre la masa del <strong>Rigidbody</strong> para obtener la aceleración y actualiza la velocidad."
+    },
+    {
+      "id": "mat_ex_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de ángulo entre vectores:",
+      "code": "Vector3 a = Vector3.forward;          // (0,0,1)\nVector3 b = new Vector3(1f, 0f, 1f).normalized;\nfloat dot = Vector3.Dot(a, b);\nDebug.Log(dot);",
+      "question": "¿Aproximadamente qué valor imprime `dot`? (Redondea a dos decimales)",
+      "target": "0.71",
+      "acceptedAnswers": ["0.71", "0.7", "~0.71", "aproximadamente 0.71", "0.707"],
+      "hints": [
+        "Ambos vectores están normalizados; dot = cos(ángulo entre ellos).",
+        "El ángulo entre (0,0,1) y (1,0,1) normalizado es 45°.",
+        "cos(45°) = ?"
+      ],
+      "explanation": "El vector <code>(1,1) normalizado</code> en el plano XZ forma un ángulo de 45° con <code>forward</code>. Como ambos vectores están normalizados, <strong>dot = cos(45°) ≈ 0.707 ≈ <strong>0.71</strong></strong>. El <strong>dot product</strong> entre vectores normalizados da directamente el coseno del ángulo entre ellos."
+    },
+    {
+      "id": "mat_ex_014",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de aceleración:",
+      "code": "Vector3 velocidad    = new Vector3(0f, 0f, 0f);\nVector3 aceleracion  = new Vector3(0f, 0f, 3f);\nfloat   tiempo       = 4f;\nVector3 velFinal     = velocidad + aceleracion * tiempo;\nDebug.Log(velFinal.magnitude);",
+      "question": "¿Qué valor imprime `velFinal.magnitude`?",
+      "target": "12",
+      "acceptedAnswers": ["12", "12.0", "12f"],
+      "hints": [
+        "Calcula velFinal: (0,0,0) + (0,0,3) * 4 = ?",
+        "El resultado es un vector. Calcula su magnitude.",
+        "sqrt(0² + 0² + 12²) = ?"
+      ],
+      "explanation": "<code>velFinal = (0,0,0) + (0,0,3) * 4 = (0,0,12)</code>. La <strong>magnitude</strong> de <code>(0,0,12)</code> es <code>sqrt(144) = <strong>12</strong></code>. Esta es la fórmula cinemática <strong>v = v₀ + a·t</strong>, que Unity aplica internamente al integrar la física del <strong>Rigidbody</strong> frame a frame."
+    },
+    {
+      "id": "mat_ex_015",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de rotación con Euler:",
+      "code": "Quaternion rot = Quaternion.Euler(0f, 90f, 0f);\nVector3 eulerAngles = rot.eulerAngles;\nDebug.Log(eulerAngles.y);",
+      "question": "¿Qué valor imprime `eulerAngles.y`?",
+      "target": "90",
+      "acceptedAnswers": ["90", "90.0", "90f", "90 grados"],
+      "hints": [
+        "Quaternion.Euler crea una rotación a partir de ángulos de Euler en grados.",
+        "El segundo parámetro es la rotación en el eje Y.",
+        "Al leer .eulerAngles.y debes obtener el mismo valor con el que creaste la rotación."
+      ],
+      "explanation": "<strong>Quaternion.Euler(x, y, z)</strong> convierte ángulos de Euler (en grados) a un <strong>Quaternion</strong>. Aquí se especifica una rotación de 90° en el eje Y. Al leer <code>rot.eulerAngles.y</code> se recupera ese valor: <strong>90</strong>. Los ángulos de Euler son intuitivos para el programador, pero internamente Unity usa Quaternions para evitar el gimbal lock."
+    },
+    {
+      "id": "mat_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para calcular la velocidad vectorial dado un desplazamiento `delta` (Vector3) y un intervalo de tiempo `dt` (float), siguiendo la fórmula **v = Δposición / Δt**:",
+      "codeTemplate": "Vector3 velocidad = __________ / __________;",
+      "expectedAnswer": "delta, dt",
+      "alternateAnswers": ["delta / dt"],
+      "placeholder": "Completa los dos blancos...",
+      "hints": [
+        "La fórmula de velocidad es desplazamiento dividido entre tiempo.",
+        "El desplazamiento está en la variable delta.",
+        "El tiempo está en la variable dt."
+      ],
+      "explanation": "La velocidad vectorial es <strong>v = Δposición / Δt</strong>, es decir, <code>delta / dt</code>. Dividir un <strong>Vector3</strong> entre un escalar divide cada componente (x, y, z) por ese valor. El resultado es un vector que indica rapidez y dirección del movimiento."
+    },
+    {
+      "id": "mat_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código para aplicar una fuerza de empuje hacia adelante a un **Rigidbody** llamado `rb`, con magnitud `thrust`, usando el método de física de Unity:",
+      "codeTemplate": "rb.__________(Vector3.forward * thrust, ForceMode.Force);",
+      "expectedAnswer": "AddForce",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Es el método del Rigidbody que añade una fuerza física.",
+        "Su nombre en inglés describe la acción de agregar una fuerza.",
+        "Se llama Añadir + Fuerza en inglés."
+      ],
+      "explanation": "<strong>Rigidbody.AddForce(force, mode)</strong> aplica una fuerza al cuerpo rígido. Con <code>ForceMode.Force</code>, Unity usa <strong>F = ma</strong> para calcular la aceleración resultante, teniendo en cuenta la masa del Rigidbody. El primer parámetro es el vector fuerza, que aquí apunta hacia adelante con magnitud <code>thrust</code>."
+    },
+    {
+      "id": "mat_ex_018",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa que hace que el objeto rote suavemente hacia la rotación `targetRotation` a una velocidad de 3 unidades por segundo usando **Quaternion.Slerp**, asignando el resultado a `transform.rotation`:",
+      "codeTemplate": null,
+      "expectedAnswer": "transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime);",
+      "alternateAnswers": [
+        "transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 3f);"
+      ],
+      "placeholder": "Escribe la línea completa...",
+      "hints": [
+        "Quaternion.Slerp recibe: rotación actual, rotación objetivo y el factor t.",
+        "Para que sea independiente de FPS, multiplica la velocidad por Time.deltaTime.",
+        "Asigna el resultado directamente a transform.rotation."
+      ],
+      "explanation": "<strong>Quaternion.Slerp(desde, hacia, t)</strong> interpola esféricamente entre dos rotaciones. Al usar <code>3f * Time.deltaTime</code> como factor, la rotación avanza 3 «pasos» por segundo independientemente de los FPS. El resultado se asigna a <code>transform.rotation</code> para actualizar la orientación del objeto cada frame."
+    },
+    {
+      "id": "mat_ex_019",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la línea para crear un **Quaternion** que rote el eje Y local del objeto para alinearse con el vector `surfaceNormal`, usando **Quaternion.FromToRotation**:",
+      "codeTemplate": "Quaternion alineacion = Quaternion.__________(Vector3.up, surfaceNormal);",
+      "expectedAnswer": "FromToRotation",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "El método crea la rotación mínima para girar el primer vector hacia el segundo.",
+        "Su nombre en inglés indica que va 'de un vector a otro'.",
+        "From + To + Rotation."
+      ],
+      "explanation": "<strong>Quaternion.FromToRotation(from, to)</strong> calcula la rotación mínima para alinear el vector <code>from</code> con el vector <code>to</code>. Aquí alinea <code>Vector3.up</code> (eje Y) con la normal de la superficie, lo que es útil para hacer que un personaje se oriente perpendicular al terreno independientemente de su inclinación."
+    },
+    {
+      "id": "mat_ex_020",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una función completa `float AngleToTarget(Transform self, Transform target)` que devuelva el ángulo en grados entre la dirección frontal de `self` y la dirección hacia `target`, usando **dot product** y `Mathf.Acos`:",
+      "codeTemplate": null,
+      "expectedAnswer": "float AngleToTarget(Transform self, Transform target)\n{\n    Vector3 toTarget = (target.position - self.position).normalized;\n    float dot = Vector3.Dot(self.forward, toTarget);\n    return Mathf.Acos(dot) * Mathf.Rad2Deg;\n}",
+      "alternateAnswers": [
+        "float AngleToTarget(Transform self, Transform target) { Vector3 toTarget = (target.position - self.position).normalized; float dot = Vector3.Dot(self.forward, toTarget); return Mathf.Acos(dot) * Mathf.Rad2Deg; }"
+      ],
+      "placeholder": "Escribe la función completa...",
+      "hints": [
+        "Calcula el vector normalizado de self hacia target.",
+        "Usa Vector3.Dot con self.forward y ese vector para obtener el coseno del ángulo.",
+        "Aplica Mathf.Acos para obtener el ángulo en radianes, luego multiplica por Mathf.Rad2Deg."
+      ],
+      "explanation": "La función calcula la dirección normalizada hacia el objetivo, luego usa <strong>Vector3.Dot</strong> para obtener el coseno del ángulo entre la dirección frontal y esa dirección. <strong>Mathf.Acos</strong> convierte el coseno de vuelta a un ángulo en radianes, y <strong>Mathf.Rad2Deg</strong> lo convierte a grados. Este patrón (dot → acos → rad2deg) es el método estándar para calcular ángulos entre vectores en Unity."
+    }
+  ]
+}

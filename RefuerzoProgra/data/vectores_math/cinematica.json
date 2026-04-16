@@ -1,0 +1,395 @@
+{
+  "id": "cinematica",
+  "title": "Velocidad y Aceleración",
+  "icon": "🏃",
+  "color": "#00ACC1",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Movimiento con Time.deltaTime",
+        "type": "definition",
+        "content": "En Unity, el movimiento correcto se calcula multiplicando la velocidad por <strong>Time.deltaTime</strong>: <code>position += velocity * Time.deltaTime</code>. <strong>Time.deltaTime</strong> es el tiempo en segundos que pasó desde el último frame (típicamente ~0.016s a 60 FPS). Multiplicar por él hace el movimiento <em>independiente del framerate</em>: si el juego corre a 30 FPS o 120 FPS, el objeto recorre la misma distancia por segundo."
+      },
+      {
+        "id": "doc-2",
+        "title": "Velocidad, Aceleración y Desaceleración",
+        "type": "code",
+        "content": "// Movimiento básico frame-independent\ntransform.position += velocity * Time.deltaTime;\n\n// Aceleración: la velocidad cambia con el tiempo\nvoid Update()\n{\n    velocity += acceleration * Time.deltaTime;\n    transform.position += velocity * Time.deltaTime;\n}\n\n// Desaceleración con drag (fricción simple)\nvoid Update()\n{\n    velocity *= Mathf.Pow(drag, Time.deltaTime); // drag entre 0 y 1\n    transform.position += velocity * Time.deltaTime;\n}\n\n// Predecir posición después de N segundos (fórmula cinemática)\nVector3 futurePos = startPos + velocity * seconds + 0.5f * acceleration * seconds * seconds;"
+      },
+      {
+        "id": "doc-3",
+        "title": "Por qué Time.deltaTime es esencial",
+        "type": "analogy",
+        "content": "Imagina un personaje que se mueve <code>transform.position += new Vector3(0.1f, 0, 0)</code> cada frame <em>sin</em> <strong>Time.deltaTime</strong>. A 60 FPS avanza 6 unidades/segundo; a 120 FPS avanza 12 unidades/segundo. Esto es un bug grave: el juego es más difícil o fácil dependiendo del hardware del jugador. Con <strong>Time.deltaTime</strong>, si defines <code>speed = 6f</code>, el personaje siempre avanzará 6 unidades por segundo sin importar el <strong>framerate</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Interpolación con Lerp",
+        "type": "code",
+        "content": "// Lerp para suavizar movimiento (SmoothDamp)\nVector3 current = transform.position;\nVector3 target = destination;\n\n// t = 0 → current, t = 1 → target\nVector3 lerpPos = Vector3.Lerp(current, target, t);\n\n// Uso común: suavizar gradualmente (framerate-independent)\ntransform.position = Vector3.Lerp(\n    transform.position,\n    targetPos,\n    smoothSpeed * Time.deltaTime  // ojo: no es lineal, es exponencial\n);\n\n// Para velocidad constante real: usa MoveTowards\ntransform.position = Vector3.MoveTowards(\n    transform.position,\n    targetPos,\n    speed * Time.deltaTime  // mueve exactamente speed unidades/segundo\n);"
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Cinemática",
+        "type": "list",
+        "items": [
+          "Siempre multiplica velocidad y aceleración por Time.deltaTime en Update().",
+          "Sin Time.deltaTime, el movimiento depende del framerate (bug muy común).",
+          "Time.deltaTime es pequeño (~0.016s a 60 FPS); multiplicar por speed da unidades/segundo.",
+          "La aceleración cambia la velocidad; la velocidad cambia la posición.",
+          "Vector3.Lerp(a, b, t) con t entre 0 y 1 interpola linealmente entre dos posiciones.",
+          "Vector3.MoveTowards garantiza velocidad constante sin sobrepasar el objetivo.",
+          "FixedUpdate() tiene Time.fixedDeltaTime constante, ideal para física con Rigidbody."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "cin_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué representa `Time.deltaTime` en Unity?",
+      "options": [
+        "El tiempo en segundos transcurrido desde el último frame.",
+        "El número de frames por segundo (FPS) actual.",
+        "El tiempo total desde que inició la partida.",
+        "El tiempo que falta para el próximo FixedUpdate.",
+        "La diferencia de tiempo entre dos objetos en escena."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Time.deltaTime</strong> es el tiempo en segundos que tardó en renderizarse el frame anterior. A 60 FPS vale aproximadamente 0.0167s; a 30 FPS vale ~0.033s. Al multiplicar velocidad por <strong>Time.deltaTime</strong>, el movimiento se normaliza para ser igual sin importar el <strong>framerate</strong>."
+    },
+    {
+      "id": "cin_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de las siguientes líneas mueve correctamente un personaje de forma **independiente del framerate**?",
+      "options": [
+        "transform.position += velocity * Time.deltaTime;",
+        "transform.position += velocity;",
+        "transform.position += velocity / Time.deltaTime;",
+        "transform.position += velocity * Time.time;",
+        "transform.position += velocity * 0.016f;"
+      ],
+      "correctIndex": 0,
+      "explanation": "La forma correcta es <code>transform.position += velocity * <strong>Time.deltaTime</strong></code>. Sin <strong>Time.deltaTime</strong>, el personaje se mueve más rápido en hardware potente (más FPS) y más lento en hardware débil. Multiplicar por un valor fijo como <code>0.016f</code> tampoco funciona porque asume 60 FPS constantes."
+    },
+    {
+      "id": "cin_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Si un jugador se mueve a `speed = 5f` unidades/segundo usando `Time.deltaTime`, ¿cuántas unidades recorrerá en exactamente 3 segundos?",
+      "options": [
+        "15 unidades",
+        "5 unidades",
+        "3 unidades",
+        "0.6 unidades",
+        "Depende del framerate"
+      ],
+      "correctIndex": 0,
+      "explanation": "Con movimiento <strong>frame-independent</strong>: distancia = velocidad × tiempo = 5 × 3 = <strong>15 unidades</strong>. Esta es la ventaja de <strong>Time.deltaTime</strong>: el resultado es determinístico independientemente del framerate. La suma de todos los <strong>Time.deltaTime</strong> en 3 segundos equivale exactamente a 3."
+    },
+    {
+      "id": "cin_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un juego corre a 60 FPS en PC gamer y a 30 FPS en PC básica. El código de movimiento es `transform.position += new Vector3(speed, 0, 0);` sin **Time.deltaTime**. ¿Cuál es el problema?",
+      "options": [
+        "El personaje se mueve el doble de rápido en PC gamer que en PC básica.",
+        "El personaje no se mueve en ninguna de las dos computadoras.",
+        "El personaje se mueve más lento en PC gamer porque tiene más cálculos por frame.",
+        "No hay problema; Unity compensa el framerate automáticamente.",
+        "El personaje solo se mueve correctamente a exactamente 60 FPS."
+      ],
+      "correctIndex": 0,
+      "explanation": "Sin <strong>Time.deltaTime</strong>, el movimiento es <em>frame-dependent</em>. A 60 FPS se ejecuta 60 veces/segundo; a 30 FPS, 30 veces/segundo. El jugador en PC gamer recorre el <strong>doble de distancia</strong> por segundo que el de PC básica con el mismo código. Esto hace el juego injusto y con comportamientos distintos según el hardware."
+    },
+    {
+      "id": "cin_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace `Vector3.Lerp(posA, posB, 0.5f)`?",
+      "options": [
+        "Devuelve el punto exactamente a la mitad entre posA y posB.",
+        "Mueve el objeto de posA a posB en 0.5 segundos.",
+        "Devuelve posB escalada al 50% de su magnitud.",
+        "Calcula la velocidad necesaria para ir de posA a posB.",
+        "Devuelve posA si t es 0.5, ignorando posB."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Vector3.Lerp(a, b, t)</strong> interpola linealmente: con <code>t=0</code> devuelve <code>a</code>, con <code>t=1</code> devuelve <code>b</code>, con <code>t=0.5</code> devuelve el punto <strong>exactamente a la mitad</strong>. La fórmula es <code>a + (b-a)*t</code>. No tiene relación con el tiempo; <code>t</code> es solo un parámetro de interpolación entre 0 y 1."
+    },
+    {
+      "id": "cin_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un objeto tiene posición inicial `(0,0,0)`, velocidad `(2,0,0)` unidades/s y aceleración `(1,0,0)` unidades/s². Usando cinemática, ¿cuál es la posición después de exactamente 2 segundos?",
+      "options": [
+        "(6, 0, 0)",
+        "(4, 0, 0)",
+        "(5, 0, 0)",
+        "(2, 0, 0)",
+        "(8, 0, 0)"
+      ],
+      "correctIndex": 0,
+      "explanation": "Fórmula cinemática: <code>pos = pos₀ + v₀*t + ½*a*t²</code><br>= (0,0,0) + (2,0,0)*2 + 0.5*(1,0,0)*4<br>= (4,0,0) + (2,0,0) = <strong>(6,0,0)</strong>. Esta fórmula es útil para predecir dónde estará un proyectil con gravedad después de N segundos."
+    },
+    {
+      "id": "cin_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué se recomienda usar `FixedUpdate()` en lugar de `Update()` cuando se trabaja con `Rigidbody` en Unity?",
+      "options": [
+        "Porque FixedUpdate tiene un Time.fixedDeltaTime constante, lo que hace la física más estable y predecible.",
+        "Porque FixedUpdate se ejecuta más veces por segundo que Update, dando más precisión.",
+        "Porque Rigidbody no funciona dentro de Update().",
+        "Porque FixedUpdate usa menos memoria que Update.",
+        "Porque Time.deltaTime no existe dentro de FixedUpdate."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate</strong> se ejecuta a intervalos fijos (<code>Time.fixedDeltaTime</code>, por defecto 0.02s = 50 Hz). Esto hace que la física sea <em>determinística</em> y no varíe con el <strong>framerate</strong>. Si se aplican fuerzas en <code>Update()</code>, la simulación física puede comportarse de forma inconsistente entre frames de diferente duración."
+    },
+    {
+      "id": "cin_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "El siguiente código implementa suavizado de movimiento. ¿Cuál es el comportamiento correcto de este patrón?\n```csharp\ntransform.position = Vector3.Lerp(transform.position, targetPos, 5f * Time.deltaTime);\n```",
+      "options": [
+        "El objeto se acerca rápido al principio y se desacelera gradualmente al aproximarse al objetivo (easing exponencial).",
+        "El objeto se mueve a velocidad constante de 5 unidades/segundo hacia el objetivo.",
+        "El objeto llega al objetivo exactamente en 0.2 segundos (1/5).",
+        "El objeto oscila alrededor del objetivo antes de detenerse.",
+        "El movimiento es frame-dependent porque Lerp no es compatible con Time.deltaTime."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usar <strong>Lerp</strong> con la posición actual como origen crea un <em>easing exponencial</em>: cada frame el objeto cubre un porcentaje fijo de la distancia restante. Esto produce un movimiento que <strong>desacelera al acercarse</strong>. No es velocidad constante — para eso usa <code>Vector3.MoveTowards</code>. El <code>5f * Time.deltaTime</code> hace el efecto aproximadamente <strong>frame-independent</strong>."
+    },
+    {
+      "id": "cin_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código con bug:",
+      "code": "void Update()\n{\n    transform.position += new Vector3(speed, 0, 0); // sin Time.deltaTime\n}",
+      "question": "¿Cuál es el problema con este código en un juego que puede correr a distintos framerates?",
+      "target": "el movimiento es frame-dependent y varía con el framerate",
+      "acceptedAnswers": [
+        "el movimiento es frame-dependent y varía con el framerate",
+        "depende del framerate",
+        "es frame-dependent",
+        "va más rápido con más FPS",
+        "sin Time.deltaTime el movimiento cambia según el FPS"
+      ],
+      "hints": [
+        "Update() se llama una vez por frame; ¿cuántas veces se llama a 60 FPS vs 30 FPS?",
+        "Si a 60 FPS se llama 60 veces por segundo, ¿cuántas unidades se mueve en un segundo?",
+        "El problema está en que no se usa Time.deltaTime para normalizar."
+      ],
+      "explanation": "Sin <strong>Time.deltaTime</strong>, el movimiento es <em>frame-dependent</em>: a 60 FPS el objeto se mueve <code>speed * 60</code> unidades/segundo; a 30 FPS solo <code>speed * 30</code>. El juego se comporta diferente según el hardware. La corrección es: <code>transform.position += new Vector3(speed, 0, 0) * Time.deltaTime;</code>"
+    },
+    {
+      "id": "cin_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Vector3 startPos = new Vector3(0f, 0f, 0f);\nVector3 velocity = new Vector3(0f, 0f, 3f);\nfloat t = 4f;\nVector3 endPos = startPos + velocity * t;\nDebug.Log(endPos);",
+      "question": "¿Qué posición imprime `Debug.Log(endPos)`?",
+      "target": "(0, 0, 12)",
+      "acceptedAnswers": ["(0, 0, 12)", "(0,0,12)", "0, 0, 12", "x=0 y=0 z=12"],
+      "hints": [
+        "Multiplica cada componente de velocity por t=4.",
+        "velocity = (0, 0, 3), t = 4: (0*4, 0*4, 3*4) = ?",
+        "Suma el resultado a startPos = (0, 0, 0)."
+      ],
+      "explanation": "<code>velocity * t = (0,0,3) * 4 = (0,0,12)</code>. Sumado a <code>startPos (0,0,0)</code> da <strong>(0, 0, 12)</strong>. Esta es la fórmula básica de cinemática: posición final = posición inicial + velocidad × tiempo (sin aceleración)."
+    },
+    {
+      "id": "cin_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de movimiento:",
+      "code": "void Update()\n{\n    float step = speed * Time.deltaTime;\n    transform.position = Vector3.MoveTowards(\n        transform.position,\n        targetPos,\n        step\n    );\n}",
+      "question": "¿Cuál es la ventaja de `Vector3.MoveTowards` sobre `Vector3.Lerp` en este contexto?",
+      "target": "garantiza velocidad constante y no sobrepasa el objetivo",
+      "acceptedAnswers": [
+        "garantiza velocidad constante y no sobrepasa el objetivo",
+        "velocidad constante",
+        "no pasa el objetivo",
+        "no sobrepasa el destino",
+        "mueve a velocidad fija sin overshoot"
+      ],
+      "hints": [
+        "Con Lerp el objeto se mueve más lento al acercarse; ¿qué pasa con MoveTowards?",
+        "¿Puede el objeto 'pasarse' del objetivo con MoveTowards?",
+        "El parámetro step es la distancia máxima a mover en este frame."
+      ],
+      "explanation": "<code>Vector3.MoveTowards</code> mueve el objeto a velocidad <strong>constante</strong> y garantiza que nunca sobrepasará (<em>overshoot</em>) el objetivo. <strong>Lerp</strong> hace easing exponencial (desacelera al acercarse). <code>MoveTowards</code> es ideal para NPCs que deben llegar a un punto exacto a velocidad uniforme."
+    },
+    {
+      "id": "cin_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de un enemigo perseguidor:",
+      "code": "public float speed = 5f;\nvoid Update()\n{\n    Vector3 dir = (player.position - transform.position).normalized;\n    transform.position += dir * speed;  // bug aquí\n}",
+      "question": "¿Cuál es el bug en la línea marcada y cómo se corrige?",
+      "target": "falta multiplicar por Time.deltaTime",
+      "acceptedAnswers": [
+        "falta multiplicar por Time.deltaTime",
+        "no multiplica por Time.deltaTime",
+        "le falta * Time.deltaTime",
+        "debe ser dir * speed * Time.deltaTime"
+      ],
+      "hints": [
+        "El movimiento está en Update(), que se llama una vez por frame.",
+        "El movimiento depende de cuántas veces se llame Update por segundo.",
+        "¿Qué factor hace que el movimiento sea independiente del framerate?"
+      ],
+      "explanation": "El bug es que falta <strong>* Time.deltaTime</strong>. Sin él, el enemigo se mueve <code>speed</code> unidades por <em>frame</em>, no por segundo. La corrección es: <code>transform.position += dir * speed * Time.deltaTime;</code>. Así el enemigo siempre se moverá 5 unidades/segundo independientemente del framerate."
+    },
+    {
+      "id": "cin_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de interpolación:",
+      "code": "float t = 0f;\nvoid Update()\n{\n    t += Time.deltaTime;\n    transform.position = Vector3.Lerp(startPos, endPos, t);\n}",
+      "question": "Aproximadamente, ¿cuántos segundos tarda el objeto en llegar completamente a `endPos`?",
+      "target": "1 segundo",
+      "acceptedAnswers": ["1 segundo", "1s", "un segundo", "1", "1.0"],
+      "hints": [
+        "t se incrementa por Time.deltaTime cada frame.",
+        "La suma de todos los Time.deltaTime es el tiempo real en segundos.",
+        "Vector3.Lerp llega al destino cuando t = 1. ¿Cuándo vale t = 1?"
+      ],
+      "explanation": "Como <code>t</code> se incrementa por <strong>Time.deltaTime</strong> cada frame, <code>t</code> acumula el tiempo real en segundos. <strong>Vector3.Lerp</strong> devuelve <code>endPos</code> cuando <code>t = 1</code>, lo que ocurre después de exactamente <strong>1 segundo</strong>. Después de 1 segundo, Lerp retorna siempre <code>endPos</code> (clampea t a 1)."
+    },
+    {
+      "id": "cin_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de aceleración:",
+      "code": "public float acceleration = 10f;\npublic float maxSpeed = 20f;\nprivate Vector3 velocity = Vector3.zero;\n\nvoid Update()\n{\n    velocity += Vector3.forward * acceleration * Time.deltaTime;\n    velocity = Vector3.ClampMagnitude(velocity, maxSpeed);\n    transform.position += velocity * Time.deltaTime;\n}",
+      "question": "¿Qué hace `Vector3.ClampMagnitude(velocity, maxSpeed)` en este contexto?",
+      "target": "limita la magnitud del vector velocity a maxSpeed para no exceder la velocidad máxima",
+      "acceptedAnswers": [
+        "limita la magnitud del vector velocity a maxSpeed para no exceder la velocidad máxima",
+        "limita la velocidad máxima",
+        "evita que la velocidad supere maxSpeed",
+        "acota la magnitud del vector a un valor máximo",
+        "clampea la velocidad al máximo permitido"
+      ],
+      "hints": [
+        "ClampMagnitude limita la longitud del vector a un valor máximo.",
+        "Si velocity tiene magnitude mayor que maxSpeed, ¿qué hace ClampMagnitude?",
+        "Es similar a Mathf.Clamp pero para la longitud de un vector."
+      ],
+      "explanation": "<code>Vector3.ClampMagnitude(v, max)</code> devuelve el vector con la misma dirección pero con <strong>magnitude limitada a max</strong>. Si la magnitud ya es menor o igual a max, devuelve el vector sin cambios. Aquí evita que la nave acelere indefinidamente: la velocidad crece hasta <code>maxSpeed = 20f</code> y no puede superarlo."
+    },
+    {
+      "id": "cin_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el código para mover el jugador de forma **independiente del framerate** a una `speed` de 5 unidades/segundo:",
+      "codeTemplate": "transform.position += direction * speed * __________;",
+      "expectedAnswer": "Time.deltaTime",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el valor de tiempo correcto...",
+      "hints": [
+        "Este valor es el tiempo en segundos del último frame.",
+        "Es una propiedad estática de la clase Time.",
+        "Su nombre indica que es el 'delta' (diferencia) de tiempo entre frames."
+      ],
+      "explanation": "<strong>Time.deltaTime</strong> es el tiempo en segundos del último frame. Al multiplicar <code>speed * Time.deltaTime</code>, el resultado es la distancia en unidades para este frame específico, haciendo el movimiento igual en cualquier <strong>framerate</strong>."
+    },
+    {
+      "id": "cin_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea que actualiza la velocidad de un proyectil con gravedad usando aceleración y **Time.deltaTime**:",
+      "codeTemplate": "velocity += gravity * __________;",
+      "expectedAnswer": "Time.deltaTime",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el factor de tiempo...",
+      "hints": [
+        "La aceleración cambia la velocidad proporcionalmente al tiempo.",
+        "Para que sea frame-independent, multiplica por el tiempo del frame.",
+        "Es la misma propiedad que usas para mover objetos correctamente."
+      ],
+      "explanation": "La aceleración también debe multiplicarse por <strong>Time.deltaTime</strong> para ser <em>frame-independent</em>. La fórmula cinemática discreta es <code>v += a * Δt</code>. Así, si <code>gravity = (0,-9.8f,0)</code>, la velocidad vertical aumenta 9.8 unidades/s² independientemente del framerate."
+    },
+    {
+      "id": "cin_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Un objeto parte de `startPos = Vector3.zero` con `velocity = new Vector3(0,0,5)`. Completa la fórmula para calcular su posición después de `t = 3f` segundos (sin aceleración):",
+      "codeTemplate": "Vector3 futurePos = startPos + __________ * t;",
+      "expectedAnswer": "velocity",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué se multiplica por t?",
+      "hints": [
+        "La fórmula de posición con velocidad constante es: pos = pos₀ + v * t.",
+        "La magnitud de cuánto se mueve depende de la velocidad.",
+        "Sin aceleración, solo se usa velocidad y tiempo."
+      ],
+      "explanation": "La fórmula cinemática sin aceleración es <code>pos = pos₀ + <strong>velocity</strong> * t</code>. Con <code>velocity = (0,0,5)</code> y <code>t = 3f</code>: <code>futurePos = (0,0,0) + (0,0,5)*3 = (0,0,15)</code>. Esta fórmula predice posiciones para proyectiles y cálculos de intercepción."
+    },
+    {
+      "id": "cin_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método `Update()` completo de un enemigo que se mueve hacia `target.position` a velocidad constante usando `Vector3.MoveTowards` con `speed = 4f`:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Update()\n{\n    transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);\n}",
+      "alternateAnswers": [
+        "void Update() { transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime); }"
+      ],
+      "placeholder": "Escribe el método Update completo...",
+      "hints": [
+        "Vector3.MoveTowards recibe: posición actual, posición objetivo, y distancia máxima a mover.",
+        "La distancia máxima por frame es speed * Time.deltaTime.",
+        "Asigna el resultado de MoveTowards a transform.position."
+      ],
+      "explanation": "<code>Vector3.MoveTowards(current, target, maxDelta)</code> mueve a velocidad constante sin sobrepasar el destino. El tercer parámetro <code>speed * Time.deltaTime</code> convierte la velocidad en unidades/s a la distancia para este frame. Es preferible a Lerp cuando se necesita velocidad uniforme exacta."
+    },
+    {
+      "id": "cin_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código que implementa una cámara suave que sigue al jugador usando **Lerp** (suavizado exponencial):",
+      "codeTemplate": "void LateUpdate()\n{\n    transform.position = Vector3.__________(transform.position, player.position + offset, smoothSpeed * Time.deltaTime);\n}",
+      "expectedAnswer": "Lerp",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método de interpolación...",
+      "hints": [
+        "Queremos interpolación que produzca suavizado (easing) al llegar al destino.",
+        "El método está en la clase Vector3 y su nombre viene de 'Linear Interpolation'.",
+        "Acepta dos posiciones y un factor t entre 0 y 1."
+      ],
+      "explanation": "<code>Vector3.Lerp</code> con la posición actual como origen crea un <em>follow suave</em>: la cámara se acerca rápido cuando está lejos y desacelera al acercarse. Usando <code>transform.position</code> como origen en cada frame produce el efecto de <em>easing exponencial</em> que se ve en la mayoría de cámaras de juegos."
+    },
+    {
+      "id": "cin_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el script completo de un proyectil (`Projectile`) que en `Start()` inicializa `velocity = transform.forward * 20f` y en `Update()` aplica gravedad (`Vector3.down * 9.8f`) y actualiza la posición, todo usando **Time.deltaTime**:",
+      "codeTemplate": null,
+      "expectedAnswer": "public class Projectile : MonoBehaviour\n{\n    private Vector3 velocity;\n\n    void Start()\n    {\n        velocity = transform.forward * 20f;\n    }\n\n    void Update()\n    {\n        velocity += Vector3.down * 9.8f * Time.deltaTime;\n        transform.position += velocity * Time.deltaTime;\n    }\n}",
+      "alternateAnswers": [
+        "public class Projectile : MonoBehaviour { private Vector3 velocity; void Start() { velocity = transform.forward * 20f; } void Update() { velocity += Vector3.down * 9.8f * Time.deltaTime; transform.position += velocity * Time.deltaTime; } }"
+      ],
+      "placeholder": "Escribe el script completo de Projectile...",
+      "hints": [
+        "Necesitas un campo privado Vector3 velocity.",
+        "En Start(), inicializa velocity en la dirección forward del objeto multiplicada por 20.",
+        "En Update(), primero aplica gravedad a velocity con * Time.deltaTime, luego actualiza position con velocity * Time.deltaTime."
+      ],
+      "explanation": "El proyectil usa integración de Euler: cada frame se actualiza la velocidad con la aceleración (<code>velocity += gravity * dt</code>) y luego la posición con la velocidad (<code>position += velocity * dt</code>). Ambas operaciones usan <strong>Time.deltaTime</strong> para ser <em>frame-independent</em>, produciendo trayectoria parabólica realista."
+    }
+  ]
+}

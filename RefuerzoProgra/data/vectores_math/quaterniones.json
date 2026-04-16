@@ -1,0 +1,410 @@
+{
+  "id": "quaterniones",
+  "title": "Rotaciones y Quaterniones",
+  "icon": "🔄",
+  "color": "#00838F",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Euler vs Quaternion",
+        "type": "definition",
+        "content": "Existen dos formas de representar rotaciones en Unity. Los ángulos de <strong>Euler</strong> (pitch, yaw, roll) son intuitivos para humanos: <code>(0, 90, 0)</code> = girar 90° en Y. Los <strong>Quaternion</strong> son matemáticamente superiores pero no intuitivos: tienen 4 componentes (x, y, z, w). Unity usa <strong>Quaternion</strong> internamente para todas las rotaciones (<code>transform.rotation</code> es siempre un <strong>Quaternion</strong>), pero provee <strong>Quaternion.Euler()</strong> para convertir desde ángulos fáciles de escribir."
+      },
+      {
+        "id": "doc-2",
+        "title": "¿Qué es Gimbal Lock?",
+        "type": "note",
+        "content": "<strong>Gimbal lock</strong> es un problema matemático que ocurre con ángulos de <strong>Euler</strong>: cuando un eje de rotación se alinea con otro, se pierde un grado de libertad y la rotación se vuelve impredecible. Por ejemplo, si el pitch llega a ±90°, el yaw y el roll producen la misma rotación — el objeto 'pierde' un eje. Los <strong>Quaternion</strong> no sufren <strong>gimbal lock</strong> porque operan en un espacio de 4 dimensiones. Esta es la razón principal por la que Unity (y todos los motores 3D modernos) usa <strong>Quaternion</strong> internamente."
+      },
+      {
+        "id": "doc-3",
+        "title": "Quaternion.Euler y conversiones",
+        "type": "code",
+        "content": "// Crear un Quaternion desde ángulos Euler\nQuaternion rot90Y = Quaternion.Euler(0f, 90f, 0f); // 90° en eje Y\nQuaternion rot45X = Quaternion.Euler(45f, 0f, 0f); // 45° en eje X\n\n// Asignar rotación directamente\ntransform.rotation = Quaternion.Euler(0f, 180f, 0f); // media vuelta\n\n// Leer la rotación como Euler (para mostrar en UI)\nVector3 eulerAngles = transform.rotation.eulerAngles;\nfloat yAngle = transform.rotation.eulerAngles.y;\n\n// NO hacer esto en código (causa gimbal lock y comportamiento errático):\n// transform.rotation.eulerAngles += new Vector3(0, 1, 0); // MAL\n// En su lugar:\ntransform.Rotate(0f, rotSpeed * Time.deltaTime, 0f);"
+      },
+      {
+        "id": "doc-4",
+        "title": "Slerp y LookRotation",
+        "type": "code",
+        "content": "// SLERP: interpolación esférica entre dos rotaciones\n// Produce una rotación suave que sigue el arco más corto en la esfera de rotaciones\nQuaternion from = transform.rotation;\nQuaternion to = targetRotation;\ntransform.rotation = Quaternion.Slerp(from, to, speed * Time.deltaTime);\n\n// LERP para rotaciones: interpolación lineal (menos natural para rotaciones grandes)\ntransform.rotation = Quaternion.Lerp(from, to, t);\n\n// LookRotation: calcular la rotación para mirar hacia una dirección\nVector3 direction = (target.position - transform.position).normalized;\nQuaternion lookRot = Quaternion.LookRotation(direction);\ntransform.rotation = Quaternion.Slerp(transform.rotation, lookRot, rotSpeed * Time.deltaTime);\n\n// Forma directa (instantánea, sin suavizado)\ntransform.LookAt(target.position);"
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Rotaciones",
+        "type": "list",
+        "items": [
+          "transform.rotation siempre es un Quaternion; transform.eulerAngles es una representación derivada.",
+          "Gimbal lock es el problema principal de los ángulos Euler en 3D.",
+          "Quaternion.Euler(x,y,z) convierte ángulos intuitivos a Quaternion.",
+          "Slerp (interpolación esférica) es mejor que Lerp para rotaciones: sigue el arco más corto.",
+          "LookRotation calcula la rotación necesaria para que el eje forward apunte a una dirección.",
+          "Quaternion.identity equivale a sin rotación (0,0,0 en Euler).",
+          "Multiplicar Quaternions combina rotaciones: Q1 * Q2 aplica Q2 y luego Q1.",
+          "Nunca modifiques transform.eulerAngles directamente para rotar en código; usa transform.Rotate()."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "quat_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué devuelve `Quaternion.Euler(0f, 90f, 0f)`?",
+      "options": [
+        "Un Quaternion que representa una rotación de 90 grados alrededor del eje Y.",
+        "Un Vector3 con los valores (0, 90, 0).",
+        "Una rotación de 90 grados alrededor del eje X.",
+        "Un Quaternion con componentes (0, 0.707, 0, 90).",
+        "Un ángulo de 90 grados en el sistema de Euler completo."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.Euler(x, y, z)</strong> convierte ángulos de <strong>Euler</strong> a un <strong>Quaternion</strong>. <code>Euler(0, 90, 0)</code> produce una rotación de <strong>90° alrededor del eje Y</strong> (giro horizontal). El <strong>Quaternion</strong> resultante internamente tiene valores aproximados <code>(0, 0.707, 0, 0.707)</code>, que representan esa misma rotación en el espacio de 4D."
+    },
+    {
+      "id": "quat_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es el **gimbal lock**?",
+      "options": [
+        "Un problema matemático de los ángulos Euler donde se pierde un grado de libertad cuando dos ejes de rotación se alinean.",
+        "Un error de Unity que ocurre cuando se rota un objeto más de 360 grados.",
+        "La imposibilidad de rotar un Quaternion más de 180 grados.",
+        "Un bug de la propiedad transform.rotation cuando se combina con Rigidbody.",
+        "El efecto visual de una cámara que parpadea al seguir un objeto en rotación."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>gimbal lock</strong> ocurre en los ángulos de <strong>Euler</strong> cuando un eje de rotación se alinea con otro, reduciendo de 3 a 2 los grados de libertad disponibles. Esto hace que ciertas rotaciones sean imposibles o se comporten de forma inesperada. Es la razón principal por la que los motores 3D modernos usan <strong>Quaternion</strong> internamente."
+    },
+    {
+      "id": "quat_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Para hacer que un enemigo gire suavemente hacia el jugador, ¿qué método es más apropiado?",
+      "options": [
+        "Quaternion.Slerp combinado con Quaternion.LookRotation",
+        "transform.eulerAngles modificado directamente cada frame",
+        "Vector3.Lerp entre las posiciones de rotación",
+        "transform.Translate hacia el jugador",
+        "Quaternion.Euler actualizado con un contador de frames"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.LookRotation</strong> calcula la rotación necesaria para mirar hacia una dirección. <strong>Quaternion.Slerp</strong> interpola suavemente entre la rotación actual y la deseada. La combinación de ambos produce el efecto clásico de enemigo que gira gradualmente hacia el jugador, muy usado en IA de juegos."
+    },
+    {
+      "id": "quat_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué se recomienda usar **Quaternion.Slerp** en lugar de **Quaternion.Lerp** para interpolar rotaciones?",
+      "options": [
+        "Slerp produce una interpolación esférica que mantiene velocidad angular constante y sigue el arco más corto; Lerp puede producir velocidades irregulares.",
+        "Lerp no funciona con Quaternions; solo Slerp es compatible.",
+        "Slerp es más rápido de calcular que Lerp para rotaciones.",
+        "Lerp puede producir gimbal lock; Slerp no.",
+        "Slerp está optimizado por Unity y no requiere Time.deltaTime."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Slerp</strong> (Spherical Linear Interpolation) interpola siguiendo el arco más corto en la 'esfera' de rotaciones, manteniendo velocidad angular constante. <strong>Lerp</strong> interpola linealmente en el espacio 4D del Quaternion, lo que puede producir velocidades de rotación irregulares. Para rotaciones de más de ~90°, la diferencia visual es notable."
+    },
+    {
+      "id": "quat_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué representa `Quaternion.identity` en Unity?",
+      "options": [
+        "Sin rotación; equivalente a los ángulos Euler (0, 0, 0).",
+        "Una rotación de 180 grados en el eje Y.",
+        "La rotación actual del objeto padre.",
+        "Un Quaternion con todos sus componentes en 1.",
+        "La rotación inicial guardada en el Inspector de Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.identity</strong> es el <strong>Quaternion</strong> sin rotación, equivalente a <code>Euler(0,0,0)</code>. Sus componentes son <code>(x=0, y=0, z=0, w=1)</code>. Se usa frecuentemente al instanciar prefabs sin rotación (<code>Instantiate(prefab, pos, Quaternion.identity)</code>) o para resetear la rotación de un objeto."
+    },
+    {
+      "id": "quat_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el problema de este código para rotar un objeto?\n```csharp\ntransform.eulerAngles = new Vector3(0, transform.eulerAngles.y + 1f, 0);\n```",
+      "options": [
+        "Al leer y escribir eulerAngles directamente, Unity puede introducir valores inconsistentes por la conversión Quaternion↔Euler, causando comportamiento errático.",
+        "eulerAngles no puede ser modificado; es una propiedad de solo lectura.",
+        "La velocidad de rotación no usa Time.deltaTime, pero eso es el único problema.",
+        "El valor 1f es demasiado pequeño para producir rotación visible.",
+        "New Vector3 no puede usarse directamente con eulerAngles."
+      ],
+      "correctIndex": 0,
+      "explanation": "Leer y escribir <code>transform.eulerAngles</code> directamente es problemático porque Unity convierte entre <strong>Quaternion</strong> y <strong>Euler</strong> en cada operación. Esta conversión no es perfectamente reversible y puede acumular errores. La forma correcta es <code>transform.Rotate(0f, 1f * Time.deltaTime, 0f)</code> o modificar el <strong>Quaternion</strong> directamente."
+    },
+    {
+      "id": "quat_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué hace `Quaternion.LookRotation(direction)` exactamente?",
+      "options": [
+        "Calcula el Quaternion necesario para que el eje forward (Z+) del objeto apunte en la dirección dada.",
+        "Rota el objeto para que mire hacia el Vector3 dado como posición en el mundo.",
+        "Calcula el ángulo entre el objeto y la dirección dada en grados.",
+        "Devuelve un Quaternion que apunta el eje Y hacia la dirección dada.",
+        "Combina la rotación actual con la dirección para producir una rotación acumulada."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.LookRotation(forward)</strong> calcula la rotación para que el <strong>eje forward (Z+)</strong> del objeto apunte en la dirección dada. Opcionalmente recibe un segundo parámetro <code>upwards</code> (por defecto <code>Vector3.up</code>). Se usa constantemente para que enemigos, torretas y proyectiles apunten hacia su objetivo."
+    },
+    {
+      "id": "quat_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un enemigo tiene `transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 3f * Time.deltaTime)` en `Update()`. ¿Qué tipo de movimiento rotacional produce esto?",
+      "options": [
+        "Rotación que desacelera gradualmente al acercarse a targetRotation (easing exponencial).",
+        "Rotación a velocidad angular constante de 3 grados/segundo.",
+        "Rotación que tarda exactamente 1/3 de segundo en completarse.",
+        "Rotación instantánea porque 3f es mayor a 1.",
+        "Rotación que oscila alrededor de targetRotation antes de detenerse."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usar <strong>Slerp</strong> con la rotación actual como origen crea el mismo efecto exponencial que <strong>Lerp</strong> para posiciones: el objeto gira <em>rápido al inicio</em> y <em>desacelera al acercarse</em> al destino. El parámetro <code>3f * Time.deltaTime</code> controla la velocidad del suavizado pero no es lineal — es <em>easing exponencial</em>, produciendo la animación suave y orgánica típica en enemigos que siguen al jugador."
+    },
+    {
+      "id": "quat_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de Unity:",
+      "code": "transform.rotation = Quaternion.Euler(0f, 180f, 0f);",
+      "question": "¿Cuántos grados gira el objeto y alrededor de qué eje?",
+      "target": "180 grados alrededor del eje Y",
+      "acceptedAnswers": [
+        "180 grados alrededor del eje Y",
+        "180° en Y",
+        "180 en el eje Y",
+        "media vuelta en Y",
+        "180 grados en Y"
+      ],
+      "hints": [
+        "Quaternion.Euler recibe (X, Y, Z) en grados.",
+        "El valor 180f está en el segundo parámetro (Y).",
+        "Los demás ejes son 0, así que no rotan."
+      ],
+      "explanation": "<code>Quaternion.Euler(0f, 180f, 0f)</code> crea una rotación de <strong>180° alrededor del eje Y</strong>. Esto es una media vuelta horizontal, como si el objeto se diera la vuelta completamente. Los ejes X y Z tienen valor 0, así que no hay inclinación ni giro lateral."
+    },
+    {
+      "id": "quat_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de un enemigo que sigue al jugador:",
+      "code": "void Update()\n{\n    Vector3 dir = (player.position - transform.position).normalized;\n    Quaternion targetRot = Quaternion.LookRotation(dir);\n    transform.rotation = Quaternion.Slerp(\n        transform.rotation,\n        targetRot,\n        rotSpeed * Time.deltaTime\n    );\n}",
+      "question": "¿Qué hace `Quaternion.LookRotation(dir)` en este contexto?",
+      "target": "calcula el Quaternion necesario para que el enemigo mire hacia el jugador",
+      "acceptedAnswers": [
+        "calcula el Quaternion necesario para que el enemigo mire hacia el jugador",
+        "calcula la rotación para mirar en la dirección dir",
+        "obtiene la rotación para apuntar hacia el jugador",
+        "convierte la dirección en una rotación",
+        "crea la rotación para que forward apunte a dir"
+      ],
+      "hints": [
+        "dir es el vector normalizado que apunta hacia el jugador.",
+        "LookRotation convierte una dirección en una rotación.",
+        "¿Qué eje del objeto apunta en la dirección dada después de LookRotation?"
+      ],
+      "explanation": "<code>Quaternion.LookRotation(dir)</code> calcula el <strong>Quaternion</strong> que hace que el eje <em>forward (Z+)</em> del objeto apunte en la dirección <code>dir</code>. En este contexto, calcula la rotación exacta para que el enemigo <strong>mire hacia el jugador</strong>. El <strong>Slerp</strong> hace el giro gradual en lugar de instantáneo."
+    },
+    {
+      "id": "quat_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de instanciación:",
+      "code": "GameObject bullet = Instantiate(\n    bulletPrefab,\n    spawnPoint.position,\n    Quaternion.identity\n);",
+      "question": "¿Qué rotación tendrá la bala al ser instanciada con `Quaternion.identity`?",
+      "target": "sin rotación, alineada con los ejes del mundo (0,0,0 en Euler)",
+      "acceptedAnswers": [
+        "sin rotación, alineada con los ejes del mundo (0,0,0 en Euler)",
+        "sin rotación",
+        "rotación cero",
+        "0, 0, 0",
+        "igual a los ejes del mundo"
+      ],
+      "hints": [
+        "identity significa 'identidad' en matemáticas, el elemento neutro.",
+        "¿Cuál es el valor neutro para las rotaciones?",
+        "En ángulos Euler equivale a (0, 0, 0)."
+      ],
+      "explanation": "<strong>Quaternion.identity</strong> es el <strong>Quaternion</strong> sin rotación, equivalente a <code>Euler(0,0,0)</code>. La bala se instanciará alineada con los ejes del mundo: forward = Z+, up = Y+, right = X+. Para que la bala salga hacia donde apunta el cañón, se usaría <code>spawnPoint.rotation</code> en lugar de <code>Quaternion.identity</code>."
+    },
+    {
+      "id": "quat_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código que tiene un bug sutil:",
+      "code": "void Update()\n{\n    // Girar 90 grados en Y de forma incremental\n    transform.eulerAngles = new Vector3(\n        0,\n        transform.eulerAngles.y + rotSpeed * Time.deltaTime,\n        0\n    );\n}",
+      "question": "¿Cuál es el problema de leer y escribir `transform.eulerAngles` directamente en cada frame?",
+      "target": "la conversión constante entre Quaternion y Euler puede acumular errores y producir comportamiento errático",
+      "acceptedAnswers": [
+        "la conversión constante entre Quaternion y Euler puede acumular errores y producir comportamiento errático",
+        "puede causar gimbal lock o valores inconsistentes",
+        "la conversión Quaternion-Euler es imprecisa y acumula errores",
+        "Unity puede cambiar los valores al convertir de Quaternion a Euler",
+        "los ángulos Euler no son únicos y la reconversión puede dar valores distintos"
+      ],
+      "hints": [
+        "transform.rotation es un Quaternion; eulerAngles es una conversión.",
+        "Al leer eulerAngles, Unity convierte Quaternion→Euler. Al escribir, convierte Euler→Quaternion.",
+        "¿Qué pasa si esta conversión doble no es perfectamente reversible?"
+      ],
+      "explanation": "Cada frame se lee <code>eulerAngles</code> (Unity convierte de <strong>Quaternion</strong> a <strong>Euler</strong>) y se escribe el resultado (Unity convierte de <strong>Euler</strong> a <strong>Quaternion</strong>). Esta conversión doble puede introducir errores numéricos acumulativos. La solución correcta es usar <code>transform.Rotate(0f, rotSpeed * Time.deltaTime, 0f)</code> que trabaja directamente con <strong>Quaternion</strong>."
+    },
+    {
+      "id": "quat_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara estos dos métodos de interpolación de rotación:",
+      "code": "// Método A:\ntransform.rotation = Quaternion.Lerp(from, to, t);\n\n// Método B:\ntransform.rotation = Quaternion.Slerp(from, to, t);",
+      "question": "¿Para rotaciones grandes (mayores a 90°), cuál método produce un movimiento más natural y por qué?",
+      "target": "Slerp, porque interpola siguiendo el arco más corto en la esfera de rotaciones con velocidad angular constante",
+      "acceptedAnswers": [
+        "Slerp, porque interpola siguiendo el arco más corto en la esfera de rotaciones con velocidad angular constante",
+        "Slerp porque sigue el arco más corto",
+        "el Método B (Slerp) porque mantiene velocidad angular constante",
+        "Slerp produce velocidad de rotación constante",
+        "Método B, Slerp interpola esféricamente"
+      ],
+      "hints": [
+        "Slerp = Spherical Linear Interpolation (interpolación esférica lineal).",
+        "En rotaciones grandes, Lerp puede producir cambios de velocidad angular.",
+        "Slerp garantiza que la velocidad de rotación sea constante durante toda la interpolación."
+      ],
+      "explanation": "<strong>Slerp</strong> (Spherical Linear Interpolation) interpola a lo largo del arco más corto en la esfera de rotaciones 4D, manteniendo <em>velocidad angular constante</em>. <strong>Lerp</strong> interpola linealmente en el espacio 4D del <strong>Quaternion</strong>, lo que puede producir aceleraciones y desaceleraciones perceptibles en rotaciones grandes. Para rotaciones pequeñas, la diferencia es despreciable."
+    },
+    {
+      "id": "quat_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de una torreta que busca al jugador:",
+      "code": "void Update()\n{\n    if (target != null)\n    {\n        Vector3 dir = (target.position - transform.position).normalized;\n        Quaternion desired = Quaternion.LookRotation(dir);\n        transform.rotation = desired; // sin suavizado\n    }\n}",
+      "question": "¿Qué modificación habría que hacer para que la torreta gire suavemente en lugar de instantáneamente?",
+      "target": "reemplazar la asignación directa por Quaternion.Slerp entre transform.rotation y desired",
+      "acceptedAnswers": [
+        "reemplazar la asignación directa por Quaternion.Slerp entre transform.rotation y desired",
+        "usar Quaternion.Slerp(transform.rotation, desired, rotSpeed * Time.deltaTime)",
+        "envolver en Slerp con la rotación actual y la deseada",
+        "transform.rotation = Quaternion.Slerp(transform.rotation, desired, velocidad * Time.deltaTime)",
+        "agregar Slerp para suavizar el giro"
+      ],
+      "hints": [
+        "La asignación directa es instantánea (teleporta la rotación).",
+        "Para suavizar, se necesita interpolar entre la rotación actual y la deseada.",
+        "Slerp toma rotación actual, rotación deseada, y un factor de velocidad * Time.deltaTime."
+      ],
+      "explanation": "Para suavizar el giro, hay que reemplazar <code>transform.rotation = desired</code> por <code>transform.rotation = Quaternion.Slerp(transform.rotation, desired, rotSpeed * Time.deltaTime)</code>. Esto hace que cada frame la torreta gire <em>un poco</em> hacia el objetivo, produciendo el movimiento gradual. El valor de <code>rotSpeed</code> controla qué tan rápido gira."
+    },
+    {
+      "id": "quat_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el código para crear un **Quaternion** que representa una rotación de 45 grados en el eje X:",
+      "codeTemplate": "Quaternion tilt = Quaternion.__________(45f, 0f, 0f);",
+      "expectedAnswer": "Euler",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método que convierte ángulos Euler a Quaternion...",
+      "hints": [
+        "El método convierte ángulos de Euler (grados) a un Quaternion.",
+        "Recibe tres floats: rotación en X, Y y Z.",
+        "Su nombre es el sistema de ángulos que convierte."
+      ],
+      "explanation": "<code>Quaternion.Euler(x, y, z)</code> convierte ángulos de <strong>Euler</strong> (en grados) a un <strong>Quaternion</strong>. <code>Euler(45f, 0f, 0f)</code> crea una rotación de 45° en el eje X (inclinación hacia abajo si es el eje pitch). Es la forma más intuitiva de crear rotaciones en código."
+    },
+    {
+      "id": "quat_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para instanciar un proyectil sin ninguna rotación (alineado con los ejes del mundo):",
+      "codeTemplate": "Instantiate(projectilePrefab, spawnPos, Quaternion.__________);",
+      "expectedAnswer": "identity",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el Quaternion sin rotación...",
+      "hints": [
+        "Este Quaternion equivale a (0,0,0) en ángulos Euler.",
+        "En matemáticas, el elemento neutro de una operación se llama 'identidad'.",
+        "Quaternion._____ es el Quaternion sin ninguna rotación."
+      ],
+      "explanation": "<code>Quaternion.identity</code> es el <strong>Quaternion</strong> neutro, equivalente a <code>Euler(0,0,0)</code>. Al instanciar con <code>identity</code>, el objeto se crea sin ninguna rotación, alineado con los ejes del mundo. Para proyectiles se suele usar <code>spawnPoint.rotation</code> para heredar la orientación del punto de spawn."
+    },
+    {
+      "id": "quat_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código que calcula la rotación para que un enemigo mire hacia el jugador, usando el método estático apropiado de **Quaternion**:",
+      "codeTemplate": "Vector3 dir = (player.position - transform.position).normalized;\nQuaternion lookRot = Quaternion.__________(dir);",
+      "expectedAnswer": "LookRotation",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método que calcula la rotación desde una dirección...",
+      "hints": [
+        "El método convierte una dirección (Vector3) en una rotación.",
+        "Su nombre sugiere que calcula la rotación para 'mirar' en una dirección.",
+        "Es un método estático de la clase Quaternion."
+      ],
+      "explanation": "<code>Quaternion.LookRotation(direction)</code> calcula el <strong>Quaternion</strong> que hace que el eje <em>forward</em> del objeto apunte en la dirección dada. Es el punto de partida estándar para sistemas de seguimiento: calcular la rotación deseada con <strong>LookRotation</strong> y luego suavizarla con <strong>Slerp</strong>."
+    },
+    {
+      "id": "quat_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la línea que suaviza la rotación de un enemigo hacia `targetRotation` usando interpolación esférica, con `rotSpeed = 3f`:",
+      "codeTemplate": "transform.rotation = Quaternion.__________(transform.rotation, targetRotation, rotSpeed * Time.deltaTime);",
+      "expectedAnswer": "Slerp",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método de interpolación esférica...",
+      "hints": [
+        "La interpolación para rotaciones que sigue el arco más corto.",
+        "Es la versión esférica (Spherical) de Lerp.",
+        "Empieza con 'S' seguido de 'lerp'."
+      ],
+      "explanation": "<code>Quaternion.Slerp(a, b, t)</code> realiza interpolación esférica entre dos <strong>Quaternion</strong>. Es preferible a <strong>Lerp</strong> para rotaciones porque mantiene velocidad angular constante. Con <code>transform.rotation</code> como origen y <code>rotSpeed * Time.deltaTime</code> como factor, el enemigo gira suavemente cada frame."
+    },
+    {
+      "id": "quat_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea completa que hace que el objeto actual gire 90 grados en el eje Y de forma instantánea, usando `Quaternion.Euler`:",
+      "codeTemplate": null,
+      "expectedAnswer": "transform.rotation = Quaternion.Euler(0f, 90f, 0f);",
+      "alternateAnswers": [
+        "transform.rotation = Quaternion.Euler(0, 90, 0);",
+        "transform.rotation = Quaternion.Euler(new Vector3(0f, 90f, 0f));"
+      ],
+      "placeholder": "Escribe la línea completa de asignación de rotación...",
+      "hints": [
+        "Asigna a transform.rotation un Quaternion.Euler.",
+        "Los parámetros de Euler son (X, Y, Z) en grados.",
+        "Solo el eje Y tiene valor distinto de 0."
+      ],
+      "explanation": "<code>transform.rotation = Quaternion.Euler(0f, 90f, 0f)</code> establece la rotación absoluta del objeto a 90° en Y instantáneamente. Para rotaciones relativas (sumar rotación), se usaría <code>transform.Rotate(0f, 90f, 0f)</code> o multiplicar <strong>Quaternion</strong>."
+    },
+    {
+      "id": "quat_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `Update()` completo de un componente `EnemyAI` que: (1) calcula la dirección normalizada hacia `player.position`, (2) calcula `targetRotation` con `LookRotation`, y (3) aplica `Slerp` con `rotSpeed = 5f` y `Time.deltaTime`:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Update()\n{\n    Vector3 dir = (player.position - transform.position).normalized;\n    Quaternion targetRotation = Quaternion.LookRotation(dir);\n    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);\n}",
+      "alternateAnswers": [
+        "void Update() { Vector3 dir = (player.position - transform.position).normalized; Quaternion targetRotation = Quaternion.LookRotation(dir); transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime); }"
+      ],
+      "placeholder": "Escribe el método Update completo del EnemyAI...",
+      "hints": [
+        "Paso 1: Vector3 dir = (player.position - transform.position).normalized;",
+        "Paso 2: Quaternion targetRotation = Quaternion.LookRotation(dir);",
+        "Paso 3: transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5f * Time.deltaTime);"
+      ],
+      "explanation": "El patrón clásico de seguimiento de rotación: (1) calcular dirección con resta de posiciones + <strong>normalized</strong>, (2) convertir a rotación con <strong>LookRotation</strong>, (3) suavizar con <strong>Slerp</strong>. El factor <code>5f * Time.deltaTime</code> hace la rotación <em>frame-independent</em> con easing exponencial (gira rápido, desacelera al llegar)."
+    }
+  ]
+}

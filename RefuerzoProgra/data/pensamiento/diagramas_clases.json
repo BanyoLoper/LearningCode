@@ -1,0 +1,374 @@
+{
+  "id": "diagramas_clases",
+  "title": "Diagramas de Clases UML",
+  "icon": "📐",
+  "color": "#455A64",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Diagrama de Clases UML?",
+        "type": "definition",
+        "content": "Un <strong>diagrama de clases UML</strong> (<strong>UML class diagram</strong>) es una representación visual de las clases de un sistema, sus <strong>attributes</strong> (campos), <strong>methods</strong> (métodos) y las relaciones entre ellas. <strong>UML</strong> (Unified Modeling Language) es el estándar internacional para modelar sistemas orientados a objetos. Antes de escribir código, diseñar el <strong>class diagram</strong> permite planear la arquitectura del juego: qué clases existen, qué datos guardan y cómo se relacionan entre sí."
+      },
+      {
+        "id": "doc-2",
+        "title": "Estructura de una Clase en UML",
+        "type": "code",
+        "content": "// Notación UML de una clase:\n// [NombreClase | -atributos: tipo | +Metodos(): tipo_retorno]\n\n// Ejemplo:\n[Jugador\n | -vida: int\n | -nombre: string\n | -posicion: Vector3\n | +TakeDamage(dano: int): void\n | +Morir(): void\n | +ObtenerVida(): int\n]\n\n// Visibilidad:\n// + public     (visible desde fuera de la clase)\n// - private    (solo visible dentro de la clase)\n// # protected  (visible en la clase y sus subclases)\n\n// En UML los attributes van en la sección media\n// y los methods en la sección inferior."
+      },
+      {
+        "id": "doc-3",
+        "title": "Relaciones de Herencia y Composición",
+        "type": "code",
+        "content": "// HERENCIA (inheritance): flecha hueca ──▷\n// \"Es un tipo de\" (is-a)\n// La subclase hereda attributes y methods de la superclase\nJugador ──▷ Personaje\nEnemigo ──▷ Personaje\n\n// COMPOSICIÓN (composition): diamante relleno ◆────\n// \"Parte imprescindible\" (whole-part, strong ownership)\n// Si el todo se destruye, la parte también\nJuego ◆──── Nivel\nNivel ◆──── Enemigo\n\n// AGREGACIÓN (aggregation): diamante vacío ◇────\n// \"Tiene\" pero puede existir independientemente (weak ownership)\n// Si el todo se destruye, la parte puede sobrevivir\nEquipo ◇──── Jugador\nInventario ◇──── Item"
+      },
+      {
+        "id": "doc-4",
+        "title": "Multiplicidades en UML",
+        "type": "code",
+        "content": "// Las multiplicidades indican cuántos objetos\n// participan en cada lado de la relación:\n\n// 1      → exactamente uno\n// 0..1   → cero o uno (opcional)\n// *      → cero o más (many)\n// 1..*   → uno o más (al menos uno)\n// 2..5   → entre 2 y 5\n\n// Ejemplos en un diagrama de videojuego:\nJuego 1──────1..* Nivel     // Un Juego tiene al menos 1 Nivel\nJugador 1────0..1 Arma      // Un Jugador puede tener 0 o 1 Arma\nInventario 1─────* Item     // Un Inventario tiene 0 o más Items\nEquipo 1─────2..4 Jugador   // Un Equipo tiene entre 2 y 4 jugadores"
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de los Diagramas de Clases UML",
+        "type": "list",
+        "items": [
+          "La flecha hueca (──▷) indica herencia (inheritance): la subclase 'es un tipo de' la superclase.",
+          "El diamante relleno (◆) indica composición: el componente no puede existir sin el todo.",
+          "El diamante vacío (◇) indica agregación: el componente puede existir independientemente.",
+          "Los attributes privados llevan el prefijo - y los públicos llevan +.",
+          "Las multiplicidades (1, *, 0..1, 1..*) se escriben en ambos extremos de la relación.",
+          "La dependencia (flecha punteada - - ▷) indica que una clase usa a otra temporalmente."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "dc_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un **diagrama de clases UML**, ¿qué símbolo representa la relación de **herencia (inheritance)**?",
+      "options": [
+        "Una flecha con punta hueca triangular (──▷)",
+        "Un diamante relleno al inicio de la línea (◆────)",
+        "Un diamante vacío al inicio de la línea (◇────)",
+        "Una flecha punteada (- - ▷)",
+        "Una línea simple sin decoración"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>herencia</strong> (<strong>inheritance</strong>) en <strong>UML</strong> se representa con una <strong>flecha con punta triangular hueca</strong> (──▷). La punta apunta hacia la clase padre (superclase). Significa \"es un tipo de\" (is-a): <code>Enemigo ──▷ Personaje</code> significa que Enemigo es un tipo de Personaje."
+    },
+    {
+      "id": "dc_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué diferencia a la **composición (composition)** de la **agregación (aggregation)** en UML?",
+      "options": [
+        "En composición el componente no puede existir sin el todo; en agregación sí puede existir de forma independiente.",
+        "En composición se usa diamante vacío y en agregación se usa diamante relleno.",
+        "La composición implica herencia; la agregación no implica ninguna relación de tipo.",
+        "La composición es para relaciones 1 a 1; la agregación es para relaciones 1 a muchos.",
+        "No hay diferencia real: son sinónimos en UML moderno."
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia clave: en <strong>composición</strong> (<strong>composition</strong>), el componente depende del todo para existir (si el <code>Nivel</code> se destruye, sus <code>Enemigos</code> también se destruyen). En <strong>agregación</strong> (<strong>aggregation</strong>), el componente puede existir de forma independiente (si el <code>Equipo</code> se disuelve, los <code>Jugadores</code> siguen existiendo)."
+    },
+    {
+      "id": "dc_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Lee este diagrama de clase UML:\n```\n[Personaje\n | -vida: int\n | -nombre: string\n | +TakeDamage(d: int): void\n | +GetNombre(): string\n]\n```\n¿Cuántos **attributes** (atributos) tiene la clase `Personaje`?",
+      "options": [
+        "2 (vida y nombre)",
+        "4 (vida, nombre, TakeDamage y GetNombre)",
+        "1 (solo vida, porque nombre es string)",
+        "0 (los attributes van en otra sección del diagrama)",
+        "3 (vida, nombre y el tipo int)"
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>attributes</strong> son los campos de datos de la clase: <code>-vida: int</code> y <code>-nombre: string</code>. Son <strong>2 attributes</strong>. Los elementos con paréntesis (<code>TakeDamage</code> y <code>GetNombre</code>) son <strong>methods</strong>, no attributes."
+    },
+    {
+      "id": "dc_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué relación representa esta notación UML: `Juego ◆──── Nivel`?",
+      "options": [
+        "Composición: Nivel es una parte esencial de Juego; si Juego se destruye, Nivel también.",
+        "Agregación: Nivel puede existir sin Juego de forma independiente.",
+        "Herencia: Nivel es un tipo de Juego.",
+        "Dependencia: Juego usa temporalmente a Nivel.",
+        "Asociación simple: Juego y Nivel se conocen mutuamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>diamante relleno</strong> (◆) al lado de <code>Juego</code> indica <strong>composición</strong> (<strong>composition</strong>). Significa que <code>Nivel</code> es una parte imprescindible de <code>Juego</code>: si el <code>Juego</code> se destruye, los <code>Nivel</code> que lo componen también se destruyen. El diamante siempre está en el lado del \"todo\"."
+    },
+    {
+      "id": "dc_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Lee esta multiplicidad en un diagrama UML:\n```\nJugador 1──────0..* Item\n```\n¿Qué significa la multiplicidad `0..*` en el lado de `Item`?",
+      "options": [
+        "Un Jugador puede tener cero o más Items (ninguno o muchos).",
+        "Un Jugador debe tener exactamente un Item siempre.",
+        "Un Item puede pertenecer a entre 0 y varios Jugadores.",
+        "La relación entre Jugador e Item es obligatoria.",
+        "El número máximo de Items es desconocido y no está definido."
+      ],
+      "correctIndex": 0,
+      "explanation": "La multiplicidad <strong>0..*</strong> significa <strong>cero o más</strong>: el <code>Jugador</code> puede no tener ningún <code>Item</code> (inventario vacío) o puede tener muchos. El <code>1</code> en el lado de <code>Jugador</code> indica que cada <code>Item</code> pertenece exactamente a un jugador."
+    },
+    {
+      "id": "dc_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En el siguiente fragmento de diagrama UML, ¿qué tipo de relación existe?\n```\nEnemigo ──▷ Personaje\nJugador ──▷ Personaje\n```",
+      "options": [
+        "Herencia: tanto Enemigo como Jugador heredan de Personaje.",
+        "Composición: Personaje está compuesto de Enemigos y Jugadores.",
+        "Agregación: Personaje agrupa a Enemigo y Jugador.",
+        "Dependencia: Enemigo y Jugador usan a Personaje temporalmente.",
+        "Asociación bidireccional entre las tres clases."
+      ],
+      "correctIndex": 0,
+      "explanation": "Las flechas <strong>──▷</strong> indican <strong>herencia</strong> (<strong>inheritance</strong>). Tanto <code>Enemigo</code> como <code>Jugador</code> son subclases de <code>Personaje</code>. Esto significa que ambos <strong>heredan</strong> los <strong>attributes</strong> y <strong>methods</strong> de <code>Personaje</code> (como <code>vida</code> y <code>TakeDamage()</code>)."
+    },
+    {
+      "id": "dc_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Lee este diagrama UML completo:\n```\n[GameManager | -instancia: GameManager | +GetInstancia(): GameManager]\n[Jugador | -vida: int | +TakeDamage(): void]\n[Nivel | -nombre: string | +Cargar(): void]\n\nGameManager ◆──1──── 1 Jugador\nGameManager ◆──1────1..* Nivel\n```\n¿Cuántos objetos `Nivel` puede gestionar un `GameManager`?",
+      "options": [
+        "Uno o más (al menos 1, sin límite superior).",
+        "Exactamente uno siempre.",
+        "Cero o más (puede no tener ninguno).",
+        "Entre 1 y 4 niveles solamente.",
+        "El diagrama no especifica la cantidad de Niveles."
+      ],
+      "correctIndex": 0,
+      "explanation": "La multiplicidad <strong>1..*</strong> en el lado de <code>Nivel</code> significa <strong>uno o más</strong>: el <code>GameManager</code> debe gestionar al menos un <code>Nivel</code> y puede tener muchos. El <code>1</code> en el lado de <code>GameManager</code> indica que cada <code>Nivel</code> pertenece a exactamente un <code>GameManager</code>."
+    },
+    {
+      "id": "dc_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la diferencia entre usar el símbolo `+` y `-` antes de un atributo o método en UML?",
+      "options": [
+        "`+` significa public (accesible desde fuera); `-` significa private (solo accesible desde dentro de la clase).",
+        "`+` es para attributes positivos (valores mayores que 0); `-` es para valores negativos.",
+        "`+` indica que el método retorna un valor; `-` indica que no retorna nada (void).",
+        "`+` es para methods estáticos; `-` es para methods de instancia.",
+        "`+` y `-` son intercambiables; su uso es solo una convención opcional."
+      ],
+      "correctIndex": 0,
+      "explanation": "En <strong>UML</strong>, los modificadores de visibilidad son: <strong>+</strong> para <strong>public</strong> (accesible desde cualquier clase), <strong>-</strong> para <strong>private</strong> (solo accesible desde dentro de la misma clase), y <strong>#</strong> para <strong>protected</strong> (accesible desde la clase y sus subclases). Esto refleja directamente los modificadores de acceso de C#."
+    },
+    {
+      "id": "dc_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este diagrama de clase UML:",
+      "code": "[Arma\n | -nombre: string\n | -dano: int\n | -duracion: float\n | +Atacar(): void\n | +Reparar(): void\n]",
+      "question": "¿Cuántos **methods** (métodos) tiene la clase `Arma`?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos"],
+      "hints": [
+        "Los methods son los elementos que tienen paréntesis () al final.",
+        "Los attributes solo tienen nombre y tipo, sin paréntesis.",
+        "Busca los elementos que empiezan con + y tienen paréntesis."
+      ],
+      "explanation": "Los <strong>methods</strong> son los elementos con paréntesis: <code>+Atacar(): void</code> y <code>+Reparar(): void</code>. Son <strong>2 methods</strong>. Los tres elementos con <code>-</code> (<code>nombre</code>, <code>dano</code>, <code>duracion</code>) son <strong>attributes</strong>, no methods."
+    },
+    {
+      "id": "dc_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este fragmento de diagrama de clases UML:",
+      "code": "Nivel ◆──── Enemigo\n\n[Nivel | -nombre: string | +Cargar(): void]\n[Enemigo | -vida: int | +Atacar(): void]",
+      "question": "¿Qué tipo de relación UML existe entre `Nivel` y `Enemigo`?",
+      "target": "composición",
+      "acceptedAnswers": ["composición", "composicion", "composition", "composición (composition)"],
+      "hints": [
+        "El símbolo ◆ es un diamante relleno.",
+        "El diamante relleno indica la relación más fuerte entre todo y parte.",
+        "En esta relación, si se destruye el Nivel, los Enemigos también se destruyen."
+      ],
+      "explanation": "El <strong>diamante relleno</strong> (◆) indica <strong>composición</strong> (<strong>composition</strong>). Los <code>Enemigos</code> son partes integrantes del <code>Nivel</code>: cuando el <code>Nivel</code> se descarga o destruye, todos sus <code>Enemigos</code> también desaparecen. Es una relación de dependencia fuerte."
+    },
+    {
+      "id": "dc_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este diagrama UML de herencia:",
+      "code": "[Personaje | -vida: int | -velocidad: float | +Moverse(): void]\n      ▲\n      |\n[Jugador | -puntos: int | +Saltar(): void]",
+      "question": "¿Qué **attributes** hereda la clase `Jugador` de `Personaje`?",
+      "target": "vida y velocidad",
+      "acceptedAnswers": ["vida y velocidad", "velocidad y vida", "vida, velocidad", "-vida y -velocidad", "vida y velocidad y Moverse"],
+      "hints": [
+        "La flecha ▲ indica herencia: Jugador hereda de Personaje.",
+        "Una subclase recibe todos los attributes y methods de su superclase.",
+        "Busca los attributes definidos en Personaje, no los propios de Jugador."
+      ],
+      "explanation": "Gracias a la <strong>herencia</strong> (<strong>inheritance</strong>), <code>Jugador</code> hereda <strong>todos</strong> los <strong>attributes</strong> y <strong>methods</strong> de <code>Personaje</code>: <code>vida: int</code>, <code>velocidad: float</code> y el method <code>Moverse(): void</code>. Además tiene sus propios: <code>puntos: int</code> y <code>Saltar(): void</code>."
+    },
+    {
+      "id": "dc_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee esta multiplicidad en el diagrama UML:",
+      "code": "GameManager 1 ──── 1..* Nivel\n\n// Un GameManager gestiona los Niveles del juego.",
+      "question": "¿Cuál es el número mínimo de objetos `Nivel` que debe tener un `GameManager`?",
+      "target": "1",
+      "acceptedAnswers": ["1", "uno", "al menos uno"],
+      "hints": [
+        "La multiplicidad es '1..*' en el lado de Nivel.",
+        "El primer número antes de los puntos es el mínimo.",
+        "1..* significa 'desde 1 hasta cualquier cantidad'."
+      ],
+      "explanation": "La multiplicidad <strong>1..*</strong> se lee como \"uno o más\": el número mínimo es <strong>1</strong> (siempre debe haber al menos un <code>Nivel</code>) y el máximo es ilimitado (<code>*</code>). Si fuera <code>0..*</code>, el mínimo sería 0 (ningún nivel es opcional)."
+    },
+    {
+      "id": "dc_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este diagrama UML completo de un sistema de inventario:",
+      "code": "[Jugador | -vida: int | +EquiparArma(a: Arma): void]\n[Inventario | -capacidad: int | +AgregarItem(): void]\n[Item | -nombre: string | -valor: int]\n\nJugador ◆──1──── 1 Inventario\nInventario ◇──1──── 0..* Item",
+      "question": "¿Qué tipo de relación existe entre `Inventario` y `Item`?",
+      "target": "agregación",
+      "acceptedAnswers": ["agregación", "agregacion", "aggregation", "agregación (aggregation)"],
+      "hints": [
+        "Busca el símbolo del diamante: ◆ es relleno (composición) y ◇ es vacío (agregación).",
+        "La relación es entre Inventario (lado del diamante) y Item.",
+        "¿Puede un Item existir sin el Inventario? En agregación sí puede."
+      ],
+      "explanation": "El <strong>diamante vacío</strong> (◇) en el lado de <code>Inventario</code> indica <strong>agregación</strong> (<strong>aggregation</strong>). Un <code>Item</code> puede existir de forma independiente aunque el <code>Inventario</code> se destruya (el ítem podría estar en el suelo del mapa). Contrasta con la <strong>composición</strong> (◆) entre <code>Jugador</code> e <code>Inventario</code>: si el Jugador se destruye, su Inventario también."
+    },
+    {
+      "id": "dc_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee este diagrama UML y el código C# correspondiente:",
+      "code": "// DIAGRAMA UML:\n[EjecutorHabilidad | +EjecutarHabilidad(h: IHabilidad): void]\n[IHabilidad | +Ejecutar(): void]  <<interface>>\n\nEjecutorHabilidad - - ▷ IHabilidad\n\n// CÓDIGO C#:\npublic class EjecutorHabilidad\n{\n    public void EjecutarHabilidad(IHabilidad h)\n    {\n        h.Ejecutar();\n    }\n}",
+      "question": "¿Qué tipo de relación UML representa la flecha punteada `- - ▷`?",
+      "target": "dependencia",
+      "acceptedAnswers": ["dependencia", "dependency", "dependencia (dependency)", "uso", "uses"],
+      "hints": [
+        "La flecha punteada (- - ▷) es diferente a la flecha sólida de herencia.",
+        "EjecutorHabilidad usa IHabilidad solo como parámetro de un método.",
+        "Esta relación es temporal: EjecutorHabilidad no guarda una referencia permanente a IHabilidad."
+      ],
+      "explanation": "La flecha punteada (<strong>- - ▷</strong>) indica <strong>dependencia</strong> (<strong>dependency</strong>): <code>EjecutorHabilidad</code> depende de <code>IHabilidad</code> porque la usa como parámetro de un <strong>method</strong>. Es la relación más débil en UML: no hay un campo de clase, solo un uso temporal en un método."
+    },
+    {
+      "id": "dc_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Lee el diagrama UML y completa la clase C# correspondiente:\n```\n[Enemigo\n | -vida: int\n | -velocidad: float\n | +TakeDamage(d: int): void\n]\n```",
+      "codeTemplate": "public class Enemigo\n{\n    __________ int vida;\n    __________ float velocidad;\n\n    public void TakeDamage(int d) { vida -= d; }\n}",
+      "expectedAnswer": "private",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el modificador de acceso para los attributes privados...",
+      "hints": [
+        "El símbolo '-' en UML indica que el attribute es privado.",
+        "En C#, los campos privados se declaran con la palabra clave correspondiente.",
+        "Lo opuesto a public en C# (dos palabras)."
+      ],
+      "explanation": "El símbolo <strong>-</strong> en <strong>UML</strong> indica que el <strong>attribute</strong> es <strong>private</strong>. En C#, los campos marcados con <code>-</code> en UML se traducen a <code><strong>private</strong></code>. Los marcados con <code>+</code> se traducen a <code>public</code>."
+    },
+    {
+      "id": "dc_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la notación UML de la clase `Jugador` agregando el attribute público `puntos` de tipo `int`:",
+      "codeTemplate": "[Jugador\n | -vida: int\n | __________ puntos: int\n | +Saltar(): void\n]",
+      "expectedAnswer": "+",
+      "alternateAnswers": ["public", "pub"],
+      "placeholder": "Escribe el símbolo de visibilidad pública en UML...",
+      "hints": [
+        "En UML, la visibilidad pública se representa con un símbolo de un carácter.",
+        "Es el símbolo matemático que indica suma o adición.",
+        "Lo opuesto al símbolo '-' que indica privado."
+      ],
+      "explanation": "El símbolo <strong>+</strong> en <strong>UML</strong> indica visibilidad <strong>public</strong>. Los <strong>attributes</strong> públicos usan <code>+</code> y los privados usan <code>-</code>. Por convención, en C# los attributes suelen ser <code>private</code> (<code>-</code>) y los <strong>methods</strong> suelen ser <code>public</code> (<code>+</code>)."
+    },
+    {
+      "id": "dc_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Lee el diagrama UML de herencia y completa el código C#:\n```\nJugador ──▷ Personaje\n```",
+      "codeTemplate": "public class Jugador __________ Personaje\n{\n    // Jugador hereda de Personaje\n}",
+      "expectedAnswer": ": ",
+      "alternateAnswers": [":", "extends", "inherits"],
+      "placeholder": "Escribe la sintaxis de herencia en C#...",
+      "hints": [
+        "En C#, la herencia se indica con un símbolo de puntuación después del nombre de la clase.",
+        "La clase padre va después de ese símbolo.",
+        "Es el mismo símbolo que se usa en C# para implementar interfaces."
+      ],
+      "explanation": "La flecha <strong>──▷</strong> de <strong>herencia</strong> en <strong>UML</strong> se traduce a los dos puntos <strong><code>:</code></strong> en C#. <code>public class Jugador : Personaje</code> indica que <code>Jugador</code> hereda de <code>Personaje</code>, exactamente como muestra la flecha en el diagrama."
+    },
+    {
+      "id": "dc_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase C# completa que corresponde a este diagrama UML:\n```\n[Item\n | -nombre: string\n | -valor: int\n | +ObtenerNombre(): string\n | +ObtenerValor(): int\n]\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "public class Item\n{\n    private string nombre;\n    private int valor;\n\n    public string ObtenerNombre() { return nombre; }\n    public int ObtenerValor() { return valor; }\n}",
+      "alternateAnswers": [
+        "public class Item {\n    private string nombre;\n    private int valor;\n    public string ObtenerNombre() => nombre;\n    public int ObtenerValor() => valor;\n}"
+      ],
+      "placeholder": "Escribe la clase C# completa...",
+      "hints": [
+        "Los attributes con '-' se traducen a campos private en C#.",
+        "Los methods con '+' se traducen a métodos public en C#.",
+        "ObtenerNombre() retorna string y ObtenerValor() retorna int."
+      ],
+      "explanation": "Cada elemento del <strong>class diagram</strong> se traduce directamente: <code>-nombre: string</code> → <code>private string nombre;</code>, <code>-valor: int</code> → <code>private int valor;</code>, <code>+ObtenerNombre(): string</code> → <code>public string ObtenerNombre()</code>. Los <strong>attributes</strong> privados con <strong>methods</strong> públicos de acceso es el patrón de encapsulamiento en POO."
+    },
+    {
+      "id": "dc_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Basándote en este código C#, escribe el diagrama de clase UML completo usando la notación `[Clase | -attr: tipo | +Metodo(): tipo]`:\n```csharp\npublic class Enemigo : Personaje\n{\n    private int recompensa;\n    private string tipo;\n    public void Atacar() { }\n    public int GetRecompensa() { return recompensa; }\n}\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "[Enemigo\n | -recompensa: int\n | -tipo: string\n | +Atacar(): void\n | +GetRecompensa(): int\n]\n\nEnemigo ──▷ Personaje",
+      "alternateAnswers": [
+        "[Enemigo | -recompensa: int | -tipo: string | +Atacar(): void | +GetRecompensa(): int]\nEnemigo ──▷ Personaje"
+      ],
+      "placeholder": "Escribe el diagrama UML completo...",
+      "hints": [
+        "Los campos private se marcan con '-' y los métodos public con '+'.",
+        "No olvides la relación de herencia: usa la flecha ──▷ apuntando a Personaje.",
+        "El tipo de retorno va después de los dos puntos: +Atacar(): void, +GetRecompensa(): int"
+      ],
+      "explanation": "Al traducir C# a <strong>UML</strong>: <code>private</code> → <code>-</code>, <code>public</code> → <code>+</code>, <code>: Personaje</code> (herencia) → flecha <code>──▷</code>. El <strong>class diagram</strong> muestra solo los <strong>attributes</strong> y <strong>methods</strong> propios de <code>Enemigo</code>, más la relación de <strong>inheritance</strong> hacia <code>Personaje</code>."
+    },
+    {
+      "id": "dc_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el fragmento del diagrama UML que muestra la relación correcta entre estas dos clases (elige entre herencia ──▷, composición ◆────, o agregación ◇────):\n\nClase `Juego` que contiene internamente un `GameManager` que NO puede existir si el Juego no existe. Y clase `GameManager` que tiene una lista de `Jugador` que SÍ pueden existir después de que el GameManager se destruya.",
+      "codeTemplate": null,
+      "expectedAnswer": "Juego ◆──── GameManager\nGameManager ◇──── Jugador",
+      "alternateAnswers": [
+        "Juego ◆─── GameManager\nGameManager ◇─── Jugador",
+        "Juego ◆──1──── 1 GameManager\nGameManager ◇──1──── 0..* Jugador"
+      ],
+      "placeholder": "Escribe las dos líneas de relación UML...",
+      "hints": [
+        "Si el componente NO puede existir sin el todo: usa composición (◆, diamante relleno).",
+        "Si el componente SÍ puede existir de forma independiente: usa agregación (◇, diamante vacío).",
+        "El diamante siempre va en el lado del 'todo', no en el lado de la 'parte'."
+      ],
+      "explanation": "Entre <code>Juego</code> y <code>GameManager</code>, como el <code>GameManager</code> no puede existir sin el <code>Juego</code>, se usa <strong>composición</strong> (<strong>◆</strong>): <code>Juego ◆──── GameManager</code>. Entre <code>GameManager</code> y <code>Jugador</code>, como los <code>Jugadores</code> pueden existir independientemente, se usa <strong>agregación</strong> (<strong>◇</strong>): <code>GameManager ◇──── Jugador</code>."
+    }
+  ]
+}

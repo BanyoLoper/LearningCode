@@ -1,0 +1,386 @@
+{
+  "id": "diccionarios_datos",
+  "title": "Diccionarios como Base de Datos",
+  "icon": "🔍",
+  "color": "#00695C",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Dictionary como Lookup Table",
+        "type": "definition",
+        "content": "Un <strong>Dictionary&lt;string, T&gt;</strong> actúa como una <em>lookup table</em> (tabla de búsqueda) cuando se usa para almacenar datos de juego. En lugar de recorrer una lista buscando un elemento por su nombre, puedes acceder a él directamente por su <strong>key</strong> en tiempo O(1). Por ejemplo, si tienes un diccionario de items con las <strong>keys</strong> <code>\"potion\"</code>, <code>\"sword\"</code>, <code>\"shield\"</code>, puedes obtener cualquiera instantáneamente con <code>itemDB[\"sword\"]</code> sin importar cuántos items haya en la base de datos."
+      },
+      {
+        "id": "doc-2",
+        "title": "Cargar JSON y Poblar un Dictionary",
+        "type": "code",
+        "content": "// EnemyData.cs\n[System.Serializable]\npublic class EnemyData\n{\n    public string id;\n    public string displayName;\n    public int hp;\n    public float speed;\n    public int damage;\n    public int expReward;\n}\n\n[System.Serializable]\npublic class EnemyDatabase { public EnemyData[] enemies; }\n\n// EnemyRegistry.cs\npublic class EnemyRegistry : MonoBehaviour\n{\n    // El Dictionary se puebla en runtime desde JSON\n    private Dictionary<string, EnemyData> registry = new Dictionary<string, EnemyData>();\n\n    void Awake()\n    {\n        // 1. Cargar el JSON\n        TextAsset file = Resources.Load<TextAsset>(\"enemies\");\n        EnemyDatabase db = JsonUtility.FromJson<EnemyDatabase>(file.text);\n\n        // 2. Poblar el Dictionary usando el id como key\n        foreach (EnemyData enemy in db.enemies)\n        {\n            registry[enemy.id] = enemy; // key = \"goblin\", \"orc\", etc.\n        }\n    }\n\n    // 3. Acceso O(1) por ID\n    public EnemyData Get(string id)\n    {\n        registry.TryGetValue(id, out EnemyData data);\n        return data; // null si no existe\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Dictionary vs List.Find() para Lookups Frecuentes",
+        "type": "analogy",
+        "content": "Imagina una <strong>item database</strong> con 500 ítems. Cada vez que el jugador recoge un ítem, el sistema necesita buscar sus datos por ID. Con <code>List&lt;ItemData&gt;.Find(i =&gt; i.id == \"sword_iron\")</code>, el sistema revisa cada elemento hasta encontrarlo — en el peor caso, 500 comparaciones. Con <code>Dictionary&lt;string, ItemData&gt;[\"sword_iron\"]</code>, el acceso es <strong>O(1)</strong>: directo, sin importar el tamaño. Para cualquier sistema que realice búsquedas frecuentes por un identificador único — enemy registries, dialogue systems, item databases — el <strong>Dictionary</strong> es significativamente más eficiente."
+      },
+      {
+        "id": "doc-4",
+        "title": "Casos de Uso: Item Database y Enemy Registry",
+        "type": "code",
+        "content": "// ── Item Database ──\npublic class ItemDatabase : MonoBehaviour\n{\n    private Dictionary<string, ItemData> items = new Dictionary<string, ItemData>();\n\n    public void LoadFrom(ItemData[] data)\n    {\n        foreach (var item in data)\n            items[item.id] = item;\n    }\n\n    // Acceso O(1): obtener datos de un item por ID\n    public ItemData GetItem(string id) =>\n        items.TryGetValue(id, out var data) ? data : null;\n\n    // Verificar si existe antes de acceder\n    public bool Exists(string id) => items.ContainsKey(id);\n}\n\n// ── Dialogue System ──\n// key = npc ID, value = lista de líneas de diálogo\nprivate Dictionary<string, string[]> dialogues;\n\n// ── Enemy Registry ──\n// key = enemy type ID, value = stats data\nprivate Dictionary<string, EnemyData> enemyRegistry;\n\n// Uso en SpawnManager\nvoid SpawnEnemy(string typeId)\n{\n    EnemyData data = enemyRegistry[typeId];\n    // Instancia el prefab y aplica los stats desde data\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Buenas Prácticas con Diccionarios de Datos",
+        "type": "list",
+        "items": [
+          "Usa siempre TryGetValue() en lugar de acceso directo [] para evitar KeyNotFoundException en runtime.",
+          "Elige un campo único y estable como key: un ID string como \"goblin_forest\" es mejor que un nombre de display.",
+          "Puebla el Dictionary una sola vez al cargar la escena (Awake/Start), no en Update.",
+          "Para bases de datos grandes, considera cargar solo los datos del nivel actual en memoria.",
+          "Dictionary vs List: usa Dictionary cuando busques por ID frecuentemente; usa List cuando necesites orden o iterar todos.",
+          "Los diccionarios no son serializables con JsonUtility — usa Newtonsoft Json.NET o conviértelos a array para guardar."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "dddd_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la complejidad de acceso por **key** en un **Dictionary<string, T>**?",
+      "options": [
+        "O(1) — acceso directo sin importar el tamaño del diccionario.",
+        "O(n) — debe recorrer todos los elementos para encontrar la clave.",
+        "O(log n) — usa búsqueda binaria para localizar la clave.",
+        "O(n²) — depende del número de colisiones de hash.",
+        "O(n log n) — requiere ordenamiento previo para el acceso."
+      ],
+      "correctIndex": 0,
+      "explanation": "El acceso por <strong>key</strong> en un <strong>Dictionary</strong> es <strong>O(1)</strong> (tiempo constante) gracias a su implementación como tabla de hash. No importa si tienes 10 o 10,000 entradas — el tiempo de acceso es prácticamente el mismo. Esto lo hace ideal para <em>lookup tables</em> en videojuegos."
+    },
+    {
+      "id": "dddd_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué método de **Dictionary** debes usar para buscar un elemento de forma segura sin lanzar excepción si la **key** no existe?",
+      "options": [
+        "TryGetValue(key, out value) — devuelve bool y no lanza excepción.",
+        "GetValue(key) — devuelve null si la key no existe.",
+        "Find(key) — busca en el diccionario como en una lista.",
+        "SafeGet(key) — maneja la excepción internamente.",
+        "ContainsAndGet(key) — combina verificación y acceso en uno."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code><strong>TryGetValue(key, out value)</strong></code> es el método seguro: devuelve <code>true</code> si la <strong>key</strong> existe (y asigna el <strong>value</strong> en la variable out) o <code>false</code> si no existe, sin lanzar excepción. El acceso directo <code>dict[key]</code> lanza <code>KeyNotFoundException</code> si la clave no está."
+    },
+    {
+      "id": "dddd_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En una **item database** para Unity, ¿cuál sería la mejor elección de **key** para un `Dictionary<string, ItemData>`?",
+      "options": [
+        "Un ID único e inmutable como \"potion_health_small\" que no cambia durante el juego.",
+        "El nombre de display del ítem como \"Poción de Salud Pequeña\" que el jugador ve en pantalla.",
+        "El índice numérico del ítem en la lista original del archivo JSON.",
+        "El nombre de la textura del icono del ítem en el proyecto.",
+        "El timestamp de creación del ítem en el editor de Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "La mejor <strong>key</strong> es un <strong>ID único e inmutable</strong> como <code>\"potion_health_small\"</code>. El nombre de display puede cambiar por localización o balance; el índice numérico puede cambiar si se reordena la lista. Un ID estable garantiza que las referencias en el código siempre funcionen correctamente."
+    },
+    {
+      "id": "dddd_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia de rendimiento entre `list.Find(e => e.id == \"orc\")` y `dictionary[\"orc\"]` para una base de datos de 1000 enemigos?",
+      "options": [
+        "Find() es O(n) y puede revisar hasta 1000 elementos; dictionary[] es O(1) y accede directamente sin importar el tamaño.",
+        "Ambos tienen el mismo rendimiento porque Unity optimiza las búsquedas en listas automáticamente.",
+        "Find() es más rápido porque las listas están ordenadas alfabéticamente en memoria.",
+        "dictionary[] es más lento porque necesita calcular el hash de la clave en cada acceso.",
+        "Find() es O(log n) porque usa búsqueda binaria internamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>List.Find()</code> es <strong>O(n)</strong>: en el peor caso revisa los 1000 elementos uno por uno. <code>Dictionary[]</code> es <strong>O(1)</strong>: calcula el hash de la <strong>key</strong> y accede directamente a la posición. Para búsquedas frecuentes (cada frame, cada vez que un enemigo spawnea), esta diferencia es significativa en bases de datos grandes."
+    },
+    {
+      "id": "dddd_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el flujo correcto para poblar un `Dictionary<string, EnemyData>` desde un archivo JSON en Unity?",
+      "options": [
+        "1) Cargar JSON con Resources.Load, 2) deserializar en clase wrapper con array, 3) iterar el array y añadir cada elemento al Dictionary usando su ID como key.",
+        "1) Declarar el Dictionary con los datos ya escritos en código, 2) cargar el JSON como validación.",
+        "1) Usar JsonUtility.FromJson<Dictionary<string, EnemyData>>() directamente.",
+        "1) Cargar el JSON, 2) convertirlo automáticamente a Dictionary con un cast explícito.",
+        "1) Declarar el JSON directamente como string en el código C#, 2) parsear en Awake."
+      ],
+      "correctIndex": 0,
+      "explanation": "El flujo correcto es: (1) cargar el archivo con <code>Resources.Load&lt;TextAsset&gt;</code>, (2) deserializar con <code>JsonUtility.FromJson&lt;EnemyDatabase&gt;</code> en una clase wrapper que tiene un array, (3) iterar el array y hacer <code>registry[enemy.id] = enemy</code>. No se puede deserializar directamente en Dictionary con JsonUtility."
+    },
+    {
+      "id": "dddd_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo es preferible usar `List<EnemyData>` en lugar de `Dictionary<string, EnemyData>`?",
+      "options": [
+        "Cuando necesitas iterar todos los enemigos en orden o no realizas búsquedas frecuentes por ID.",
+        "Cuando tienes más de 100 tipos de enemigos en la base de datos.",
+        "Cuando los IDs de los enemigos son números enteros en lugar de strings.",
+        "Cuando el proyecto corre en dispositivos móviles con poca memoria RAM.",
+        "Cuando quieres que los datos estén disponibles desde el Editor de Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usa <code>List&lt;EnemyData&gt;</code> cuando necesites <strong>iterar todos los elementos</strong> (por ejemplo, para mostrar una lista completa en UI) o cuando el orden importa. Usa <code>Dictionary&lt;string, EnemyData&gt;</code> cuando realices <strong>búsquedas frecuentes por ID</strong>. En muchos sistemas se usan ambos: la Lista para iteración y el Dictionary para lookup."
+    },
+    {
+      "id": "dddd_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué excepción lanza C# si intentas acceder a un **Dictionary** con una **key** que no existe usando el operador `[]`?",
+      "options": [
+        "KeyNotFoundException — la clave no existe en el diccionario.",
+        "IndexOutOfRangeException — el índice está fuera del rango.",
+        "NullReferenceException — el valor es null.",
+        "ArgumentException — el argumento no es válido.",
+        "InvalidOperationException — operación inválida en el estado actual."
+      ],
+      "correctIndex": 0,
+      "explanation": "Acceder a un <strong>Dictionary</strong> con <code>dict[\"clave\"]</code> cuando la clave no existe lanza <code><strong>KeyNotFoundException</strong></code>. Para evitarlo, usa siempre <code>TryGetValue(key, out value)</code> que devuelve <code>false</code> sin lanzar excepción, o verifica previamente con <code>ContainsKey(key)</code>."
+    },
+    {
+      "id": "dddd_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un sistema de diálogo necesita obtener las líneas de un NPC por su ID cientos de veces por sesión. El catálogo tiene 200 NPCs. ¿Cuál estructura es más adecuada y por qué?",
+      "options": [
+        "Dictionary<string, DialogueData> — acceso O(1) por ID de NPC, ideal para búsquedas frecuentes en catálogos grandes.",
+        "List<DialogueData> con LINQ .First(n => n.npcId == id) — más legible y con el mismo rendimiento.",
+        "Array de DialogueData con búsqueda lineal — consume menos memoria que el Dictionary.",
+        "ScriptableObject por cada NPC — Unity los indexa automáticamente para acceso rápido.",
+        "Dictionary<int, DialogueData> con índices enteros — los strings son más lentos como keys."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code><strong>Dictionary&lt;string, DialogueData&gt;</strong></code> es la elección correcta. Con búsquedas frecuentes (cientos por sesión) en un catálogo de 200 NPCs, la diferencia entre O(1) del Dictionary y O(n) de la List es significativa. El <strong>dialogue system</strong> es un caso de uso clásico para <em>lookup tables</em> basadas en Dictionary en videojuegos."
+    },
+    {
+      "id": "dddd_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de acceso a datos:",
+      "code": "// Opción A: búsqueda en lista\nEnemyData found = enemyList.Find(e => e.id == \"goblin\");\n\n// Opción B: acceso a diccionario\nEnemyData found = enemyRegistry[\"goblin\"];",
+      "question": "¿Cómo se llama el patrón de diseño donde se usa un Dictionary para obtener datos en O(1) por un identificador, como en la Opción B?",
+      "target": "lookup table",
+      "acceptedAnswers": ["lookup table", "tabla de búsqueda", "lookup", "tabla lookup"],
+      "hints": [
+        "Es un patrón donde se 'busca' un elemento directamente por su identificador.",
+        "En inglés, 'lookup' significa búsqueda directa.",
+        "Una tabla de hash que permite acceso directo por clave se llama así."
+      ],
+      "explanation": "El patrón se llama <strong>lookup table</strong> (tabla de búsqueda). Un <strong>Dictionary</strong> implementa este patrón al permitir acceso <strong>O(1)</strong> por <strong>key</strong>. Es mucho más eficiente que <code>List.Find()</code> para búsquedas frecuentes, especialmente en <em>enemy registries</em>, <em>item databases</em> y <em>dialogue systems</em>."
+    },
+    {
+      "id": "dddd_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa cómo se puebla el Dictionary:",
+      "code": "Dictionary<string, EnemyData> registry = new Dictionary<string, EnemyData>();\n\nforeach (EnemyData enemy in db.enemies)\n{\n    registry[enemy.id] = enemy;\n}",
+      "question": "¿Cuál campo de `EnemyData` se usa como **key** del Dictionary en este código?",
+      "target": "id",
+      "acceptedAnswers": ["id", "enemy.id", "el campo id", "el ID"],
+      "hints": [
+        "Observa qué se escribe entre los corchetes del Dictionary en la asignación.",
+        "El operador = asigna el enemigo completo como value; ¿qué se usa como índice/key?",
+        "registry[___] = enemy — ¿qué va en los corchetes?"
+      ],
+      "explanation": "El campo <code><strong>enemy.id</strong></code> se usa como <strong>key</strong> del Dictionary. Esto permite buscar cualquier enemigo por su ID con <code>registry[\"goblin\"]</code> en O(1). El objeto <code>EnemyData</code> completo es el <strong>value</strong>. Elegir un campo único y estable como key es fundamental para el patrón <em>lookup table</em>."
+    },
+    {
+      "id": "dddd_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método de acceso seguro:",
+      "code": "public EnemyData GetEnemy(string id)\n{\n    if (registry.TryGetValue(id, out EnemyData data))\n    {\n        return data;\n    }\n    Debug.LogWarning(\"Enemy no encontrado: \" + id);\n    return null;\n}",
+      "question": "¿Por qué se usa `TryGetValue` en lugar de `registry[id]` para acceder al Dictionary en este método?",
+      "target": "para evitar KeyNotFoundException",
+      "acceptedAnswers": [
+        "para evitar KeyNotFoundException",
+        "evita la excepción",
+        "no lanza excepción",
+        "acceso seguro",
+        "KeyNotFoundException",
+        "no lanza KeyNotFoundException"
+      ],
+      "hints": [
+        "El acceso directo con [] lanza una excepción si la key no existe.",
+        "TryGetValue devuelve false en lugar de lanzar una excepción.",
+        "¿Qué excepción lanza dictionary[key] cuando la key no existe?"
+      ],
+      "explanation": "Se usa <code>TryGetValue</code> <strong>para evitar KeyNotFoundException</strong>. El acceso directo <code>registry[id]</code> lanzaría una excepción si el ID no existe en el diccionario, crasheando el juego. <code>TryGetValue</code> devuelve <code>false</code> de forma segura, permitiendo manejar el caso de clave no encontrada con un log de advertencia."
+    },
+    {
+      "id": "dddd_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de spawn de enemigos:",
+      "code": "void SpawnWave(string[] enemyIds)\n{\n    foreach (string id in enemyIds)\n    {\n        EnemyData data = enemyRegistry[id];\n        GameObject go = Instantiate(enemyPrefab);\n        go.GetComponent<EnemyController>().Initialize(data);\n    }\n}",
+      "question": "¿En qué momento del ciclo de vida de Unity se debe poblar `enemyRegistry` para que esté listo cuando `SpawnWave` sea llamado?",
+      "target": "Awake",
+      "acceptedAnswers": ["Awake", "en Awake", "método Awake", "Start", "en Start"],
+      "hints": [
+        "El registry debe estar listo antes de que se llame SpawnWave.",
+        "En Unity, ¿qué métodos se ejecutan al inicio de un MonoBehaviour antes que Start?",
+        "Para asegurar que los datos estén disponibles para otros scripts, se usa Awake."
+      ],
+      "explanation": "El <code>enemyRegistry</code> debe poblarse en <code><strong>Awake()</strong></code>, que se ejecuta antes que <code>Start()</code> en todos los MonoBehaviours. Así se garantiza que los datos estén disponibles cuando otros scripts los necesiten en su <code>Start()</code>. Si se usa <code>Start()</code>, podría haber condiciones de carrera si otro script intenta acceder al registry en su propio <code>Start()</code>."
+    },
+    {
+      "id": "dddd_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Compara estos dos sistemas:",
+      "code": "// Sistema A: Item Database con List\npublic class ItemDB_List\n{\n    List<ItemData> items;\n    public ItemData Get(string id) => items.Find(i => i.id == id);\n}\n\n// Sistema B: Item Database con Dictionary\npublic class ItemDB_Dict\n{\n    Dictionary<string, ItemData> items;\n    public ItemData Get(string id) => items.TryGetValue(id, out var d) ? d : null;\n}",
+      "question": "Si el juego tiene 1000 items y el `Get()` se llama 500 veces por segundo, ¿cuántas comparaciones máximas realizaría por segundo el Sistema A?",
+      "target": "500000",
+      "acceptedAnswers": ["500000", "500,000", "500.000", "medio millón"],
+      "hints": [
+        "En el peor caso, List.Find() revisa todos los elementos.",
+        "Con 1000 items, cada llamada a Find() hace hasta 1000 comparaciones.",
+        "Si se llama 500 veces por segundo: 500 llamadas × 1000 comparaciones = ?"
+      ],
+      "explanation": "En el peor caso, <code>List.Find()</code> revisa los 1000 items en cada llamada. Con 500 llamadas por segundo: <strong>500 × 1000 = 500,000 comparaciones por segundo</strong>. El Sistema B con <strong>Dictionary</strong> haría solo ~500 accesos hash por segundo (O(1) cada uno). Esta diferencia es crítica en sistemas de juego que requieren alto rendimiento."
+    },
+    {
+      "id": "dddd_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de diálogo:",
+      "code": "public class DialogueSystem\n{\n    private Dictionary<string, DialogueData> dialogues\n        = new Dictionary<string, DialogueData>();\n\n    public void LoadDialogues(DialogueData[] data)\n    {\n        dialogues.Clear();\n        foreach (var d in data)\n            dialogues[d.npcId] = d;\n    }\n\n    public string[] GetLines(string npcId)\n    {\n        return dialogues.TryGetValue(npcId, out var d)\n            ? d.lines\n            : new string[0];\n    }\n}",
+      "question": "¿Qué campo de `DialogueData` se usa como **key** del Dictionary en este sistema y qué tipo de objeto es el **value**?",
+      "target": "npcId es la key y DialogueData es el value",
+      "acceptedAnswers": [
+        "npcId es la key y DialogueData es el value",
+        "key: npcId, value: DialogueData",
+        "npcId como key, DialogueData como value",
+        "la key es npcId y el value es DialogueData"
+      ],
+      "hints": [
+        "Observa la asignación: dialogues[d.npcId] = d",
+        "Lo que va entre corchetes es la key; lo que se asigna es el value.",
+        "d es de tipo DialogueData, y d.npcId es el campo que se usa como clave."
+      ],
+      "explanation": "En <code>dialogues[d.npcId] = d</code>: <code><strong>d.npcId</strong></code> es la <strong>key</strong> (el identificador del NPC, tipo string) y <code><strong>d</strong></code> (el objeto <code>DialogueData</code> completo) es el <strong>value</strong>. Este patrón es el estándar para <em>dialogue systems</em> Data Driven en Unity."
+    },
+    {
+      "id": "dddd_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración del **Dictionary** que mapea IDs de items (string) a sus datos (ItemData):",
+      "codeTemplate": "Dictionary<__________, __________> itemDB = new Dictionary<string, ItemData>();",
+      "expectedAnswer": "string, ItemData",
+      "alternateAnswers": ["string,ItemData"],
+      "placeholder": "Escribe los tipos key y value separados por coma...",
+      "hints": [
+        "El primer tipo genérico es el tipo de la key (los IDs son strings).",
+        "El segundo tipo genérico es el tipo del value (los datos de cada item).",
+        "Dictionary<tipoClave, tipoValor>"
+      ],
+      "explanation": "<code>Dictionary&lt;<strong>string, ItemData</strong>&gt;</code>: la <strong>key</strong> es <code>string</code> (el ID del ítem como <code>\"sword_iron\"</code>) y el <strong>value</strong> es <code>ItemData</code> (el objeto con todos los datos del ítem). Este patrón es la base de cualquier <em>item database</em> Data Driven en Unity."
+    },
+    {
+      "id": "dddd_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el acceso seguro al **Dictionary** para obtener el `EnemyData` con ID `\"goblin\"` sin lanzar excepción:",
+      "codeTemplate": "EnemyData data;\nif (registry.__________(\"goblin\", out data))\n{\n    SpawnEnemy(data);\n}",
+      "expectedAnswer": "TryGetValue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método seguro del Dictionary...",
+      "hints": [
+        "El método seguro de Dictionary intenta obtener el valor y devuelve bool.",
+        "Empieza con 'Try' — indica que 'intenta' la operación.",
+        "Se llama TryGetValue y recibe la key y una variable out."
+      ],
+      "explanation": "<code>registry.<strong>TryGetValue</strong>(\"goblin\", out data)</code> es el acceso seguro: devuelve <code>true</code> y asigna el <strong>value</strong> a <code>data</code> si la clave existe, o devuelve <code>false</code> sin excepción si no existe. Siempre preferir <code>TryGetValue</code> sobre el acceso directo <code>[]</code> en <strong>runtime</strong>."
+    },
+    {
+      "id": "dddd_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el bucle que puebla el **Dictionary** `itemDB` usando `item.id` como **key**:",
+      "codeTemplate": "foreach (ItemData item in loadedItems)\n{\n    itemDB[__________] = item;\n}",
+      "expectedAnswer": "item.id",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la expresión que se usa como key...",
+      "hints": [
+        "La key debe ser un valor único que identifique al item.",
+        "Estamos iterando sobre objetos ItemData; cada uno tiene un campo 'id'.",
+        "Accede al campo id del objeto actual con la notación punto."
+      ],
+      "explanation": "<code>itemDB[<strong>item.id</strong>] = item</code> usa el campo <code>id</code> de cada <code>ItemData</code> como <strong>key</strong> del Dictionary. Después de este bucle, puedes obtener cualquier ítem instantáneamente con <code>itemDB[\"sword_iron\"]</code> en O(1). Este es el patrón estándar para poblar una <em>lookup table</em> desde un array cargado de <strong>JSON</strong>."
+    },
+    {
+      "id": "dddd_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método `GetItem(string id)` que busca de forma segura en el `Dictionary<string, ItemData> itemDB` y devuelve `null` si no se encuentra:",
+      "codeTemplate": null,
+      "expectedAnswer": "public ItemData GetItem(string id)\n{\n    itemDB.TryGetValue(id, out ItemData data);\n    return data;\n}",
+      "alternateAnswers": [
+        "public ItemData GetItem(string id)\n{\n    if (itemDB.TryGetValue(id, out ItemData data))\n        return data;\n    return null;\n}",
+        "public ItemData GetItem(string id) => itemDB.TryGetValue(id, out var data) ? data : null;"
+      ],
+      "placeholder": "Escribe el método completo con TryGetValue...",
+      "hints": [
+        "El método devuelve ItemData (o null si no existe).",
+        "Usa TryGetValue para acceso seguro al Dictionary.",
+        "Si TryGetValue devuelve false, la variable out queda en null (el default de un reference type)."
+      ],
+      "explanation": "<code>TryGetValue(id, out ItemData data)</code> asigna <code>null</code> a <code>data</code> si la clave no existe (es el valor por defecto de un tipo de referencia). Al devolver <code>data</code> directamente, el método retorna el ítem encontrado o <code>null</code> de forma segura, sin <code>KeyNotFoundException</code> en <strong>runtime</strong>."
+    },
+    {
+      "id": "dddd_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase `EnemyRegistry` con un `Dictionary<string, EnemyData>` llamado `registry`, y un método `LoadFrom(EnemyData[] enemies)` que pueble el diccionario usando `id` como key:",
+      "codeTemplate": null,
+      "expectedAnswer": "public class EnemyRegistry\n{\n    private Dictionary<string, EnemyData> registry = new Dictionary<string, EnemyData>();\n\n    public void LoadFrom(EnemyData[] enemies)\n    {\n        foreach (EnemyData enemy in enemies)\n        {\n            registry[enemy.id] = enemy;\n        }\n    }\n}",
+      "alternateAnswers": [
+        "public class EnemyRegistry\n{\n    Dictionary<string, EnemyData> registry = new Dictionary<string, EnemyData>();\n    public void LoadFrom(EnemyData[] enemies)\n    {\n        foreach (var e in enemies) registry[e.id] = e;\n    }\n}"
+      ],
+      "placeholder": "Escribe la clase completa con el Dictionary y el método LoadFrom...",
+      "hints": [
+        "La clase tiene un campo privado Dictionary<string, EnemyData>.",
+        "El método LoadFrom recorre el array de EnemyData con foreach.",
+        "En cada iteración, añade al diccionario: registry[enemy.id] = enemy."
+      ],
+      "explanation": "La clase <code><strong>EnemyRegistry</strong></code> encapsula el <strong>Dictionary</strong> y el método <code>LoadFrom()</code> que lo puebla. Este patrón es una <em>enemy registry</em> Data Driven: se carga el <strong>JSON</strong> externamente, se deserializa en un array, y luego <code>LoadFrom()</code> construye la <em>lookup table</em> para acceso O(1)."
+    },
+    {
+      "id": "dddd_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el código completo del método `Awake()` de un MonoBehaviour que: 1) carga `\"items.json\"` desde Resources, 2) lo deserializa en `ItemDatabase db`, y 3) puebla `Dictionary<string, ItemData> itemDB` con `item.id` como key:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Awake()\n{\n    TextAsset file = Resources.Load<TextAsset>(\"items\");\n    ItemDatabase db = JsonUtility.FromJson<ItemDatabase>(file.text);\n    foreach (ItemData item in db.items)\n    {\n        itemDB[item.id] = item;\n    }\n}",
+      "alternateAnswers": [
+        "void Awake()\n{\n    TextAsset file = Resources.Load<TextAsset>(\"items\");\n    ItemDatabase db = JsonUtility.FromJson<ItemDatabase>(file.text);\n    foreach (var item in db.items) itemDB[item.id] = item;\n}"
+      ],
+      "placeholder": "Escribe el método Awake() completo con carga, parse y populate...",
+      "hints": [
+        "Paso 1: Resources.Load<TextAsset>(\"items\") para cargar el archivo.",
+        "Paso 2: JsonUtility.FromJson<ItemDatabase>(file.text) para deserializar.",
+        "Paso 3: foreach sobre db.items, asignando itemDB[item.id] = item en cada iteración."
+      ],
+      "explanation": "El método <code>Awake()</code> completo integra los tres pasos del patrón Data Driven con Dictionary: (1) <strong>cargar</strong> el <strong>JSON</strong> desde <strong>Resources</strong>, (2) <strong>parsear</strong> con <code>JsonUtility</code> en un wrapper con array, (3) <strong>poblar</strong> el <strong>Dictionary</strong> en un <code>foreach</code>. Usar <code>Awake()</code> garantiza que la <em>item database</em> esté lista antes que cualquier <code>Start()</code>."
+    }
+  ]
+}

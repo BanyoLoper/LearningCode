@@ -1,0 +1,372 @@
+{
+  "id": "diagramas_flujo",
+  "title": "Diagramas de Flujo",
+  "icon": "🔷",
+  "color": "#546E7A",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Diagrama de Flujo?",
+        "type": "definition",
+        "content": "Un <strong>diagrama de flujo</strong> (en inglés <strong>flowchart</strong>) es una representación gráfica de un algoritmo o proceso. Usa símbolos estandarizados conectados por flechas para mostrar el flujo de ejecución. A diferencia del pseudocódigo (que es textual), el <strong>flowchart</strong> es visual y permite ver de un vistazo la estructura del algoritmo: sus decisiones, bucles y secuencias de pasos."
+      },
+      {
+        "id": "doc-2",
+        "title": "Símbolos Estándar del Flowchart",
+        "type": "code",
+        "content": "// SÍMBOLOS PRINCIPALES:\n\n[ÓVALO]         → Inicio / Fin del programa\n                  (terminal: START o END)\n\n[RECTÁNGULO]    → Proceso / Instrucción\n                  (assignment, cálculo, llamada a función)\n                  Ejemplo: vida = vida - dano\n\n[ROMBO]         → Decisión / Condición\n                  (tiene DOS salidas: SÍ y NO)\n                  Ejemplo: ¿vida <= 0?\n\n[PARALELOGRAMO] → Entrada / Salida de datos\n                  (input/output: leer teclado, mostrar en pantalla)\n                  Ejemplo: Mostrar \"Game Over\"\n\n[FLECHA]        → Flujo de control (indica dirección)\n                  Las flechas conectan todos los símbolos."
+      },
+      {
+        "id": "doc-3",
+        "title": "Ejemplo: Flowchart del Sistema de Vida",
+        "type": "code",
+        "content": "// FLOWCHART - Sistema de daño en un videojuego:\n\n(INICIO)\n    ↓\n[Recibir dano]\n    ↓\n[vida = vida - dano]\n    ↓\n◇ ¿vida <= 0?\n    ↓ SÍ          ↓ NO\n[MostrarGameOver]  [ActualizarUI]\n    ↓                  ↓\n(FIN)              (INICIO)\n\n// El rombo representa la DECISIÓN.\n// Tiene exactamente DOS salidas: SÍ y NO.\n// Las flechas muestran el flujo de ejecución."
+      },
+      {
+        "id": "doc-4",
+        "title": "Representación de Bucles en Flowcharts",
+        "type": "code",
+        "content": "// BUCLE WHILE en flowchart:\n\n(INICIO)\n    ↓\n◇ ¿enemigo.estaVivo?\n    ↓ SÍ\n[enemigo.Atacar()]\n    ↓\n[Actualizar estado]\n    ↓\n└──→ (vuelve al rombo)\n    ↓ NO\n(FIN)\n\n// Un bucle SIEMPRE tiene una flecha que regresa\n// hacia atrás al rombo de decisión.\n// Si la condición es falsa, el flujo sale del bucle."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de los Diagramas de Flujo",
+        "type": "list",
+        "items": [
+          "El ÓVALO marca el inicio y el fin: todo flowchart empieza y termina con un óvalo.",
+          "El ROMBO es la DECISIÓN: siempre tiene exactamente dos salidas (Sí/No, Verdadero/Falso).",
+          "El RECTÁNGULO es un PROCESO: cualquier instrucción o cálculo.",
+          "El PARALELOGRAMO es ENTRADA/SALIDA: leer datos del usuario o mostrar resultados.",
+          "Las FLECHAS muestran el flujo de control y la dirección de ejecución.",
+          "Un bucle se representa con una flecha que regresa a un rombo de decisión previo."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "df_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué símbolo se usa en un **flowchart** para representar el inicio y el fin del programa?",
+      "options": [
+        "Óvalo (elipse)",
+        "Rectángulo",
+        "Rombo",
+        "Paralelogramo",
+        "Flecha"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>óvalo</strong> (o elipse) es el símbolo terminal del <strong>flowchart</strong>: marca el punto de <strong>inicio</strong> y el punto de <strong>fin</strong> del algoritmo. Siempre contiene las palabras START/INICIO o END/FIN."
+    },
+    {
+      "id": "df_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un **flowchart**, ¿qué símbolo representa una decisión o condición (como `¿vida <= 0?`)?",
+      "options": [
+        "Rombo (diamante)",
+        "Rectángulo",
+        "Óvalo",
+        "Paralelogramo",
+        "Círculo"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>rombo</strong> (diamante) representa una <strong>decisión</strong> en el <strong>flowchart</strong>. Tiene exactamente <strong>dos salidas</strong>: una para cuando la condición es verdadera (Sí) y otra para cuando es falsa (No). Equivale al <code>if</code> en código."
+    },
+    {
+      "id": "df_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué símbolo del **flowchart** representa un proceso o instrucción, como `vida = vida - dano`?",
+      "options": [
+        "Rectángulo",
+        "Rombo",
+        "Óvalo",
+        "Paralelogramo",
+        "Flecha doble"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>rectángulo</strong> es el símbolo de <strong>proceso</strong> en el <strong>flowchart</strong>. Representa cualquier instrucción ejecutable: asignaciones, cálculos, llamadas a funciones. No implica una decisión ni entrada/salida de datos."
+    },
+    {
+      "id": "df_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuántas salidas tiene el rombo de decisión en un **flowchart** estándar?",
+      "options": [
+        "Exactamente 2 (Sí y No)",
+        "Una sola salida hacia abajo",
+        "Tres: Sí, No y Tal vez",
+        "Puede tener cualquier número de salidas",
+        "Ninguna, solo recibe entradas"
+      ],
+      "correctIndex": 0,
+      "explanation": "El rombo de decisión en un <strong>flowchart</strong> estándar siempre tiene <strong>exactamente 2 salidas</strong>: una para la condición verdadera (Sí/True) y otra para la condición falsa (No/False). Esta es su característica definitoria."
+    },
+    {
+      "id": "df_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Dado este fragmento de código de Unity, ¿cuántos rombos de decisión tendría su **flowchart**?\n```csharp\nvoid Update()\n{\n    if (Input.GetKeyDown(KeyCode.Space))\n    {\n        if (isGrounded)\n            Jump();\n    }\n}\n```",
+      "options": [
+        "2 rombos: uno para GetKeyDown y otro para isGrounded",
+        "1 rombo: solo para la condición principal",
+        "3 rombos: uno por cada línea de código",
+        "0 rombos: el flowchart no usa rombos para código simple",
+        "4 rombos: uno por cada condición posible del juego"
+      ],
+      "correctIndex": 0,
+      "explanation": "Hay <strong>2 sentencias <code>if</code></strong> anidadas, por lo que el <strong>flowchart</strong> necesita <strong>2 rombos</strong>: el primero para <code>Input.GetKeyDown(KeyCode.Space)</code> y el segundo (dentro del flujo SÍ del primero) para <code>isGrounded</code>."
+    },
+    {
+      "id": "df_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cómo se representa un bucle `while` en un **flowchart**?",
+      "options": [
+        "Un rombo de decisión con una flecha que regresa hacia arriba cuando la condición es verdadera.",
+        "Un rectángulo con una flecha circular dentro del símbolo.",
+        "Dos óvalos conectados: uno de inicio y otro de fin del bucle.",
+        "Un paralelogramo que indica que el proceso se repite.",
+        "Una flecha doble que apunta en dos direcciones opuestas."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un bucle <strong>while</strong> en un <strong>flowchart</strong> se dibuja con un <strong>rombo</strong> (condición), donde la salida Sí va al cuerpo del bucle (rectángulos de proceso) y al final del cuerpo hay una <strong>flecha que regresa</strong> hacia el rombo. La salida No del rombo continúa después del bucle."
+    },
+    {
+      "id": "df_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué símbolo del **flowchart** usarías para representar `Debug.Log(\"Nivel completado\")` en Unity?",
+      "options": [
+        "Paralelogramo, porque es una operación de salida de datos.",
+        "Rectángulo, porque es una instrucción de proceso.",
+        "Rombo, porque implica una decisión sobre qué mostrar.",
+        "Óvalo, porque Debug.Log es el punto final del programa.",
+        "Flecha, porque solo indica que el dato fluye hacia la pantalla."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>paralelogramo</strong> representa operaciones de <strong>entrada/salida</strong> (<strong>input/output</strong>). <code>Debug.Log()</code> es una operación de <strong>salida</strong> (muestra información), por lo que corresponde al paralelogramo, no al rectángulo (que es para procesos internos sin I/O)."
+    },
+    {
+      "id": "df_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Lee este **flowchart** de texto y determina qué hace:\n```\n(INICIO)\n    ↓\n[puntos = 0, i = 0]\n    ↓\n◇ ¿i < enemigos.Length?\n    ↓ SÍ\n[puntos = puntos + enemigos[i].valor]\n    ↓\n[i = i + 1]\n    ↓\n└──→ (vuelve al rombo)\n    ↓ NO\n[Mostrar puntos]\n    ↓\n(FIN)\n```",
+      "options": [
+        "Suma los valores de todos los enemigos en el arreglo y muestra el total.",
+        "Cuenta cuántos enemigos hay en el arreglo y los muestra.",
+        "Elimina a todos los enemigos del arreglo uno por uno.",
+        "Busca al enemigo con el mayor valor en el arreglo.",
+        "Mueve a cada enemigo hacia el jugador en secuencia."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>flowchart</strong> implementa un <strong>bucle for</strong> que recorre todos los elementos del arreglo <code>enemigos</code> y acumula sus valores en <code>puntos</code>. Al terminar el bucle (cuando <code>i &gt;= enemigos.Length</code>), muestra el total. Es el algoritmo de <strong>suma de arreglo</strong>."
+    },
+    {
+      "id": "df_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este fragmento de flowchart:",
+      "code": "(INICIO)\n    ↓\n[vida = 100]\n    ↓\n◇ ¿presionaAtaque?\n    ↓ SÍ          ↓ NO\n[RealizarAtaque()]  |\n    ↓               |\n    └───────────────┘\n    ↓\n[ActualizarUI()]\n    ↓\n(FIN)",
+      "question": "¿Qué símbolo está representado por el elemento marcado con `◇`?",
+      "target": "rombo",
+      "acceptedAnswers": ["rombo", "diamante", "diamond", "decisión", "decision", "rombo de decisión"],
+      "hints": [
+        "El símbolo ◇ tiene forma de cuatro lados iguales orientado como un diamante.",
+        "Este símbolo representa una pregunta o bifurcación en el flujo.",
+        "Tiene dos salidas: una para Sí y otra para No."
+      ],
+      "explanation": "El símbolo ◇ es el <strong>rombo</strong> (diamante) de <strong>decisión</strong>. En este flowchart representa la condición <code>¿presionaAtaque?</code>. Sus dos salidas determinan si se ejecuta <code>RealizarAtaque()</code> (Sí) o se salta directamente a <code>ActualizarUI()</code> (No)."
+    },
+    {
+      "id": "df_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este flowchart del sistema de patrulla de un enemigo:",
+      "code": "(INICIO)\n    ↓\n◇ ¿jugadorDetectado?\n    ↓ SÍ          ↓ NO\n[Perseguir()]   [Patrullar()]\n    ↓               ↓\n    └───────────────┘\n         ↓\n◇ ¿volver a verificar?\n         ↓ SÍ\n    └──→ (vuelve al primer rombo)\n         ↓ NO\n       (FIN)",
+      "question": "¿Cuántos rombos de decisión contiene este flowchart?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos"],
+      "hints": [
+        "Cuenta los símbolos ◇ en el diagrama.",
+        "El primero verifica si el jugador fue detectado.",
+        "El segundo verifica si el ciclo debe repetirse."
+      ],
+      "explanation": "El flowchart contiene <strong>2 rombos</strong>: el primero para <code>¿jugadorDetectado?</code> (decide entre Perseguir o Patrullar) y el segundo para <code>¿volver a verificar?</code> (controla si el bucle principal se repite). Cada rombo tiene exactamente dos salidas."
+    },
+    {
+      "id": "df_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de C# y su flowchart correspondiente:",
+      "code": "// CÓDIGO C#:\nwhile (vida > 0)\n{\n    vida -= danoRecibido;\n}\nMostrarGameOver();\n\n// FLOWCHART:\n// (INICIO)\n//     ↓\n// ◇ ¿vida > 0?\n//     ↓ SÍ\n// [vida = vida - danoRecibido]\n//     ↓\n// └──→ (vuelve al rombo)\n//     ↓ NO\n// [Mostrar GameOver]\n//     ↓\n// (FIN)",
+      "question": "¿Qué tipo de símbolo representa `vida = vida - danoRecibido` en el flowchart?",
+      "target": "rectángulo",
+      "acceptedAnswers": ["rectángulo", "rectangulo", "rectangle", "proceso", "process", "bloque de proceso"],
+      "hints": [
+        "Es una instrucción de asignación, no una decisión ni entrada/salida.",
+        "Las instrucciones de cálculo y asignación usan un símbolo de cuatro lados con ángulos rectos.",
+        "No es un rombo (decisión) ni un paralelogramo (I/O)."
+      ],
+      "explanation": "<code>vida = vida - danoRecibido</code> es una instrucción de <strong>proceso</strong> (asignación y cálculo), por lo que en el flowchart se representa con un <strong>rectángulo</strong>. Los rectángulos contienen cualquier operación interna: cálculos, asignaciones y llamadas a funciones que no son entrada/salida."
+    },
+    {
+      "id": "df_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este flowchart del sistema de puntuación:",
+      "code": "(INICIO)\n    ↓\n[score = 0]\n    ↓\n◇ ¿enemigo derrotado?\n    ↓ SÍ          ↓ NO\n[score += 100]     |\n    ↓               |\n    └───────────────┘\n         ↓\n[Mostrar score en pantalla]\n         ↓\n       (FIN)",
+      "question": "¿Qué símbolo debería usarse para 'Mostrar score en pantalla' en un flowchart estándar?",
+      "target": "paralelogramo",
+      "acceptedAnswers": ["paralelogramo", "parallelogram", "entrada/salida", "input/output", "I/O"],
+      "hints": [
+        "Mostrar algo en pantalla es una operación de salida de datos.",
+        "Las operaciones de entrada y salida usan un símbolo de cuatro lados no rectangular.",
+        "El símbolo está inclinado, como un rectángulo torcido."
+      ],
+      "explanation": "<code>Mostrar score en pantalla</code> es una operación de <strong>salida</strong> (<strong>output</strong>), por lo que corresponde al <strong>paralelogramo</strong>. Este símbolo se usa siempre que el algoritmo muestra información al usuario o recibe datos de entrada (teclado, sensores, etc.)."
+    },
+    {
+      "id": "df_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee este flowchart del sistema de IA de un enemigo:",
+      "code": "(INICIO)\n    ↓\n◇ ¿distancia < 5?\n    ↓ SÍ          ↓ NO\n[Atacar()]     ◇ ¿distancia < 15?\n    ↓              ↓ SÍ      ↓ NO\n    |           [Perseguir()] [Patrullar()]\n    |              ↓              ↓\n    └──────────────┴──────────────┘\n                   ↓\n                 (FIN)",
+      "question": "¿Cuántos caminos posibles de ejecución existen desde INICIO hasta FIN en este flowchart?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres"],
+      "hints": [
+        "Traza todos los caminos posibles siguiendo las flechas.",
+        "El primer rombo tiene 2 salidas, y la salida NO lleva a otro rombo con 2 salidas.",
+        "Cuenta los destinos finales distintos: Atacar, Perseguir y Patrullar."
+      ],
+      "explanation": "Hay <strong>3 caminos posibles</strong>: (1) distancia &lt; 5 → Atacar; (2) distancia &gt;= 5 Y distancia &lt; 15 → Perseguir; (3) distancia &gt;= 15 → Patrullar. El primer rombo genera 2 ramas y la segunda rama genera 2 más, dando 1+2 = 3 caminos totales hasta FIN."
+    },
+    {
+      "id": "df_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este flowchart con un bucle:",
+      "code": "(INICIO)\n    ↓\n[i = 0, suma = 0]\n    ↓\n◇ ¿i < 5?\n    ↓ SÍ\n[suma = suma + i]\n    ↓\n[i = i + 1]\n    ↓\n└──→ (vuelve al rombo ◇)\n    ↓ NO\n[Mostrar suma]\n    ↓\n(FIN)",
+      "question": "¿Cuál es el valor que se muestra en `suma` cuando el flowchart llega a FIN?",
+      "target": "10",
+      "acceptedAnswers": ["10", "diez"],
+      "hints": [
+        "El bucle ejecuta suma = suma + i para i = 0, 1, 2, 3 y 4.",
+        "Calcula: 0 + 1 + 2 + 3 + 4.",
+        "Suma los primeros 5 números naturales empezando desde 0."
+      ],
+      "explanation": "El bucle ejecuta 5 iteraciones (i = 0, 1, 2, 3, 4): <code>suma = 0+0+1+2+3+4 = <strong>10</strong></code>. Cuando i=5 la condición <code>5 &lt; 5</code> es falsa, el bucle termina y se muestra <code>suma = 10</code>."
+    },
+    {
+      "id": "df_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el símbolo correcto para cada elemento del flowchart:\n- `[INICIO]` → usa símbolo: _____\n- `[vida = vida - 10]` → usa símbolo: _____\n\n¿Qué símbolo corresponde a INICIO?",
+      "codeTemplate": "El símbolo de INICIO/FIN en un flowchart es el __________.",
+      "expectedAnswer": "óvalo",
+      "alternateAnswers": ["ovalo", "elipse", "oval", "terminal"],
+      "placeholder": "Escribe el nombre del símbolo...",
+      "hints": [
+        "Es una figura redondeada, sin esquinas.",
+        "Se usa solo al principio y al final del diagrama.",
+        "Tiene forma de huevo o de pelota achatada."
+      ],
+      "explanation": "El símbolo de inicio y fin en un <strong>flowchart</strong> es el <strong>óvalo</strong> (elipse o terminal). Siempre aparece al inicio del diagrama con la palabra \"INICIO\" o \"START\" y al final con \"FIN\" o \"END\"."
+    },
+    {
+      "id": "df_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa indicando qué símbolo del flowchart se usa para el paso `¿jugador.estaVivo?`:",
+      "codeTemplate": "El paso '¿jugador.estaVivo?' usa un __________ porque representa una decisión.",
+      "expectedAnswer": "rombo",
+      "alternateAnswers": ["diamante", "diamond", "rombo de decisión"],
+      "placeholder": "Escribe el nombre del símbolo...",
+      "hints": [
+        "Las preguntas y condiciones usan un símbolo con 4 vértices puntiagudos.",
+        "Tiene forma de diamante o de cuadrado girado 45 grados.",
+        "Siempre tiene dos salidas: Sí y No."
+      ],
+      "explanation": "La pregunta <code>¿jugador.estaVivo?</code> es una <strong>decisión</strong>, por lo que usa un <strong>rombo</strong>. El rombo es el único símbolo del flowchart con dos salidas, representando el <code>if</code> o la condición del <code>while</code>."
+    },
+    {
+      "id": "df_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Dibuja (en texto) el flowchart del siguiente código de Unity:\n```csharp\nvoid RecibirDano(int dano)\n{\n    vida -= dano;\n    if (vida <= 0)\n        Morir();\n}\n```\nUsa la notación: (ÓVALO), [RECTÁNGULO], ◇ ROMBO, flechas →",
+      "codeTemplate": null,
+      "expectedAnswer": "(INICIO)\n    ↓\n[vida = vida - dano]\n    ↓\n◇ ¿vida <= 0?\n    ↓ SÍ          ↓ NO\n[Morir()]          |\n    ↓               |\n    └───────────────┘\n          ↓\n        (FIN)",
+      "alternateAnswers": [
+        "(INICIO)\n↓\n[vida -= dano]\n↓\n◇ vida <= 0?\nSÍ → [Morir()] → (FIN)\nNO → (FIN)"
+      ],
+      "placeholder": "Dibuja el flowchart en texto...",
+      "hints": [
+        "Comienza con (INICIO) y termina con (FIN).",
+        "La resta de vida es un proceso: usa [rectángulo].",
+        "El if es una decisión: usa ◇ rombo con dos salidas Sí y No."
+      ],
+      "explanation": "El flowchart debe tener: <strong>(INICIO)</strong> → <strong>[vida = vida - dano]</strong> (rectángulo, proceso) → <strong>◇ ¿vida &lt;= 0?</strong> (rombo, decisión) → Si SÍ: <strong>[Morir()]</strong> (rectángulo) → <strong>(FIN)</strong>. Si NO: directo a <strong>(FIN)</strong>. Los dos caminos convergen antes del fin."
+    },
+    {
+      "id": "df_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Dado este flowchart de texto, completa el código C# equivalente:\n```\n(INICIO)\n    ↓\n◇ ¿municion > 0?\n    ↓ SÍ          ↓ NO\n[Disparar()]   [RecargarArma()]\n    ↓               ↓\n    └───────────────┘\n          ↓\n        (FIN)\n```",
+      "codeTemplate": "__________ (municion > 0)\n    Disparar();\nelse\n    RecargarArma();",
+      "expectedAnswer": "if",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave de C#...",
+      "hints": [
+        "El rombo de decisión se traduce a una estructura condicional en C#.",
+        "La estructura tiene dos caminos: SÍ y NO, que corresponden a if y else.",
+        "Es la palabra clave condicional más básica de C#."
+      ],
+      "explanation": "El <strong>rombo de decisión</strong> con dos salidas (SÍ/NO) se traduce a <strong><code>if/else</code></strong> en C#. La salida SÍ es el bloque <code>if</code> y la salida NO es el bloque <code>else</code>."
+    },
+    {
+      "id": "df_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "En el siguiente flowchart, ¿qué símbolo falta en el paso marcado con `?`?\n```\n(INICIO)\n    ↓\n[i = 0]\n    ↓\n? ¿i < waves.Length?\n    ↓ SÍ\n[SpawnWave(i)]\n    ↓\n[i++]\n    ↓\n└──→ (vuelve)\n    ↓ NO\n(FIN)\n```",
+      "codeTemplate": "El símbolo que falta es el __________ porque es una condición de bucle.",
+      "expectedAnswer": "rombo",
+      "alternateAnswers": ["diamante", "diamond", "decisión"],
+      "placeholder": "Nombre del símbolo faltante...",
+      "hints": [
+        "El paso contiene una pregunta: ¿i < waves.Length?",
+        "Tiene dos salidas: SÍ (continúa el bucle) y NO (sale del bucle).",
+        "Las preguntas y condiciones siempre usan el mismo símbolo en flowcharts."
+      ],
+      "explanation": "La condición <code>¿i &lt; waves.Length?</code> es una <strong>decisión</strong>, por lo que usa el <strong>rombo</strong>. La flecha que regresa al rombo desde <code>[i++]</code> forma el <strong>bucle</strong>: mientras la condición sea SÍ, el bucle continúa; cuando es NO, el flujo sale hacia (FIN)."
+    },
+    {
+      "id": "df_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el código C# completo que implementa exactamente este flowchart de spawner de oleadas:\n```\n(INICIO)\n    ↓\n[oleada = 1]\n    ↓\n◇ ¿oleada <= 5?\n    ↓ SÍ\n[SpawnEnemigos(oleada)]\n    ↓\n[Esperar(30)]\n    ↓\n[oleada = oleada + 1]\n    ↓\n└──→ (vuelve al rombo)\n    ↓ NO\n[MostrarVictoria()]\n    ↓\n(FIN)\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "int oleada = 1;\nwhile (oleada <= 5)\n{\n    SpawnEnemigos(oleada);\n    Esperar(30);\n    oleada = oleada + 1;\n}\nMostrarVictoria();",
+      "alternateAnswers": [
+        "int oleada = 1;\nwhile (oleada <= 5) {\n    SpawnEnemigos(oleada);\n    Esperar(30);\n    oleada++;\n}\nMostrarVictoria();",
+        "for (int oleada = 1; oleada <= 5; oleada++) { SpawnEnemigos(oleada); Esperar(30); } MostrarVictoria();"
+      ],
+      "placeholder": "Escribe el código C# equivalente...",
+      "hints": [
+        "El rombo con flecha que regresa representa un bucle while en C#.",
+        "La condición del rombo (¿oleada <= 5?) se convierte directamente en la condición del while.",
+        "Los tres rectángulos dentro del bucle son las instrucciones del cuerpo del while, en el mismo orden."
+      ],
+      "explanation": "El <strong>rombo con flecha de retorno</strong> se traduce a un <strong>while</strong>. La condición <code>oleada &lt;= 5</code> va directamente en el while. Los tres rectángulos del cuerpo (<code>SpawnEnemigos</code>, <code>Esperar</code>, <code>oleada++</code>) son las instrucciones del bloque. El rectángulo después del NO del rombo (<code>MostrarVictoria</code>) va después del while."
+    }
+  ]
+}

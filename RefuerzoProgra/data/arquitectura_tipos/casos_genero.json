@@ -1,0 +1,367 @@
+{
+  "id": "casos_genero",
+  "title": "Casos de Uso por Género de Videojuego",
+  "icon": "🎯",
+  "color": "#1A237E",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "FPS — Structs para Hit Detection",
+        "type": "definition",
+        "content": "En un <strong>FPS</strong> (First-Person Shooter), la detección de impactos ocurre decenas de veces por frame. Cada bala o raycast genera un resultado de hit que se crea, usa y descarta en el mismo frame. Este es el caso ideal para un <strong>struct</strong>: pequeño (solo datos del impacto), temporal (vive en el frame), sin identidad propia (no necesitas distinguir 'este hit' de 'aquel hit'). La configuración del arma (daño base, cadencia, alcance) es estable y compartida entre varias instancias — un candidato perfecto para <strong>ScriptableObject</strong>."
+      },
+      {
+        "id": "doc-2",
+        "title": "RPG — POCOs e Inventario",
+        "type": "code",
+        "content": "// RPG: Item como POCO puro (sin MonoBehaviour)\npublic class Item\n{\n    public string id;\n    public string displayName;\n    public int value;\n    public float weight;\n    public ItemType type;\n}\n\n// Inventario como POCO con List<Item>\npublic class Inventory\n{\n    private List<Item> _items = new List<Item>();\n    public int Capacity { get; }\n\n    public bool TryAdd(Item item)\n    {\n        if (_items.Count >= Capacity) return false;\n        _items.Add(item);\n        return true;\n    }\n\n    public bool Remove(Item item) => _items.Remove(item);\n}\n\n// Stats como Dictionary para acceso rápido por nombre de stat\npublic class CharacterStats\n{\n    private Dictionary<string, int> _stats = new Dictionary<string, int>()\n    {\n        { \"strength\", 10 }, { \"dexterity\", 8 }, { \"intelligence\", 12 }\n    };\n\n    public int Get(string stat) =>\n        _stats.TryGetValue(stat, out int val) ? val : 0;\n\n    public void Modify(string stat, int delta)\n    {\n        if (_stats.ContainsKey(stat)) _stats[stat] += delta;\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Puzzle y RTS — Tablero y Comandos",
+        "type": "analogy",
+        "content": "En un juego de <strong>Puzzle</strong>, el tablero es naturalmente un array 2D: <code>int[,] board = new int[rows, cols]</code>. Cada celda almacena un estado (0 = vacío, 1 = bloque, 2 = objetivo). El estado del tablero es un <strong>POCO</strong> puro: no necesita <code>MonoBehaviour</code> para existir ni para computar soluciones. En un <strong>RTS</strong> (Real-Time Strategy), las órdenes a las unidades (mover, atacar, construir) pueden modelarse como <strong>POCOs</strong> inmutables siguiendo el <em>Command Pattern</em>: <code>class MoveCommand { public Unit target; public Vector3 destination; }</code>. Esto permite colas de comandos, historial de acciones y reversión (undo) sin depender del ciclo de vida de Unity.",
+        "type": "analogy"
+      },
+      {
+        "id": "doc-4",
+        "title": "RPG con 200 ítems: SO, JSON o Dictionary",
+        "type": "note",
+        "content": "Para un RPG con 200 tipos de ítems distintos, las opciones son: (1) <strong>ScriptableObject</strong> por ítem — ideal si los diseñadores de juego configuran cada ítem desde el Inspector de Unity; fácil de editar, soporte de hot-reload, pero requiere gestión de assets; (2) <strong>JSON externo</strong> — ideal si los datos vienen de un servidor, se modifican en producción o son creados por herramientas externas; requiere parseo y validación; (3) <strong>Dictionary&lt;string, ItemData&gt;</strong> en memoria — ideal para acceso O(1) en runtime cuando ya cargaste los datos de SO o JSON; siempre lo usarás en runtime aunque el origen sea SO o JSON."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave por Género",
+        "type": "list",
+        "items": [
+          "FPS: HitResult como struct (temporal, pequeño, sin identidad); WeaponConfig como ScriptableObject (compartido, configurable).",
+          "RPG: Item como POCO puro; Inventory como POCO con List<Item>; Stats como Dictionary<string,int> para acceso O(1).",
+          "Puzzle: BoardState como POCO con array 2D (int[,]); lógica de solución en POCOs testeables.",
+          "RTS: Comandos como POCOs inmutables (Command Pattern); cola de comandos como Queue<ICommand>.",
+          "ScriptableObject es ideal para datos configurables por diseñadores en el Inspector de Unity.",
+          "Dictionary en runtime siempre complementa SO o JSON para acceso eficiente por clave."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "cg_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un **FPS**, cada bala genera un resultado de impacto con posición, normal y distancia. ¿Qué tipo de datos es más apropiado para ese resultado?",
+      "options": [
+        "Struct, porque es pequeño, temporal y se crea y descarta en el mismo frame sin presionar al GC.",
+        "Clase, porque el hit result necesita herencia de BulletResult para distintos tipos de armas.",
+        "MonoBehaviour, porque el hit debe adjuntarse al GameObject del enemigo impactado.",
+        "ScriptableObject, porque el hit result se reutiliza entre múltiples disparos.",
+        "Enum, porque el resultado de un hit solo puede ser 'impacto' o 'fallo'."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un resultado de hit en un <strong>FPS</strong> es el caso clásico de <strong>struct</strong>: pequeño (~20 bytes), temporal (se usa en el mismo frame), sin identidad propia y sin herencia. Unity usa exactamente este patrón con <code>RaycastHit</code> que es un <strong>struct</strong>."
+    },
+    {
+      "id": "cg_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un RPG, el diseñador necesita configurar 200 tipos de ítems directamente desde el Inspector de Unity, sin tocar código. ¿Cuál es la herramienta más apropiada?",
+      "options": [
+        "ScriptableObject, porque permite crear assets editables en el Inspector sin necesitar código.",
+        "Dictionary<string, ItemData>, porque permite 200 entradas con acceso O(1) por nombre.",
+        "Struct, porque cada ítem es un valor pequeño y los designers pueden editarlo en CSV.",
+        "MonoBehaviour en un prefab, porque cada ítem necesita estar en la escena para ser configurado.",
+        "JSON en Resources/, porque es el formato más fácil de editar para diseñadores no técnicos."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ScriptableObject</strong> es el estándar de Unity para datos configurables por diseñadores: cada ítem se crea como un asset (<code>ItemData.asset</code>) visible y editable en el Inspector, con soporte de hot-reload y sin necesitar un <strong>GameObject</strong> en escena."
+    },
+    {
+      "id": "cg_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un juego de Puzzle con un tablero de 8x8, ¿qué estructura de datos representa mejor el estado de cada celda?",
+      "options": [
+        "Un array 2D (int[,] board = new int[8, 8]) donde cada entero representa el estado de la celda.",
+        "Una List<List<int>> porque permite agregar filas dinámicamente durante el juego.",
+        "Un Dictionary<Vector2Int, int> para acceso por coordenada con O(1) garantizado.",
+        "Un array de MonoBehaviours porque cada celda necesita un Update() propio.",
+        "Un string de 64 caracteres donde cada carácter representa una celda del tablero."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un tablero de puzzle 8x8 tiene tamaño fijo, acceso por coordenada (fila, columna) y estados simples. El <strong>array 2D</strong> <code>int[8,8]</code> es perfecto: acceso O(1) con <code>board[row, col]</code>, sin overhead de colecciones dinámicas y representación natural de una cuadrícula."
+    },
+    {
+      "id": "cg_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un **FPS** con hit detection por frame, si usaras una clase (reference type) en lugar de un struct para el HitResult, ¿qué problema concreto ocurriría?",
+      "options": [
+        "Cada HitResult se allocaría en el heap y el GC debería limpiarlos periódicamente, causando micro-stutters.",
+        "La clase no podría contener Vector3 porque Vector3 es un struct y no puede estar en una clase.",
+        "El compilador lanzaría error porque Physics.Raycast solo acepta structs como parámetro out.",
+        "La clase causaría stack overflow al ser creada dentro del método Update.",
+        "Unity no puede serializar clases con datos de posición sin el atributo MonoBehaviour."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con una clase (reference type), cada <code>HitResult</code> se allocaría en el <strong>heap</strong>. En un FPS con decenas de disparos por frame, el <strong>GC</strong> debe limpiar estas allocaciones periódicamente. El resultado son micro-stutters visibles en juegos de acción de alto ritmo."
+    },
+    {
+      "id": "cg_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un RPG tiene stats dinámicos (fuerza, destreza, inteligencia, suerte...) que pueden variar según equipamiento. ¿Qué estructura permite acceder a cualquier stat por nombre en O(1)?",
+      "options": [
+        "Dictionary<string, int> donde la clave es el nombre del stat y el valor es su cantidad.",
+        "List<int> donde el índice numérico corresponde a cada stat por convención.",
+        "Array de structs StatEntry[] donde cada struct tiene nombre y valor.",
+        "ScriptableObject con un campo int por cada posible stat predefinido.",
+        "MonoBehaviour con variables públicas individuales para cada stat."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Dictionary&lt;string, int&gt;</strong> permite acceso O(1) por nombre: <code>stats[\"strength\"]</code>. Es ideal para stats dinámicos porque puedes agregar nuevos stats sin modificar la clase. Una <code>List&lt;int&gt;</code> requeriría un enum o índice predefinido; un <code>MonoBehaviour</code> con campos individuales no escala."
+    },
+    {
+      "id": "cg_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un **RTS** con comandos de unidades (mover, atacar, construir), ¿cuál es la ventaja de modelar cada comando como un **POCO** inmutable?",
+      "options": [
+        "Permite colas de comandos, historial, undo/redo y envío por red sin depender del ciclo de vida de Unity.",
+        "Los POCOs inmutables se compilan en IL código más eficiente que las clases mutables.",
+        "Unity optimiza automáticamente los POCOs inmutables con Job System sin configuración adicional.",
+        "Los comandos inmutables pueden ejecutarse en paralelo con multithreading automático.",
+        "Los POCO inmutables permiten heredar de múltiples clases base simultáneamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>POCOs</strong> inmutables como comandos permiten el patrón <em>Command</em>: almacenar comandos en colas (<code>Queue&lt;ICommand&gt;</code>), construir historial de acciones, implementar undo/redo y serializar comandos para enviarlos por red en modo multijugador — todo sin necesitar el ciclo de vida de Unity."
+    },
+    {
+      "id": "cg_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tu RPG tiene 200 tipos de ítems. En runtime, el jugador busca frecuentemente ítems por ID. ¿Cuál es la arquitectura óptima?",
+      "options": [
+        "ScriptableObjects como fuente de datos en el Inspector + Dictionary<string, ItemData> en memoria para búsquedas O(1) en runtime.",
+        "Un MonoBehaviour ItemDatabase con una List<ItemData> que usa LINQ para buscar por ID en cada consulta.",
+        "JSON en Resources/ cargado bajo demanda (lazy load) en cada búsqueda para no usar memoria extra.",
+        "Un array ItemData[] ordenado alfabéticamente con búsqueda binaria O(log n).",
+        "Un ScriptableObject gigante con todos los 200 ítems en una sola lista serializada."
+      ],
+      "correctIndex": 0,
+      "explanation": "La arquitectura óptima combina lo mejor de cada herramienta: los diseñadores configuran ítems como <strong>ScriptableObjects</strong> (visual, hot-reload), y al iniciar el juego se carga un <strong>Dictionary&lt;string, ItemData&gt;</strong> con todos los SOs para búsquedas O(1) en runtime. LINQ sobre <code>List</code> es O(n) por búsqueda — inaceptable para 200 ítems accedidos frecuentemente."
+    },
+    {
+      "id": "cg_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En un juego de Puzzle con resolución de tablero por IA, ¿por qué es ventajoso modelar el `BoardState` como un **POCO** en lugar de leer directamente los GameObjects de la escena?",
+      "options": [
+        "Porque el POCO puede copiarse, simularse y evaluarse en algoritmos de búsqueda (BFS/DFS/A*) sin modificar la escena real.",
+        "Porque los GameObjects no pueden representar estados de celdas vacías sin un collider.",
+        "Porque Unity no permite leer posiciones de GameObjects desde algoritmos de IA en tiempo real.",
+        "Porque los GameObjects usan too much RAM comparados con un POCO de tablero.",
+        "Porque los algoritmos de búsqueda requieren structs y no pueden trabajar con clases."
+      ],
+      "correctIndex": 0,
+      "explanation": "El algoritmo de IA necesita explorar <em>posibles futuros</em> del tablero: copiar el estado, simular movimientos, evaluar resultados. Con un <strong>POCO</strong> <code>BoardState</code>, puedes clonar el tablero con <code>new BoardState(existing)</code> y explorarlo sin tocar la escena. Trabajar con <strong>GameObjects</strong> de la escena sería destructivo e ineficiente."
+    },
+    {
+      "id": "cg_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "question": "¿Qué tipo de asset de Unity permite a los diseñadores de juego crear y configurar datos de ítems (nombre, valor, icono) directamente desde el Project window del editor, sin necesitar un GameObject en escena?",
+      "target": "ScriptableObject",
+      "acceptedAnswers": ["ScriptableObject", "scriptable object", "SO", "Scriptable Object"],
+      "hints": [
+        "Es una clase base de Unity específicamente diseñada para almacenar datos como assets.",
+        "Sus instancias se guardan como archivos .asset en el proyecto.",
+        "Su nombre en inglés describe un 'objeto que puede ser scriptado/programado'."
+      ],
+      "explanation": "Un <strong>ScriptableObject</strong> es un contenedor de datos que vive como asset en el proyecto de Unity (no en la escena). Los diseñadores pueden crear instancias desde el menú contextual del Project y configurar cada ítem visualmente en el Inspector."
+    },
+    {
+      "id": "cg_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de RPG:",
+      "code": "public class Inventory\n{\n    private List<Item> _items = new List<Item>();\n    public int Count => _items.Count;\n    public void Add(Item i) => _items.Add(i);\n    public bool Remove(Item i) => _items.Remove(i);\n}",
+      "question": "¿De qué tipo de C# hereda esta clase Inventory?",
+      "target": "ninguna",
+      "acceptedAnswers": ["ninguna", "ninguno", "no hereda de nada", "nada", "no tiene herencia", "POCO"],
+      "hints": [
+        "Observa la declaración: public class Inventory { ... }",
+        "¿Ves los dos puntos (:) que indican herencia? ¿De qué hereda?",
+        "Si no hay ':', la clase no hereda de ninguna clase explícita — es un POCO."
+      ],
+      "explanation": "<code>Inventory</code> no hereda de <strong>ninguna</strong> clase: es un <strong>POCO</strong> puro. No necesita <code>MonoBehaviour</code>, <code>ScriptableObject</code> ni ninguna clase de Unity para gestionar la lista de ítems. Un <code>MonoBehaviour</code> puede tenerla como campo: <code>private Inventory _inv = new Inventory();</code>"
+    },
+    {
+      "id": "cg_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "question": "En el contexto de un RTS, los comandos que se pueden encolar, deshacer y rehacer (mover unidad, atacar edificio, construir torre) siguen un patrón de diseño clásico. ¿Cómo se llama ese patrón?",
+      "target": "Command Pattern",
+      "acceptedAnswers": ["Command Pattern", "Command", "patrón Command", "patron Command", "patrón de comandos", "Command design pattern"],
+      "hints": [
+        "El patrón encapsula una acción como un objeto, permitiendo parametrizarla, encolarla y deshacerla.",
+        "Su nombre en inglés es el mismo que la acción que encapsula.",
+        "Se llama 'patrón Command' o simplemente 'Command Pattern'."
+      ],
+      "explanation": "El <strong>Command Pattern</strong> (patrón Comando) encapsula cada acción como un objeto POCO: <code>class MoveCommand { public Unit unit; public Vector3 dest; }</code>. Permite encolado (<code>Queue&lt;ICommand&gt;</code>), historial y undo/redo. Es ideal en RTS porque las órdenes de unidades son naturalmente objetos de datos."
+    },
+    {
+      "id": "cg_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de stats de RPG:",
+      "code": "private Dictionary<string, int> _stats = new Dictionary<string, int>()\n{\n    { \"hp\", 100 }, { \"atk\", 25 }, { \"def\", 15 }, { \"spd\", 10 }\n};",
+      "question": "¿Cuál es la complejidad temporal (notación Big O) para obtener el valor del stat 'atk' con `_stats[\"atk\"]`?",
+      "target": "O(1)",
+      "acceptedAnswers": ["O(1)", "O(1) constante", "constante", "tiempo constante"],
+      "hints": [
+        "Los diccionarios en C# usan una tabla hash internamente.",
+        "Una tabla hash accede a cualquier elemento directamente por su clave, sin importar cuántas entradas haya.",
+        "Si el tiempo de acceso no depende del número de elementos, la complejidad es O(?)."
+      ],
+      "explanation": "El acceso por clave en un <strong>Dictionary</strong> es O(1) (tiempo constante) gracias a la tabla hash interna. Esto hace que <code>_stats[\"atk\"]</code> sea igual de rápido con 4 stats que con 400 stats — crucial en un RPG donde los combates acceden a stats constantemente."
+    },
+    {
+      "id": "cg_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este tablero de puzzle:",
+      "code": "public class BoardState\n{\n    public int[,] cells;\n    public int rows;\n    public int cols;\n\n    public BoardState(int rows, int cols)\n    {\n        this.rows = rows;\n        this.cols = cols;\n        cells = new int[rows, cols];\n    }\n}",
+      "question": "¿Cómo se accede al valor de la celda en fila 2, columna 3 de este tablero?",
+      "target": "cells[2, 3]",
+      "acceptedAnswers": ["cells[2, 3]", "cells[2,3]", "board.cells[2, 3]", "cells[2][3]"],
+      "hints": [
+        "El array 2D en C# usa corchetes con dos índices separados por coma.",
+        "La fila va primero, luego la columna.",
+        "La sintaxis es nombreArray[fila, columna]."
+      ],
+      "explanation": "El array 2D en C# usa la sintaxis <code>cells[fila, columna]</code>: <strong><code>cells[2, 3]</code></strong> accede a fila 2, columna 3. Nota que C# usa <code>[fila, col]</code> (no <code>[fila][col]</code> que sería un array jagged). Los índices comienzan en 0."
+    },
+    {
+      "id": "cg_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "question": "En un FPS, la configuración del arma (daño, cadencia, recarga, precisión) se comparte entre todas las instancias del mismo tipo de arma. ¿Qué tipo de Unity permite que múltiples instancias de un script compartan estos datos sin duplicarlos en memoria?",
+      "target": "ScriptableObject",
+      "acceptedAnswers": ["ScriptableObject", "scriptable object", "SO", "Scriptable Object"],
+      "hints": [
+        "Es un asset de Unity: vive en el Project, no en la escena.",
+        "Múltiples MonoBehaviours pueden referenciar el mismo asset — todos leen los mismos datos.",
+        "A diferencia de MonoBehaviour, este tipo no necesita estar adjunto a un GameObject."
+      ],
+      "explanation": "Un <strong>ScriptableObject</strong> <code>WeaponConfig</code> se crea una sola vez como asset. Todas las instancias de arma del mismo tipo (todas las AK-47 en la escena) referencian el mismo SO: comparten datos sin duplicación en memoria. Si cambias el daño en el SO, todas las instancias lo reflejan inmediatamente."
+    },
+    {
+      "id": "cg_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el struct `HitData` para un FPS agregando el campo de posición de impacto de tipo Vector3:",
+      "codeTemplate": "public struct HitData\n{\n    public bool didHit;\n    public float damage;\n    public __________ hitPoint;\n}",
+      "expectedAnswer": "Vector3",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo del campo de posición...",
+      "hints": [
+        "La posición en 3D en Unity se representa con un tipo de 3 componentes (x, y, z).",
+        "Es el mismo tipo que usa transform.position.",
+        "Su nombre es Vector + el número de dimensiones."
+      ],
+      "explanation": "<code>Vector3</code> es el tipo de Unity para posiciones y direcciones en 3D. <code>hitPoint</code> almacena dónde ocurrió el impacto en el espacio 3D. <code>HitData</code> como struct con estos campos (~24 bytes) es eficiente para hit detection por frame."
+    },
+    {
+      "id": "cg_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración del tablero de puzzle 6x6 usando un array 2D:",
+      "codeTemplate": "// Tablero de puzzle 6x6\nint[__________] board = new int[6, 6];",
+      "expectedAnswer": ",",
+      "alternateAnswers": [],
+      "placeholder": "Escribe lo que va dentro de los corchetes de declaración...",
+      "hints": [
+        "Un array 2D en C# se declara con una coma dentro de los corchetes del tipo.",
+        "int[,] indica que es un array bidimensional.",
+        "La coma separa las dos dimensiones: filas y columnas."
+      ],
+      "explanation": "El array 2D en C# se declara con <code>[,]</code>: la coma dentro de los corchetes indica dos dimensiones. <code>new int[6, 6]</code> crea el tablero de 6x6. Acceso con <code>board[fila, col]</code>."
+    },
+    {
+      "id": "cg_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase POCO `MoveCommand` para un RTS con campos `unit` (de tipo Unit) y `destination` (Vector3), que represente un comando de movimiento inmutable (campos readonly).",
+      "codeTemplate": null,
+      "expectedAnswer": "public class MoveCommand { public readonly Unit unit; public readonly Vector3 destination; public MoveCommand(Unit unit, Vector3 destination) { this.unit = unit; this.destination = destination; } }",
+      "alternateAnswers": [
+        "public class MoveCommand\n{\n    public readonly Unit unit;\n    public readonly Vector3 destination;\n    public MoveCommand(Unit unit, Vector3 destination)\n    {\n        this.unit = unit;\n        this.destination = destination;\n    }\n}"
+      ],
+      "placeholder": "Escribe el POCO MoveCommand inmutable completo...",
+      "hints": [
+        "La clase no hereda de MonoBehaviour. Los campos son readonly para inmutabilidad.",
+        "Declara un constructor que reciba unit y destination para inicializar los campos readonly.",
+        "Usa this.unit = unit y this.destination = destination en el constructor."
+      ],
+      "explanation": "<code>MoveCommand</code> como <strong>POCO</strong> inmutable (campos <code>readonly</code>) garantiza que el comando no cambia una vez creado. Esto es esencial para historial y undo/redo: <code>var cmd = new MoveCommand(selectedUnit, targetPos); commandQueue.Enqueue(cmd);</code>"
+    },
+    {
+      "id": "cg_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la inicialización del Dictionary de stats de RPG con los stats iniciales: hp=100, attack=20:",
+      "codeTemplate": "private Dictionary<string, int> _stats = new Dictionary<string, int>()\n{\n    { \"hp\", __________ },\n    { \"attack\", __________ }\n};",
+      "expectedAnswer": "100 }, { \"attack\", 20",
+      "alternateAnswers": ["100}, {\"attack\", 20", "100 }, { \"attack\", 20 "],
+      "placeholder": "Escribe los valores de hp y attack...",
+      "hints": [
+        "Los valores van después de la coma en cada par { clave, valor }.",
+        "hp debe ser 100 y attack debe ser 20.",
+        "Cada entrada del diccionario tiene el formato { \"clave\", valor }."
+      ],
+      "explanation": "El inicializador de <code>Dictionary</code> usa la sintaxis <code>{ { \"clave\", valor }, { \"clave2\", valor2 } }</code>. Con <code>hp = 100</code> y <code>attack = 20</code>, ambos stats son accesibles en O(1): <code>_stats[\"hp\"]</code> retorna 100 instantáneamente."
+    },
+    {
+      "id": "cg_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `LoadItemDatabase()` que toma un array de `ItemData[]` (ScriptableObjects ya cargados) y los carga en un `Dictionary<string, ItemData>` llamado `_itemDb` usando el campo `item.id` como clave.",
+      "codeTemplate": null,
+      "expectedAnswer": "void LoadItemDatabase(ItemData[] items) { _itemDb = new Dictionary<string, ItemData>(); foreach (ItemData item in items) { _itemDb[item.id] = item; } }",
+      "alternateAnswers": [
+        "void LoadItemDatabase(ItemData[] items)\n{\n    _itemDb = new Dictionary<string, ItemData>();\n    foreach (ItemData item in items)\n    {\n        _itemDb[item.id] = item;\n    }\n}",
+        "void LoadItemDatabase(ItemData[] items) { _itemDb = new Dictionary<string, ItemData>(); foreach (var item in items) { _itemDb.Add(item.id, item); } }"
+      ],
+      "placeholder": "Escribe el método LoadItemDatabase completo...",
+      "hints": [
+        "Primero inicializa el Dictionary: _itemDb = new Dictionary<string, ItemData>();",
+        "Usa un foreach para recorrer el array items.",
+        "Para cada item, agrega con _itemDb[item.id] = item; (o _itemDb.Add(item.id, item))."
+      ],
+      "explanation": "Este método construye el <strong>Dictionary</strong> en memoria desde los <strong>ScriptableObjects</strong> cargados. Se llama una sola vez al iniciar el juego. Después, buscar cualquier ítem es O(1): <code>_itemDb[\"sword_001\"]</code> en lugar de O(n) con <code>items.Find(i => i.id == \"sword_001\")</code>."
+    },
+    {
+      "id": "cg_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el método del RTS que procesa todos los comandos pendientes en la cola ejecutando cada uno:",
+      "codeTemplate": "private Queue<ICommand> _commandQueue = new Queue<ICommand>();\n\nvoid ProcessCommands()\n{\n    while (_commandQueue.__________ > 0)\n    {\n        ICommand cmd = _commandQueue.__________();\n        cmd.Execute();\n    }\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad de tamaño de Queue y el método de extracción...",
+      "hints": [
+        "Para saber cuántos comandos hay en la Queue, usa la propiedad Count (igual que List<T>).",
+        "El método para extraer (y eliminar) el primer elemento de una Queue se llama Dequeue.",
+        "Completa primero el Count y luego el método Dequeue en el segundo espacio."
+      ],
+      "explanation": "<code>Queue&lt;T&gt;</code> usa <code>Count</code> para saber cuántos elementos tiene y <code>Dequeue()</code> para extraer el primero (FIFO: First In, First Out). El segundo espacio debe ser <code>Dequeue</code>. Este patrón procesa comandos en orden de llegada, fundamental en RTS para ejecutar órdenes secuencialmente."
+    }
+  ]
+}

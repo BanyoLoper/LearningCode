@@ -1,0 +1,385 @@
+{
+  "id": "lerp_suavizado",
+  "title": "Lerp, Slerp y Suavizado",
+  "icon": "〰️",
+  "color": "#F57C00",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es Lerp?",
+        "type": "definition",
+        "content": "<strong>Lerp</strong> (Linear Interpolation) calcula un valor entre dos puntos según un parámetro <code>t</code> entre 0 y 1. La fórmula es: <strong>resultado = a + (b - a) · t</strong>. Con t=0 devuelve exactamente <code>a</code>; con t=1 devuelve exactamente <code>b</code>; con t=0.5 devuelve el punto medio. En Unity existe para floats (<code>Mathf.Lerp</code>), vectores (<code>Vector3.Lerp</code>) y colores (<code>Color.Lerp</code>)."
+      },
+      {
+        "id": "doc-2",
+        "title": "Lerp, Slerp, MoveTowards y SmoothDamp",
+        "type": "code",
+        "content": "// Lerp: interpolación lineal entre dos vectores\ntransform.position = Vector3.Lerp(inicio, fin, t);\n\n// Slerp: interpolación esférica (ideal para rotaciones y direcciones)\ntransform.rotation = Quaternion.Slerp(rotA, rotB, t);\n\n// MoveTowards: mueve a velocidad constante, no rebasa el destino\ntransform.position = Vector3.MoveTowards(pos, destino, velocidad * Time.deltaTime);\n\n// SmoothDamp: suavizado con efecto ease-out (ideal para cámaras)\nVector3 velocidadActual = Vector3.zero; // debe ser campo de clase\ntransform.position = Vector3.SmoothDamp(transform.position, destino, ref velocidadActual, 0.3f);"
+      },
+      {
+        "id": "doc-3",
+        "title": "¿Es Lerp frame-independent?",
+        "type": "note",
+        "content": "El uso <code>Lerp(a, b, Time.deltaTime * speed)</code> produce un efecto <strong>ease-out</strong> que parece suave, pero <em>no es verdaderamente frame-independent</em>. La velocidad de acercamiento depende de los FPS: en máquinas lentas el objeto se mueve diferente. Para movimiento a velocidad constante usa <strong>MoveTowards</strong>. Para suavizado verdaderamente frame-independent usa <strong>SmoothDamp</strong>. El 'Lerp trick' (<code>Lerp(actual, destino, t * dt)</code>) es ampliamente usado en juegos como aproximación práctica, pero hay que entender su limitación."
+      },
+      {
+        "id": "doc-4",
+        "title": "Slerp para Rotaciones",
+        "type": "code",
+        "content": "// Rotación gradual de un enemigo hacia el jugador\npublic class EnemyAim : MonoBehaviour\n{\n    public Transform jugador;\n    public float velocidadRotacion = 2f;\n\n    void Update()\n    {\n        // Calcular la rotación objetivo mirando al jugador\n        Vector3 dir = jugador.position - transform.position;\n        Quaternion rotObjetivo = Quaternion.LookRotation(dir);\n\n        // Slerp: rotación suave por esfera (no distorsiona)\n        transform.rotation = Quaternion.Slerp(\n            transform.rotation,\n            rotObjetivo,\n            velocidadRotacion * Time.deltaTime\n        );\n    }\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Cuándo usar cada función de suavizado",
+        "type": "list",
+        "items": [
+          "Lerp(a, b, t fijo): para transiciones con t que aumenta de 0 a 1 (fade in/out, animaciones de UI).",
+          "Lerp(actual, destino, speed * deltaTime): efecto ease-out práctico, no perfectamente frame-independent.",
+          "Slerp: para interpolación de rotaciones (Quaternion.Slerp) o direcciones esféricas.",
+          "MoveTowards: para movimiento a velocidad constante que nunca rebasa el destino.",
+          "SmoothDamp: para cámaras y objetos que siguen suavemente con efecto ease-in/ease-out real.",
+          "Mathf.Lerp(0, 10, 0.5f) = 5 — el valor a mitad del camino entre 0 y 10."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ls_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué valor devuelve `Mathf.Lerp(0, 10, 0.5f)`?",
+      "options": [
+        "5",
+        "0",
+        "10",
+        "0.5",
+        "7.5"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Lerp(a, b, t)</strong> devuelve <code>a + (b - a) * t = 0 + (10 - 0) * 0.5 = 5</code>. Con t=0.5, el resultado es exactamente el punto medio entre 0 y 10. Con t=0 devuelve 0 (a), con t=1 devuelve 10 (b)."
+    },
+    {
+      "id": "ls_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál función de Unity se usa para interpolación suave entre dos **rotaciones** (Quaternion)?",
+      "options": [
+        "Quaternion.Slerp",
+        "Quaternion.Lerp",
+        "Vector3.Slerp",
+        "Transform.RotateTo",
+        "Mathf.SmoothDamp"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Quaternion.Slerp</strong> (Spherical Linear Interpolation) es la función correcta para interpolar entre rotaciones. Mientras que <code>Lerp</code> también existe para Quaternions, <code>Slerp</code> mantiene la velocidad de rotación constante y produce resultados más naturales al rotar."
+    },
+    {
+      "id": "ls_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué función mueve un objeto hacia un destino a **velocidad constante** sin pasarlo de largo?",
+      "options": [
+        "Vector3.MoveTowards",
+        "Vector3.Lerp",
+        "Vector3.Slerp",
+        "Vector3.SmoothDamp",
+        "transform.Translate"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Vector3.MoveTowards(actual, destino, paso)</strong> mueve el punto 'actual' hacia 'destino' un máximo de 'paso' unidades, y garantiza que nunca lo rebase. Es ideal para enemigos que se mueven a velocidad constante hacia un objetivo."
+    },
+    {
+      "id": "ls_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué produce el 'Lerp trick': `transform.position = Vector3.Lerp(transform.position, destino, speed * Time.deltaTime)`?",
+      "options": [
+        "Un efecto ease-out: el objeto se acerca rápido al principio y más lento al final.",
+        "Movimiento a velocidad constante hacia el destino.",
+        "El objeto llega exactamente al destino después de 1/speed segundos.",
+        "Un efecto ease-in: el objeto arranca lento y acelera al final.",
+        "El objeto oscila alrededor del destino sin detenerse."
+      ],
+      "correctIndex": 0,
+      "explanation": "El 'Lerp trick' produce un <strong>ease-out</strong>: como siempre se interpola entre la posición actual (que ya se fue acercando) y el destino, la distancia decrece exponencialmente. El objeto se acerca rápido al inicio y cada vez más lento al final, pero matemáticamente nunca llega del todo."
+    },
+    {
+      "id": "ls_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué uso es más adecuada la función **SmoothDamp**?",
+      "options": [
+        "Para que una cámara siga al jugador con suavizado real y amortiguamiento.",
+        "Para que un objeto rote 180° en exactamente 1 segundo.",
+        "Para interpolar colores entre dos valores RGB.",
+        "Para mover un objeto a velocidad constante entre dos waypoints.",
+        "Para calcular el punto medio entre dos posiciones."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>SmoothDamp</strong> calcula un movimiento suavizado con velocidad de acercamiento y amortiguamiento físico real. Es la función ideal para cámaras que siguen al jugador: tiene un parámetro de 'smoothTime' que controla la suavidad, y la variable <code>ref velocity</code> guarda la inercia entre frames."
+    },
+    {
+      "id": "ls_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Es `Vector3.Lerp(a, b, Time.deltaTime * speed)` verdaderamente **frame-independent**?",
+      "options": [
+        "No, la velocidad de acercamiento varía ligeramente con el framerate.",
+        "Sí, Time.deltaTime garantiza que el resultado sea idéntico en todos los framerates.",
+        "Sí, porque Lerp siempre normaliza el tiempo automáticamente.",
+        "No, porque Lerp solo funciona correctamente a 60 FPS.",
+        "Sí, pero solo cuando speed es mayor que 1."
+      ],
+      "correctIndex": 0,
+      "explanation": "El 'Lerp trick' con <code>Time.deltaTime</code> <strong>no es verdaderamente frame-independent</strong> de forma matemática perfecta. El movimiento exponencial que produce varía levemente con el framerate. Para frame-independence real usa <code>Vector3.MoveTowards</code> (velocidad constante) o <code>Vector3.SmoothDamp</code>."
+    },
+    {
+      "id": "ls_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un enemigo debe rotar gradualmente hasta mirar al jugador usando **Slerp**. ¿Cuál es la implementación correcta en `Update`?",
+      "options": [
+        "transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), velocidad * Time.deltaTime);",
+        "transform.rotation = Quaternion.Lerp(rotacionInicial, Quaternion.LookRotation(dir), velocidad);",
+        "transform.eulerAngles = Vector3.Slerp(transform.eulerAngles, dir, velocidad * Time.deltaTime);",
+        "transform.rotation = Quaternion.RotateTowards(Quaternion.LookRotation(dir), transform.rotation, velocidad);",
+        "transform.rotation += Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(dir), velocidad);"
+      ],
+      "correctIndex": 0,
+      "explanation": "La forma correcta es usar <strong>Quaternion.Slerp</strong> entre la rotación actual y la rotación objetivo (<code>Quaternion.LookRotation(dir)</code>), con <code>velocidad * Time.deltaTime</code> como t. Esto produce el 'Lerp trick' de ease-out para rotaciones. El operador <code>+=</code> en Quaternions no tiene sentido."
+    },
+    {
+      "id": "ls_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el valor de `Mathf.Lerp(20, 40, 0.25f)`?",
+      "options": [
+        "25",
+        "30",
+        "35",
+        "10",
+        "20"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Lerp(a, b, t) = a + (b - a) · t = 20 + (40 - 20) · 0.25 = 20 + 20 · 0.25 = 20 + 5 = 25</strong>. Con t=0.25 (un cuarto del camino), el resultado es 25: un cuarto entre 20 y 40."
+    },
+    {
+      "id": "ls_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta expresión:",
+      "code": "float resultado = Mathf.Lerp(0, 100, 1f);",
+      "question": "¿Qué valor tiene `resultado`?",
+      "target": "100",
+      "acceptedAnswers": ["100", "100f", "100.0"],
+      "hints": [
+        "Lerp(a, b, t): con t = 1, el resultado es siempre el segundo valor.",
+        "t = 1 significa que estás en el 100% del camino entre a y b.",
+        "Lerp(0, 100, 1) = 0 + (100 - 0) × 1 = ?"
+      ],
+      "explanation": "<code>Mathf.Lerp(0, 100, 1f)</code> devuelve <strong>100</strong>. Con t=1, siempre se devuelve el valor b. Con t=0 se devuelve a (0). Con t=0.5 se devuelve el punto medio (50). La fórmula: 0 + (100 - 0) × 1 = 100."
+    },
+    {
+      "id": "ls_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este uso de SmoothDamp:",
+      "code": "public class CamaraFollower : MonoBehaviour\n{\n    public Transform objetivo;\n    private Vector3 vel = Vector3.zero;\n\n    void LateUpdate()\n    {\n        transform.position = Vector3.SmoothDamp(\n            transform.position, objetivo.position, ref vel, 0.3f);\n    }\n}",
+      "question": "¿Por qué la variable `vel` debe ser un campo de clase (no una variable local de `LateUpdate`)?",
+      "target": "para que SmoothDamp recuerde la velocidad entre frames",
+      "acceptedAnswers": [
+        "para que SmoothDamp recuerde la velocidad entre frames",
+        "porque SmoothDamp modifica vel y necesita persistir entre llamadas",
+        "para guardar la inercia entre frames",
+        "SmoothDamp necesita leer y escribir vel cada frame",
+        "para mantener la velocidad de frame a frame"
+      ],
+      "hints": [
+        "SmoothDamp recibe vel con la palabra clave ref, lo que significa que puede modificarla.",
+        "Si vel fuera local, se resetearía a Vector3.zero en cada llamada a LateUpdate.",
+        "La 'inercia' del movimiento suave necesita persistir de un frame al siguiente."
+      ],
+      "explanation": "<strong>SmoothDamp</strong> usa el parámetro <code>ref vel</code> para guardar la velocidad actual de movimiento. Si fuera variable local, se resetearía a <code>Vector3.zero</code> en cada frame y el suavizado no funcionaría. Como campo de clase, persiste entre frames y permite el efecto de inercia/amortiguamiento."
+    },
+    {
+      "id": "ls_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta comparación:",
+      "code": "// Opción A\npos = Vector3.MoveTowards(pos, destino, 5f * Time.deltaTime);\n\n// Opción B\npos = Vector3.Lerp(pos, destino, 5f * Time.deltaTime);",
+      "question": "¿Cuál opción garantiza que el objeto llegará exactamente al destino sin pasarlo?",
+      "target": "MoveTowards",
+      "acceptedAnswers": ["MoveTowards", "Opción A", "Vector3.MoveTowards", "A"],
+      "hints": [
+        "Lerp con el 'Lerp trick' nunca llega del todo al destino (se acerca exponencialmente).",
+        "Hay una función diseñada específicamente para moverse a velocidad constante sin rebasar.",
+        "Su nombre incluye la palabra 'Towards'."
+      ],
+      "explanation": "<strong>Vector3.MoveTowards</strong> garantiza que el objeto llega exactamente al destino: cuando la distancia restante es menor que el paso, se posiciona exactamente en el destino. <code>Lerp</code> con el 'Lerp trick' nunca llega completamente (la distancia se reduce a la mitad cada vez, teóricamente infinito)."
+    },
+    {
+      "id": "ls_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de plataforma oscilante:",
+      "code": "float t = Mathf.PingPong(Time.time * speed, 1f);\ntransform.position = Vector3.Lerp(puntoA, puntoB, t);",
+      "question": "¿Qué hace `Mathf.PingPong(Time.time * speed, 1f)` que lo hace útil con Lerp?",
+      "target": "genera un valor que oscila entre 0 y 1 repetidamente",
+      "acceptedAnswers": [
+        "genera un valor que oscila entre 0 y 1 repetidamente",
+        "oscila entre 0 y 1",
+        "va de 0 a 1 y de 1 a 0 en bucle",
+        "crea un t que va y viene entre 0 y 1"
+      ],
+      "hints": [
+        "PingPong significa 'rebote', como una pelota de ping-pong.",
+        "El segundo parámetro (1f) es el límite máximo del valor.",
+        "Genera un t que va de 0 a 1 y luego regresa de 1 a 0, en loop."
+      ],
+      "explanation": "<code>Mathf.PingPong(t, 1f)</code> genera un valor que <strong>oscila entre 0 y 1</strong>: sube de 0 a 1 y luego baja de 1 a 0, en bucle infinito. Combinado con <code>Lerp</code>, hace que la plataforma se mueva continuamente entre los dos puntos, como una plataforma de péndulo."
+    },
+    {
+      "id": "ls_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este fragmento de Slerp para rotación:",
+      "code": "transform.rotation = Quaternion.Slerp(\n    transform.rotation,\n    Quaternion.LookRotation(dir),\n    3f * Time.deltaTime\n);",
+      "question": "¿Cuál es la diferencia entre usar `Quaternion.Slerp` en lugar de `Quaternion.Lerp` para rotar al enemigo?",
+      "target": "Slerp interpola por la ruta esférica más corta, manteniendo la longitud del quaternion constante",
+      "acceptedAnswers": [
+        "Slerp interpola por la ruta esférica más corta",
+        "Slerp mantiene la longitud del quaternion constante",
+        "Slerp produce rotaciones más naturales sin distorsión",
+        "Slerp va por el camino más corto en la esfera de rotaciones",
+        "Slerp es más correcto para rotaciones que Lerp"
+      ],
+      "hints": [
+        "Lerp en quaternions puede producir distorsión de escala en la rotación.",
+        "Slerp = Spherical Linear Interpolation: la 'S' es de esférica.",
+        "Para rotaciones, el camino 'recto' no es una línea sino un arco en la esfera de orientaciones."
+      ],
+      "explanation": "<strong>Quaternion.Slerp</strong> interpola siguiendo el arco más corto en la esfera de orientaciones, manteniendo la longitud del quaternion constante (sin distorsión). <code>Quaternion.Lerp</code> interpola linealmente, lo que puede causar leve distorsión. Para rotaciones, Slerp es siempre la opción correcta."
+    },
+    {
+      "id": "ls_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de fade de audio:",
+      "code": "IEnumerator FadeOut()\n{\n    float t = 0f;\n    while (t < 1f)\n    {\n        t += Time.deltaTime / duracion;\n        audioSource.volume = Mathf.Lerp(1f, 0f, t);\n        yield return null;\n    }\n    audioSource.volume = 0f;\n}",
+      "question": "¿Qué tipo de movimiento produce este uso de Lerp con `t` aumentando linealmente de 0 a 1?",
+      "target": "fade lineal",
+      "acceptedAnswers": ["fade lineal", "transición lineal", "interpolación lineal", "descenso lineal de volumen", "movimiento lineal"],
+      "hints": [
+        "t aumenta de forma uniforme de 0 a 1 (se suma deltaTime/duracion cada frame).",
+        "Lerp con t lineal produce una transición que en inglés se llama 'linear'.",
+        "No hay aceleración ni desaceleración: el cambio es constante."
+      ],
+      "explanation": "Este es un uso 'correcto' de <strong>Lerp</strong>: <code>t</code> aumenta uniformemente de 0 a 1 a lo largo de <code>duracion</code> segundos. El resultado es un <strong>fade lineal</strong>: el volumen baja a ritmo constante. A diferencia del 'Lerp trick', aquí t se gestiona explícitamente y la transición es predecible."
+    },
+    {
+      "id": "ls_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea que mueve suavemente la posición del objeto hacia `destino` usando el 'Lerp trick':",
+      "codeTemplate": "transform.position = Vector3.__________(transform.position, destino, 3f * Time.deltaTime);",
+      "expectedAnswer": "Lerp",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la función de interpolación...",
+      "hints": [
+        "La función de interpolación lineal en Unity para vectores empieza con 'L'.",
+        "Su nombre viene de 'Linear Interpolation'."
+      ],
+      "explanation": "<strong>Vector3.Lerp(a, b, t)</strong> interpola linealmente entre dos posiciones. Con <code>t = 3f * Time.deltaTime</code>, produce el efecto 'ease-out': el objeto se acerca rápido al principio y más lento al llegar al destino."
+    },
+    {
+      "id": "ls_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea que rota suavemente el enemigo hacia el jugador usando interpolación **esférica**:",
+      "codeTemplate": "transform.rotation = Quaternion.__________(transform.rotation, rotObjetivo, 2f * Time.deltaTime);",
+      "expectedAnswer": "Slerp",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la función de interpolación esférica...",
+      "hints": [
+        "Para rotaciones, la interpolación correcta es la esférica.",
+        "La función empieza con 'S' de 'Spherical'."
+      ],
+      "explanation": "<strong>Quaternion.Slerp</strong> realiza una interpolación esférica entre dos rotaciones, produciendo el camino de rotación más corto y natural. Es preferible a <code>Lerp</code> para Quaternions porque no produce distorsión de escala en la rotación."
+    },
+    {
+      "id": "ls_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la línea que mueve el personaje hacia `destino` a velocidad constante de 5 unidades/segundo, garantizando que no lo rebasa:",
+      "codeTemplate": "transform.position = Vector3.__________(transform.position, destino, 5f * Time.deltaTime);",
+      "expectedAnswer": "MoveTowards",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la función que mueve a velocidad constante...",
+      "hints": [
+        "No es Lerp (ese no garantiza velocidad constante ni evitar rebasar).",
+        "La función que 'se mueve hacia' algo a paso constante tiene 'Move' y 'Towards' en el nombre."
+      ],
+      "explanation": "<strong>Vector3.MoveTowards</strong> mueve el punto a velocidad constante de <code>5f * Time.deltaTime</code> unidades por frame, sin rebasar el destino. A diferencia del 'Lerp trick', la velocidad es uniforme y el objeto llega exactamente al destino."
+    },
+    {
+      "id": "ls_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que hace que la cámara (`camTransform`) siga suavemente al jugador (`jugador.position`) usando `SmoothDamp` con un tiempo de suavizado de 0.2 segundos. La variable de velocidad es `camVelocidad` (campo Vector3 de la clase):",
+      "codeTemplate": null,
+      "expectedAnswer": "camTransform.position = Vector3.SmoothDamp(camTransform.position, jugador.position, ref camVelocidad, 0.2f);",
+      "alternateAnswers": [
+        "camTransform.position = Vector3.SmoothDamp(camTransform.position, jugador.position, ref camVelocidad, 0.2f, Mathf.Infinity, Time.deltaTime);"
+      ],
+      "placeholder": "Escribe la línea completa con SmoothDamp...",
+      "hints": [
+        "Vector3.SmoothDamp(actual, destino, ref velocidad, smoothTime)",
+        "La variable de velocidad se pasa con ref para que SmoothDamp la modifique.",
+        "El cuarto parámetro es el tiempo de suavizado en segundos."
+      ],
+      "explanation": "<code>Vector3.SmoothDamp(actual, destino, ref vel, smoothTime)</code> produce un movimiento con suavizado real. La variable <code>ref camVelocidad</code> almacena la velocidad actual (debe ser campo de clase para persistir entre frames). Es la función más adecuada para cámaras que siguen al jugador."
+    },
+    {
+      "id": "ls_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el valor de retorno para predecir qué devuelve esta llamada:",
+      "codeTemplate": "// ¿Qué devuelve esta expresión?\nfloat resultado = Mathf.Lerp(10f, 30f, 0.5f);\n// resultado = __________",
+      "expectedAnswer": "20",
+      "alternateAnswers": ["20f", "20.0f", "20.0"],
+      "placeholder": "Escribe el valor resultante...",
+      "hints": [
+        "Lerp(a, b, t) = a + (b - a) * t",
+        "= 10 + (30 - 10) * 0.5",
+        "= 10 + 20 * 0.5 = ?"
+      ],
+      "explanation": "<strong>Mathf.Lerp(10, 30, 0.5f) = 10 + (30 - 10) × 0.5 = 10 + 10 = 20</strong>. Con t=0.5 siempre se obtiene el punto medio entre los dos valores: el punto medio entre 10 y 30 es 20."
+    },
+    {
+      "id": "ls_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `Update` completo de una plataforma que se mueve suavemente de `puntoA` a `puntoB` y regresa en bucle usando `Lerp` y `Mathf.PingPong`. La velocidad de oscilación es la variable de clase `velocidad`:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Update()\n{\n    float t = Mathf.PingPong(Time.time * velocidad, 1f);\n    transform.position = Vector3.Lerp(puntoA.position, puntoB.position, t);\n}",
+      "alternateAnswers": [
+        "void Update() { float t = Mathf.PingPong(Time.time * velocidad, 1f); transform.position = Vector3.Lerp(puntoA.position, puntoB.position, t); }"
+      ],
+      "placeholder": "Escribe el Update completo con PingPong y Lerp...",
+      "hints": [
+        "Mathf.PingPong(Time.time * velocidad, 1f) genera un t que va de 0 a 1 y regresa.",
+        "Pasa ese t a Vector3.Lerp entre puntoA.position y puntoB.position.",
+        "No necesitas variables adicionales: Time.time ya avanza solo."
+      ],
+      "explanation": "<code>Mathf.PingPong(Time.time * velocidad, 1f)</code> genera un t que oscila entre 0 y 1 automáticamente. Pasado a <code>Vector3.Lerp</code>, la plataforma se mueve suavemente de A a B y de regreso en bucle continuo. Es una solución elegante y sin estado adicional para plataformas oscilantes."
+    }
+  ]
+}

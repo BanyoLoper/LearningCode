@@ -1,0 +1,336 @@
+{
+  "id": "optimizacion_exam",
+  "title": "Examen Final: Complejidad y Optimización",
+  "icon": "🎓",
+  "color": "#FF5722",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "opt_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué complejidad **Big O** tiene acceder a un elemento de un array por su índice, como `enemies[0]`?",
+      "options": [
+        "**O(1)**, porque el acceso por índice es directo y no depende del tamaño del array.",
+        "**O(n)**, porque el runtime debe recorrer el array hasta llegar al índice.",
+        "**O(log n)**, porque usa búsqueda binaria internamente.",
+        "**O(n²)**, porque cada acceso verifica la integridad de toda la estructura.",
+        "Depende del tipo de dato almacenado en el array."
+      ],
+      "correctIndex": 0,
+      "explanation": "El acceso por índice en un array es <strong>O(1)</strong> (tiempo constante). Los arrays almacenan elementos en memoria contigua y la dirección de cualquier índice se calcula directamente: <code>dirección base + índice × tamaño del tipo</code>. No importa si el array tiene 10 o 10 millones de elementos."
+    },
+    {
+      "id": "opt_ex_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este patrón muy común en Unity:",
+      "code": "// MAL: en Update(), cada frame\nvoid Update()\n{\n    Rigidbody rb = GetComponent<Rigidbody>();\n    rb.AddForce(Vector3.up);\n}\n\n// BIEN: cachear en Awake\nRigidbody rb;\nvoid Awake() { rb = GetComponent<Rigidbody>(); }\nvoid Update() { rb.AddForce(Vector3.up); }",
+      "question": "¿En qué método de Unity se recomienda llamar a **`GetComponent`** para cachear referencias a componentes y por qué?",
+      "target": "Awake",
+      "acceptedAnswers": ["Awake", "awake", "en Awake", "Start", "en Start", "Awake o Start"],
+      "hints": [
+        "El método que se ejecuta una sola vez al inicializar el objeto, antes que Start.",
+        "Es el lugar correcto para inicializar referencias internas del propio objeto.",
+        "Llamar GetComponent en Update lo ejecuta 60 veces por segundo innecesariamente."
+      ],
+      "explanation": "Se recomienda llamar a <strong>GetComponent</strong> en <strong>Awake()</strong> (o <code>Start()</code>) y guardar la referencia en un campo privado. Llamarlo en <code>Update()</code> genera una búsqueda costosa cada frame (60+ veces por segundo). Cachear la referencia una sola vez elimina ese costo repetido."
+    },
+    {
+      "id": "opt_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el resultado de la operación **bitwise AND** `13 & 10` en C#?",
+      "options": [
+        "8, porque en binario 1101 & 1010 = 1000.",
+        "23, porque AND suma los valores de ambos operandos.",
+        "3, porque AND resta el valor menor del mayor.",
+        "15, porque AND devuelve el mayor de los dos valores.",
+        "0, porque los números son diferentes."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong>&</strong> (bitwise AND) compara bit a bit: 13 = 1101₂ y 10 = 1010₂. El resultado es 1000₂ = <strong>8</strong>, porque solo los bits en posición 3 son 1 en ambos operandos. Se usa frecuentemente para leer flags de un bitmask o verificar si un bit específico está activo."
+    },
+    {
+      "id": "opt_ex_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el operador ternario para asignar `\"vivo\"` si `hp > 0`, o `\"muerto\"` en caso contrario:",
+      "codeTemplate": "string estado = hp > 0 __________ \"vivo\" __________ \"muerto\";",
+      "expectedAnswer": "? : ",
+      "alternateAnswers": ["?  :", "? \"vivo\" : \"muerto\""],
+      "placeholder": "Escribe los dos operadores del ternario...",
+      "hints": [
+        "El operador ternario tiene la forma: condición ? valorSiVerdadero : valorSiFalso",
+        "El símbolo que va después de la condición es el signo de interrogación.",
+        "El símbolo que separa las dos opciones es el signo de dos puntos."
+      ],
+      "explanation": "El <strong>operador ternario</strong> (<code>?:</code>) es una expresión condicional compacta: <code>condición ? valorSiVerdadero : valorSiFalso</code>. En este caso: <code>hp > 0 ? \"vivo\" : \"muerto\"</code>. Es equivalente a un <code>if-else</code> pero como expresión de una sola línea."
+    },
+    {
+      "id": "opt_ex_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este patrón de optimización muy usado en Unity:",
+      "code": "public class EnemySpawner : MonoBehaviour\n{\n    [SerializeField] GameObject enemyPrefab;\n    Queue<GameObject> pool = new Queue<GameObject>();\n\n    GameObject GetEnemy()\n    {\n        if (pool.Count > 0)\n            return pool.Dequeue();\n        return Instantiate(enemyPrefab);\n    }\n\n    void ReturnEnemy(GameObject enemy)\n    {\n        enemy.SetActive(false);\n        pool.Enqueue(enemy);\n    }\n}",
+      "question": "¿Cómo se llama este patrón de optimización que reutiliza objetos en lugar de crearlos y destruirlos constantemente?",
+      "target": "Object Pooling",
+      "acceptedAnswers": ["Object Pooling", "object pooling", "Pool de objetos", "pooling", "Object Pool"],
+      "hints": [
+        "El patrón guarda objetos desactivados en una cola para reutilizarlos.",
+        "Evita las costosas llamadas a Instantiate y Destroy cada vez.",
+        "En inglés se llama 'Object' seguido de una palabra que significa 'piscina' o 'reserva'."
+      ],
+      "explanation": "El patrón <strong>Object Pooling</strong> mantiene un conjunto de objetos pre-instanciados que se reutilizan. En lugar de llamar <code>Instantiate()</code> y <code>Destroy()</code> (operaciones costosas que generan garbage y stalls), los objetos se desactivan y regresan al pool. Es esencial para balas, partículas y enemigos en juegos de alto rendimiento."
+    },
+    {
+      "id": "opt_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace el operador **`??`** (null-coalescing) en C#?\n```csharp\nstring nombre = jugador.nombre ?? \"Jugador1\";\n```",
+      "options": [
+        "Si `jugador.nombre` es **null**, asigna `\"Jugador1\"`; si no, asigna el valor de `jugador.nombre`.",
+        "Comprueba si `jugador.nombre` es igual a `\"Jugador1\"` y lanza una excepción si no lo es.",
+        "Concatena `jugador.nombre` con `\"Jugador1\"` usando un separador.",
+        "Convierte `jugador.nombre` a un tipo nullable si es necesario.",
+        "Genera un error en tiempo de compilación si `jugador.nombre` puede ser null."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong>??</strong> (null-coalescing) devuelve el operando izquierdo si no es <code>null</code>; de lo contrario, devuelve el operando derecho. Es equivalente a: <code>jugador.nombre != null ? jugador.nombre : \"Jugador1\"</code>. Muy útil para proveer valores predeterminados de forma concisa."
+    },
+    {
+      "id": "opt_ex_007",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código para construir una cadena de texto con **`StringBuilder`** y al final obtener el resultado como `string`:",
+      "codeTemplate": "System.Text.StringBuilder sb = new System.Text.StringBuilder();\nfor (int i = 0; i < enemies.Count; i++)\n{\n    sb.__________(enemies[i].name);\n    sb.Append(\", \");\n}\nstring resultado = sb.__________();",
+      "expectedAnswer": "Append",
+      "alternateAnswers": ["AppendLine", "ToString"],
+      "placeholder": "Escribe el método para agregar texto y el método para obtener el string...",
+      "hints": [
+        "El método para agregar texto a un StringBuilder se llama igual que la acción de 'añadir' en inglés.",
+        "Para obtener el string final, se usa el método universal de conversión a texto.",
+        "sb.Append() agrega; sb.ToString() extrae el resultado."
+      ],
+      "explanation": "<code>StringBuilder.Append()</code> agrega texto al buffer interno sin crear strings intermedios. <code>sb.ToString()</code> construye el <code>string</code> final una sola vez. Comparado con concatenar strings con <code>+</code> en un loop (que crea un nuevo objeto por iteración), <strong>StringBuilder</strong> es mucho más eficiente en memoria y velocidad."
+    },
+    {
+      "id": "opt_ex_008",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este uso del operador de desplazamiento de bits:",
+      "code": "int flags = 0;\nflags = flags | (1 << 3);  // Activa el bit 3\nDebug.Log(flags);           // Imprime: 8",
+      "question": "¿Qué operador se usa en `1 << 3` y qué resultado produce en decimal?",
+      "target": "left shift, 8",
+      "acceptedAnswers": ["left shift, 8", "desplazamiento a la izquierda, 8", "<<, 8", "shift left 8"],
+      "hints": [
+        "El operador << desplaza los bits hacia la izquierda.",
+        "Desplazar 1 tres posiciones a la izquierda equivale a multiplicar por 2 tres veces.",
+        "1 × 2 × 2 × 2 = ?"
+      ],
+      "explanation": "El operador <strong>&lt;&lt;</strong> (left shift) desplaza los bits del operando izquierdo hacia la izquierda tantas posiciones como indica el operando derecho. <code>1 &lt;&lt; 3</code> = 1 × 2³ = <strong>8</strong>. Se usa ampliamente para definir flags de bits de forma legible: <code>1 &lt;&lt; 0</code> = 1, <code>1 &lt;&lt; 1</code> = 2, <code>1 &lt;&lt; 2</code> = 4, etc."
+    },
+    {
+      "id": "opt_ex_009",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Por qué se debe evitar llamar a **`FindObjectOfType`** dentro de `Update()` en Unity?",
+      "options": [
+        "Porque recorre **todos** los objetos activos de la escena cada vez que se llama, lo cual es muy costoso si se ejecuta 60 veces por segundo.",
+        "Porque `FindObjectOfType` solo funciona correctamente en `Awake()` o `Start()`.",
+        "Porque puede devolver null si el objeto buscado aún no se ha inicializado.",
+        "Porque provoca que Unity recargue la escena completa en cada frame.",
+        "Porque es una función obsoleta reemplazada por `GetComponent` en Unity 6."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FindObjectOfType</strong> itera sobre todos los objetos activos en la escena buscando uno del tipo indicado. Es una operación <strong>O(n)</strong> donde n es el número total de objetos. Llamarla en <code>Update()</code> la ejecuta 60+ veces por segundo. La solución es cachear la referencia en <code>Awake()</code> o <code>Start()</code>."
+    },
+    {
+      "id": "opt_ex_010",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración de una variable **`StringBuilder`** llamada `sb` y agrega el texto `\"Score: \"` seguido del valor de la variable `int puntos`. Luego obtén el resultado como `string` en una variable llamada `hud`.",
+      "codeTemplate": null,
+      "expectedAnswer": "System.Text.StringBuilder sb = new System.Text.StringBuilder();\nsb.Append(\"Score: \");\nsb.Append(puntos);\nstring hud = sb.ToString();",
+      "alternateAnswers": [
+        "StringBuilder sb = new StringBuilder();\nsb.Append(\"Score: \");\nsb.Append(puntos);\nstring hud = sb.ToString();",
+        "var sb = new System.Text.StringBuilder();\nsb.Append(\"Score: \");\nsb.Append(puntos);\nstring hud = sb.ToString();"
+      ],
+      "placeholder": "Declara sb, usa Append dos veces, y convierte con ToString...",
+      "hints": [
+        "StringBuilder está en el namespace System.Text.",
+        "Append puede recibir string o int directamente.",
+        "El método final para obtener el string se llama ToString()."
+      ],
+      "explanation": "<strong>StringBuilder</strong> evita crear strings intermedios. Llamar <code>sb.Append(\"Score: \")</code> y <code>sb.Append(puntos)</code> agrega al buffer interno. <code>sb.ToString()</code> construye el <code>string</code> final una sola vez. Usar <code>\"Score: \" + puntos</code> o <code>String.Format</code> en <code>Update()</code> genera garbage en cada frame, presionando al Garbage Collector."
+    },
+    {
+      "id": "opt_ex_011",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el resultado del operador **bitwise OR** `5 | 3` en C#?",
+      "options": [
+        "7, porque en binario 0101 | 0011 = 0111.",
+        "15, porque OR multiplica los dos valores.",
+        "2, porque OR devuelve los bits que difieren entre ambos números.",
+        "8, porque OR suma y redondea al siguiente múltiplo de 2.",
+        "1, porque OR solo devuelve los bits comunes a ambos."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong>|</strong> (bitwise OR) activa un bit en el resultado si ese bit está activo en <em>al menos uno</em> de los operandos: 5 = 0101₂, 3 = 0011₂, resultado = 0111₂ = <strong>7</strong>. Se usa para activar flags: <code>permisos |= PUEDE_VOLAR</code> activa el flag sin afectar los demás."
+    },
+    {
+      "id": "opt_ex_012",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código en un MonoBehaviour de Unity:",
+      "code": "void Update()\n{\n    string info = String.Format(\"HP: {0} / {1}\", currentHp, maxHp);\n    hudText.text = info;\n}",
+      "question": "¿Qué problema de optimización tiene este código y qué clase de C# se recomienda usar en su lugar para construir el texto sin generar **garbage** cada frame?",
+      "target": "StringBuilder",
+      "acceptedAnswers": ["StringBuilder", "System.Text.StringBuilder", "usar StringBuilder", "reemplazar con StringBuilder"],
+      "hints": [
+        "String.Format crea un nuevo objeto string en el heap cada vez que se llama.",
+        "En Update() esto ocurre 60 veces por segundo, presionando al Garbage Collector.",
+        "La clase alternativa está en el namespace System.Text y acumula texto en un buffer reutilizable."
+      ],
+      "explanation": "<code>String.Format()</code> y la concatenación con <code>+</code> crean nuevos objetos <code>string</code> en el heap cada llamada. En <code>Update()</code>, esto genera <em>garbage</em> 60 veces por segundo y puede causar pausas del <strong>Garbage Collector</strong>. La solución es usar <strong>StringBuilder</strong>: hace <code>Append()</code> sobre un buffer interno y solo genera un objeto al llamar <code>ToString()</code>."
+    },
+    {
+      "id": "opt_ex_013",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace el operador **`?.`** (null-conditional) en C#?\n```csharp\nint? vida = jugador?.stats?.vida;\n```",
+      "options": [
+        "Si `jugador` o `jugador.stats` son **null**, `vida` recibe **null** sin lanzar una excepción.",
+        "Verifica que `jugador` no sea null y lanza una excepción si lo es.",
+        "Convierte `jugador.stats.vida` a un tipo nullable aunque no lo sea originalmente.",
+        "Es idéntico al operador `.` normal, pero solo en versiones modernas de C#.",
+        "Ejecuta `jugador.stats.vida` en un hilo separado para evitar bloqueos."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong>?.</strong> (null-conditional) evalúa el miembro solo si el objeto no es <code>null</code>; si es <code>null</code>, cortocircuita y devuelve <code>null</code> sin lanzar <code>NullReferenceException</code>. Es equivalente a: <code>jugador != null ? (jugador.stats != null ? jugador.stats.vida : null) : null</code>, pero mucho más legible."
+    },
+    {
+      "id": "opt_ex_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código que usa el operador **bitwise XOR** (`^`) para alternar (toggle) el flag `ACTIVO` en la variable `estado`. Si el bit estaba en 1 lo pone en 0, y viceversa:",
+      "codeTemplate": "const int ACTIVO = 1 << 0; // bit 0\nint estado = 0b0101;\nestado = estado __________ ACTIVO; // toggle del bit ACTIVO",
+      "expectedAnswer": "^",
+      "alternateAnswers": ["^= ACTIVO"],
+      "placeholder": "Escribe el operador bitwise que alterna bits...",
+      "hints": [
+        "El operador que alterna bits (0→1 y 1→0) se llama XOR.",
+        "Su símbolo es el acento circunflejo o caret.",
+        "XOR con 1 invierte el bit; XOR con 0 lo deja igual."
+      ],
+      "explanation": "El operador <strong>^</strong> (bitwise XOR) invierte un bit si el bit correspondiente en el operando derecho es 1. <code>estado ^ ACTIVO</code> alterna el bit 0: si era 1 queda en 0, si era 0 queda en 1. Patrón clásico para toggles de flags: <code>estado ^= FLAG</code>."
+    },
+    {
+      "id": "opt_ex_015",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un juego instancia y destruye 50 balas por segundo. Los perfiles muestran picos de **GC (Garbage Collector)** cada pocos segundos que causan stuttering. ¿Cuál es la solución correcta?",
+      "options": [
+        "Implementar **Object Pooling**: pre-instanciar las balas al inicio, desactivarlas al 'morir' y reactivarlas al disparar.",
+        "Reducir la velocidad de disparo a 10 balas por segundo para que el GC tenga tiempo de recolectar.",
+        "Usar `GC.Collect()` manualmente al final de cada frame para forzar la limpieza.",
+        "Convertir las balas a structs para que vivan en el stack y no en el heap.",
+        "Aumentar el `targetFrameRate` para que el GC tenga más ciclos disponibles."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Object Pooling</strong> es la solución correcta: pre-crea las balas en <code>Awake()</code>, las desactiva con <code>SetActive(false)</code> al 'morir' y las reutiliza con <code>SetActive(true)</code> al disparar. Esto elimina las llamadas a <code>Instantiate()</code>/<code>Destroy()</code> que generan garbage y spikes del GC. Llamar <code>GC.Collect()</code> manualmente es peor, pues bloquea el hilo principal."
+    },
+    {
+      "id": "opt_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este **MonoBehaviour** que implementa correctamente el caché de componentes. Crea el campo privado para el **`Rigidbody`**, cachealo en `Awake`, y úsalo en `Update` para aplicar una fuerza hacia arriba:",
+      "codeTemplate": "public class PlayerController : MonoBehaviour\n{\n    __________ _rb;\n\n    void Awake()\n    {\n        _rb = __________<Rigidbody>();\n    }\n\n    void Update()\n    {\n        _rb.AddForce(Vector3.__________  * 10f);\n    }\n}",
+      "expectedAnswer": "private Rigidbody",
+      "alternateAnswers": ["Rigidbody", "private Rigidbody _rb", "GetComponent", "up"],
+      "placeholder": "Escribe el tipo del campo, el método de caché, y la dirección...",
+      "hints": [
+        "El campo debe ser de tipo Rigidbody y preferiblemente privado.",
+        "GetComponent<T>() obtiene el componente del mismo GameObject.",
+        "Vector3.up es el vector (0, 1, 0) que apunta hacia arriba."
+      ],
+      "explanation": "El patrón correcto de <strong>caché de componentes</strong>: declarar el campo (<code>private Rigidbody _rb</code>), obtener la referencia una sola vez en <strong>Awake()</strong> con <code>GetComponent&lt;Rigidbody&gt;()</code>, y usarla directamente en <code>Update()</code>. Llamar <code>GetComponent</code> en <code>Update()</code> lo ejecutaría 60+ veces por segundo innecesariamente."
+    },
+    {
+      "id": "opt_ex_017",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué hace el operador **`??=`** (null-coalescing assignment) en C#?\n```csharp\nplayer.inventario ??= new List<Item>();\n```",
+      "options": [
+        "Si `inventario` es **null**, le asigna `new List<Item>()`; si ya tiene valor, no hace nada.",
+        "Siempre asigna `new List<Item>()` al inventario, reemplazando su valor actual.",
+        "Comprueba si `inventario` está vacío (sin elementos) y lo reinicia si lo está.",
+        "Es equivalente a `inventario = inventario ?? inventario ?? new List<Item>()`.",
+        "Lanza una excepción si `inventario` ya tiene un valor asignado previamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong>??=</strong> asigna el valor derecho <em>solo si</em> la variable izquierda es <code>null</code>. Es equivalente a: <code>if (inventario == null) inventario = new List&lt;Item&gt;();</code>. Útil para inicialización diferida (<em>lazy initialization</em>): el objeto solo se crea si no existe todavía."
+    },
+    {
+      "id": "opt_ex_018",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de un sistema de habilidades con flags de bits:",
+      "code": "const int PUEDE_VOLAR    = 1 << 0;  // 00001\nconst int PUEDE_NADAR    = 1 << 1;  // 00010\nconst int PUEDE_CORRER   = 1 << 2;  // 00100\nconst int PUEDE_ATACAR   = 1 << 3;  // 01000\n\nint habilidades = PUEDE_VOLAR | PUEDE_CORRER | PUEDE_ATACAR; // = 13\n\nbool puedeNadar = (habilidades & PUEDE_NADAR) != 0;",
+      "question": "¿Cuál es el valor decimal de `habilidades` y qué devuelve `puedeNadar`?",
+      "target": "13, false",
+      "acceptedAnswers": ["13, false", "habilidades = 13, puedeNadar = false", "13 y false", "13 / false"],
+      "hints": [
+        "PUEDE_VOLAR = 1, PUEDE_NADAR = 2, PUEDE_CORRER = 4, PUEDE_ATACAR = 8.",
+        "OR combina los flags activos: 1 + 4 + 8 = ?",
+        "AND con PUEDE_NADAR (2) sobre 13 (1101 en binario): el bit 1 está en 0 en 13."
+      ],
+      "explanation": "<code>PUEDE_VOLAR | PUEDE_CORRER | PUEDE_ATACAR</code> = 1 | 4 | 8 = <strong>13</strong> (1101₂). Para verificar si PUEDE_NADAR (0010₂) está activo: <code>13 & 2</code> = 1101 & 0010 = 0000 = 0. Como 0 == 0, <code>puedeNadar</code> es <strong>false</strong>. Los bitmasks son muy eficientes para almacenar múltiples flags booleanos en un solo entero."
+    },
+    {
+      "id": "opt_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un **MonoBehaviour** mínimo que implemente **Object Pooling** para balas. Debe tener: un campo `Queue<GameObject>` llamado `pool`, un método `GetBullet()` que saque del pool o instancie si está vacío, y un método `ReturnBullet(GameObject b)` que desactive y regrese al pool. Usa `bulletPrefab` como prefab.",
+      "codeTemplate": null,
+      "expectedAnswer": "Queue<GameObject> pool = new Queue<GameObject>();\n[SerializeField] GameObject bulletPrefab;\n\nGameObject GetBullet()\n{\n    if (pool.Count > 0)\n        return pool.Dequeue();\n    return Instantiate(bulletPrefab);\n}\n\nvoid ReturnBullet(GameObject b)\n{\n    b.SetActive(false);\n    pool.Enqueue(b);\n}",
+      "alternateAnswers": [
+        "private Queue<GameObject> pool = new Queue<GameObject>();\n\nGameObject GetBullet()\n{\n    return pool.Count > 0 ? pool.Dequeue() : Instantiate(bulletPrefab);\n}\n\nvoid ReturnBullet(GameObject b)\n{\n    b.SetActive(false);\n    pool.Enqueue(b);\n}"
+      ],
+      "placeholder": "Escribe el pool, GetBullet() y ReturnBullet()...",
+      "hints": [
+        "Queue<T> usa Enqueue para agregar y Dequeue para sacar (FIFO).",
+        "GetBullet: si pool.Count > 0, saca con Dequeue; si no, Instantiate.",
+        "ReturnBullet: primero desactiva con SetActive(false), luego Enqueue."
+      ],
+      "explanation": "El <strong>Object Pooling</strong> con <code>Queue&lt;GameObject&gt;</code> sigue el patrón FIFO. <code>GetBullet()</code> reutiliza objetos existentes con <code>Dequeue()</code> o crea uno nuevo solo cuando el pool está vacío. <code>ReturnBullet()</code> desactiva el objeto y lo regresa al pool con <code>Enqueue()</code>. Esto elimina el garbage generado por <code>Instantiate/Destroy</code> continuos."
+    },
+    {
+      "id": "opt_ex_020",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este código que optimiza un HUD evitando **`String.Format`** en `Update()`. Usa **`StringBuilder`** cacheado en un campo para construir el texto solo cuando el HP cambia. Completa los espacios en blanco:",
+      "codeTemplate": "public class HUDManager : MonoBehaviour\n{\n    System.Text.__________ _sb = new System.Text.__________();\n    [SerializeField] TMPro.TextMeshProUGUI hudText;\n    int _lastHp = -1;\n\n    void Update()\n    {\n        int hp = PlayerStats.Instance.hp;\n        if (hp == _lastHp) __________; // no reconstruir si no cambió\n\n        _lastHp = hp;\n        _sb.__________(); // limpiar el buffer anterior\n        _sb.Append(\"HP: \");\n        _sb.Append(hp);\n        hudText.text = _sb.__________();\n    }\n}",
+      "expectedAnswer": "StringBuilder",
+      "alternateAnswers": ["Clear", "ToString", "return"],
+      "placeholder": "Escribe: el tipo StringBuilder, return, Clear() y ToString()...",
+      "hints": [
+        "La clase para construir strings eficientemente está en System.Text.",
+        "Para salir anticipadamente de Update cuando el HP no cambia, usa 'return'.",
+        "Clear() vacía el buffer del StringBuilder para reutilizarlo.",
+        "ToString() produce el string final del StringBuilder."
+      ],
+      "explanation": "Este patrón combina varias optimizaciones: (1) <strong>StringBuilder</strong> cacheado como campo evita crear instancias nuevas cada frame; (2) la comprobación <code>if (hp == _lastHp) return</code> evita reconstruir el texto cuando no hay cambio; (3) <code>_sb.Clear()</code> reutiliza el buffer interno; (4) <code>_sb.ToString()</code> crea el string final una sola vez. Elimina completamente el garbage generado por <code>String.Format</code> en <code>Update()</code>."
+    }
+  ]
+}

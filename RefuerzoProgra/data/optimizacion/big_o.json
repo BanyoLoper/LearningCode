@@ -1,0 +1,373 @@
+{
+  "id": "big_o",
+  "title": "Complejidad Algorítmica (Big O)",
+  "icon": "📈",
+  "color": "#FF5722",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es la Notación Big O?",
+        "type": "definition",
+        "content": "La notación <strong>Big O</strong> describe cómo crece el tiempo de ejecución (o el uso de memoria) de un algoritmo a medida que crece el tamaño de la entrada <code>n</code>. No mide segundos exactos, sino la <em>tasa de crecimiento</em>. En juegos esto importa mucho: un algoritmo <strong>O(n²)</strong> que revisa colisiones entre 100 enemigos hará 10,000 operaciones por frame, mientras que uno <strong>O(n)</strong> hará solo 100. La diferencia entre 60 FPS y lag severo puede reducirse a elegir la complejidad correcta."
+      },
+      {
+        "id": "doc-2",
+        "title": "Las Cuatro Complejidades Fundamentales",
+        "type": "code",
+        "content": "// O(1) — Tiempo constante: siempre la misma cantidad de operaciones\nint primerEnemigo = enemies[0];          // Acceso por índice: O(1)\nbool existe = dict.ContainsKey(\"Boss\");  // Lookup en Dictionary: O(1)\n\n// O(n) — Tiempo lineal: crece proporcional al tamaño de la entrada\nforeach (Enemy e in enemies)             // Un bucle sobre n enemigos: O(n)\n    e.UpdateAI();\n\n// O(n²) — Tiempo cuadrático: dos bucles anidados sobre la misma colección\nfor (int i = 0; i < enemies.Count; i++)\n    for (int j = 0; j < enemies.Count; j++) // ← O(n²)\n        CheckCollision(enemies[i], enemies[j]);\n\n// O(log n) — Tiempo logarítmico: divide el problema a la mitad cada vez\n// Ejemplo: búsqueda binaria en un array ordenado de waypoints\nint mid = BinarySearch(sortedWaypoints, target); // O(log n)"
+      },
+      {
+        "id": "doc-3",
+        "title": "Big O en Contexto Unity: Cada Frame Importa",
+        "type": "analogy",
+        "content": "Imagina que tu juego tiene 200 enemigos activos. En <code>Update()</code> llamas a <code>enemies.Find(e => e.IsTarget)</code> — eso es <strong>O(n)</strong>, busca uno por uno. Si además dentro de ese loop verificas si cada enemigo colisiona con todos los demás, pasas a <strong>O(n²)</strong>: 200² = 40,000 comparaciones <em>cada frame</em>. A 60 FPS eso es 2.4 millones de comparaciones por segundo. Un <code>Dictionary</code> te da acceso <strong>O(1)</strong> por clave, como tener el índice de una biblioteca en vez de revisar libro por libro. Elegir la estructura correcta puede ser la diferencia entre un juego fluido y uno que cae a 10 FPS."
+      },
+      {
+        "id": "doc-4",
+        "title": "List.Find() vs Dictionary Lookup",
+        "type": "note",
+        "content": "<strong>List.Find()</strong> (y <code>List.Contains()</code>) son <strong>O(n)</strong>: en el peor caso recorren toda la lista. Si buscas al mismo enemigo en cada frame con <code>enemies.Find(e => e.id == targetId)</code>, estás haciendo una búsqueda lineal repetida. Un <strong>Dictionary&lt;int, Enemy&gt;</strong> indexado por ID da acceso <strong>O(1)</strong> sin importar cuántos enemigos haya. Regla de oro: si necesitas buscar un elemento frecuentemente, almacénalo en un Dictionary."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Complejidad Algorítmica",
+        "type": "list",
+        "items": [
+          "O(1) — constante: acceso por índice en arrays, lookup en Dictionary.",
+          "O(n) — lineal: un bucle simple sobre n elementos.",
+          "O(n²) — cuadrática: dos bucles anidados sobre la misma colección de tamaño n.",
+          "O(log n) — logarítmica: búsqueda binaria en datos ordenados.",
+          "Un solo bucle anidado ya convierte O(n) en O(n²).",
+          "En juegos, O(n²) en Update() puede arruinar el rendimiento con muchos actores.",
+          "Dictionary lookup es O(1); List.Find() es O(n)."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "bigo_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué significa que un algoritmo tenga complejidad **O(1)**?",
+      "options": [
+        "Su tiempo de ejecución es constante, sin importar el tamaño de la entrada.",
+        "El algoritmo ejecuta exactamente 1 operación en total.",
+        "Es el más lento posible de todos los algoritmos.",
+        "Solo funciona con colecciones de un elemento.",
+        "Su complejidad depende del número de núcleos del procesador."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>O(1)</strong> significa tiempo <em>constante</em>: no importa si hay 10 o 10 millones de enemigos, la operación tarda lo mismo. El acceso por índice a un array (<code>enemies[0]</code>) y el lookup en un <code>Dictionary</code> son ejemplos clásicos de <strong>O(1)</strong>."
+    },
+    {
+      "id": "bigo_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la complejidad **Big O** de este código?\n```csharp\nforeach (Enemy e in enemies)\n    e.TakeDamage(10);\n```",
+      "options": [
+        "O(n), porque recorre una vez cada elemento de la colección.",
+        "O(1), porque la operación TakeDamage es constante.",
+        "O(n²), porque hay una operación dentro del bucle.",
+        "O(log n), porque cada iteración divide el problema.",
+        "O(n³), porque hay tres términos en el foreach."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un bucle simple que recorre <code>n</code> elementos una sola vez es <strong>O(n)</strong>. El trabajo dentro del cuerpo (<code>TakeDamage</code>) es constante por elemento, por lo que la complejidad total es lineal respecto al número de enemigos."
+    },
+    {
+      "id": "bigo_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la complejidad **Big O** de este fragmento?\n```csharp\nfor (int i = 0; i < enemies.Count; i++)\n    for (int j = 0; j < enemies.Count; j++)\n        CheckCollision(enemies[i], enemies[j]);\n```",
+      "options": [
+        "O(n²), porque hay dos bucles anidados que recorren la misma colección de tamaño n.",
+        "O(n), porque hay una sola colección de enemigos.",
+        "O(2n), porque hay dos bucles for.",
+        "O(1), porque CheckCollision es una función de tiempo constante.",
+        "O(log n), porque los índices dividen la colección en mitades."
+      ],
+      "correctIndex": 0,
+      "explanation": "Dos bucles anidados que cada uno recorre <code>n</code> elementos resultan en <strong>O(n²)</strong>: para cada uno de los <code>n</code> enemigos externos, se visitan los <code>n</code> enemigos internos. Con 100 enemigos son 10,000 comparaciones; con 200 son 40,000."
+    },
+    {
+      "id": "bigo_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, tu HUD necesita encontrar al enemigo más cercano cada frame. Tienes dos opciones: buscar en una `List<Enemy>` o en un `Dictionary<int, Enemy>` indexado por ID. Si buscas **por ID conocido**, ¿cuál es más eficiente y por qué?",
+      "options": [
+        "Dictionary, porque su lookup es O(1) frente al O(n) de List.Find().",
+        "List, porque los arrays son más rápidos que los diccionarios en C#.",
+        "Ambos son igual de eficientes porque C# los optimiza internamente.",
+        "Dictionary, pero solo si tiene menos de 100 elementos.",
+        "List, porque Dictionary consume más memoria y eso afecta los FPS."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Dictionary</strong> usa una tabla hash internamente, lo que permite acceso <strong>O(1)</strong> por clave. <code>List.Find()</code> recorre elemento por elemento, resultando en <strong>O(n)</strong>. En un juego con muchos enemigos buscados cada frame, esta diferencia es crítica para el rendimiento."
+    },
+    {
+      "id": "bigo_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de las siguientes operaciones sobre un array tiene complejidad **O(1)**?",
+      "options": [
+        "Acceder a un elemento por su índice: `items[5]`.",
+        "Buscar un elemento específico con `Array.Find()`.",
+        "Ordenar el array con `Array.Sort()`.",
+        "Contar cuántos elementos cumplen una condición.",
+        "Concatenar dos arrays en uno nuevo."
+      ],
+      "correctIndex": 0,
+      "explanation": "El acceso por índice (<code>items[5]</code>) es <strong>O(1)</strong> porque los arrays almacenan elementos en posiciones contiguas de memoria y el acceso es directo por cálculo de dirección. Las otras operaciones requieren recorrer elementos (<strong>O(n)</strong>) o más (<strong>O(n log n)</strong> para Sort)."
+    },
+    {
+      "id": "bigo_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué complejidad **Big O** tiene la búsqueda binaria (**O(log n)**) comparada con la búsqueda lineal en una lista de 1,024 elementos?",
+      "options": [
+        "La búsqueda binaria necesita máximo 10 comparaciones; la lineal hasta 1,024.",
+        "La búsqueda binaria necesita exactamente 1 comparación siempre.",
+        "Ambas necesitan el mismo número de comparaciones en promedio.",
+        "La búsqueda lineal es más rápida porque no requiere que los datos estén ordenados.",
+        "La búsqueda binaria necesita 512 comparaciones; la lineal 1,024."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>O(log n)</strong>: con 1,024 elementos, log₂(1024) = 10. La búsqueda binaria divide el espacio a la mitad en cada paso, necesitando solo ~10 comparaciones. La búsqueda lineal <strong>O(n)</strong> puede necesitar revisar los 1,024 elementos. La condición es que los datos deben estar ordenados."
+    },
+    {
+      "id": "bigo_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un sistema de IA revisa cada frame si algún enemigo en una lista de 500 está dentro del rango de visión del jugador, y para cada uno que sí está, revisa si colisiona con los otros enemigos en rango. Si hay en promedio 50 enemigos en rango, ¿cuál es la complejidad aproximada por frame?",
+      "options": [
+        "O(n + m²), donde n=500 (todos los enemigos) y m=50 (en rango): recorrido lineal más comparaciones cuadráticas.",
+        "O(n²), porque siempre se comparan todos los enemigos entre sí.",
+        "O(n), porque solo hay un bucle principal sobre los 500 enemigos.",
+        "O(1), porque las colisiones en Unity son calculadas por el motor.",
+        "O(n·m), pero como m es constante, se simplifica a O(n)."
+      ],
+      "correctIndex": 0,
+      "explanation": "El primer bucle (revisar todos los 500 enemigos) es <strong>O(n)</strong>. Para los ~50 en rango, comparar cada uno contra los demás en rango es <strong>O(m²)</strong> donde m=50. La complejidad total es <strong>O(n + m²)</strong>. Si m creciera a n, se convertiría en <strong>O(n²)</strong>."
+    },
+    {
+      "id": "bigo_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál de estos fragmentos de código en Unity tiene la PEOR complejidad **Big O** y debería refactorizarse urgentemente?",
+      "options": [
+        "`enemies.Sort((a,b) => a.health.CompareTo(b.health))` llamado cada frame en Update().",
+        "`int hp = playerStats[\"health\"]` para leer la vida del jugador.",
+        "`Debug.Log(enemies.Count)` para mostrar el número de enemigos.",
+        "`transform.position = target` para mover el personaje.",
+        "`Camera.main.transform.position` para leer la posición de la cámara."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>List.Sort()</code> tiene complejidad <strong>O(n log n)</strong> y llamarlo cada frame en <code>Update()</code> es muy costoso. Además, acceder a <code>Camera.main</code> también tiene un costo oculto (es un <code>FindObjectOfType</code> internamente). De todas las opciones, el Sort en Update es el más dañino para el rendimiento."
+    },
+    {
+      "id": "bigo_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código:",
+      "code": "Dictionary<string, Enemy> enemyMap = new Dictionary<string, Enemy>();\nEnemy boss = enemyMap[\"Boss\"];",
+      "question": "¿Qué complejidad **Big O** tiene la operación de acceso `enemyMap[\"Boss\"]`?",
+      "target": "O(1)",
+      "acceptedAnswers": ["O(1)", "constante", "tiempo constante"],
+      "hints": [
+        "Un Dictionary en C# usa una tabla hash internamente.",
+        "La búsqueda por clave no depende de cuántos elementos haya.",
+        "Esta complejidad se llama 'constante' porque siempre tarda lo mismo."
+      ],
+      "explanation": "El acceso por clave en un <strong>Dictionary</strong> es <strong>O(1)</strong> (tiempo constante) gracias a su implementación interna con tabla hash. No importa si el diccionario tiene 10 o 10 millones de entradas, el tiempo de acceso es el mismo."
+    },
+    {
+      "id": "bigo_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de Unity:",
+      "code": "void Update()\n{\n    Enemy target = enemies.Find(e => e.IsAgro);\n    if (target != null) Attack(target);\n}",
+      "question": "¿Qué complejidad **Big O** tiene `enemies.Find()` y por qué es problemático en `Update()`?",
+      "target": "O(n)",
+      "acceptedAnswers": ["O(n)", "lineal", "tiempo lineal"],
+      "hints": [
+        "Find() revisa elemento por elemento hasta encontrar uno que cumpla la condición.",
+        "En el peor caso recorre toda la lista.",
+        "Un bucle que recorre n elementos tiene complejidad..."
+      ],
+      "explanation": "<code>List.Find()</code> es <strong>O(n)</strong>: en el peor caso revisa todos los enemigos. Llamarlo cada frame en <code>Update()</code> significa hacer una búsqueda lineal 60 veces por segundo. Con muchos enemigos, esto consume tiempo valioso de CPU por frame."
+    },
+    {
+      "id": "bigo_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento:",
+      "code": "for (int i = 0; i < npcs.Count; i++)\n{\n    for (int j = i + 1; j < npcs.Count; j++)\n    {\n        float dist = Vector3.Distance(npcs[i].pos, npcs[j].pos);\n    }\n}",
+      "question": "¿Cuál es la complejidad **Big O** de este código?",
+      "target": "O(n²)",
+      "acceptedAnswers": ["O(n²)", "O(n^2)", "cuadrática", "tiempo cuadrático"],
+      "hints": [
+        "Hay dos bucles for, uno dentro del otro.",
+        "Ambos recorren la misma colección de npcs.",
+        "Dos bucles anidados sobre n elementos dan una complejidad..."
+      ],
+      "explanation": "Aunque el bucle interno empieza en <code>j = i + 1</code> (para evitar comparaciones duplicadas), la cantidad total de comparaciones sigue siendo aproximadamente n(n-1)/2, que es <strong>O(n²)</strong>. Con 100 NPCs son ~4,950 cálculos de distancia por frame."
+    },
+    {
+      "id": "bigo_id_004",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza estas dos líneas:",
+      "code": "// Opción A\nEnemy found = enemyList.Find(e => e.id == targetId); // O(?)\n\n// Opción B\nEnemy found = enemyDict[targetId]; // O(?)",
+      "question": "¿Cuál de las dos opciones tiene mejor complejidad y cuál es esa complejidad?",
+      "target": "Opción B, O(1)",
+      "acceptedAnswers": ["Opción B, O(1)", "B, O(1)", "Dictionary O(1)", "B es mejor, O(1)"],
+      "hints": [
+        "Find() en List revisa elemento por elemento.",
+        "Dictionary usa una tabla hash para acceso directo.",
+        "Acceso constante se expresa como O de 1."
+      ],
+      "explanation": "La <strong>Opción B</strong> con <code>Dictionary</code> tiene complejidad <strong>O(1)</strong>. La Opción A (<code>List.Find()</code>) es <strong>O(n)</strong>. Cuando necesitas buscar frecuentemente por un identificador, usar un <code>Dictionary</code> es la elección correcta."
+    },
+    {
+      "id": "bigo_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este método completo:",
+      "code": "void CheckAllInteractions(List<Item> items, List<Player> players)\n{\n    foreach (Item item in items)          // n items\n    {\n        foreach (Player p in players)     // m players\n        {\n            if (item.CanBePickedBy(p))\n                p.Pickup(item);\n        }\n    }\n}",
+      "question": "Si `items.Count = n` y `players.Count = m`, ¿cuál es la complejidad **Big O** de este método?",
+      "target": "O(n·m)",
+      "acceptedAnswers": ["O(n·m)", "O(n*m)", "O(nm)", "n por m"],
+      "hints": [
+        "El bucle externo recorre n items.",
+        "Por cada item, el bucle interno recorre m players.",
+        "La complejidad total es el producto de ambas."
+      ],
+      "explanation": "Cuando dos bucles anidados recorren colecciones de tamaño <em>diferente</em>, la complejidad es <strong>O(n·m)</strong>. Si ambas colecciones tuvieran el mismo tamaño n, sería <strong>O(n²)</strong>. En general, el producto de los tamaños de cada bucle anidado da la complejidad total."
+    },
+    {
+      "id": "bigo_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el siguiente sistema de spawning:",
+      "code": "void SpawnWave(int count)\n{\n    for (int i = 0; i < count; i++)        // O(n)\n    {\n        Enemy e = Instantiate(prefab);     // O(1) cada uno\n        activeEnemies.Add(e);              // O(1) amortizado\n        allEnemies.Sort(SortByPriority);   // <-- ¿cuánto cuesta?\n    }\n}",
+      "question": "¿Qué complejidad **Big O** tiene la línea `allEnemies.Sort()` dentro del bucle, considerando que `allEnemies` crece con cada iteración?",
+      "target": "O(n log n)",
+      "acceptedAnswers": ["O(n log n)", "n log n", "O(n·log n)"],
+      "hints": [
+        "List.Sort() usa un algoritmo de ordenamiento interno (similar a QuickSort/TimSort).",
+        "Ordenar n elementos tiene una complejidad conocida.",
+        "La complejidad del ordenamiento por comparación óptimo es n multiplicado por el logaritmo de n."
+      ],
+      "explanation": "<code>List.Sort()</code> tiene complejidad <strong>O(n log n)</strong>. Llamarlo dentro del bucle que inserta <code>count</code> elementos resulta en una complejidad total de <strong>O(n² log n)</strong> para todo el método — extremadamente costoso. La solución sería ordenar una sola vez, fuera del bucle."
+    },
+    {
+      "id": "bigo_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea que accede en **O(1)** al enemigo con id `42` usando un Dictionary:",
+      "codeTemplate": "Dictionary<int, Enemy> enemyMap = GetEnemyMap();\nEnemy target = enemyMap[__________];",
+      "expectedAnswer": "42",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la clave de acceso...",
+      "hints": [
+        "Para acceder a un Dictionary, usa la clave entre corchetes.",
+        "La clave que buscas es el entero 42.",
+        "El acceso por clave en Dictionary es O(1)."
+      ],
+      "explanation": "<code>enemyMap[42]</code> accede directamente al enemigo con id 42 en <strong>O(1)</strong>. A diferencia de <code>List.Find(e => e.id == 42)</code> que sería <strong>O(n)</strong>, el Dictionary usa una tabla hash para encontrar el valor instantáneamente."
+    },
+    {
+      "id": "bigo_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "El siguiente código tiene complejidad **O(n²)**. Completa la versión optimizada que lo reduce a **O(n)** usando un Dictionary para rastrear IDs ya vistos:",
+      "codeTemplate": "// Versión O(n²) — NO usar:\n// for (int i = 0; i < enemies.Count; i++)\n//     for (int j = i+1; j < enemies.Count; j++)\n//         if (enemies[i].id == enemies[j].id) return true;\n\n// Versión O(n) — completa:\nHashSet<int> seen = new HashSet<int>();\nforeach (Enemy e in enemies)\n{\n    if (seen.__________(e.id)) return true;\n    seen.Add(e.id);\n}\nreturn false;",
+      "expectedAnswer": "Contains",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método de HashSet para verificar existencia...",
+      "hints": [
+        "HashSet tiene un método para verificar si ya existe un elemento.",
+        "El método devuelve bool: true si el elemento ya está en el conjunto.",
+        "Se llama igual que en List, pero en HashSet es O(1) no O(n)."
+      ],
+      "explanation": "<code>HashSet.Contains()</code> es <strong>O(1)</strong> (tabla hash), a diferencia de <code>List.Contains()</code> que es <strong>O(n)</strong>. Esta versión recorre la lista una sola vez (<strong>O(n)</strong> total), mientras que la versión original con dos bucles anidados era <strong>O(n²)</strong>."
+    },
+    {
+      "id": "bigo_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe un bucle `for` que recorra la lista `enemies` y para cada uno llame a `e.UpdateAI()`. Después escribe un comentario indicando su complejidad **Big O**.",
+      "codeTemplate": null,
+      "expectedAnswer": "for (int i = 0; i < enemies.Count; i++)\n{\n    enemies[i].UpdateAI();\n}\n// Complejidad: O(n)",
+      "alternateAnswers": [
+        "foreach (Enemy e in enemies) { e.UpdateAI(); } // O(n)",
+        "foreach (Enemy e in enemies)\n    e.UpdateAI(); // O(n)"
+      ],
+      "placeholder": "Escribe el bucle y el comentario de complejidad...",
+      "hints": [
+        "Un bucle que recorre n elementos una sola vez es lineal.",
+        "Puedes usar for con índice o foreach.",
+        "La complejidad se escribe como O seguido del crecimiento entre paréntesis."
+      ],
+      "explanation": "Un bucle que recorre <code>n</code> enemigos una vez tiene complejidad <strong>O(n)</strong>. Cada elemento se procesa exactamente una vez, por lo que el tiempo total crece proporcionalmente al número de enemigos. Es la complejidad más común y aceptable para operaciones por frame."
+    },
+    {
+      "id": "bigo_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Refactoriza este método de búsqueda de **O(n)** a **O(1)** completando la versión con Dictionary. El diccionario `enemyById` ya está inicializado:",
+      "codeTemplate": "// O(n) — version lenta:\n// Enemy FindEnemy(int id) => enemies.Find(e => e.id == id);\n\n// O(1) — completa esta versión:\nDictionary<int, Enemy> enemyById;\n\nEnemy FindEnemy(int id)\n{\n    return __________[id];\n}",
+      "expectedAnswer": "enemyById",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre de la estructura de acceso O(1)...",
+      "hints": [
+        "El Dictionary ya declarado se llama enemyById.",
+        "Para acceder a un Dictionary, usa su nombre seguido de la clave entre corchetes.",
+        "enemyById[id] devuelve el Enemy directamente sin buscar."
+      ],
+      "explanation": "<code>enemyById[id]</code> retorna el <code>Enemy</code> en <strong>O(1)</strong>. Mantener un <code>Dictionary&lt;int, Enemy&gt;</code> en paralelo a la lista principal es un patrón común en juegos para optimizar búsquedas frecuentes por ID."
+    },
+    {
+      "id": "bigo_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe los dos bucles anidados que verifican si algún par de enemigos en la lista `bullets` está colisionando (llamando a `Overlap(a, b)`). Incluye un comentario con la complejidad **Big O** resultante.",
+      "codeTemplate": null,
+      "expectedAnswer": "for (int i = 0; i < bullets.Count; i++)\n{\n    for (int j = i + 1; j < bullets.Count; j++)\n    {\n        if (Overlap(bullets[i], bullets[j]))\n            HandleCollision(bullets[i], bullets[j]);\n    }\n}\n// Complejidad: O(n²)",
+      "alternateAnswers": [
+        "for (int i = 0; i < bullets.Count; i++)\n    for (int j = i+1; j < bullets.Count; j++)\n        if (Overlap(bullets[i], bullets[j])) HandleCollision(bullets[i], bullets[j]);\n// O(n²)"
+      ],
+      "placeholder": "Escribe los dos bucles anidados con el comentario de complejidad...",
+      "hints": [
+        "El bucle externo va de 0 a bullets.Count.",
+        "El bucle interno empieza en i+1 para evitar duplicados y auto-comparaciones.",
+        "Dos bucles anidados sobre la misma colección resultan en O(n²)."
+      ],
+      "explanation": "Dos bucles anidados que comparan cada elemento con todos los siguientes producen <strong>O(n²)</strong>. Comenzar el bucle interno en <code>i + 1</code> evita comparar un elemento consigo mismo y evita duplicados (A vs B y B vs A), pero la complejidad sigue siendo cuadrática."
+    },
+    {
+      "id": "bigo_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Un sistema de puntuación necesita construir un ranking. Completa el código que ordena la lista `players` por score (descendente) y accede al jugador en el top-1. Añade un comentario con la complejidad del Sort:",
+      "codeTemplate": "players.Sort((a, b) => b.score.CompareTo(a.score)); // O(__________)\nPlayer topPlayer = players[__________]; // O(1)",
+      "expectedAnswer": "n log n",
+      "alternateAnswers": ["O(n log n)", "n·log n", "n logn"],
+      "placeholder": "Escribe la complejidad del Sort...",
+      "hints": [
+        "List.Sort() usa un algoritmo de comparación interno (similar a TimSort).",
+        "El algoritmo de ordenamiento óptimo por comparación tiene esta complejidad.",
+        "Es n multiplicado por el logaritmo de n."
+      ],
+      "explanation": "<code>List.Sort()</code> tiene complejidad <strong>O(n log n)</strong>. Después de ordenar, acceder a <code>players[0]</code> es <strong>O(1)</strong>. Si solo necesitas el top-1 frecuentemente sin mostrar el ranking completo, sería más eficiente usar <strong>O(n)</strong> para encontrar el máximo sin ordenar toda la lista."
+    }
+  ]
+}

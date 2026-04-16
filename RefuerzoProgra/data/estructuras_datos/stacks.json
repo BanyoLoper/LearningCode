@@ -1,0 +1,377 @@
+{
+  "id": "stacks",
+  "title": "Stacks (Pilas)",
+  "icon": "📚",
+  "color": "#283593",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Stack? Principio LIFO",
+        "type": "definition",
+        "content": "Un <strong>Stack</strong> (pila) es una estructura de datos que sigue el principio <strong>LIFO</strong> — <em>Last In, First Out</em> (Último en entrar, primero en salir). Imagina una pila de platos: solo puedes tomar el del tope. En C#, la clase <code>Stack&lt;T&gt;</code> está en el namespace <code>System.Collections.Generic</code>. Sus operaciones fundamentales son: <strong>Push</strong> (agrega un elemento al tope), <strong>Pop</strong> (elimina y devuelve el elemento del tope) y <strong>Peek</strong> (lee el elemento del tope sin eliminarlo). Todas estas operaciones son <strong>O(1)</strong>."
+      },
+      {
+        "id": "doc-2",
+        "title": "Stack<T> en C#: Push, Pop, Peek",
+        "type": "code",
+        "content": "using System.Collections.Generic;\n\n// Crear un Stack de strings (historial de estados)\nStack<string> historial = new Stack<string>();\n\n// Push — agrega al tope\nhistorial.Push(\"Estado1\");   // tope: Estado1\nhistorial.Push(\"Estado2\");   // tope: Estado2\nhistorial.Push(\"Estado3\");   // tope: Estado3\n\n// Peek — lee el tope SIN eliminar\nstring tope = historial.Peek(); // \"Estado3\", el stack no cambia\nDebug.Log(historial.Count);     // 3\n\n// Pop — elimina y devuelve el tope\nstring ultimo = historial.Pop(); // devuelve \"Estado3\"\nDebug.Log(historial.Count);      // 2 — ya solo tiene Estado1, Estado2\n\n// Verificar si está vacío antes de Pop\nif (historial.Count > 0)\n{\n    string anterior = historial.Pop(); // \"Estado2\"\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Casos de Uso en Unity: Undo, Historial, Menús",
+        "type": "analogy",
+        "content": "El <strong>Stack</strong> es perfecto para cualquier escenario donde necesitas deshacer o volver al estado anterior. En un <strong>editor de niveles de Unity</strong>: cada acción del diseñador se guarda con <strong>Push</strong>, y al presionar Ctrl+Z se hace <strong>Pop</strong> para deshacer. En un sistema de <strong>navegación de menús</strong>: al abrir el menú de opciones se hace <strong>Push</strong>, y al presionar 'Atrás' se hace <strong>Pop</strong> para volver al menú anterior. En un sistema de <strong>combos de ataque</strong>: las entradas del jugador se van apilando y el último input es el más relevante. La clave es siempre: <em>el orden inverso es lo que necesito</em>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Errores Comunes con Stack",
+        "type": "note",
+        "content": "Si llamas <strong>Pop()</strong> o <strong>Peek()</strong> en un <strong>Stack</strong> vacío, C# lanza <code>InvalidOperationException: Stack empty</code>. Siempre verifica con <code>stack.Count &gt; 0</code> antes de llamar <code>Pop()</code> o <code>Peek()</code>. Alternativamente, usa <code>TryPop(out T result)</code> o <code>TryPeek(out T result)</code> disponibles desde .NET 5+ — devuelven <code>bool</code> en lugar de lanzar excepción. En Unity con versiones modernas de .NET, estos métodos seguros son preferibles en lógica crítica de juego."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Stack",
+        "type": "list",
+        "items": [
+          "LIFO: Last In, First Out — el último en entrar es el primero en salir.",
+          "Push() agrega al tope — O(1).",
+          "Pop() elimina y devuelve el tope — O(1). Lanza excepción si está vacío.",
+          "Peek() lee el tope sin eliminar — O(1). Lanza excepción si está vacío.",
+          "Siempre verifica Count > 0 antes de Pop() o Peek().",
+          "Ideal para: undo/redo, historial de estados, navegación de menús, call stack."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "st_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué principio de ordenamiento sigue un **Stack** (pila)?",
+      "options": [
+        "LIFO — Last In, First Out: el último elemento agregado es el primero en salir.",
+        "FIFO — First In, First Out: el primero en entrar es el primero en salir.",
+        "FILO — First In, Last Out: el primero en entrar es el último en salir.",
+        "Aleatorio — los elementos salen en orden aleatorio.",
+        "Ordenado — los elementos siempre salen de menor a mayor."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Stack</strong> sigue el principio <strong>LIFO</strong>: el último elemento agregado con <strong>Push</strong> es el primero que se obtiene con <strong>Pop</strong>. Piensa en una pila de platos: siempre tomas el del tope, que fue el último en colocarse."
+    },
+    {
+      "id": "st_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué operación de Stack agrega un nuevo elemento al tope de la pila?",
+      "options": [
+        "Push()",
+        "Pop()",
+        "Peek()",
+        "Add()",
+        "Enqueue()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Push(item)</strong> agrega un elemento al tope del <strong>Stack</strong>. <strong>Pop()</strong> elimina y devuelve el tope. <strong>Peek()</strong> lee el tope sin eliminar. No confundas con <strong>Add()</strong> (de List&lt;T&gt;) o <strong>Enqueue()</strong> (de Queue&lt;T&gt;)."
+    },
+    {
+      "id": "st_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué devuelve `Stack<T>.Peek()` y cómo afecta al tamaño del Stack?",
+      "options": [
+        "Devuelve el elemento del tope sin eliminarlo; el Count no cambia.",
+        "Devuelve el elemento del tope y lo elimina; el Count disminuye en 1.",
+        "Devuelve el elemento del fondo de la pila sin eliminarlo.",
+        "Devuelve el número de elementos en el Stack.",
+        "Devuelve null si el Stack está vacío sin lanzar excepción."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Peek()</strong> te permite <em>espiar</em> el tope del <strong>Stack</strong> sin modificarlo: devuelve el elemento pero no lo elimina, por lo que <code>Count</code> permanece igual. Si necesitas eliminar el tope, usa <strong>Pop()</strong>. Si el stack está vacío, Peek() lanza <code>InvalidOperationException</code>."
+    },
+    {
+      "id": "st_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes este Stack de historial de acciones en un editor de niveles:\n```\nStack<string> acciones = new Stack<string>();\nacciones.Push(\"ColocarBloque\");\nacciones.Push(\"MoverEnemigo\");\nacciones.Push(\"CambiarTextura\");\nstring deshecha = acciones.Pop();\n```\n¿Qué valor tiene `deshecha`?",
+      "options": [
+        "\"CambiarTextura\"",
+        "\"MoverEnemigo\"",
+        "\"ColocarBloque\"",
+        "null",
+        "InvalidOperationException"
+      ],
+      "correctIndex": 0,
+      "explanation": "Siguiendo el principio <strong>LIFO</strong>, <code>Pop()</code> devuelve el último elemento que se agregó con <code>Push()</code>. El orden de Push fue: ColocarBloque → MoverEnemigo → CambiarTextura. Por tanto, el tope es <strong>\"CambiarTextura\"</strong> y eso es lo que devuelve y elimina <code>Pop()</code>."
+    },
+    {
+      "id": "st_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, quieres implementar un sistema de menús donde al presionar 'Atrás' vuelves al menú anterior. ¿Qué estructura de datos es la más adecuada?",
+      "options": [
+        "Stack<string> — el último menú abierto es el primero en cerrarse (LIFO).",
+        "Queue<string> — los menús se procesan en el orden en que se abrieron (FIFO).",
+        "List<string> — para tener acceso a cualquier menú por índice.",
+        "Array de strings — para tener todos los menús en memoria desde el inicio.",
+        "Dictionary<int, string> — para mapear IDs de menús a sus nombres."
+      ],
+      "correctIndex": 0,
+      "explanation": "La navegación de menús es un caso clásico de <strong>Stack</strong>: abrir un menú es <code>Push(nombreMenu)</code>, y presionar 'Atrás' es <code>Pop()</code> para volver al anterior. El principio <strong>LIFO</strong> coincide exactamente con la navegación jerárquica: el último menú abierto es el primero en cerrarse."
+    },
+    {
+      "id": "st_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué excepción lanza C# si llamas `Pop()` en un Stack vacío?",
+      "options": [
+        "InvalidOperationException",
+        "IndexOutOfRangeException",
+        "NullReferenceException",
+        "StackOverflowException",
+        "ArgumentException"
+      ],
+      "correctIndex": 0,
+      "explanation": "Llamar <strong>Pop()</strong> o <strong>Peek()</strong> en un <strong>Stack</strong> vacío lanza <code>InvalidOperationException: Stack empty</code>. Siempre verifica <code>stack.Count &gt; 0</code> antes de llamarlos. Nota: <code>StackOverflowException</code> es diferente — ocurre cuando hay recursión infinita, no cuando el Stack&lt;T&gt; está vacío."
+    },
+    {
+      "id": "st_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Después de estas operaciones:\n```\nStack<int> pila = new Stack<int>();\npila.Push(1);\npila.Push(2);\npila.Push(3);\npila.Pop();\npila.Push(4);\npila.Pop();\n```\n¿Cuántos elementos quedan en `pila` y cuál es el tope?",
+      "options": [
+        "2 elementos; tope es 2.",
+        "1 elemento; tope es 1.",
+        "3 elementos; tope es 4.",
+        "2 elementos; tope es 4.",
+        "0 elementos; la pila está vacía."
+      ],
+      "correctIndex": 0,
+      "explanation": "Paso a paso: Push(1)→[1], Push(2)→[1,2], Push(3)→[1,2,3], Pop()→elimina 3→[1,2], Push(4)→[1,2,4], Pop()→elimina 4→[1,2]. Quedan <strong>2 elementos</strong> y el tope es <strong>2</strong>. El Count es 2 y <code>Peek()</code> devolvería 2."
+    },
+    {
+      "id": "st_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál de estos escenarios de Unity NO es un buen caso de uso para un Stack?",
+      "options": [
+        "Cola de enemigos que esperan su turno de ataque en orden de llegada.",
+        "Sistema de undo/redo en un editor de mapas de tiles.",
+        "Historial de navegación de pantallas en un menú principal.",
+        "Pila de estados de un NPC (Idle → Alerta → Combate → Huir).",
+        "Registro de las últimas acciones del jugador para mostrar en UI."
+      ],
+      "correctIndex": 0,
+      "explanation": "Una <strong>cola de turnos en orden de llegada</strong> es un caso de <strong>Queue</strong> (FIFO), no de <strong>Stack</strong> (LIFO). El primer enemigo en llegar debe ser el primero en atacar. Los demás casos sí son LIFO: undo/redo (última acción es la primera en deshacerse), navegación (último menú abierto = primero en cerrarse), estados de NPC (se deshacen al revés)."
+    },
+    {
+      "id": "st_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza estas operaciones en un Stack:",
+      "code": "Stack<string> pila = new Stack<string>();\npila.Push(\"Menú Principal\");\npila.Push(\"Opciones\");\npila.Push(\"Audio\");\nstring actual = pila.Peek();",
+      "question": "¿Qué valor tiene la variable `actual` después de `Peek()`?",
+      "target": "Audio",
+      "acceptedAnswers": ["Audio", "\"Audio\""],
+      "hints": [
+        "Peek() lee el elemento del tope sin eliminarlo.",
+        "El tope es el último elemento agregado con Push().",
+        "¿Cuál fue el último Push()?"
+      ],
+      "explanation": "<strong>Peek()</strong> devuelve el elemento del tope sin modificar la pila. El último <code>Push()</code> fue <code>\"Audio\"</code>, por lo que ese es el tope. El <strong>Stack</strong> sigue teniendo 3 elementos después de <code>Peek()</code>."
+    },
+    {
+      "id": "st_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de undo en un editor de niveles:",
+      "code": "Stack<LevelAction> undoStack = new Stack<LevelAction>();\nundoStack.Push(accion1); // Colocar bloque\nundoStack.Push(accion2); // Mover plataforma\nundoStack.Push(accion3); // Borrar enemigo\n\n// Usuario presiona Ctrl+Z\nLevelAction aDeshacer = undoStack.Pop();\naDeshacer.Undo();",
+      "question": "¿Qué acción se deshace al presionar Ctrl+Z (cuál es `aDeshacer`)?",
+      "target": "accion3",
+      "acceptedAnswers": ["accion3", "Borrar enemigo", "la tercera acción", "la última acción"],
+      "hints": [
+        "Pop() devuelve el último elemento agregado (LIFO).",
+        "El último Push() fue accion3.",
+        "En un sistema undo, siempre se deshace la acción más reciente primero."
+      ],
+      "explanation": "<code>Pop()</code> devuelve <strong>accion3</strong> (Borrar enemigo) porque fue la última en entrar (<strong>LIFO</strong>). Este es exactamente el comportamiento correcto para undo/redo: siempre deshacer la acción más reciente primero."
+    },
+    {
+      "id": "st_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este código:",
+      "code": "Stack<int> pila = new Stack<int>();\n// El Stack está vacío\nint valor = pila.Pop(); // ¿Qué ocurre?",
+      "question": "¿Qué tipo de excepción lanza este código al intentar hacer Pop() en un Stack vacío?",
+      "target": "InvalidOperationException",
+      "acceptedAnswers": ["InvalidOperationException", "invalid operation", "InvalidOperation"],
+      "hints": [
+        "No es IndexOutOfRangeException (eso es para arrays).",
+        "La operación es inválida porque no hay elementos.",
+        "La excepción empieza con 'Invalid'."
+      ],
+      "explanation": "<strong>Pop()</strong> y <strong>Peek()</strong> en un <strong>Stack</strong> vacío lanzan <code>InvalidOperationException</code>. El mensaje es: <em>\"Stack empty\"</em>. Siempre protege con <code>if (pila.Count &gt; 0)</code> antes de llamarlos, o usa <code>TryPop(out var val)</code> que devuelve <code>false</code> en lugar de lanzar excepción."
+    },
+    {
+      "id": "st_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Sigue el estado del Stack paso a paso:",
+      "code": "Stack<char> pila = new Stack<char>();\npila.Push('A');\npila.Push('B');\npila.Push('C');\npila.Pop();\npila.Pop();\npila.Push('D');\nchar tope = pila.Peek();",
+      "question": "¿Qué valor tiene `tope` al final?",
+      "target": "D",
+      "acceptedAnswers": ["D", "'D'"],
+      "hints": [
+        "Sigue el estado: Push A → Push B → Push C → Pop (¿quita qué?) → Pop (¿quita qué?) → Push D.",
+        "Después de los dos Pop(), ¿qué queda en la pila?",
+        "Luego se hace Push('D'). ¿Cuál es el nuevo tope?"
+      ],
+      "explanation": "Paso a paso: Push(A)→[A], Push(B)→[A,B], Push(C)→[A,B,C], Pop()→quita C→[A,B], Pop()→quita B→[A], Push(D)→[A,D]. El tope es <strong>D</strong>. Peek() devuelve <code>'D'</code> sin eliminarlo."
+    },
+    {
+      "id": "st_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de estados de un NPC:",
+      "code": "Stack<string> estadosNPC = new Stack<string>();\nestadosNPC.Push(\"Idle\");\nestadosNPC.Push(\"Alerta\");\nestadosNPC.Push(\"Combate\");\n\n// El jugador escapa\nestadosNPC.Pop();\nstring estadoActual = estadosNPC.Peek();",
+      "question": "¿Cuál es el `estadoActual` del NPC después de que el jugador escapa?",
+      "target": "Alerta",
+      "acceptedAnswers": ["Alerta", "\"Alerta\""],
+      "hints": [
+        "Pop() elimina el estado más reciente (Combate).",
+        "Peek() lee el nuevo tope sin eliminarlo.",
+        "Después de Combate, el estado anterior era Alerta."
+      ],
+      "explanation": "El <strong>Stack</strong> de estados es: [Idle, Alerta, Combate] con Combate en el tope. Después de <code>Pop()</code> (el jugador escapa del combate), el tope pasa a ser <strong>Alerta</strong>. <code>Peek()</code> confirma el estado actual sin eliminarlo. Este es un patrón clásico de máquina de estados con historial."
+    },
+    {
+      "id": "st_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de un sistema de combos:",
+      "code": "Stack<string> combo = new Stack<string>();\ncombo.Push(\"Golpe\");\ncombo.Push(\"Patada\");\ncombo.Push(\"Especial\");\n\nwhile (combo.Count > 0)\n{\n    Debug.Log(combo.Pop());\n}",
+      "question": "¿En qué orden imprime los movimientos el bucle while?",
+      "target": "Especial, Patada, Golpe",
+      "acceptedAnswers": [
+        "Especial, Patada, Golpe",
+        "Especial Patada Golpe",
+        "Especial → Patada → Golpe",
+        "3, 2, 1"
+      ],
+      "hints": [
+        "El while hace Pop() repetidamente hasta vaciar el Stack.",
+        "LIFO: el último en entrar es el primero en salir.",
+        "El orden de Push fue: Golpe, Patada, Especial. El Pop invierte ese orden."
+      ],
+      "explanation": "El <code>while</code> hace <code>Pop()</code> hasta vaciar el <strong>Stack</strong>. Como es <strong>LIFO</strong>, el orden de salida es el inverso al de entrada: <strong>Especial → Patada → Golpe</strong>. Este comportamiento de inversión es útil para procesar en orden inverso, como deshacer una secuencia de acciones."
+    },
+    {
+      "id": "st_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para agregar el string `\"EstadoPausa\"` al Stack de historial de estados:",
+      "codeTemplate": "Stack<string> historial = new Stack<string>();\nhistorial.__________(\"EstadoPausa\");",
+      "expectedAnswer": "Push",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para agregar al tope del Stack...",
+      "hints": [
+        "El método para agregar al tope del Stack se llama como el acto de 'empujar' algo hacia arriba de la pila.",
+        "No es Add() — ese es de List<T>.",
+        "En inglés, 'empujar' es..."
+      ],
+      "explanation": "<strong>Push(item)</strong> agrega el elemento al tope del <strong>Stack</strong>. Es la operación O(1) de inserción. En Unity, llamarías <code>historial.Push(\"EstadoPausa\")</code> cada vez que el juego entra en pausa para poder revertir a ese estado después."
+    },
+    {
+      "id": "st_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para deshacer la última acción del editor de niveles (extraer y obtener el tope del Stack):",
+      "codeTemplate": "LevelAction accionDeshecha = undoStack.__________(  );",
+      "expectedAnswer": "Pop",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para extraer el tope...",
+      "hints": [
+        "El método elimina y devuelve el elemento del tope.",
+        "Es el opuesto de Push.",
+        "En inglés, 'sacar de una pila' es..."
+      ],
+      "explanation": "<strong>Pop()</strong> elimina el elemento del tope del <strong>Stack</strong> y lo devuelve. Es la operación O(1) de extracción y es fundamental para implementar undo: cada llamada a <code>Pop()</code> recupera la acción más reciente para revertirla."
+    },
+    {
+      "id": "st_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición de la guardia para evitar InvalidOperationException antes de hacer Pop():",
+      "codeTemplate": "if (undoStack.__________ > 0)\n{\n    LevelAction accion = undoStack.Pop();\n    accion.Undo();\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad que indica cuántos elementos hay...",
+      "hints": [
+        "Necesitas saber si el Stack tiene al menos un elemento.",
+        "La propiedad que da el número de elementos del Stack empieza con C mayúscula.",
+        "Es la misma propiedad que usan las listas."
+      ],
+      "explanation": "<code>Count</code> devuelve el número de elementos en el <strong>Stack</strong>. La guardia <code>if (undoStack.Count &gt; 0)</code> previene la <code>InvalidOperationException</code> que ocurre al llamar <code>Pop()</code> en un stack vacío. Siempre verifica antes de Pop() o Peek()."
+    },
+    {
+      "id": "st_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el código para crear un Stack<string> llamado `menuNavigation`, agregar `\"MainMenu\"` y luego `\"SettingsMenu\"`, y finalmente hacer Pop() para volver al menú anterior:",
+      "codeTemplate": null,
+      "expectedAnswer": "Stack<string> menuNavigation = new Stack<string>();\nmenuNavigation.Push(\"MainMenu\");\nmenuNavigation.Push(\"SettingsMenu\");\nmenuNavigation.Pop();",
+      "alternateAnswers": [
+        "Stack<string> menuNavigation = new Stack<string>();\nmenuNavigation.Push(\"MainMenu\");\nmenuNavigation.Push(\"SettingsMenu\");\nstring prev = menuNavigation.Pop();"
+      ],
+      "placeholder": "Escribe el código completo del Stack de navegación...",
+      "hints": [
+        "Primero declara el Stack con new Stack<string>().",
+        "Luego dos Push() para los dos menús en orden.",
+        "Finalmente Pop() para volver al menú anterior."
+      ],
+      "explanation": "El <strong>Stack</strong> de navegación: <code>Push(\"MainMenu\")</code> → <code>Push(\"SettingsMenu\")</code> → <code>Pop()</code> elimina <code>\"SettingsMenu\"</code> y el tope pasa a ser <code>\"MainMenu\"</code>. Este es el patrón estándar para navegación jerárquica de menús en Unity."
+    },
+    {
+      "id": "st_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este método de undo que saca la última acción del Stack, la ejecuta en reversa y la mueve al redoStack:",
+      "codeTemplate": "public void Undo()\n{\n    if (undoStack.Count > 0)\n    {\n        LevelAction accion = undoStack.__________(  );\n        accion.Revert();\n        redoStack.Push(accion);\n    }\n}",
+      "expectedAnswer": "Pop",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para extraer la última acción...",
+      "hints": [
+        "Necesitas extraer Y obtener la acción del tope del undoStack.",
+        "El método que elimina y devuelve el tope del Stack es...",
+        "Peek() solo lee sin eliminar; necesitas el que también elimina."
+      ],
+      "explanation": "<code>Pop()</code> extrae la última acción del <strong>undoStack</strong>. Luego se revierte y se guarda en el <strong>redoStack</strong> para poder rehacerla. Este patrón de dos stacks (undo + redo) es el mismo que usan editores como Photoshop, Visual Studio y el propio editor de Unity."
+    },
+    {
+      "id": "st_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un método completo `string ObtenerMenuActual(Stack<string> nav)` que devuelva el menú en el tope del Stack sin modificarlo. Si el Stack está vacío, devuelve `\"MainMenu\"`:",
+      "codeTemplate": null,
+      "expectedAnswer": "string ObtenerMenuActual(Stack<string> nav) { if (nav.Count > 0) return nav.Peek(); return \"MainMenu\"; }",
+      "alternateAnswers": [
+        "string ObtenerMenuActual(Stack<string> nav)\n{\n    if (nav.Count > 0)\n        return nav.Peek();\n    return \"MainMenu\";\n}",
+        "string ObtenerMenuActual(Stack<string> nav) { return nav.Count > 0 ? nav.Peek() : \"MainMenu\"; }"
+      ],
+      "placeholder": "Escribe el método completo con guardia para Stack vacío...",
+      "hints": [
+        "Usa Peek() para leer el tope sin eliminarlo.",
+        "Verifica Count > 0 antes de llamar Peek() para evitar excepción.",
+        "Si está vacío, retorna el valor por defecto \"MainMenu\"."
+      ],
+      "explanation": "El método usa <strong>Peek()</strong> (no <strong>Pop()</strong>) para no modificar el <strong>Stack</strong>. La guardia <code>nav.Count &gt; 0</code> previene la excepción en stack vacío. El operador ternario <code>nav.Count &gt; 0 ? nav.Peek() : \"MainMenu\"</code> es una alternativa concisa equivalente."
+    }
+  ]
+}

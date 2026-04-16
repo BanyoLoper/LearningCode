@@ -1,0 +1,409 @@
+{
+  "id": "fuerzas",
+  "title": "Fuerzas en Unity",
+  "icon": "💥",
+  "color": "#0097A7",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "AddForce y el Rigidbody",
+        "type": "definition",
+        "content": "Para aplicar física real en Unity se usa el componente <strong>Rigidbody</strong> junto con el método <strong>AddForce</strong>. La fuerza se aplica al <strong>Rigidbody</strong> y el motor de física (PhysX) calcula la nueva velocidad y posición automáticamente según la segunda ley de Newton: <code>F = m × a</code>. Ejemplo: <code>rb.AddForce(Vector3.up * 500f);</code> aplica una fuerza hacia arriba. Nunca se debe modificar <code>transform.position</code> directamente cuando se usa <strong>Rigidbody</strong> con físicas activadas."
+      },
+      {
+        "id": "doc-2",
+        "title": "Modos de AddForce: ForceMode",
+        "type": "code",
+        "content": "// ForceMode.Force (default): fuerza continua que tiene en cuenta la masa\n// F = masa × aceleración → más masa = menos aceleración\nrb.AddForce(Vector3.forward * 10f, ForceMode.Force);\n\n// ForceMode.Impulse: fuerza instantánea que tiene en cuenta la masa\n// Ideal para saltos, explosiones, disparos\nrb.AddForce(Vector3.up * 500f, ForceMode.Impulse);\n\n// ForceMode.Acceleration: fuerza continua IGNORANDO la masa\n// Produce la misma aceleración sin importar el peso del objeto\nrb.AddForce(Vector3.forward * 5f, ForceMode.Acceleration);\n\n// ForceMode.VelocityChange: cambio instantáneo IGNORANDO la masa\n// Establece directamente un incremento de velocidad\nrb.AddForce(Vector3.up * 5f, ForceMode.VelocityChange);"
+      },
+      {
+        "id": "doc-3",
+        "title": "AddForce vs Transform.Translate",
+        "type": "analogy",
+        "content": "Usar <code>transform.Translate()</code> o modificar <code>transform.position</code> es como mover un objeto <em>teletransportándolo</em>: ignora físicas, colisiones y masa. Usar <strong>AddForce</strong> es como empujar el objeto de verdad: respeta la masa, rebota contra paredes, interactúa con otros <strong>Rigidbody</strong> y genera eventos de colisión. Si mueves un objeto con físicas usando <code>transform.position</code>, puede atravesar paredes y el motor físico queda 'confundido'. La regla es: si el objeto tiene <strong>Rigidbody</strong>, usa física para moverlo."
+      },
+      {
+        "id": "doc-4",
+        "title": "Masa, Gravedad y Drag",
+        "type": "code",
+        "content": "// Propiedades del Rigidbody\nRigidbody rb = GetComponent<Rigidbody>();\n\nfloat masa = rb.mass;           // masa en kg (afecta a Force e Impulse)\nfloat gravedad = rb.useGravity; // si responde a la gravedad global\nfloat drag = rb.drag;           // fricción linear (resistencia al movimiento)\nfloat angularDrag = rb.angularDrag; // fricción rotacional\n\n// Verificar velocidad actual\nDebug.Log(rb.velocity.magnitude); // rapidez actual\n\n// Limitar velocidad máxima manualmente\nvoid FixedUpdate()\n{\n    if (rb.velocity.magnitude > maxSpeed)\n        rb.velocity = rb.velocity.normalized * maxSpeed;\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Fuerzas en Unity",
+        "type": "list",
+        "items": [
+          "ForceMode.Force: continua + considera masa. Usar para empujes constantes (motor, viento).",
+          "ForceMode.Impulse: instantánea + considera masa. Usar para saltos y explosiones.",
+          "ForceMode.Acceleration: continua + ignora masa. Misma aceleración para cualquier objeto.",
+          "ForceMode.VelocityChange: instantánea + ignora masa. Cambio directo de velocidad.",
+          "AddForce debe llamarse en FixedUpdate() para consistencia física.",
+          "Nunca modificar transform.position directamente si el objeto tiene Rigidbody con física.",
+          "drag reduce la velocidad con el tiempo (simula fricción del aire o agua).",
+          "useGravity en false desactiva la gravedad para objetos como naves espaciales."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "fuer_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué método del componente **Rigidbody** se usa para aplicar una fuerza física a un objeto en Unity?",
+      "options": [
+        "AddForce",
+        "ApplyForce",
+        "PushForce",
+        "SetVelocity",
+        "MovePosition"
+      ],
+      "correctIndex": 0,
+      "explanation": "El método <strong>AddForce</strong> del componente <strong>Rigidbody</strong> aplica una fuerza al objeto, haciendo que el motor de física (PhysX) calcule la aceleración resultante según la masa del objeto (<code>F = ma</code>). Es la forma correcta de mover objetos con física en Unity."
+    },
+    {
+      "id": "fuer_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál **ForceMode** es el más apropiado para implementar el salto de un personaje (fuerza instantánea y única)?",
+      "options": [
+        "ForceMode.Impulse",
+        "ForceMode.Force",
+        "ForceMode.Acceleration",
+        "ForceMode.VelocityChange",
+        "ForceMode.Gravity"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ForceMode.Impulse</strong> aplica una fuerza <em>instantánea</em> que tiene en cuenta la masa del objeto. Es ideal para el <strong>salto</strong> porque ocurre en un solo frame (no continuo) y debe verse afectado por la masa del personaje. Un personaje pesado necesitará más impulso que uno liviano para saltar igual de alto."
+    },
+    {
+      "id": "fuer_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de Unity debe llamarse `AddForce` para una física estable y consistente?",
+      "options": [
+        "FixedUpdate()",
+        "Update()",
+        "LateUpdate()",
+        "Start()",
+        "OnEnable()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate()</strong> se ejecuta a intervalos fijos (por defecto 50 veces/segundo) independientemente del <strong>framerate</strong>. El motor de física de Unity se actualiza en sincronía con <strong>FixedUpdate()</strong>, por lo que las fuerzas aplicadas aquí producen resultados físicamente estables. Aplicar fuerzas en <code>Update()</code> puede causar comportamiento errático."
+    },
+    {
+      "id": "fuer_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia clave entre `ForceMode.Force` y `ForceMode.Acceleration`?",
+      "options": [
+        "Force tiene en cuenta la masa del objeto; Acceleration la ignora, produciendo la misma aceleración para cualquier masa.",
+        "Force es instantánea; Acceleration es continua en el tiempo.",
+        "Force solo funciona en el eje Y; Acceleration funciona en todos los ejes.",
+        "Force requiere FixedUpdate; Acceleration puede usarse en Update.",
+        "Son idénticos; la diferencia es solo de nombre."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ForceMode.Force</strong> aplica <code>F = masa × aceleración</code>: un objeto más pesado acelera menos. <strong>ForceMode.Acceleration</strong> ignora la masa completamente, produciendo la <em>misma aceleración</em> en cualquier objeto. Ambos son continuos (se suman frame a frame en FixedUpdate). Acceleration es útil cuando quieres que todos los objetos se muevan igual sin importar su peso."
+    },
+    {
+      "id": "fuer_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un jugador tiene `Rigidbody` con masa 2kg. Se llama `rb.AddForce(Vector3.up * 10f, ForceMode.Impulse)`. ¿Cuál es la aceleración instantánea resultante?",
+      "options": [
+        "5 m/s² (F/m = 10/2)",
+        "10 m/s² (la masa no afecta con Impulse)",
+        "20 m/s² (F × m = 10 × 2)",
+        "2 m/s² (solo depende de la masa)",
+        "9.8 m/s² (siempre es la gravedad)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ForceMode.Impulse</strong> considera la masa: aceleración = F/m = 10/2 = <strong>5 m/s²</strong>. Un objeto con masa 1kg recibiría 10 m/s²; con masa 5kg, solo 2 m/s². Esto es la segunda ley de Newton aplicada a impulsos. Si usaras <code>ForceMode.VelocityChange</code>, la velocidad cambiaría directamente 10 m/s sin importar la masa."
+    },
+    {
+      "id": "fuer_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué NO se debe usar `transform.position += velocity * Time.deltaTime` en un objeto con **Rigidbody** y física activada?",
+      "options": [
+        "Porque bypasea el motor de física, pudiendo causar que el objeto atraviese colisiones y desincronice la simulación.",
+        "Porque transform.position es de solo lectura cuando hay un Rigidbody.",
+        "Porque Time.deltaTime no existe en objetos con Rigidbody.",
+        "Porque el Rigidbody restablece la posición al inicio de cada FixedUpdate.",
+        "Porque la multiplicación de Vector3 no está soportada con Rigidbody."
+      ],
+      "correctIndex": 0,
+      "explanation": "Modificar <code>transform.position</code> directamente <em>teletransporta</em> el objeto, saltándose la simulación física. Esto puede causar que el objeto <strong>atraviese colisiones</strong> (tunnel through), genere comportamientos físicos incorrectos y desincronice el motor de PhysX. La forma correcta es usar <code>rb.MovePosition()</code> (para cinemático) o <code>rb.AddForce()</code> (para dinámico)."
+    },
+    {
+      "id": "fuer_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué propiedad del **Rigidbody** simula la resistencia del aire (hace que el objeto pierda velocidad gradualmente)?",
+      "options": [
+        "drag",
+        "friction",
+        "resistance",
+        "damping",
+        "angularDrag"
+      ],
+      "correctIndex": 0,
+      "explanation": "La propiedad <strong>drag</strong> del <strong>Rigidbody</strong> simula resistencia lineal (fricción del aire o del agua). Un valor de 0 significa sin resistencia; valores altos hacen que el objeto se detenga rápidamente. <code>angularDrag</code> hace lo mismo pero para la rotación. En juegos de naves espaciales, se suele poner <code>drag = 0</code> para simular el vacío."
+    },
+    {
+      "id": "fuer_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Una nave espacial tiene `rb.useGravity = false` y `rb.drag = 0`. El jugador presiona el botón de thrust y se llama `rb.AddForce(transform.forward * thrustForce, ForceMode.Force)` en cada `FixedUpdate()`. ¿Qué ocurre cuando el jugador suelta el botón y deja de aplicar la fuerza?",
+      "options": [
+        "La nave continúa moviéndose a velocidad constante en la misma dirección (inercia, sin fricción).",
+        "La nave se detiene inmediatamente al dejar de presionar el botón.",
+        "La nave desacelera gradualmente hasta detenerse.",
+        "La nave comienza a caer por la gravedad.",
+        "La nave invierte su dirección de movimiento."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <code>useGravity = false</code> y <code>drag = 0</code>, no hay fuerzas que se opongan al movimiento (sin gravedad, sin fricción). Según la primera ley de Newton (inercia), un objeto sin fuerza neta mantiene su velocidad constante. La nave continuará moviéndose en la misma dirección indefinidamente, como en el vacío del espacio."
+    },
+    {
+      "id": "fuer_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de salto:",
+      "code": "void OnJumpPressed()\n{\n    rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);\n}",
+      "question": "¿Por qué se usa `ForceMode.Impulse` y no `ForceMode.Force` para el salto?",
+      "target": "porque el salto es una fuerza instantánea que ocurre en un solo frame",
+      "acceptedAnswers": [
+        "porque el salto es una fuerza instantánea que ocurre en un solo frame",
+        "porque es instantáneo",
+        "el salto ocurre en un instante, no es continuo",
+        "Force es continua e Impulse es instantánea",
+        "porque Impulse aplica la fuerza de golpe"
+      ],
+      "hints": [
+        "¿El salto ocurre gradualmente durante muchos frames o en un instante?",
+        "ForceMode.Force se aplica de forma continua (cada FixedUpdate suma la fuerza).",
+        "ForceMode.Impulse aplica toda la fuerza en un solo momento."
+      ],
+      "explanation": "Un salto ocurre en un <strong>instante</strong>: se llama una sola vez cuando el jugador presiona el botón. <strong>ForceMode.Impulse</strong> es para fuerzas instantáneas (un golpe, un disparo, un salto). <strong>ForceMode.Force</strong> se suma cada <code>FixedUpdate()</code>, así que usarla para el salto haría que el personaje volara indefinidamente mientras se llame."
+    },
+    {
+      "id": "fuer_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de movimiento de nave espacial:",
+      "code": "void FixedUpdate()\n{\n    if (Input.GetKey(KeyCode.W))\n        rb.AddForce(transform.forward * thrustForce, ForceMode.Force);\n}",
+      "question": "¿Por qué el código está en `FixedUpdate()` y no en `Update()`?",
+      "target": "porque AddForce debe sincronizarse con el motor de física que se actualiza en FixedUpdate",
+      "acceptedAnswers": [
+        "porque AddForce debe sincronizarse con el motor de física que se actualiza en FixedUpdate",
+        "para que la física sea estable y consistente",
+        "porque el motor de física se actualiza en FixedUpdate",
+        "para sincronizar con PhysX",
+        "FixedUpdate tiene tiempo fijo y es consistente para física"
+      ],
+      "hints": [
+        "El motor de física de Unity (PhysX) se actualiza a intervalos fijos.",
+        "¿Con cuál método de ciclo de vida está sincronizado el motor de física?",
+        "Aplicar fuerzas en Update puede ser inconsistente si el framerate varía."
+      ],
+      "explanation": "El motor de física de Unity se actualiza en sincronía con <strong>FixedUpdate()</strong> a intervalos fijos (<code>Time.fixedDeltaTime</code>). Aplicar fuerzas aquí garantiza que la simulación sea <em>determinística</em> y estable. En <code>Update()</code>, el <strong>framerate</strong> variable haría que se apliquen más fuerzas en frames rápidos y menos en frames lentos."
+    },
+    {
+      "id": "fuer_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara estos dos enfoques para mover un personaje:",
+      "code": "// Enfoque A:\ntransform.Translate(Vector3.forward * speed * Time.deltaTime);\n\n// Enfoque B:\nrb.AddForce(transform.forward * thrustForce, ForceMode.Force);",
+      "question": "¿Cuál enfoque es correcto para un personaje con **Rigidbody** que debe interactuar con la física del mundo (colisiones, empujar objetos)?",
+      "target": "Enfoque B con AddForce",
+      "acceptedAnswers": [
+        "Enfoque B con AddForce",
+        "el Enfoque B",
+        "B, usando AddForce",
+        "AddForce (Enfoque B)",
+        "rb.AddForce"
+      ],
+      "hints": [
+        "¿Qué enfoque respeta el motor de física y las colisiones?",
+        "Transform.Translate mueve el objeto sin importar qué hay en el camino.",
+        "AddForce trabaja junto con el Rigidbody y el motor de física."
+      ],
+      "explanation": "El <strong>Enfoque B (AddForce)</strong> es correcto para objetos con física. <code>transform.Translate</code> mueve el objeto teletransportándolo, ignorando colisiones y el motor de física. <strong>AddForce</strong> trabaja con el <strong>Rigidbody</strong>, respeta colisiones, puede empujar otros objetos y genera eventos <code>OnCollisionEnter</code> correctamente."
+    },
+    {
+      "id": "fuer_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de movimiento con límite de velocidad:",
+      "code": "void FixedUpdate()\n{\n    rb.AddForce(moveDir * acceleration, ForceMode.Force);\n\n    if (rb.velocity.magnitude > maxSpeed)\n    {\n        rb.velocity = rb.velocity.normalized * maxSpeed;\n    }\n}",
+      "question": "¿Por qué la limitación de velocidad usa `rb.velocity.normalized * maxSpeed` en lugar de simplemente `rb.velocity = Vector3.zero`?",
+      "target": "para conservar la dirección del movimiento y solo limitar la magnitud (rapidez)",
+      "acceptedAnswers": [
+        "para conservar la dirección del movimiento y solo limitar la magnitud (rapidez)",
+        "para mantener la dirección y reducir solo la velocidad al máximo",
+        "normalized conserva la dirección; multiplicar por maxSpeed establece la rapidez correcta",
+        "para no detener el objeto sino solo frenarlo al límite",
+        "para limitar la magnitud sin cambiar la dirección"
+      ],
+      "hints": [
+        "normalized devuelve un vector con la misma dirección pero magnitud 1.",
+        "¿Qué pasaría si se usara Vector3.zero? ¿El objeto seguiría moviéndose?",
+        "Se quiere limitar la rapidez, no la dirección."
+      ],
+      "explanation": "<code>rb.velocity.normalized</code> conserva la <strong>dirección</strong> del movimiento con longitud 1. Al multiplicar por <code>maxSpeed</code>, se establece la rapidez exacta sin cambiar a dónde va el objeto. Usar <code>Vector3.zero</code> detendría completamente el objeto — lo opuesto de lo que se quiere. Este patrón es el estándar para <em>velocity clamping</em> en Unity."
+    },
+    {
+      "id": "fuer_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de explosión:",
+      "code": "void Explode()\n{\n    Collider[] nearbyObjects = Physics.OverlapSphere(transform.position, explosionRadius);\n    foreach (Collider col in nearbyObjects)\n    {\n        Rigidbody nearbyRb = col.GetComponent<Rigidbody>();\n        if (nearbyRb != null)\n        {\n            Vector3 dir = (col.transform.position - transform.position).normalized;\n            nearbyRb.AddForce(dir * explosionForce, ForceMode.Impulse);\n        }\n    }\n}",
+      "question": "¿Por qué se usa `ForceMode.Impulse` en lugar de `ForceMode.Force` para la explosión?",
+      "target": "porque la explosión es un evento instantáneo que aplica fuerza una sola vez",
+      "acceptedAnswers": [
+        "porque la explosión es un evento instantáneo que aplica fuerza una sola vez",
+        "es un evento único e instantáneo",
+        "la explosión ocurre en un frame",
+        "ForceMode.Force sería continua y empujaría para siempre",
+        "Impulse es para fuerzas instantáneas como golpes y explosiones"
+      ],
+      "hints": [
+        "¿Una explosión ocurre en un instante o continúa empujando por segundos?",
+        "ForceMode.Force se acumula en cada FixedUpdate que se llame.",
+        "Explode() se llama solo una vez, en el momento de la explosión."
+      ],
+      "explanation": "Una explosión ocurre en un <strong>instante</strong>: <code>Explode()</code> se llama una sola vez. <strong>ForceMode.Impulse</strong> aplica toda la fuerza en ese único momento. Con <strong>ForceMode.Force</strong>, como solo se llama una vez, la fuerza sería tan pequeña que casi no movería nada (se acumula por tiempo, no como golpe). Impulse considera la masa, así que objetos pesados son menos afectados."
+    },
+    {
+      "id": "fuer_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de una nave con propulsión:",
+      "code": "public float thrust = 50f;\nprivate Rigidbody rb;\n\nvoid Start()\n{\n    rb = GetComponent<Rigidbody>();\n    rb.useGravity = false;\n    rb.drag = 1f;\n}\n\nvoid FixedUpdate()\n{\n    rb.AddForce(transform.forward * thrust, ForceMode.Force);\n}",
+      "question": "¿Qué rol cumple `rb.drag = 1f` en este sistema de propulsión espacial?",
+      "target": "limita la velocidad máxima creando resistencia que aumenta con la velocidad hasta equilibrarse con el thrust",
+      "acceptedAnswers": [
+        "limita la velocidad máxima creando resistencia que aumenta con la velocidad hasta equilibrarse con el thrust",
+        "actúa como resistencia para que la nave llegue a una velocidad máxima",
+        "limita la velocidad máxima de la nave",
+        "crea fricción que equilibra el thrust",
+        "simula resistencia para controlar la velocidad terminal"
+      ],
+      "hints": [
+        "drag es resistencia al movimiento; aumenta a medida que la nave va más rápido.",
+        "En algún punto, la resistencia del drag iguala a la fuerza de thrust.",
+        "Ese punto de equilibrio es la velocidad máxima de la nave."
+      ],
+      "explanation": "El <strong>drag</strong> crea una fuerza de resistencia proporcional a la velocidad. Cuando la nave acelera, el <strong>drag</strong> aumenta hasta que iguala la fuerza de <strong>thrust</strong>. En ese punto de equilibrio, la aceleración neta es cero y la nave mantiene una <em>velocidad máxima</em> constante. Esto evita que la nave acelere infinitamente sin necesitar código adicional de limitación."
+    },
+    {
+      "id": "fuer_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el código para aplicar un salto instantáneo al **Rigidbody** hacia arriba con `jumpForce = 500f`, usando el **ForceMode** apropiado para un impulso único:",
+      "codeTemplate": "rb.AddForce(Vector3.up * jumpForce, ForceMode.__________);",
+      "expectedAnswer": "Impulse",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el ForceMode correcto para un salto...",
+      "hints": [
+        "Un salto ocurre una sola vez, no de forma continua.",
+        "El ForceMode para fuerzas instantáneas que consideran la masa.",
+        "Empieza con 'I' y su nombre en inglés significa 'impulso'."
+      ],
+      "explanation": "<strong>ForceMode.Impulse</strong> es el ForceMode correcto para el salto: aplica una fuerza instantánea (en un solo frame) considerando la masa del objeto. Un personaje con más masa recibirá menos impulso vertical, simulando que es más difícil saltar siendo más pesado."
+    },
+    {
+      "id": "fuer_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método correcto del ciclo de vida de Unity donde se debe aplicar `AddForce` para física estable:",
+      "codeTemplate": "void __________()\n{\n    rb.AddForce(transform.forward * thrustForce, ForceMode.Force);\n}",
+      "expectedAnswer": "FixedUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Es un método del ciclo de vida de MonoBehaviour.",
+        "Se ejecuta a intervalos fijos, sincronizado con el motor de física.",
+        "Su nombre incluye la palabra 'Fixed'."
+      ],
+      "explanation": "<strong>FixedUpdate()</strong> se ejecuta en sincronía con el motor de física de Unity a intervalos fijos. Aplicar <code>AddForce</code> aquí garantiza consistencia física independientemente del <strong>framerate</strong>. En <code>Update()</code>, el framerate variable causaría fuerzas inconsistentes."
+    },
+    {
+      "id": "fuer_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código de una explosión que empuja todos los **Rigidbody** cercanos. Usa el **ForceMode** correcto para un empuje instantáneo:",
+      "codeTemplate": "Vector3 direction = (target.position - transform.position).normalized;\ntarget.AddForce(direction * explosionForce, ForceMode.__________);",
+      "expectedAnswer": "Impulse",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el ForceMode para explosión instantánea...",
+      "hints": [
+        "Una explosión ocurre en un instante, no de forma continua.",
+        "Se llama solo una vez en el momento de la explosión.",
+        "El ForceMode para fuerzas instantáneas es..."
+      ],
+      "explanation": "<strong>ForceMode.Impulse</strong> aplica la fuerza de golpe en un solo frame, perfecto para explosiones que ocurren en un instante. La dirección calculada con <code>(target - source).normalized</code> hace que los objetos vuelen en dirección radial desde el centro de la explosión."
+    },
+    {
+      "id": "fuer_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método `Start()` de una nave espacial que desactiva la gravedad y establece el drag en 0.5f (obteniendo el **Rigidbody** en Start):",
+      "codeTemplate": null,
+      "expectedAnswer": "void Start()\n{\n    rb = GetComponent<Rigidbody>();\n    rb.useGravity = false;\n    rb.drag = 0.5f;\n}",
+      "alternateAnswers": [
+        "void Start() { rb = GetComponent<Rigidbody>(); rb.useGravity = false; rb.drag = 0.5f; }"
+      ],
+      "placeholder": "Escribe el método Start completo...",
+      "hints": [
+        "Obtén el componente Rigidbody con GetComponent<Rigidbody>().",
+        "useGravity debe ser false para desactivar la gravedad.",
+        "drag se establece como un float."
+      ],
+      "explanation": "<code>rb.useGravity = false</code> desactiva la gravedad global para este objeto (ideal para naves espaciales). <code>rb.drag = 0.5f</code> añade resistencia para que la nave tenga una velocidad máxima natural cuando se aplica thrust constante. Obtener el <strong>Rigidbody</strong> en <code>Start()</code> es más eficiente que buscarlo cada frame."
+    },
+    {
+      "id": "fuer_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código que limita la velocidad máxima del **Rigidbody** conservando la dirección del movimiento:",
+      "codeTemplate": "if (rb.velocity.magnitude > maxSpeed)\n{\n    rb.velocity = rb.velocity.__________ * maxSpeed;\n}",
+      "expectedAnswer": "normalized",
+      "alternateAnswers": [],
+      "placeholder": "¿Qué propiedad del vector conserva la dirección con longitud 1?",
+      "hints": [
+        "Queremos conservar la dirección pero cambiar la magnitud.",
+        "Primero se reduce el vector a longitud 1, luego se escala al máximo.",
+        "La propiedad que hace longitud = 1 manteniendo la dirección es..."
+      ],
+      "explanation": "<code>rb.velocity.normalized</code> devuelve un vector con la misma dirección pero magnitud 1. Al multiplicar por <code>maxSpeed</code>, se establece exactamente la velocidad máxima deseada sin cambiar la dirección. Es el patrón estándar de <em>velocity clamping</em> para limitar la velocidad en física."
+    },
+    {
+      "id": "fuer_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el script completo `SpaceshipController` con un campo `float thrust = 100f`, que en `Start()` desactiva la gravedad, y en `FixedUpdate()` lee `Input.GetAxis(\"Vertical\")` y aplica `AddForce` en `transform.forward` con `ForceMode.Force`:",
+      "codeTemplate": null,
+      "expectedAnswer": "public class SpaceshipController : MonoBehaviour\n{\n    public float thrust = 100f;\n    private Rigidbody rb;\n\n    void Start()\n    {\n        rb = GetComponent<Rigidbody>();\n        rb.useGravity = false;\n    }\n\n    void FixedUpdate()\n    {\n        float input = Input.GetAxis(\"Vertical\");\n        rb.AddForce(transform.forward * input * thrust, ForceMode.Force);\n    }\n}",
+      "alternateAnswers": [
+        "public class SpaceshipController : MonoBehaviour { public float thrust = 100f; private Rigidbody rb; void Start() { rb = GetComponent<Rigidbody>(); rb.useGravity = false; } void FixedUpdate() { float input = Input.GetAxis(\"Vertical\"); rb.AddForce(transform.forward * input * thrust, ForceMode.Force); } }"
+      ],
+      "placeholder": "Escribe el script SpaceshipController completo...",
+      "hints": [
+        "La clase hereda de MonoBehaviour; Rigidbody se guarda en un campo privado.",
+        "En Start() obtén el Rigidbody y desactiva useGravity.",
+        "En FixedUpdate() lee Input.GetAxis y multiplica por transform.forward, thrust, y usa ForceMode.Force."
+      ],
+      "explanation": "El script usa <strong>FixedUpdate</strong> para física estable, <strong>ForceMode.Force</strong> para empuje continuo (mientras se presione el botón), y <code>Input.GetAxis(\"Vertical\")</code> que devuelve valores entre -1 y 1. Multiplicar por el input permite ir hacia adelante y hacia atrás. Con <code>useGravity = false</code>, la nave no cae."
+    }
+  ]
+}
