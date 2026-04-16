@@ -1,0 +1,368 @@
+{
+  "id": "rigidbody_fisica",
+  "title": "Física con Rigidbody",
+  "icon": "⚽",
+  "color": "#FF9800",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es el Rigidbody?",
+        "type": "definition",
+        "content": "El componente <strong>Rigidbody</strong> le dice a Unity que un GameObject debe ser controlado por el motor de física. Sin él, el objeto no responde a la gravedad ni a las fuerzas. Se manipula en código con la variable <code>Rigidbody rb;</code> obtenida con <code>GetComponent&lt;Rigidbody&gt;()</code>. Nunca muevas un <strong>Rigidbody</strong> cambiando <code>transform.position</code> directamente: usa <code>rb.MovePosition()</code> o <code>rb.AddForce()</code> para que la física sea consistente."
+      },
+      {
+        "id": "doc-2",
+        "title": "FixedUpdate vs Update para Física",
+        "type": "code",
+        "content": "// MAL: física en Update (depende del framerate)\nvoid Update()\n{\n    rb.AddForce(Vector3.forward * 10f); // inconsistente!\n}\n\n// BIEN: física en FixedUpdate (intervalo fijo, por defecto 0.02s)\nvoid FixedUpdate()\n{\n    rb.AddForce(Vector3.forward * 10f); // consistente\n}\n\n// BIEN: input en Update, fuerza en FixedUpdate\nprivate Vector3 inputDir;\nvoid Update()\n{\n    inputDir = new Vector3(Input.GetAxis(\"Horizontal\"), 0, Input.GetAxis(\"Vertical\"));\n}\nvoid FixedUpdate()\n{\n    rb.AddForce(inputDir * speed);\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "isKinematic: cuándo y por qué",
+        "type": "note",
+        "content": "<strong>isKinematic = true</strong> significa que el objeto ya no es controlado por el motor de física: no responde a gravedad ni a fuerzas externas, pero <em>sí</em> puede participar en colisiones como objeto estático en movimiento. Úsalo cuando quieras mover el objeto por código (plataformas móviles, puertas, personaje animado por Animator). Con <code>isKinematic = false</code> el motor de física toma el control total."
+      },
+      {
+        "id": "doc-4",
+        "title": "Constraints: congelar ejes",
+        "type": "code",
+        "content": "// Congelar rotación en todos los ejes (útil para un personaje que no debe volcarse)\nrb.constraints = RigidbodyConstraints.FreezeRotation;\n\n// Congelar solo rotación en Y\nrb.constraints = RigidbodyConstraints.FreezeRotationY;\n\n// Congelar posición en Y (objeto que solo se mueve en el plano XZ)\nrb.constraints = RigidbodyConstraints.FreezePositionY;\n\n// Combinar constraints con el operador |\nrb.constraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotation;"
+      },
+      {
+        "id": "doc-5",
+        "title": "OnCollisionEnter vs OnTriggerEnter",
+        "type": "list",
+        "items": [
+          "OnCollisionEnter: el collider tiene 'Is Trigger' desactivado. Los objetos se bloquean físicamente entre sí.",
+          "OnTriggerEnter: al menos uno de los colliders tiene 'Is Trigger' activado. Los objetos se atraviesan pero se detecta el evento.",
+          "Para muros, suelo y objetos sólidos: usa Collision (sin trigger).",
+          "Para zonas de detección, cofres, power-ups: usa Trigger.",
+          "OnCollisionEnter recibe Collision info (con punto de contacto y velocidad); OnTriggerEnter recibe el Collider del otro objeto.",
+          "Al menos uno de los dos objetos debe tener Rigidbody para que se detecten colisiones."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "rb_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de Unity debes aplicar fuerzas con **AddForce** para que la física sea independiente del framerate?",
+      "options": [
+        "FixedUpdate",
+        "Update",
+        "LateUpdate",
+        "Start",
+        "Awake"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate</strong> se llama a intervalos de tiempo fijos (por defecto cada 0.02 s), independientemente del framerate. Aplicar fuerzas aquí garantiza que la física sea consistente en todas las máquinas. <strong>Update</strong> varía con el framerate, lo que haría que el personaje se moviera más rápido en computadoras potentes."
+    },
+    {
+      "id": "rb_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué ocurre cuando se activa **isKinematic** en un **Rigidbody**?",
+      "options": [
+        "El objeto deja de ser afectado por la gravedad y las fuerzas externas, pero puede moverse por código.",
+        "El objeto se vuelve inmóvil y no puede moverse de ninguna forma.",
+        "El objeto pasa a ser un trigger y los demás lo atraviesan.",
+        "El objeto ignora todas las colisiones aunque tenga collider.",
+        "El objeto se mueve solo por la gravedad sin posibilidad de aplicarle fuerzas."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <strong>isKinematic = true</strong>, el motor de física no controla el objeto: la gravedad y las fuerzas no lo afectan. Sin embargo, puedes moverlo con <code>rb.MovePosition()</code> o animaciones. Es ideal para plataformas móviles o puertas controladas por código."
+    },
+    {
+      "id": "rb_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre **OnCollisionEnter** y **OnTriggerEnter**?",
+      "options": [
+        "OnCollisionEnter ocurre cuando los colliders son sólidos y se bloquean; OnTriggerEnter ocurre cuando uno tiene 'Is Trigger' activado y los objetos se atraviesan.",
+        "OnCollisionEnter solo funciona con Rigidbody kinematic; OnTriggerEnter funciona con todos.",
+        "OnTriggerEnter devuelve información de velocidad de impacto; OnCollisionEnter no.",
+        "OnCollisionEnter se llama en FixedUpdate; OnTriggerEnter se llama en Update.",
+        "No hay diferencia, son intercambiables dependiendo del nombre que prefieras usar."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnCollisionEnter</strong> se dispara cuando dos colliders sólidos se tocan y se bloquean físicamente. <strong>OnTriggerEnter</strong> se dispara cuando al menos un collider tiene <em>Is Trigger</em> activado, permitiendo que los objetos se atraviesen. Usa triggers para zonas de detección y collisions para objetos sólidos."
+    },
+    {
+      "id": "rb_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirven los **constraints** en un **Rigidbody**?",
+      "options": [
+        "Para congelar posición o rotación en ejes específicos, evitando que la física los modifique.",
+        "Para aumentar la velocidad máxima del objeto en la dirección indicada.",
+        "Para deshabilitar todas las colisiones sin quitar el componente Rigidbody.",
+        "Para hacer que el objeto se mueva solo por restricciones de animación.",
+        "Para limitar la masa del Rigidbody a un valor máximo."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>constraints</strong> permiten 'congelar' ejes de posición o rotación. Por ejemplo, <code>RigidbodyConstraints.FreezeRotation</code> evita que la física voltee al personaje, y <code>FreezePositionY</code> impide movimiento vertical. Es muy útil en juegos 2D o personajes humanoides."
+    },
+    {
+      "id": "rb_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un enemigo usa un collider esférico como zona de detección de proximidad (no debe bloquear al jugador físicamente). ¿Qué configuración es correcta?",
+      "options": [
+        "Activar 'Is Trigger' en el collider y usar OnTriggerEnter para detectar al jugador.",
+        "Desactivar 'Is Trigger' y usar OnCollisionEnter para detectar el impacto.",
+        "Usar isKinematic en el Rigidbody para que no bloquee.",
+        "Eliminar el Rigidbody del enemigo para evitar colisiones físicas.",
+        "Poner el collider en un layer con colisiones desactivadas y usar OnCollisionEnter."
+      ],
+      "correctIndex": 0,
+      "explanation": "Activar <em>Is Trigger</em> hace que el collider sea una zona de detección sin bloqueo físico. Los objetos la atraviesan, pero Unity dispara <strong>OnTriggerEnter</strong> cuando algo entra. Es el patrón estándar para áreas de detección, power-ups y zonas de daño."
+    },
+    {
+      "id": "rb_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el modo **ForceMode** correcto para aplicar un impulso instantáneo (como un salto) ignorando la masa del objeto?",
+      "options": [
+        "ForceMode.VelocityChange",
+        "ForceMode.Force",
+        "ForceMode.Impulse",
+        "ForceMode.Acceleration",
+        "ForceMode.Kinematic"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ForceMode.VelocityChange</strong> aplica un cambio inmediato de velocidad ignorando la masa, ideal para saltos que deben sentirse iguales sin importar el peso del personaje. <em>ForceMode.Impulse</em> también es instantáneo pero sí considera la masa. <em>ForceMode.Force</em> y <em>Acceleration</em> se aplican de forma continua."
+    },
+    {
+      "id": "rb_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué problema ocurre si mueves un **Rigidbody** cambiando `transform.position` directamente en cada frame en lugar de usar `rb.MovePosition()`?",
+      "options": [
+        "El motor de física no puede calcular la velocidad ni las colisiones correctamente, causando que el objeto atraviese paredes.",
+        "El objeto dejará de ser visible en la escena aunque siga existiendo.",
+        "Unity lanzará una excepción en consola y el script dejará de ejecutarse.",
+        "El Rigidbody perderá su masa y actuará como si fuera un trigger.",
+        "No hay ningún problema, ambos métodos son equivalentes para Rigidbody."
+      ],
+      "correctIndex": 0,
+      "explanation": "Teleportar un <strong>Rigidbody</strong> con <code>transform.position</code> saltea el paso de física: el motor no sabe la velocidad del objeto y puede no detectar colisiones a alta velocidad (el objeto 'atraviesa' paredes). Usa <code>rb.MovePosition()</code> que informa al motor de física del movimiento esperado."
+    },
+    {
+      "id": "rb_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tienes un personaje con **Rigidbody** que se voltea al recibir impactos. ¿Qué línea de código evita que la física lo rote?",
+      "options": [
+        "rb.constraints = RigidbodyConstraints.FreezeRotation;",
+        "rb.isKinematic = true;",
+        "rb.useGravity = false;",
+        "rb.constraints = RigidbodyConstraints.FreezePosition;",
+        "rb.detectCollisions = false;"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>rb.constraints = RigidbodyConstraints.FreezeRotation;</code> congela los tres ejes de rotación, impidiendo que la física voltee al personaje. <em>isKinematic</em> desactivaría también la gravedad y las fuerzas, lo cual es excesivo. Este constraint es el estándar para personajes humanoides."
+    },
+    {
+      "id": "rb_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de Unity:",
+      "code": "void Update()\n{\n    rb.AddForce(Vector3.forward * 10f);\n}",
+      "question": "¿En qué método debería estar el `AddForce` para que la física sea correcta y consistente?",
+      "target": "FixedUpdate",
+      "acceptedAnswers": ["FixedUpdate", "fixed update", "fixedupdate"],
+      "hints": [
+        "La física en Unity se procesa a intervalos de tiempo fijos, no en cada frame.",
+        "Hay un método especial que se llama exactamente cada 0.02 segundos por defecto.",
+        "El método empieza con 'Fixed'."
+      ],
+      "explanation": "Las fuerzas con <strong>AddForce</strong> deben aplicarse en <strong>FixedUpdate</strong>, que se ejecuta a intervalos de tiempo fijos independientemente del framerate. Usarlo en <code>Update</code> hace que el objeto se mueva más rápido o más lento según los FPS de la máquina."
+    },
+    {
+      "id": "rb_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "rb.isKinematic = true;\nrb.MovePosition(destino);",
+      "question": "¿Qué propiedad del Rigidbody se activa para que el objeto sea movido por código sin ser afectado por la gravedad ni las fuerzas externas?",
+      "target": "isKinematic",
+      "acceptedAnswers": ["isKinematic", "is kinematic", "kinematic"],
+      "hints": [
+        "La propiedad que hace que el Rigidbody ignore la física externa empieza con 'is'.",
+        "Cuando está en true, el motor de física no controla el objeto.",
+        "La propiedad combina 'is' con una palabra que significa 'que se mueve por sí mismo'."
+      ],
+      "explanation": "<strong>isKinematic = true</strong> desactiva el control del motor de física sobre el objeto. El Rigidbody ya no responde a gravedad ni fuerzas externas, pero puede moverse con <code>MovePosition()</code> y <code>MoveRotation()</code>. Ideal para plataformas móviles."
+    },
+    {
+      "id": "rb_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa la firma de este método:",
+      "code": "void OnTriggerEnter(Collider other)\n{\n    if (other.CompareTag(\"Player\"))\n        Debug.Log(\"Jugador detectado\");\n}",
+      "question": "¿Qué debe tener activado el collider de este GameObject para que se llame a `OnTriggerEnter` en lugar de `OnCollisionEnter`?",
+      "target": "Is Trigger",
+      "acceptedAnswers": ["Is Trigger", "isTrigger", "is trigger", "trigger"],
+      "hints": [
+        "Es una casilla en el componente Collider del Inspector de Unity.",
+        "Su nombre en inglés indica que es un 'disparador' o 'gatillo'.",
+        "Cuando está activo, los objetos atraviesan el collider pero se detecta la entrada."
+      ],
+      "explanation": "La casilla <strong>Is Trigger</strong> del componente Collider convierte el collider en un volumen de detección. Los objetos lo atraviesan sin bloqueo físico, pero Unity dispara los eventos <code>OnTriggerEnter</code>, <code>OnTriggerStay</code> y <code>OnTriggerExit</code>."
+    },
+    {
+      "id": "rb_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "rb.constraints = RigidbodyConstraints.FreezeRotationX \n              | RigidbodyConstraints.FreezeRotationZ;",
+      "question": "¿En qué eje de rotación sigue siendo libre el Rigidbody con estas constraints?",
+      "target": "Y",
+      "acceptedAnswers": ["Y", "eje Y", "rotación Y", "FreezeRotationY"],
+      "hints": [
+        "Se congelan los ejes X y Z.",
+        "Quedan tres ejes: X, Y, Z. Dos están congelados.",
+        "El eje vertical en Unity es el eje Y."
+      ],
+      "explanation": "El código congela la rotación en <strong>X</strong> y <strong>Z</strong>, pero no en <strong>Y</strong>. Esto significa que el objeto puede girar alrededor del eje vertical (Y), lo que es útil para un personaje que gira para mirar en distintas direcciones pero no puede volcarse lateralmente."
+    },
+    {
+      "id": "rb_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este fragmento de colisión:",
+      "code": "void OnCollisionEnter(Collision col)\n{\n    Debug.Log(col.relativeVelocity.magnitude);\n}",
+      "question": "¿Qué información específica de la colisión se está leyendo con `col.relativeVelocity.magnitude`?",
+      "target": "velocidad relativa",
+      "acceptedAnswers": ["velocidad relativa", "velocidad del impacto", "magnitud de la velocidad relativa", "speed of impact", "relative velocity"],
+      "hints": [
+        "relativeVelocity es un Vector3 que representa la diferencia de velocidades entre los dos objetos.",
+        "magnitude convierte un Vector3 en un número (su longitud).",
+        "Se usa para saber qué tan fuerte fue el impacto."
+      ],
+      "explanation": "<code>col.relativeVelocity.magnitude</code> devuelve la <strong>velocidad relativa</strong> del impacto como número positivo. Se usa para detectar colisiones fuertes, por ejemplo para aplicar daño proporcional a la fuerza del choque. Solo disponible en <code>OnCollisionEnter</code>, no en triggers."
+    },
+    {
+      "id": "rb_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de plataforma móvil:",
+      "code": "public class Plataforma : MonoBehaviour\n{\n    Rigidbody rb;\n    void Awake() { rb = GetComponent<Rigidbody>(); rb.isKinematic = true; }\n    void FixedUpdate() { rb.MovePosition(Vector3.Lerp(puntoA.position, puntoB.position, t)); }\n}",
+      "question": "¿Por qué se usa `isKinematic = true` en la plataforma en lugar de `AddForce`?",
+      "target": "para moverla por código sin que la física la afecte",
+      "acceptedAnswers": ["para moverla por código sin que la física la afecte", "para controlarla por código", "para que la gravedad no la afecte", "movimiento controlado por código", "isKinematic permite mover por código"],
+      "hints": [
+        "isKinematic desactiva el control del motor de física.",
+        "La plataforma sigue una trayectoria definida por el programador, no por la gravedad.",
+        "Se usa MovePosition para que la física detecte el movimiento correctamente."
+      ],
+      "explanation": "Con <strong>isKinematic = true</strong>, la plataforma no es afectada por la gravedad ni por fuerzas externas. El programador controla su posición exacta con <code>MovePosition()</code>. Unity aún detecta colisiones correctamente (el jugador puede pararse sobre ella), pero la física no puede empujar ni mover la plataforma."
+    },
+    {
+      "id": "rb_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la llamada para aplicar una fuerza hacia adelante de 500 Newtons al Rigidbody del proyectil:",
+      "codeTemplate": "void FixedUpdate()\n{\n    rb.__________(Vector3.forward * 500f);\n}",
+      "expectedAnswer": "AddForce",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para aplicar fuerza...",
+      "hints": [
+        "El método del Rigidbody para aplicar una fuerza empieza con 'Add'.",
+        "Recibe un Vector3 como dirección y magnitud."
+      ],
+      "explanation": "<code>rb.AddForce(Vector3.forward * 500f)</code> aplica una fuerza continua de 500 N hacia adelante. Recuerda llamarlo siempre en <strong>FixedUpdate</strong> para consistencia física. Por defecto usa <code>ForceMode.Force</code> que considera la masa del objeto."
+    },
+    {
+      "id": "rb_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para congelar todas las rotaciones del Rigidbody `rb` usando constraints:",
+      "codeTemplate": "rb.constraints = RigidbodyConstraints.__________;\n",
+      "expectedAnswer": "FreezeRotation",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el valor de constraint correcto...",
+      "hints": [
+        "Necesitas congelar (Freeze) la rotación (Rotation).",
+        "El enum RigidbodyConstraints tiene un valor que congela los tres ejes de rotación a la vez."
+      ],
+      "explanation": "<code>RigidbodyConstraints.FreezeRotation</code> congela la rotación en los tres ejes (X, Y, Z) simultáneamente. Es el constraint más común para personajes humanoides que no deben volcarse por la física."
+    },
+    {
+      "id": "rb_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método correcto que debe contener el `AddForce` para física consistente:",
+      "codeTemplate": "void __________()\n{\n    rb.AddForce(direction * speed);\n}",
+      "expectedAnswer": "FixedUpdate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método de física...",
+      "hints": [
+        "La física en Unity se procesa a intervalos de tiempo fijos.",
+        "El método se llama cada 0.02 segundos independientemente del framerate."
+      ],
+      "explanation": "<strong>FixedUpdate</strong> se llama a intervalos de tiempo fijos (configurable en Project Settings → Physics). Toda la lógica de física (AddForce, MovePosition, MoveRotation) debe ir aquí para ser independiente del framerate."
+    },
+    {
+      "id": "rb_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que aplica un impulso instantáneo hacia arriba de magnitud 8 al Rigidbody `rb`, ignorando la masa (para un salto uniforme):",
+      "codeTemplate": null,
+      "expectedAnswer": "rb.AddForce(Vector3.up * 8f, ForceMode.VelocityChange);",
+      "alternateAnswers": [
+        "rb.AddForce(Vector3.up * 8, ForceMode.VelocityChange);",
+        "rb.AddForce(new Vector3(0, 8f, 0), ForceMode.VelocityChange);"
+      ],
+      "placeholder": "Escribe la línea completa con AddForce y ForceMode...",
+      "hints": [
+        "Usa rb.AddForce con dos parámetros: el vector de dirección y el ForceMode.",
+        "El ForceMode que ignora la masa y aplica velocidad directamente es VelocityChange.",
+        "Vector3.up apunta en la dirección (0, 1, 0)."
+      ],
+      "explanation": "<code>rb.AddForce(Vector3.up * 8f, ForceMode.VelocityChange)</code> cambia la velocidad instantáneamente en 8 unidades/segundo hacia arriba, sin importar la masa. Ideal para saltos: el personaje siempre salta igual de alto independientemente de su peso."
+    },
+    {
+      "id": "rb_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método para detectar cuando el jugador entra en una zona de trampa (trigger), comparando su tag:",
+      "codeTemplate": "void __________(Collider other)\n{\n    if (other.CompareTag(\"Player\"))\n        AplicarDaño();\n}",
+      "expectedAnswer": "OnTriggerEnter",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método de trigger...",
+      "hints": [
+        "El método que detecta la entrada en un trigger empieza con 'OnTrigger'.",
+        "Se llama cuando algo ENTRA al trigger (Enter)."
+      ],
+      "explanation": "<strong>OnTriggerEnter(Collider other)</strong> se llama cuando un collider entra en el trigger. A diferencia de <code>OnCollisionEnter</code>, recibe un <code>Collider</code> (no <code>Collision</code>) y los objetos se atraviesan sin bloqueo físico."
+    },
+    {
+      "id": "rb_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `FixedUpdate` completo que mueve un Rigidbody kinematic `rb` hacia la variable `destino` (Vector3) usando `MovePosition`, moviendose `velocidad * Time.fixedDeltaTime` por frame:",
+      "codeTemplate": null,
+      "expectedAnswer": "void FixedUpdate()\n{\n    rb.MovePosition(Vector3.MoveTowards(rb.position, destino, velocidad * Time.fixedDeltaTime));\n}",
+      "alternateAnswers": [
+        "void FixedUpdate() { rb.MovePosition(Vector3.MoveTowards(rb.position, destino, velocidad * Time.fixedDeltaTime)); }"
+      ],
+      "placeholder": "Escribe el FixedUpdate completo con MovePosition...",
+      "hints": [
+        "Usa rb.MovePosition() para mover un Rigidbody kinematic.",
+        "Vector3.MoveTowards calcula la nueva posición hacia el destino con un paso máximo.",
+        "El paso máximo es velocidad * Time.fixedDeltaTime para ser frame-independent."
+      ],
+      "explanation": "<code>rb.MovePosition(Vector3.MoveTowards(rb.position, destino, velocidad * Time.fixedDeltaTime))</code> mueve el objeto hacia el destino a velocidad constante, respetando la física (detecta colisiones en el camino). <code>Time.fixedDeltaTime</code> es el intervalo fijo entre FixedUpdate calls."
+    }
+  ]
+}

@@ -1,0 +1,388 @@
+{
+  "id": "traslaciones",
+  "title": "Traslaciones y Movimiento",
+  "icon": "➡️",
+  "color": "#E65100",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Formas de Mover un Objeto en Unity",
+        "type": "definition",
+        "content": "Hay tres enfoques principales para mover un objeto en Unity: <strong>Transform.Translate</strong> (traslación directa sin física), <strong>Rigidbody.MovePosition</strong> (traslación con integración física) y <strong>CharacterController.Move</strong> (movimiento con detección de colisiones sin Rigidbody). Cada uno es apropiado para casos distintos: Translate para objetos sin física, MovePosition para objetos con Rigidbody, y CharacterController para personajes jugables que requieren control preciso."
+      },
+      {
+        "id": "doc-2",
+        "title": "Transform.Translate: Space.World vs Space.Self",
+        "type": "code",
+        "content": "// Space.World: se mueve en el sistema de coordenadas GLOBAL\n// Vector3.forward siempre apunta hacia Z+ del mundo\ntransform.Translate(Vector3.forward * speed * Time.deltaTime, Space.World);\n\n// Space.Self (por defecto): se mueve en el sistema de coordenadas LOCAL\n// El objeto se mueve en la dirección a la que ESTÁ MIRANDO\ntransform.Translate(Vector3.forward * speed * Time.deltaTime, Space.Self);\n// Equivalente a:\ntransform.Translate(Vector3.forward * speed * Time.deltaTime); // Space.Self es el default\n\n// Para mover en la dirección de mirada con Rigidbody:\nrb.MovePosition(rb.position + transform.forward * speed * Time.fixedDeltaTime);"
+      },
+      {
+        "id": "doc-3",
+        "title": "CharacterController.Move",
+        "type": "code",
+        "content": "public class PlayerMovement : MonoBehaviour\n{\n    CharacterController cc;\n    public float speed = 5f;\n    public float gravity = -9.81f;\n    private Vector3 velocity;\n\n    void Awake() { cc = GetComponent<CharacterController>(); }\n\n    void Update()\n    {\n        // Input del jugador\n        float h = Input.GetAxis(\"Horizontal\");\n        float v = Input.GetAxis(\"Vertical\");\n        Vector3 move = transform.right * h + transform.forward * v;\n\n        // Aplicar gravedad manual (CharacterController no tiene Rigidbody)\n        velocity.y += gravity * Time.deltaTime;\n\n        // Move combina el movimiento horizontal y la gravedad\n        cc.Move((move * speed + velocity) * Time.deltaTime);\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "Diferencia entre Translate, AddForce y MovePosition",
+        "type": "note",
+        "content": "<strong>Transform.Translate</strong>: traslación inmediata, ignora la física completamente. Puede causar que el objeto atraviese paredes si se usa sin Rigidbody. <br/><strong>Rigidbody.AddForce</strong>: aplica una fuerza que el motor de física procesa gradualmente. El objeto tiene inercia y aceleración. <br/><strong>Rigidbody.MovePosition</strong>: mueve el Rigidbody de forma cinemática respetando colisiones. Mejor que Translate para objetos con Rigidbody. <br/><strong>CharacterController.Move</strong>: movimiento con colisiones pero sin Rigidbody; el programador maneja la gravedad manualmente."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Traslaciones",
+        "type": "list",
+        "items": [
+          "Space.Self (default en Translate): el movimiento es relativo a la orientación del objeto.",
+          "Space.World: el movimiento es relativo a los ejes globales de la escena.",
+          "Para que un personaje siempre camine hacia adelante (su propia dirección), usa Space.Self o transform.forward.",
+          "CharacterController no tiene Rigidbody: debes aplicar la gravedad manualmente.",
+          "rb.MovePosition debe llamarse en FixedUpdate para Rigidbodies kinematic.",
+          "Multiplica siempre por Time.deltaTime para movimiento frame-independent."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "tras_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué espacio de coordenadas usa `transform.Translate(Vector3.forward * speed)` por defecto si no se especifica el parámetro `Space`?",
+      "options": [
+        "Space.Self (coordenadas locales del objeto)",
+        "Space.World (coordenadas globales de la escena)",
+        "Siempre mueve hacia el eje Z positivo global",
+        "Depende de la rotación del padre del objeto",
+        "No tiene valor por defecto; es obligatorio especificar Space"
+      ],
+      "correctIndex": 0,
+      "explanation": "Por defecto, <code>transform.Translate</code> usa <strong>Space.Self</strong>: el movimiento es relativo al sistema de coordenadas local del objeto. Esto significa que <code>Vector3.forward</code> apunta hacia donde el objeto está mirando, no hacia el Z+ global. Para moverse en coordenadas mundiales, pasa <code>Space.World</code>."
+    },
+    {
+      "id": "tras_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia entre mover con `Space.World` y `Space.Self` en `Transform.Translate`?",
+      "options": [
+        "Space.World mueve en ejes globales (Z+ siempre es el mismo); Space.Self mueve relativo a la orientación del objeto.",
+        "Space.World es más rápido computacionalmente que Space.Self.",
+        "Space.Self ignora la rotación del padre; Space.World la considera.",
+        "Space.World requiere Rigidbody; Space.Self funciona sin él.",
+        "No hay diferencia si el objeto está rotado a 0 grados en todos los ejes."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <strong>Space.World</strong>, el vector de movimiento se interpreta en coordenadas globales: avanzar en Z siempre va hacia el norte del mundo. Con <strong>Space.Self</strong>, el vector se interpreta relativo a la orientación del objeto: avanzar en Z local va hacia donde el objeto está mirando. Para personajes que caminan hacia adelante, usa Space.Self."
+    },
+    {
+      "id": "tras_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué componente de Unity permite mover un personaje con detección de colisiones **sin** necesitar un **Rigidbody**?",
+      "options": [
+        "CharacterController",
+        "Collider",
+        "NavMeshAgent",
+        "Animator",
+        "Rigidbody con isKinematic"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>CharacterController</strong> es un componente especial que detecta colisiones y resuelve el movimiento sin usar el motor de física estándar (Rigidbody). Permite control preciso del personaje pero requiere que el programador maneje la gravedad manualmente, ya que no tiene simulación física automática."
+    },
+    {
+      "id": "tras_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la forma correcta de mover un personaje en la dirección a la que está mirando con `Transform.Translate`?",
+      "options": [
+        "transform.Translate(Vector3.forward * speed * Time.deltaTime, Space.Self);",
+        "transform.Translate(Vector3.forward * speed * Time.deltaTime, Space.World);",
+        "transform.Translate(transform.forward * speed * Time.deltaTime, Space.World);",
+        "transform.position += Vector3.forward * speed * Time.deltaTime;",
+        "transform.Translate(new Vector3(0, 0, speed * Time.deltaTime), Space.World);"
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <strong>Space.Self</strong>, <code>Vector3.forward</code> se interpreta como la dirección local del objeto (hacia donde mira). También es equivalente <code>transform.position += transform.forward * speed * Time.deltaTime</code>. La opción C sería redundante (transform.forward en Space.World da el mismo resultado pero de forma confusa)."
+    },
+    {
+      "id": "tras_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué es necesario multiplicar el movimiento por `Time.deltaTime` en `Transform.Translate`?",
+      "options": [
+        "Para que el movimiento sea igual en todos los framerates (frame-independent).",
+        "Para aplicar la gravedad al movimiento horizontal.",
+        "Porque Transform.Translate lo requiere obligatoriamente.",
+        "Para convertir la velocidad de m/s a unidades de Unity.",
+        "Porque sin él el objeto se mueve en dirección opuesta."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Time.deltaTime</strong> es el tiempo transcurrido desde el último frame. Multiplicar por él garantiza que el objeto se mueva la misma distancia por segundo independientemente del framerate. Sin él, en una máquina a 120 FPS el personaje se movería el doble de rápido que en una a 60 FPS."
+    },
+    {
+      "id": "tras_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia principal entre `rb.AddForce` y `rb.MovePosition` para mover un objeto?",
+      "options": [
+        "AddForce aplica inercia/aceleración gradual; MovePosition lleva el objeto directamente a la posición en el siguiente FixedUpdate.",
+        "AddForce solo funciona en FixedUpdate; MovePosition puede usarse en Update.",
+        "MovePosition no detecta colisiones; AddForce sí.",
+        "AddForce solo funciona con objetos kinematic; MovePosition con objetos no-kinematic.",
+        "No hay diferencia, ambos producen el mismo resultado físico."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>AddForce</strong> simula la física realista con inercia: la velocidad aumenta gradualmente y el objeto tarda en detenerse. <strong>MovePosition</strong> lleva el objeto directamente a la posición objetivo en el siguiente paso de física, detectando colisiones en el camino. MovePosition es más predecible para movimiento controlado."
+    },
+    {
+      "id": "tras_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un personaje con **CharacterController** no cae al suelo. ¿Cuál es la causa más probable?",
+      "options": [
+        "No se está aplicando la gravedad manualmente en el código.",
+        "El CharacterController requiere un Rigidbody para usar la gravedad.",
+        "falta agregar un Collider al suelo.",
+        "Time.deltaTime no se usa en el cálculo del movimiento.",
+        "El CharacterController solo detecta colisiones horizontales, no verticales."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>CharacterController</strong> no tiene física automática: la <strong>gravedad debe aplicarse manualmente</strong> en el código. Un error común es olvidar acumular velocidad en Y y pasarla a <code>cc.Move()</code>. El Rigidbody sí aplica gravedad automáticamente, pero CharacterController no usa Rigidbody."
+    },
+    {
+      "id": "tras_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué propiedad de `transform` devuelve el vector hacia adelante del objeto en coordenadas **mundiales**, ya transformado por su rotación?",
+      "options": [
+        "transform.forward",
+        "Vector3.forward",
+        "transform.localPosition",
+        "transform.right",
+        "Space.Self"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>transform.forward</strong> devuelve el vector (0,0,1) del espacio local del objeto transformado al espacio mundial según su rotación actual. Por ejemplo, si el objeto está rotado 90° en Y, <code>transform.forward</code> apunta hacia X+ global. <code>Vector3.forward</code> es siempre (0,0,1) sin importar la rotación del objeto."
+    },
+    {
+      "id": "tras_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza estos dos métodos de Translate:",
+      "code": "// A: \ntransform.Translate(Vector3.forward * 5f, Space.World);\n\n// B:\ntransform.Translate(Vector3.forward * 5f, Space.Self);",
+      "question": "Si el objeto está rotado 90° en el eje Y, ¿cuál versión mueve al objeto en la dirección hacia la que está mirando?",
+      "target": "B",
+      "acceptedAnswers": ["B", "Space.Self", "Opción B"],
+      "hints": [
+        "Space.World siempre mueve en los ejes globales, sin importar la rotación del objeto.",
+        "Space.Self interpreta el vector relativo a la orientación actual del objeto.",
+        "Si el objeto mira hacia X+ (rotado 90°), ¿cuál versión se mueve en X+?"
+      ],
+      "explanation": "Con la opción <strong>B (Space.Self)</strong>, <code>Vector3.forward</code> se interpreta en el espacio local del objeto. Si está rotado 90° en Y, su 'forward' local apunta hacia X+ mundial. La opción A (Space.World) siempre mueve hacia Z+ mundial, ignorando la rotación del objeto."
+    },
+    {
+      "id": "tras_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de movimiento:",
+      "code": "void Update()\n{\n    float h = Input.GetAxis(\"Horizontal\");\n    float v = Input.GetAxis(\"Vertical\");\n    transform.Translate(new Vector3(h, 0, v) * speed * Time.deltaTime);\n}",
+      "question": "¿Qué hace `Time.deltaTime` en esta expresión de movimiento?",
+      "target": "hace el movimiento frame-independent",
+      "acceptedAnswers": [
+        "hace el movimiento frame-independent",
+        "independencia de framerate",
+        "el movimiento es igual en todos los FPS",
+        "normaliza el movimiento por tiempo",
+        "garantiza velocidad constante independiente de FPS"
+      ],
+      "hints": [
+        "deltaTime es el tiempo transcurrido desde el último frame.",
+        "Sin él, el objeto se movería más rápido en máquinas con más FPS.",
+        "Multiplicar velocidad × tiempo da distancia, que es constante independientemente del framerate."
+      ],
+      "explanation": "<code>Time.deltaTime</code> hace que el movimiento sea <strong>frame-independent</strong>: la distancia por segundo es constante sin importar los FPS. Sin él, en una máquina a 120 FPS el personaje se movería el doble de rápido que en una a 60 FPS. Es obligatorio en todo movimiento basado en Update."
+    },
+    {
+      "id": "tras_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza el código de CharacterController:",
+      "code": "void Update()\n{\n    Vector3 move = transform.forward * Input.GetAxis(\"Vertical\");\n    cc.Move(move * speed * Time.deltaTime);\n    // El personaje flota en el aire\n}",
+      "question": "¿Qué le falta al código para que el personaje caiga correctamente al suelo?",
+      "target": "aplicar gravedad manualmente",
+      "acceptedAnswers": [
+        "aplicar gravedad manualmente",
+        "agregar gravedad al movimiento vertical",
+        "acumular velocidad en Y con gravity * deltaTime",
+        "añadir el componente de gravedad en el eje Y"
+      ],
+      "hints": [
+        "CharacterController no tiene Rigidbody, por lo que la gravedad no es automática.",
+        "Necesitas una variable que acumule velocidad en Y.",
+        "velocity.y += gravity * Time.deltaTime cada frame."
+      ],
+      "explanation": "<strong>CharacterController</strong> no simula gravedad automáticamente. Se necesita una variable <code>velocity.y</code> que acumule la aceleración gravitacional: <code>velocity.y += gravity * Time.deltaTime</code>, y luego incluir esa velocidad en <code>cc.Move</code>. Sin esto, el personaje flota."
+    },
+    {
+      "id": "tras_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este movimiento con Rigidbody:",
+      "code": "void FixedUpdate()\n{\n    rb.MovePosition(rb.position + transform.forward * speed * Time.fixedDeltaTime);\n}",
+      "question": "¿Por qué se usa `Time.fixedDeltaTime` en lugar de `Time.deltaTime` aquí?",
+      "target": "porque está en FixedUpdate, que usa intervalos de tiempo fijos",
+      "acceptedAnswers": [
+        "porque está en FixedUpdate, que usa intervalos de tiempo fijos",
+        "FixedUpdate usa Time.fixedDeltaTime",
+        "para ser consistente con el paso de tiempo fijo de FixedUpdate",
+        "Time.fixedDeltaTime corresponde al intervalo de FixedUpdate"
+      ],
+      "hints": [
+        "FixedUpdate se llama a intervalos de tiempo regulares, no a la velocidad del framerate.",
+        "Hay una versión de deltaTime específica para el intervalo fijo de la física.",
+        "Time.fixedDeltaTime = el tiempo entre llamadas a FixedUpdate (0.02s por defecto)."
+      ],
+      "explanation": "<strong>Time.fixedDeltaTime</strong> es el intervalo de tiempo entre llamadas a <code>FixedUpdate</code> (por defecto 0.02s). En <code>FixedUpdate</code>, es más semánticamente correcto usar <code>Time.fixedDeltaTime</code>. Nota: <code>Time.deltaTime</code> dentro de <code>FixedUpdate</code> devuelve el mismo valor que <code>Time.fixedDeltaTime</code>, pero usar el específico es más claro."
+    },
+    {
+      "id": "tras_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa estas dos formas de mover en la dirección de mirada:",
+      "code": "// Opción 1:\ntransform.Translate(Vector3.forward * speed * Time.deltaTime, Space.Self);\n\n// Opción 2:\ntransform.position += transform.forward * speed * Time.deltaTime;",
+      "question": "¿Producen el mismo resultado cuando el objeto está rotado?",
+      "target": "sí",
+      "acceptedAnswers": ["sí", "si", "sí, son equivalentes", "son equivalentes", "producen el mismo resultado"],
+      "hints": [
+        "Space.Self hace que Vector3.forward se interprete en el espacio local.",
+        "transform.forward ya es Vector3.forward transformado al espacio mundial.",
+        "Ambas expresan 'muévete en la dirección local forward'."
+      ],
+      "explanation": "<strong>Sí, son equivalentes.</strong> <code>Translate(Vector3.forward, Space.Self)</code> convierte Vector3.forward del espacio local al mundial internamente. <code>transform.forward</code> ya es el vector forward local expresado en coordenadas mundiales. Ambas opciones mueven el objeto en la dirección a la que está mirando."
+    },
+    {
+      "id": "tras_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de movimiento:",
+      "code": "void Update()\n{\n    float h = Input.GetAxis(\"Horizontal\");\n    float v = Input.GetAxis(\"Vertical\");\n    Vector3 move = transform.right * h + transform.forward * v;\n    cc.Move(move * speed * Time.deltaTime);\n}",
+      "question": "¿Por qué se usa `transform.right` y `transform.forward` en lugar de `Vector3.right` y `Vector3.forward`?",
+      "target": "para que el movimiento sea relativo a la orientación del personaje",
+      "acceptedAnswers": [
+        "para que el movimiento sea relativo a la orientación del personaje",
+        "para moverse en la dirección local del objeto",
+        "porque Vector3.right y Vector3.forward son globales",
+        "para que el personaje se mueva en su propia dirección de mirada"
+      ],
+      "hints": [
+        "Vector3.right es siempre (1,0,0) en el mundo global.",
+        "transform.right cambia según la rotación del objeto.",
+        "Si el personaje está girado, ¿qué quieres que sea 'adelante'?"
+      ],
+      "explanation": "<strong>transform.right</strong> y <strong>transform.forward</strong> son los ejes locales del objeto transformados al espacio mundial. Al rotar el personaje, estos vectores cambian, haciendo que el movimiento siempre sea relativo a dónde mira. Con <code>Vector3.right/forward</code>, el movimiento siempre sería en los ejes globales fijos."
+    },
+    {
+      "id": "tras_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea que mueve el objeto en la dirección a la que está mirando (espacio local) a velocidad `speed`:",
+      "codeTemplate": "transform.Translate(Vector3.forward * speed * Time.deltaTime, Space.__________);",
+      "expectedAnswer": "Self",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el espacio de coordenadas local...",
+      "hints": [
+        "Para moverse relativo a la orientación del objeto, usa el espacio propio/local.",
+        "Space._____ para el espacio local del objeto (su 'yo')."
+      ],
+      "explanation": "<strong>Space.Self</strong> hace que el movimiento sea relativo al sistema de coordenadas local del objeto. Con este espacio, <code>Vector3.forward</code> apunta hacia donde el objeto está mirando, no hacia el Z+ global."
+    },
+    {
+      "id": "tras_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para mover el personaje con CharacterController en la dirección calculada:",
+      "codeTemplate": "Vector3 move = transform.forward * v;\n__________. Move(move * speed * Time.deltaTime);",
+      "expectedAnswer": "cc",
+      "alternateAnswers": ["characterController", "controller"],
+      "placeholder": "Escribe la variable del CharacterController...",
+      "hints": [
+        "El CharacterController generalmente se guarda en una variable llamada cc.",
+        "Es el componente que tiene el método Move()."
+      ],
+      "explanation": "<code>cc.Move(vector)</code> es el método del <strong>CharacterController</strong> que mueve el personaje detectando colisiones. La variable <code>cc</code> es la referencia al componente obtenida con <code>GetComponent&lt;CharacterController&gt;()</code>."
+    },
+    {
+      "id": "tras_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el parámetro de espacio para que el objeto siempre se mueva hacia el eje Z+ global (norte del mundo), sin importar su rotación:",
+      "codeTemplate": "transform.Translate(Vector3.forward * speed * Time.deltaTime, Space.__________);",
+      "expectedAnswer": "World",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el espacio de coordenadas global...",
+      "hints": [
+        "Para moverse en los ejes globales de la escena, usa el espacio del mundo.",
+        "Space._____ para el espacio global (el 'mundo')."
+      ],
+      "explanation": "<strong>Space.World</strong> hace que el movimiento use el sistema de coordenadas global. <code>Vector3.forward</code> con <code>Space.World</code> siempre apunta hacia Z+ del mundo, sin importar hacia dónde está rotado el objeto. Útil para objetos que siempre deben moverse en una dirección fija del mundo."
+    },
+    {
+      "id": "tras_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que mueve el Rigidbody kinematic `rb` en la dirección local hacia adelante a velocidad `speed`, usando `MovePosition` en FixedUpdate:",
+      "codeTemplate": null,
+      "expectedAnswer": "rb.MovePosition(rb.position + transform.forward * speed * Time.fixedDeltaTime);",
+      "alternateAnswers": [
+        "rb.MovePosition(rb.position + transform.forward * speed * Time.deltaTime);"
+      ],
+      "placeholder": "Escribe la línea completa con MovePosition...",
+      "hints": [
+        "rb.MovePosition recibe la nueva posición destino, no un delta de movimiento.",
+        "La nueva posición es la posición actual más el desplazamiento.",
+        "Usa transform.forward para la dirección local del objeto."
+      ],
+      "explanation": "<code>rb.MovePosition(rb.position + transform.forward * speed * Time.fixedDeltaTime)</code> calcula la nueva posición (actual + desplazamiento) y la pasa a <code>MovePosition</code>. A diferencia de <code>Translate</code>, esto informa al motor de física del movimiento y detecta colisiones correctamente."
+    },
+    {
+      "id": "tras_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código de CharacterController que aplica gravedad manualmente (la variable `velocity` es un Vector3 de clase y `gravity = -9.81f`):",
+      "codeTemplate": "void Update()\n{\n    velocity.y += gravity * Time.__________;\n    cc.Move(velocity * Time.deltaTime);\n}",
+      "expectedAnswer": "deltaTime",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tiempo apropiado para Update...",
+      "hints": [
+        "En Update (no FixedUpdate), el tiempo transcurrido desde el último frame es...",
+        "La propiedad de tiempo estándar para Update empieza con 'delta'."
+      ],
+      "explanation": "<strong>Time.deltaTime</strong> es el tiempo transcurrido desde el último frame, usado en <code>Update</code>. Al acumular <code>velocity.y += gravity * Time.deltaTime</code> cada frame, la velocidad vertical aumenta gradualmente (aceleración gravitacional), simulando la caída libre para el <strong>CharacterController</strong>."
+    },
+    {
+      "id": "tras_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `Update` completo de un personaje con `CharacterController` (variable `cc`) que: (1) lee los ejes Horizontal y Vertical, (2) construye el vector de movimiento relativo a la orientación del personaje, (3) aplica gravedad manual con variable de clase `velocidadY` y `gravedad = -9.81f`, y (4) llama a `cc.Move` con la velocidad de movimiento de `speed` unidades/s:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Update()\n{\n    float h = Input.GetAxis(\"Horizontal\");\n    float v = Input.GetAxis(\"Vertical\");\n    Vector3 move = (transform.right * h + transform.forward * v) * speed;\n    velocidadY += gravedad * Time.deltaTime;\n    move.y = velocidadY;\n    cc.Move(move * Time.deltaTime);\n}",
+      "alternateAnswers": [
+        "void Update() { float h = Input.GetAxis(\"Horizontal\"); float v = Input.GetAxis(\"Vertical\"); Vector3 move = (transform.right * h + transform.forward * v) * speed; velocidadY += gravedad * Time.deltaTime; move.y = velocidadY; cc.Move(move * Time.deltaTime); }"
+      ],
+      "placeholder": "Escribe el Update completo del personaje con CharacterController...",
+      "hints": [
+        "Usa transform.right * h + transform.forward * v para el movimiento relativo al personaje.",
+        "Acumula velocidadY += gravedad * Time.deltaTime para la gravedad.",
+        "Asigna move.y = velocidadY y luego cc.Move(move * Time.deltaTime)."
+      ],
+      "explanation": "El flujo completo del CharacterController: leer input → calcular dirección local con transform.right/forward → acumular gravedad en velocidadY → combinar movimiento horizontal y vertical → llamar cc.Move. La gravedad debe acumularse cada frame para simular la aceleración gravitacional real."
+    }
+  ]
+}

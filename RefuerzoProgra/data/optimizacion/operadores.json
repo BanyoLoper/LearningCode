@@ -1,0 +1,375 @@
+{
+  "id": "operadores",
+  "title": "Operadores y Expresiones",
+  "icon": "⚙️",
+  "color": "#F4511E",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Operadores Lógicos y Short-Circuit Evaluation",
+        "type": "definition",
+        "content": "Los operadores lógicos <code>&&</code> (AND), <code>||</code> (OR) y <code>!</code> (NOT) combinan expresiones booleanas. C# aplica <strong>short-circuit evaluation</strong>: con <code>&&</code>, si el lado izquierdo es <code>false</code>, el lado derecho <em>nunca se evalúa</em>; con <code>||</code>, si el izquierdo es <code>true</code>, el derecho tampoco se evalúa. Esto no es solo una optimización: permite escribir código seguro como <code>if (enemy != null && enemy.IsAlive)</code> sin riesgo de <code>NullReferenceException</code>, porque si <code>enemy</code> es <code>null</code>, el segundo lado nunca se ejecuta."
+      },
+      {
+        "id": "doc-2",
+        "title": "Operadores Bit a Bit (Bitwise)",
+        "type": "code",
+        "content": "// Operadores bitwise trabajan sobre los bits individuales del número\n// & (AND bitwise): ambos bits deben ser 1\n// | (OR bitwise): al menos un bit debe ser 1\n// ^ (XOR bitwise): exactamente uno de los dos bits debe ser 1\n// ~ (NOT bitwise): invierte todos los bits\n// << (left shift): desplaza bits a la izquierda (multiplica por 2)\n// >> (right shift): desplaza bits a la derecha (divide por 2)\n\n// Ejemplo: flags de estado de personaje con bits\n[System.Flags]\nenum CharacterState\n{\n    None      = 0,        // 0000\n    IsRunning = 1 << 0,   // 0001\n    IsJumping = 1 << 1,   // 0010\n    IsAttacking = 1 << 2, // 0100\n    IsStunned = 1 << 3    // 1000\n}\n\nCharacterState state = CharacterState.IsRunning | CharacterState.IsJumping; // 0011\n\n// Verificar si está corriendo:\nbool running = (state & CharacterState.IsRunning) != 0; // true\n\n// Activar un flag:\nstate |= CharacterState.IsAttacking; // 0111\n\n// Desactivar un flag:\nstate &= ~CharacterState.IsJumping;  // 0101\n\n// Toggle (invertir) un flag:\nstate ^= CharacterState.IsStunned;   // alterna entre activo e inactivo"
+      },
+      {
+        "id": "doc-3",
+        "title": "Flags de Estado en Juegos: Por Qué Usar Bits",
+        "type": "analogy",
+        "content": "Imagina que tu personaje puede estar corriendo, saltando Y atacando al mismo tiempo. Con <strong>bitwise flags</strong> almacenas todos estos estados en un solo entero. Un byte tiene 8 bits: puedes representar 8 estados diferentes con una sola variable. Verificar un estado es una operación <strong>O(1)</strong> con un simple <code>&</code>. Comparado con tener 8 booleanos separados, los flags con bits son más compactos, más rápidos de verificar y más fáciles de pasar entre sistemas. Unity usa este patrón en <code>LayerMask</code>: cada capa es un bit, y puedes combinar capas con <code>|</code>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Precedencia de Operadores",
+        "type": "note",
+        "content": "Los operadores tienen orden de evaluación: <code>!</code> tiene mayor precedencia que <code>&&</code>, que tiene mayor precedencia que <code>||</code>. Los operadores <strong>bitwise</strong> <code>&</code>, <code>^</code>, <code>|</code> tienen menor precedencia que los aritméticos pero mayor que los lógicos. Regla práctica: ante la duda, usa paréntesis. <code>(a & b) != 0</code> es más claro que <code>a & b != 0</code> (que se evalúa como <code>a & (b != 0)</code>). La <strong>short-circuit evaluation</strong> ocurre en <code>&&</code> y <code>||</code>, pero NO en sus versiones <strong>bitwise</strong> <code>&</code> y <code>|</code>: estas siempre evalúan ambos lados."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Operadores",
+        "type": "list",
+        "items": [
+          "&&: AND lógico con short-circuit — si el izquierdo es false, el derecho no se evalúa.",
+          "||: OR lógico con short-circuit — si el izquierdo es true, el derecho no se evalúa.",
+          "& y |: versiones bitwise SIN short-circuit — siempre evalúan ambos lados.",
+          "^: XOR bitwise — true solo si exactamente uno de los operandos es 1.",
+          "~: NOT bitwise — invierte todos los bits del número.",
+          "<< y >>: desplazan bits; equivalen a multiplicar/dividir por potencias de 2.",
+          "Los flags con bits permiten almacenar múltiples estados booleanos en un entero.",
+          "Usa paréntesis en expresiones bitwise para evitar errores de precedencia."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "op_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué valor tiene la expresión `true && false || true`?",
+      "options": [
+        "true, porque `true && false` = false, y `false || true` = true.",
+        "false, porque hay un false en la expresión.",
+        "true, porque `&&` siempre gana sobre `||`.",
+        "Depende del compilador porque la precedencia es ambigua.",
+        "false, porque `true && false` es false y eso cancela todo."
+      ],
+      "correctIndex": 0,
+      "explanation": "La precedencia de <code>&&</code> es mayor que <code>||</code>, así que se evalúa primero: <code>(true && false) || true</code> → <code>false || true</code> → <strong>true</strong>. La <strong>short-circuit evaluation</strong> aplica dentro de cada operador, pero la precedencia determina el orden de agrupación."
+    },
+    {
+      "id": "op_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué propiedad especial tiene el operador `&&` en C# que lo diferencia del operador `&`?",
+      "options": [
+        "**Short-circuit evaluation**: si el lado izquierdo es false, el lado derecho no se evalúa.",
+        "Solo funciona con variables booleanas, no con expresiones.",
+        "Es más lento que `&` porque hace dos evaluaciones.",
+        "Solo puede usarse dentro de sentencias `if`, no en asignaciones.",
+        "Requiere que ambos operandos sean variables, no literales."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <code>&&</code> implementa <strong>short-circuit evaluation</strong>: si el operando izquierdo es <code>false</code>, el resultado ya es <code>false</code> y el operando derecho <em>nunca se ejecuta</em>. Esto permite el patrón seguro <code>if (obj != null && obj.IsValid)</code>. El operador <code>&</code> siempre evalúa ambos lados."
+    },
+    {
+      "id": "op_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué resultado produce `6 & 3` en C#? (6 = `0110`, 3 = `0011`)",
+      "options": [
+        "2, porque el AND **bitwise** compara bit a bit: `0110 & 0011 = 0010` = 2.",
+        "3, porque el AND preserva el valor del operando derecho.",
+        "6, porque el AND preserva el valor más grande.",
+        "7, porque 6 + 3 - la diferencia = 7.",
+        "0, porque ningún bit coincide exactamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <code>&</code> (**bitwise** AND) compara bit a bit: solo pone 1 donde ambos operandos tienen 1. <code>0110 & 0011</code>: bit 1 → 1&1=1, bit 2 → 1&0=0, bit 3 → 0&1=0, bit 4 → 0&0=0. Resultado: <code>0010</code> = <strong>2</strong>."
+    },
+    {
+      "id": "op_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, los `LayerMask` usan operadores **bitwise**. ¿Cómo verificas si un `LayerMask mask` incluye la capa número 3 (que corresponde al bit en posición 3)?",
+      "options": [
+        "`(mask & (1 << 3)) != 0`",
+        "`mask == 3`",
+        "`mask.Contains(3)`",
+        "`mask | 3 == mask`",
+        "`mask && LayerMask.GetMask(3)`"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para verificar si un bit específico está activo se usa <code>& (1 << posición)</code>. <code>1 << 3</code> crea una máscara con solo el bit 3 activo (<code>0000...1000</code>). El <code>&</code> **bitwise** con <code>mask</code> da un valor diferente de cero solo si ese bit está activo en <code>mask</code>."
+    },
+    {
+      "id": "op_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué imprime este código?\n```csharp\nint flags = 0b1010; // bits: 1010\nint mask  = 0b1100; // bits: 1100\nDebug.Log(flags | mask);\n```",
+      "options": [
+        "14, porque `1010 | 1100 = 1110` = 14.",
+        "8, porque `1010 | 1100` solo comparte el bit más significativo.",
+        "2, porque `1010 | 1100` retiene solo los bits menores.",
+        "12, porque el OR **bitwise** siempre retorna el operando mayor.",
+        "6, porque 10 + 12 dividido entre 4 es 5.5 ≈ 6."
+      ],
+      "correctIndex": 0,
+      "explanation": "El OR **bitwise** (<code>|</code>) activa un bit si <em>al menos uno</em> de los operandos lo tiene activo. <code>1010 | 1100</code>: bit 3→1, bit 2→1, bit 1→1, bit 0→0 = <code>1110</code> = <strong>14</strong>. Este operador se usa para combinar flags de estado."
+    },
+    {
+      "id": "op_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el resultado de `1 << 4` en C#?",
+      "options": [
+        "16, porque desplazar un bit 4 posiciones a la izquierda equivale a multiplicar por 2⁴.",
+        "5, porque 1 + 4 = 5.",
+        "4, porque el bit se mueve a la posición 4.",
+        "8, porque 1 desplazado equivale a multiplicar por 8.",
+        "0, porque el bit se pierde al desplazar 4 posiciones."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <code><<</code> (left **shift**) desplaza los bits hacia la izquierda. Cada posición desplazada equivale a multiplicar por 2. <code>1 << 4</code> = 1 × 2⁴ = <strong>16</strong>. En enums de flags, se usa <code>1 << n</code> para crear valores únicos por bit: 1, 2, 4, 8, 16..."
+    },
+    {
+      "id": "op_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Dado el enum de flags `CharacterState` con valores `IsRunning=1`, `IsJumping=2`, `IsAttacking=4`, ¿qué hace esta línea?\n```csharp\nstate &= ~CharacterState.IsJumping;\n```",
+      "options": [
+        "Desactiva solo el flag IsJumping, dejando los demás intactos.",
+        "Activa el flag IsJumping en el estado.",
+        "Invierte todos los flags del estado actual.",
+        "Compara el estado con IsJumping y devuelve bool.",
+        "Elimina todas las combinaciones que incluyan IsJumping."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>~CharacterState.IsJumping</code> invierte todos los bits de <code>IsJumping</code> (que vale 2 = <code>0010</code>), resultando en <code>...1101</code>. El AND <strong>bitwise</strong> (<code>&=</code>) preserva todos los bits de <code>state</code> excepto el correspondiente a <code>IsJumping</code>, que queda en 0. Es el patrón estándar para <strong>desactivar un flag</strong>."
+    },
+    {
+      "id": "op_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Por qué es seguro escribir `if (enemy != null && enemy.health > 0)` pero NO `if (enemy.health > 0 && enemy != null)`?",
+      "options": [
+        "Porque `&&` usa **short-circuit**: si `enemy` es null, el acceso a `.health` nunca ocurre en la primera versión.",
+        "Porque C# evalúa siempre de derecha a izquierda con `&&`.",
+        "No hay diferencia: ambas versiones son equivalentes en C#.",
+        "Porque `null` siempre es falso, así que el orden no importa.",
+        "Porque `.health` es un acceso seguro que no lanza excepciones."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <strong>short-circuit evaluation</strong>, <code>&&</code> evalúa de izquierda a derecha y detiene si encuentra <code>false</code>. Si <code>enemy == null</code>, la primera versión (<code>enemy != null && enemy.health > 0</code>) ya es <code>false</code> y nunca intenta acceder a <code>.health</code>. La segunda versión intenta <code>enemy.health</code> primero, lanzando <code>NullReferenceException</code> si <code>enemy</code> es null."
+    },
+    {
+      "id": "op_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta expresión:",
+      "code": "bool result = false && ExpensiveMethod();\n// ExpensiveMethod() imprime \"Ejecutado\" cuando se llama",
+      "question": "¿Se ejecuta `ExpensiveMethod()` y qué imprime?",
+      "target": "No se ejecuta",
+      "acceptedAnswers": ["No se ejecuta", "no se ejecuta", "no ejecuta", "nunca se ejecuta", "short-circuit"],
+      "hints": [
+        "El primer operando de && es false.",
+        "El operador && usa short-circuit evaluation.",
+        "Si el lado izquierdo de && es false, ¿qué pasa con el lado derecho?"
+      ],
+      "explanation": "Por <strong>short-circuit evaluation</strong>, cuando el operando izquierdo de <code>&&</code> es <code>false</code>, el resultado ya es <code>false</code> sin importar el derecho. <code>ExpensiveMethod()</code> <strong>no se ejecuta</strong> y no imprime nada. Este comportamiento es útil para evitar llamadas costosas o peligrosas."
+    },
+    {
+      "id": "op_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta expresión bitwise:",
+      "code": "int a = 0b1100; // 12\nint b = 0b1010; // 10\nint result = a ^ b;",
+      "question": "¿Cuánto vale `result`? (Pista: XOR activa el bit solo si exactamente uno de los dos lo tiene activo)",
+      "target": "6",
+      "acceptedAnswers": ["6", "0110", "0b0110"],
+      "hints": [
+        "XOR (^) activa un bit si exactamente uno de los dos operandos tiene ese bit activo.",
+        "Compara bit a bit: 1100 XOR 1010.",
+        "Bit 3: 1^1=0, Bit 2: 1^0=1, Bit 1: 0^1=1, Bit 0: 0^0=0. El resultado en binario es..."
+      ],
+      "explanation": "XOR **bitwise**: <code>1100 ^ 1010</code>: bit 3 → 1^1=0, bit 2 → 1^0=1, bit 1 → 0^1=1, bit 0 → 0^0=0. Resultado: <code>0110</code> = <strong>6</strong>. XOR es útil para alternar flags: aplicarlo dos veces restaura el valor original."
+    },
+    {
+      "id": "op_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de flags en Unity:",
+      "code": "CharacterState state = CharacterState.IsRunning | CharacterState.IsAttacking;\n// IsRunning = 1 (0001), IsAttacking = 4 (0100)\nbool isAttacking = (state & CharacterState.IsAttacking) != 0;",
+      "question": "¿Cuánto vale `state` en decimal y qué valor tiene `isAttacking`?",
+      "target": "state = 5, isAttacking = true",
+      "acceptedAnswers": ["state = 5, isAttacking = true", "5 y true", "5, true", "state es 5 e isAttacking es true"],
+      "hints": [
+        "IsRunning = 1 (0001) y IsAttacking = 4 (0100). El OR combina ambos bits.",
+        "0001 | 0100 = 0101. Convierte 0101 a decimal.",
+        "Para verificar: (0101 & 0100) = 0100, que es distinto de 0, así que isAttacking es..."
+      ],
+      "explanation": "<code>0001 | 0100 = 0101</code> = <strong>5</strong>. Para verificar el flag: <code>0101 & 0100 = 0100</code> que es distinto de 0, entonces <code>isAttacking = true</code>. Este es el patrón estándar de flags con bits: OR para combinar, AND para verificar."
+    },
+    {
+      "id": "op_id_004",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta condición compuesta:",
+      "code": "Enemy boss = GetBoss(); // puede retornar null\nif (boss != null && boss.phase == 2 && boss.health < 50f)\n{\n    TriggerRage();\n}",
+      "question": "¿Qué propiedad de `&&` garantiza que `boss.phase` y `boss.health` solo se accedan cuando `boss` no es null?",
+      "target": "short-circuit evaluation",
+      "acceptedAnswers": ["short-circuit evaluation", "short-circuit", "evaluación de cortocircuito", "cortocircuito"],
+      "hints": [
+        "El operador && no evalúa el lado derecho si el lado izquierdo ya determina el resultado.",
+        "Si boss es null, la primera condición es false y las siguientes no se evalúan.",
+        "Esta propiedad tiene un nombre específico relacionado con 'cortar' la evaluación."
+      ],
+      "explanation": "La <strong>short-circuit evaluation</strong> de <code>&&</code> garantiza que si <code>boss != null</code> es <code>false</code>, las expresiones <code>boss.phase == 2</code> y <code>boss.health < 50f</code> nunca se evalúan. Esto evita la <code>NullReferenceException</code> que ocurriría al acceder a propiedades de un objeto nulo."
+    },
+    {
+      "id": "op_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este fragmento:",
+      "code": "int x = 20;\nint result = x >> 2;",
+      "question": "¿Cuánto vale `result`? (20 en binario es `10100`)",
+      "target": "5",
+      "acceptedAnswers": ["5"],
+      "hints": [
+        "El operador >> desplaza bits a la derecha.",
+        "Desplazar n posiciones a la derecha equivale a dividir entre 2^n.",
+        "20 / 2^2 = 20 / 4 = ?"
+      ],
+      "explanation": "<code>20 >> 2</code> desplaza los bits de 20 (<code>10100</code>) dos posiciones a la derecha: <code>00101</code> = <strong>5</strong>. El operador <code>&gt;&gt;</code> equivale a división entera por 2ⁿ: <code>20 / 4 = 5</code>. Es más rápido que una división real porque opera directamente sobre los bits."
+    },
+    {
+      "id": "op_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza esta expresión compleja:",
+      "code": "bool a = true;\nbool b = false;\nbool c = true;\nbool result = !a || b && c;",
+      "question": "¿Cuánto vale `result`? Considera la precedencia: `!` > `&&` > `||`",
+      "target": "false",
+      "acceptedAnswers": ["false", "False"],
+      "hints": [
+        "Primero evalúa !a: !true = false.",
+        "Luego evalúa b && c: false && true = false.",
+        "Finalmente: false || false = ?"
+      ],
+      "explanation": "Siguiendo la precedencia (<code>!</code> > <code>&&</code> > <code>||</code>): primero <code>!a = !true = false</code>, luego <code>b && c = false && true = false</code>, finalmente <code>false || false = <strong>false</strong></code>. La precedencia correcta es crucial para expresiones booleanas complejas."
+    },
+    {
+      "id": "op_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la condición usando **short-circuit** para que `player.health` solo se acceda si `player` no es null:",
+      "codeTemplate": "if (player __________ null __________ player.health <= 0)\n    GameOver();",
+      "expectedAnswer": "!= null && player.health <= 0",
+      "alternateAnswers": ["!= null &&"],
+      "placeholder": "Escribe la condición completa con short-circuit...",
+      "hints": [
+        "Primero verifica que player no sea null.",
+        "El operador != comprueba que no sea igual a null.",
+        "El operador && con short-circuit evita evaluar el lado derecho si el izquierdo es false."
+      ],
+      "explanation": "<code>player != null && player.health <= 0</code>: gracias a la <strong>short-circuit evaluation</strong> de <code>&&</code>, si <code>player</code> es <code>null</code>, la segunda parte nunca se evalúa y no hay riesgo de <code>NullReferenceException</code>."
+    },
+    {
+      "id": "op_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Activa el flag `IsStunned` (valor 8) en la variable `state` usando el operador **bitwise** OR de asignación:",
+      "codeTemplate": "CharacterState state = CharacterState.IsRunning; // tiene solo IsRunning activo\nstate __________ CharacterState.IsStunned;        // activa IsStunned sin quitar IsRunning",
+      "expectedAnswer": "|=",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el operador de asignación bitwise...",
+      "hints": [
+        "Para activar un flag necesitas OR bitwise.",
+        "El operador de asignación combinado con OR bitwise es similar a += pero con |.",
+        "Escribe el símbolo de OR bitwise seguido de ="
+      ],
+      "explanation": "<code>state |= CharacterState.IsStunned</code> usa el operador <code>|=</code> (OR **bitwise** de asignación): activa el bit de <code>IsStunned</code> en <code>state</code> sin modificar los demás bits activos. Es equivalente a <code>state = state | CharacterState.IsStunned</code>."
+    },
+    {
+      "id": "op_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Desactiva el flag `IsJumping` (valor 2) del estado `state` usando los operadores **bitwise** `&=` y `~`:",
+      "codeTemplate": "state __________ __________CharacterState.IsJumping;",
+      "expectedAnswer": "&= ~",
+      "alternateAnswers": ["&= ~CharacterState.IsJumping"],
+      "placeholder": "Escribe los dos operadores para desactivar el flag...",
+      "hints": [
+        "Para desactivar un flag específico, necesitas AND bitwise con la inversión del flag.",
+        "~ invierte todos los bits del operando.",
+        "La combinación es: state = state & (~IsJumping). Usa el operador de asignación compuesto."
+      ],
+      "explanation": "<code>state &= ~CharacterState.IsJumping</code>: el operador <code>~</code> invierte todos los bits de <code>IsJumping</code>, convirtiendo <code>0010</code> en <code>...1101</code>. El AND (<code>&=</code>) preserva todos los bits de <code>state</code> excepto el de <code>IsJumping</code>, que queda en 0."
+    },
+    {
+      "id": "op_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la condición que verifica si el personaje tiene AMBOS flags `IsRunning` (1) Y `IsAttacking` (4) activos al mismo tiempo en la variable `state`:",
+      "codeTemplate": null,
+      "expectedAnswer": "(state & (CharacterState.IsRunning | CharacterState.IsAttacking)) == (CharacterState.IsRunning | CharacterState.IsAttacking)",
+      "alternateAnswers": [
+        "(state & CharacterState.IsRunning) != 0 && (state & CharacterState.IsAttacking) != 0",
+        "(state & 5) == 5"
+      ],
+      "placeholder": "Escribe la condición bitwise para verificar ambos flags...",
+      "hints": [
+        "Puedes verificar cada flag por separado con & y combinar con &&.",
+        "O crea una máscara con los dos flags usando | y verifica que ambos estén activos.",
+        "Alternativa: (state & mask) == mask, donde mask = IsRunning | IsAttacking."
+      ],
+      "explanation": "Existen dos enfoques válidos: verificar cada flag con <code>&&</code>, o crear una máscara combinada con <code>|</code> y verificar que ambos bits estén presentes con <code>==</code>. La máscara combinada es más eficiente cuando se verifican muchos flags simultáneamente."
+    },
+    {
+      "id": "op_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este enum de flags de Unity para que cada valor ocupe un bit diferente usando el operador **left shift** (`<<`):",
+      "codeTemplate": "[System.Flags]\nenum EnemyAbility\n{\n    None     = 0,\n    CanFly   = 1 << __________,  // bit 0 = 1\n    CanSwim  = 1 << __________,  // bit 1 = 2\n    CanShoot = 1 << __________,  // bit 2 = 4\n    IsBoss   = 1 << __________   // bit 3 = 8\n}",
+      "expectedAnswer": "0, 1, 2, 3",
+      "alternateAnswers": ["0\n    CanSwim  = 1 << 1,\n    CanShoot = 1 << 2,\n    IsBoss   = 1 << 3"],
+      "placeholder": "Escribe los 4 números de posición de bit: 0, 1, 2, 3",
+      "hints": [
+        "Cada valor debe ser una potencia de 2 diferente.",
+        "1 << 0 = 1, 1 << 1 = 2, 1 << 2 = 4, 1 << 3 = 8.",
+        "Escribe los exponentes 0, 1, 2 y 3 en orden."
+      ],
+      "explanation": "<code>1 << 0 = 1</code>, <code>1 << 1 = 2</code>, <code>1 << 2 = 4</code>, <code>1 << 3 = 8</code>. Usando el operador <code><<</code> (left **shift**) se garantiza que cada valor del enum ocupa un bit único, permitiendo combinarlos con <code>|</code> y verificarlos con <code>&</code>."
+    },
+    {
+      "id": "op_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una expresión con **short-circuit** usando `||` que devuelva `true` si el jugador está muerto (`player.isDead`) O si el tiempo se acabó (`timeLeft <= 0`), pero SOLO si `player` no es null. Usa una sola línea.",
+      "codeTemplate": null,
+      "expectedAnswer": "bool gameOver = player != null && (player.isDead || timeLeft <= 0);",
+      "alternateAnswers": [
+        "bool gameOver = (player != null) && (player.isDead || timeLeft <= 0);",
+        "bool gameOver = player != null && player.isDead || timeLeft <= 0;"
+      ],
+      "placeholder": "Escribe la expresión completa con short-circuit...",
+      "hints": [
+        "Primero verifica que player no sea null con && (short-circuit).",
+        "Luego agrupa las condiciones de game over con paréntesis.",
+        "player.isDead || timeLeft <= 0 debe ir entre paréntesis para que && tenga prioridad."
+      ],
+      "explanation": "<code>player != null && (player.isDead || timeLeft <= 0)</code>: el <code>&&</code> garantiza que <code>player.isDead</code> solo se accede cuando <code>player</code> no es null. Los paréntesis son necesarios para que <code>||</code> agrupe correctamente las dos condiciones de fin de juego."
+    }
+  ]
+}

@@ -1,0 +1,366 @@
+{
+  "id": "solid_isp_dip",
+  "title": "ISP/DIP — Segregación e Inversión",
+  "icon": "🔌",
+  "color": "#388E3C",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "ISP — Interface Segregation Principle",
+        "type": "definition",
+        "content": "El <strong>ISP</strong> (Interface Segregation Principle) establece que <strong>ninguna clase debería verse obligada a implementar métodos que no usa</strong>. En vez de una <strong>interface</strong> grande con muchos métodos, es mejor tener varias interfaces pequeñas y específicas. Una clase solo implementa las interfaces que necesita. En Unity esto es muy relevante: una roca puede implementar <code>IDamageable</code> pero no <code>IMovable</code>, mientras que un enemigo implementa ambas."
+      },
+      {
+        "id": "doc-2",
+        "title": "Interface gorda vs interfaces segregadas",
+        "type": "code",
+        "content": "// ❌ Interface 'gorda' — viola ISP\npublic interface IGameEntity\n{\n    void TakeDamage(int amount);  // no todo puede recibir daño\n    void Move(Vector3 direction); // no todo puede moverse\n    void Interact();              // no todo es interactuable\n    void PlaySound();             // no todo hace sonido\n}\n\n// ✅ Interfaces segregadas — respeta ISP\npublic interface IDamageable  { void TakeDamage(int amount); }\npublic interface IMovable     { void Move(Vector3 direction); }\npublic interface IInteractable{ void Interact(); }\n\n// La roca solo implementa lo que tiene sentido\npublic class Rock : IDamageable { public void TakeDamage(int a) { ... } }\n\n// El enemigo implementa lo que necesita\npublic class Goblin : IDamageable, IMovable { ... }"
+      },
+      {
+        "id": "doc-3",
+        "title": "DIP — Dependency Inversion Principle",
+        "type": "definition",
+        "content": "El <strong>DIP</strong> (Dependency Inversion Principle) tiene dos partes: (1) los módulos de alto nivel no deben depender de módulos de bajo nivel — ambos deben depender de <strong>abstracciones</strong>; (2) las abstracciones no deben depender de detalles, los detalles deben depender de las abstracciones. En la práctica: en vez de que <code>PlayerCombat</code> cree un <code>new SwordAttack()</code> internamente, recibe una dependencia de tipo <code>IWeapon</code> desde afuera — esto es <strong>dependency injection</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Dependency injection en Unity con SerializeField",
+        "type": "code",
+        "content": "// ❌ Viola DIP — dependencia hardcoded\npublic class PlayerCombat : MonoBehaviour\n{\n    private SwordAttack weapon = new SwordAttack(); // acoplado a SwordAttack\n    void Update() { if (Input.GetMouseButtonDown(0)) weapon.Attack(); }\n}\n\n// ✅ Respeta DIP — depende de abstracción, inyectada desde el Inspector\npublic interface IWeapon { void Attack(); }\n\npublic class PlayerCombat : MonoBehaviour\n{\n    [SerializeField] private MonoBehaviour weaponBehaviour;\n    private IWeapon weapon;\n\n    void Awake() { weapon = weaponBehaviour as IWeapon; }\n    void Update() { if (Input.GetMouseButtonDown(0)) weapon?.Attack(); }\n}\n\n// SwordAttack y BowAttack son detalles que dependen de la abstracción IWeapon\npublic class SwordAttack : MonoBehaviour, IWeapon { public void Attack() { ... } }\npublic class BowAttack   : MonoBehaviour, IWeapon { public void Attack() { ... } }"
+      },
+      {
+        "id": "doc-5",
+        "title": "SerializeField como forma de Dependency Injection en Unity",
+        "type": "note",
+        "content": "<code>[SerializeField]</code> es la forma más común de <strong>dependency injection</strong> en Unity. En vez de que una clase cree sus propias dependencias con <code>new</code>, las recibe desde el Inspector. Esto desacopla la clase de sus implementaciones concretas: puedes cambiar <code>SwordAttack</code> por <code>BowAttack</code> sin tocar el código de <code>PlayerCombat</code>. El <strong>DIP</strong> se logra depender de la <strong>interface</strong> <code>IWeapon</code>, no de la clase concreta."
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "isp_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué establece el **ISP** (Interface Segregation Principle)?",
+      "options": [
+        "Ninguna clase debería verse obligada a implementar métodos de una **interface** que no usa.",
+        "Toda clase debe implementar al menos una interface.",
+        "Las interfaces deben tener al menos 5 métodos para ser útiles.",
+        "Una clase solo puede implementar una interface a la vez.",
+        "Las interfaces grandes son más eficientes que las pequeñas."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>ISP</strong> promueve interfaces pequeñas y específicas. Si una clase debe implementar métodos que no necesita (por ejemplo, una roca implementando <code>Move()</code>), la <strong>interface</strong> es demasiado grande y debe segregarse en varias interfaces más específicas."
+    },
+    {
+      "id": "isp_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de las siguientes es la señal más clara de una **interface** 'gorda' que viola el **ISP**?",
+      "options": [
+        "Una clase implementa la **interface** pero tiene que dejar varios métodos vacíos o con excepciones porque no los necesita.",
+        "La **interface** tiene exactamente 3 métodos bien definidos.",
+        "Dos clases distintas implementan la misma **interface**.",
+        "La **interface** se usa como parámetro en un método.",
+        "La **interface** tiene nombre con la letra 'I' al inicio."
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando una clase implementa una <strong>interface</strong> pero deja métodos vacíos o lanza <code>NotImplementedException</code> en ellos, es señal de que la interface es demasiado grande. El <strong>ISP</strong> indica que debe dividirse: la clase solo debería implementar la interface cuyos métodos realmente usa."
+    },
+    {
+      "id": "isp_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué establece el **DIP** (Dependency Inversion Principle)?",
+      "options": [
+        "Los módulos deben depender de abstracciones (**interfaces** o clases abstractas), no de implementaciones concretas.",
+        "Las dependencias deben crearse siempre con `new` dentro de la clase que las usa.",
+        "Una clase de alto nivel siempre debe heredar de una clase de bajo nivel.",
+        "Las interfaces deben depender de sus clases concretas para funcionar.",
+        "Los campos privados deben declararse al final de la clase."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>DIP</strong> dice que las clases deben depender de <strong>abstracciones</strong> (interfaces, clases abstractas), no de clases concretas. Así, <code>PlayerCombat</code> depende de <code>IWeapon</code> en vez de <code>SwordAttack</code>: puede recibir cualquier arma sin cambiar su código."
+    },
+    {
+      "id": "isp_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity, ¿cuál es la forma más común de aplicar **dependency injection** básica sin frameworks externos?",
+      "options": [
+        "Usar **[SerializeField]** para asignar dependencias desde el Inspector de Unity.",
+        "Crear las dependencias con `new` dentro del método `Start()`.",
+        "Usar `GameObject.Find()` para buscar las dependencias en la escena.",
+        "Declarar todos los campos como `public static` para que sean accesibles desde cualquier lugar.",
+        "Heredar de la clase dependencia para acceder a sus métodos."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>[SerializeField]</code> es la forma de <strong>dependency injection</strong> más natural en Unity: la clase recibe sus dependencias desde el Inspector, sin crearlas internamente. Esto implementa el <strong>DIP</strong>: la clase depende de una <strong>interface</strong> o clase abstracta, y el tipo concreto se asigna desde afuera."
+    },
+    {
+      "id": "isp_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Una clase `Rock` debe implementar `IDamageable` (puede romperse) pero NO `IMovable` (no se mueve). Según el **ISP**, ¿cuál diseño es correcto?",
+      "options": [
+        "Tener dos interfaces separadas: `IDamageable` y `IMovable`; `Rock` solo implementa `IDamageable`.",
+        "Tener una sola interface `IGameEntity` con ambos métodos; `Rock` implementa ambos aunque `Move()` esté vacío.",
+        "Heredar `Rock` de `Movable` y dejar `Move()` vacío para cumplir el contrato.",
+        "No usar interfaces; usar herencia múltiple directamente.",
+        "Hacer que `Rock` implemente `IMovable` pero lance `NotSupportedException` en `Move()`."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>ISP</strong> dice que <code>Rock</code> no debería estar obligada a implementar <code>Move()</code>. La solución es segregar: dos interfaces separadas, y <code>Rock</code> solo implementa <code>IDamageable</code>. Un <code>Goblin</code> implementaría ambas: <code>IDamageable, IMovable</code>."
+    },
+    {
+      "id": "isp_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de los siguientes viola el **DIP** en un `MonoBehaviour` de Unity?",
+      "options": [
+        "`private SwordAttack weapon = new SwordAttack();` — crea la dependencia concreta internamente.",
+        "`[SerializeField] private IWeapon weapon;` — recibe la dependencia como interface.",
+        "`public void SetWeapon(IWeapon w) { weapon = w; }` — inyecta la dependencia por setter.",
+        "`private IWeapon weapon;` asignado en `Awake()` desde `GetComponent<IWeapon>()`.",
+        "Recibir `IWeapon` como parámetro en un método de inicialización."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>new SwordAttack()</code> acopla directamente a la implementación concreta: si quieres cambiar de espada a arco, debes modificar la clase. El <strong>DIP</strong> indica que debe depender de la abstracción <code>IWeapon</code> y recibir la implementación desde afuera mediante <strong>dependency injection</strong>."
+    },
+    {
+      "id": "isp_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En Unity, ¿por qué `[SerializeField] private MonoBehaviour weaponBehaviour` se usa a veces en lugar de `[SerializeField] private IWeapon weapon`?",
+      "options": [
+        "Unity no puede serializar interfaces directamente; se serializa el MonoBehaviour y se hace cast a la interface en `Awake()`.",
+        "Las interfaces no pueden tener campos, por eso no se pueden serializar.",
+        "MonoBehaviour hereda automáticamente de todas las interfaces del proyecto.",
+        "El Inspector de Unity solo muestra campos de tipo MonoBehaviour o derivados.",
+        "Es obligatorio usar MonoBehaviour para aplicar el **DIP** en Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "Unity solo puede serializar tipos que hereden de <code>Object</code> (como <code>MonoBehaviour</code>). Las interfaces puras no son serializables por el Inspector. El patrón correcto es: exponer un campo de tipo <code>MonoBehaviour</code> con <code>[SerializeField]</code> y en <code>Awake()</code> hacer <code>weapon = weaponBehaviour as IWeapon;</code>, manteniendo el <strong>DIP</strong> en el código."
+    },
+    {
+      "id": "isp_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la diferencia principal entre una **interface** 'gorda' y un conjunto de interfaces segregadas según el **ISP**?",
+      "options": [
+        "La interface 'gorda' obliga a las clases a implementar métodos que no necesitan; las segregadas permiten que cada clase implemente solo lo que usa.",
+        "La interface 'gorda' tiene más rendimiento porque tiene un solo vtable.",
+        "Las interfaces segregadas solo pueden tener un método cada una.",
+        "La interface 'gorda' es más fácil de mantener porque todo está en un solo lugar.",
+        "Las interfaces segregadas violan el **DRY** al repetir nombres de métodos."
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia es el grado de acoplamiento: una interface 'gorda' como <code>IGameEntity</code> con 10 métodos obliga a toda clase que la implemente a tener esos 10 métodos, incluso si no los necesita. Las interfaces segregadas (<code>IDamageable</code>, <code>IMovable</code>, <code>IInteractable</code>) permiten que cada clase elija exactamente qué contratos cumple."
+    },
+    {
+      "id": "isp_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta interface:",
+      "code": "public interface IGameEntity\n{\n    void TakeDamage(int amount);\n    void Move(Vector3 direction);\n    void Interact();\n    void PlaySound();\n    void SaveState();\n}",
+      "question": "¿Cómo se llama el antipatrón que representa esta interface con tantos métodos no relacionados?",
+      "target": "interface gorda",
+      "acceptedAnswers": ["interface gorda", "fat interface", "interfaz gorda", "gorda", "fat interface"],
+      "hints": [
+        "Una interface que obliga a implementar muchos métodos no relacionados tiene un nombre coloquial.",
+        "El adjetivo describe que tiene demasiado contenido, como una persona que come demasiado.",
+        "En inglés se llama 'fat interface'."
+      ],
+      "explanation": "<code>IGameEntity</code> es una <strong>interface gorda</strong> (fat interface): obliga a toda clase que la implemente a tener métodos de daño, movimiento, interacción, audio y persistencia. Una roca que solo recibe daño se vería forzada a implementar <code>Move()</code>, <code>Interact()</code>, etc. El <strong>ISP</strong> dice que debe segregarse."
+    },
+    {
+      "id": "isp_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza estas interfaces de Unity:",
+      "code": "public interface IDamageable  { void TakeDamage(int amount); }\npublic interface IInteractable { void Interact(); }\npublic interface IMovable     { void Move(Vector3 dir); }\n\npublic class Chest : IDamageable, IInteractable\n{\n    public void TakeDamage(int a) { ... }\n    public void Interact()        { ... }\n}",
+      "question": "¿Qué principio **SOLID** demuestra el diseño de estas tres interfaces separadas?",
+      "target": "ISP",
+      "acceptedAnswers": ["ISP", "Interface Segregation Principle", "principio de segregación de interfaces"],
+      "hints": [
+        "Las interfaces son pequeñas y específicas — cada una tiene un solo método.",
+        "Chest solo implementa las interfaces que necesita, no todas.",
+        "El principio de Segregación de Interfaces tiene sigla I-S-P."
+      ],
+      "explanation": "Tres interfaces pequeñas y específicas — <code>IDamageable</code>, <code>IInteractable</code>, <code>IMovable</code> — demuestran el <strong>ISP</strong>. <code>Chest</code> implementa solo las dos que necesita: puede recibir daño e interactuar, pero no se mueve. Nadie está obligado a implementar métodos innecesarios."
+    },
+    {
+      "id": "isp_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este MonoBehaviour:",
+      "code": "public class PlayerCombat : MonoBehaviour\n{\n    private SwordAttack weapon = new SwordAttack();\n\n    void Update()\n    {\n        if (Input.GetMouseButtonDown(0))\n            weapon.Attack();\n    }\n}",
+      "question": "¿Qué principio **SOLID** viola `private SwordAttack weapon = new SwordAttack();`?",
+      "target": "DIP",
+      "acceptedAnswers": ["DIP", "Dependency Inversion Principle", "principio de inversión de dependencias", "dependency inversion"],
+      "hints": [
+        "PlayerCombat depende directamente de una clase concreta, no de una abstracción.",
+        "Si quisieras cambiar SwordAttack por BowAttack, tendrías que modificar PlayerCombat.",
+        "El principio que dice 'depende de abstracciones, no de implementaciones' tiene sigla D-I-P."
+      ],
+      "explanation": "<code>new SwordAttack()</code> viola el <strong>DIP</strong>: <code>PlayerCombat</code> está acoplado a la implementación concreta. Si necesitas cambiar el arma, debes modificar la clase. Aplicar el <strong>DIP</strong> significa depender de <code>IWeapon</code> e inyectar <code>SwordAttack</code> desde afuera con <strong>dependency injection</strong>."
+    },
+    {
+      "id": "isp_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Estudia este script de Unity:",
+      "code": "public class PlayerCombat : MonoBehaviour\n{\n    [SerializeField] private MonoBehaviour weaponBehaviour;\n    private IWeapon weapon;\n\n    void Awake()\n    {\n        weapon = weaponBehaviour as IWeapon;\n    }\n\n    void Update()\n    {\n        if (Input.GetMouseButtonDown(0)) weapon?.Attack();\n    }\n}",
+      "question": "¿Qué patrón de diseño representa el uso de **[SerializeField]** con `weaponBehaviour` para asignar la dependencia desde el Inspector?",
+      "target": "dependency injection",
+      "acceptedAnswers": ["dependency injection", "inyección de dependencias", "DI", "inyección"],
+      "hints": [
+        "La clase no crea su dependencia internamente — la recibe desde afuera.",
+        "El Inspector de Unity actúa como el 'inyector' que proporciona el objeto.",
+        "En inglés se llama 'dependency injection'."
+      ],
+      "explanation": "Usar <code>[SerializeField]</code> para recibir <code>weaponBehaviour</code> desde el Inspector es <strong>dependency injection</strong> en Unity: la clase no crea sus dependencias con <code>new</code>, las recibe desde afuera. Esto implementa el <strong>DIP</strong>: <code>PlayerCombat</code> depende de la abstracción <code>IWeapon</code>, no de <code>SwordAttack</code> directamente."
+    },
+    {
+      "id": "isp_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código problemático:",
+      "code": "public interface IEnemy\n{\n    void Walk();\n    void Fly();\n    void Swim();\n    void TakeDamage(int amount);\n    void Shoot();\n    void MeleeAttack();\n}\npublic class Goblin : IEnemy\n{\n    public void Walk()        { ... }\n    public void Fly()         { throw new NotImplementedException(); }\n    public void Swim()        { throw new NotImplementedException(); }\n    public void TakeDamage(int a) { ... }\n    public void Shoot()       { throw new NotImplementedException(); }\n    public void MeleeAttack() { ... }\n}",
+      "question": "¿Cuántos métodos está `Goblin` forzado a implementar aunque no los necesite, violando el **ISP**?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres"],
+      "hints": [
+        "Cuenta los métodos que lanzan NotImplementedException.",
+        "Un goblin no puede volar, nadar ni disparar.",
+        "Son exactamente 3 métodos innecesarios."
+      ],
+      "explanation": "<code>Goblin</code> lanza <code>NotImplementedException</code> en 3 métodos: <code>Fly()</code>, <code>Swim()</code> y <code>Shoot()</code>. Esto viola el <strong>ISP</strong>: la interface <code>IEnemy</code> es demasiado grande. La solución es segregar en <code>IWalkable</code>, <code>IFlyable</code>, <code>ISwimmable</code>, <code>IDamageable</code>, <code>IShooter</code> e <code>IMelee</code>, y que cada clase implemente solo lo que necesita."
+    },
+    {
+      "id": "isp_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa este diseño:",
+      "code": "public interface IWeapon { void Attack(); }\n\npublic class SwordAttack : MonoBehaviour, IWeapon\n{\n    public void Attack() { DealSlashDamage(); }\n}\n\npublic class BowAttack : MonoBehaviour, IWeapon\n{\n    public void Attack() { ShootArrow(); }\n}",
+      "question": "¿Qué principio **SOLID** se respeta al hacer que `PlayerCombat` dependa de `IWeapon` en vez de `SwordAttack`?",
+      "target": "DIP",
+      "acceptedAnswers": ["DIP", "Dependency Inversion Principle", "inversión de dependencias", "dependency inversion"],
+      "hints": [
+        "PlayerCombat depende de la abstracción IWeapon, no de SwordAttack ni BowAttack.",
+        "Puedes cambiar de SwordAttack a BowAttack sin modificar PlayerCombat.",
+        "El principio que habla de 'depender de abstracciones' es el D-I-P."
+      ],
+      "explanation": "Depender de <code>IWeapon</code> en lugar de <code>SwordAttack</code> respeta el <strong>DIP</strong>: <code>PlayerCombat</code> (módulo de alto nivel) depende de la abstracción <code>IWeapon</code>, mientras que los detalles (<code>SwordAttack</code>, <code>BowAttack</code>) dependen también de esa abstracción. Puedes cambiar el arma desde el Inspector sin tocar el código de combate."
+    },
+    {
+      "id": "isp_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de la **interface** `IDamageable` con el método para recibir daño, respetando el **ISP** (una sola responsabilidad por interface):",
+      "codeTemplate": "public __________ IDamageable\n{\n    void TakeDamage(int amount);\n}",
+      "expectedAnswer": "interface",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave correcta...",
+      "hints": [
+        "Para declarar un contrato que las clases pueden implementar, C# usa una palabra clave específica.",
+        "No es 'class' ni 'abstract class'.",
+        "La palabra clave es 'interface'."
+      ],
+      "explanation": "La palabra clave <code>interface</code> declara un contrato que las clases pueden implementar. <code>IDamageable</code> con un solo método sigue el <strong>ISP</strong>: es pequeña, específica, y cualquier clase que pueda recibir daño la implementa sin verse obligada a implementar métodos de movimiento o interacción."
+    },
+    {
+      "id": "isp_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la clase `Rock` para que implemente solo la **interface** que necesita según el **ISP** (solo puede recibir daño, no moverse ni interactuar):",
+      "codeTemplate": "public class Rock : MonoBehaviour, __________\n{\n    public void TakeDamage(int amount)\n    {\n        Destroy(gameObject);\n    }\n}",
+      "expectedAnswer": "IDamageable",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre de la interface correcta...",
+      "hints": [
+        "Rock solo puede recibir daño, no moverse ni interactuar.",
+        "La interface para 'puede recibir daño' se llama IDamageable.",
+        "Solo implementa la interface que corresponde a su comportamiento."
+      ],
+      "explanation": "<code>Rock : IDamageable</code> respeta el <strong>ISP</strong>: la roca solo implementa la interface de recibir daño. No está obligada a implementar <code>IMovable.Move()</code> ni <code>IInteractable.Interact()</code>. Si la roca no puede hacer algo, no debe tener ese contrato."
+    },
+    {
+      "id": "isp_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Segrega la **interface** 'gorda' `IGameEntity` en dos interfaces separadas respetando el **ISP**: una para recibir daño (`IDamageable`) y otra para moverse (`IMovable`).",
+      "codeTemplate": null,
+      "expectedAnswer": "public interface IDamageable { void TakeDamage(int amount); }\npublic interface IMovable { void Move(Vector3 direction); }",
+      "alternateAnswers": [
+        "public interface IDamageable{ void TakeDamage(int amount); }\npublic interface IMovable{ void Move(Vector3 direction); }"
+      ],
+      "placeholder": "Escribe las dos interfaces segregadas...",
+      "hints": [
+        "Cada interface solo debe tener los métodos de su responsabilidad.",
+        "IDamageable tiene TakeDamage(int amount) y IMovable tiene Move(Vector3 direction).",
+        "Las dos son independientes — ninguna depende de la otra."
+      ],
+      "explanation": "Segregar <code>IGameEntity</code> en <code>IDamageable</code> e <code>IMovable</code> respeta el <strong>ISP</strong>: una roca puede implementar solo <code>IDamageable</code>, un fantasma solo <code>IMovable</code> (si es invulnerable), y un goblin ambas. Ninguna clase está obligada a implementar lo que no necesita."
+    },
+    {
+      "id": "isp_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Aplica el **DIP** completando el campo que usa la abstracción `IWeapon` en vez de la clase concreta `SwordAttack`, usando **[SerializeField]** para **dependency injection** desde el Inspector:",
+      "codeTemplate": "public class PlayerCombat : MonoBehaviour\n{\n    [SerializeField] private MonoBehaviour weaponBehaviour;\n    private __________ weapon;\n\n    void Awake() { weapon = weaponBehaviour as IWeapon; }\n    void Update() { if (Input.GetMouseButtonDown(0)) weapon?.Attack(); }\n}",
+      "expectedAnswer": "IWeapon",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de la abstracción...",
+      "hints": [
+        "El campo debe ser del tipo de la abstracción, no de SwordAttack.",
+        "La interface que define el contrato de arma se llama IWeapon.",
+        "Depender de IWeapon permite cambiar el arma sin modificar PlayerCombat."
+      ],
+      "explanation": "Declarar <code>private IWeapon weapon;</code> aplica el <strong>DIP</strong>: <code>PlayerCombat</code> depende de la abstracción <code>IWeapon</code>, no de <code>SwordAttack</code>. El <code>[SerializeField]</code> del <code>MonoBehaviour</code> permite la <strong>dependency injection</strong> desde el Inspector: asignas <code>SwordAttack</code> o <code>BowAttack</code> sin tocar el código."
+    },
+    {
+      "id": "isp_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la clase `Goblin` que implementa correctamente `IDamageable` e `IMovable` respetando el **ISP** (sin lanzar excepciones en ningún método). Ambas interfaces tienen: `void TakeDamage(int amount)` y `void Move(Vector3 dir)`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class Goblin : MonoBehaviour, IDamageable, IMovable\n{\n    public void TakeDamage(int amount) { health -= amount; }\n    public void Move(Vector3 dir) { transform.Translate(dir); }\n}",
+      "alternateAnswers": [
+        "public class Goblin : MonoBehaviour, IDamageable, IMovable { public void TakeDamage(int amount) { } public void Move(Vector3 dir) { } }"
+      ],
+      "placeholder": "Escribe la clase Goblin completa...",
+      "hints": [
+        "Goblin implementa dos interfaces separadas con coma.",
+        "Ambos métodos tienen implementación real, sin excepciones.",
+        "Hereda de MonoBehaviour para poder adjuntarse a un GameObject."
+      ],
+      "explanation": "<code>Goblin : MonoBehaviour, IDamageable, IMovable</code> respeta el <strong>ISP</strong>: el goblin implementa exactamente las interfaces que corresponden a sus capacidades — puede recibir daño y puede moverse. Ambos métodos tienen implementación genuina, respetando también el <strong>LSP</strong>. Si el goblin no pudiera volar, no implementaría <code>IFlyable</code>."
+    },
+    {
+      "id": "isp_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Aplica **DIP** con **dependency injection** por constructor (no Unity). Escribe la clase `PlayerCombat` (C# puro, sin MonoBehaviour) que recibe su arma por constructor como `IWeapon`, la guarda en un campo privado y tiene el método `void DoAttack()` que llama a `weapon.Attack()`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class PlayerCombat\n{\n    private IWeapon weapon;\n\n    public PlayerCombat(IWeapon weapon)\n    {\n        this.weapon = weapon;\n    }\n\n    public void DoAttack()\n    {\n        weapon.Attack();\n    }\n}",
+      "alternateAnswers": [
+        "public class PlayerCombat { private IWeapon weapon; public PlayerCombat(IWeapon w) { weapon = w; } public void DoAttack() { weapon.Attack(); } }"
+      ],
+      "placeholder": "Escribe la clase con inyección por constructor...",
+      "hints": [
+        "El constructor recibe IWeapon como parámetro y lo guarda en el campo privado.",
+        "Usa 'this.weapon = weapon;' para distinguir el campo del parámetro.",
+        "DoAttack() simplemente llama weapon.Attack()."
+      ],
+      "explanation": "La inyección por constructor es la forma más limpia de <strong>dependency injection</strong>: <code>PlayerCombat</code> recibe <code>IWeapon</code> en su constructor y nunca hace <code>new SwordAttack()</code>. Esto aplica el <strong>DIP</strong>: depende de la abstracción, no del detalle. En pruebas unitarias, puedes pasar un <code>MockWeapon</code> sin necesidad de Unity."
+    }
+  ]
+}

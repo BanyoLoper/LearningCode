@@ -1,0 +1,373 @@
+{
+  "id": "diagramas_secuencia",
+  "title": "Diagramas de Secuencia UML",
+  "icon": "↔️",
+  "color": "#37474F",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Diagrama de Secuencia UML?",
+        "type": "definition",
+        "content": "Un <strong>diagrama de secuencia</strong> (<strong>sequence diagram</strong>) es un tipo de <strong>UML</strong> que muestra cómo interactúan los objetos de un sistema a lo largo del tiempo. Se enfoca en el <strong>orden de los mensajes</strong> entre objetos. Es ideal para modelar flujos de interacción, como lo que ocurre cuando el jugador presiona un botón, cuando un enemigo detecta al jugador, o cuando el <strong>GameManager</strong> carga una nueva escena."
+      },
+      {
+        "id": "doc-2",
+        "title": "Elementos del Sequence Diagram",
+        "type": "code",
+        "content": "// ELEMENTOS PRINCIPALES:\n\n// 1. OBJETOS (participants): cajas en la parte superior\n//    [GameManager]  [Player]  [UI]  [EnemyAI]\n\n// 2. LIFELINES (líneas de vida): líneas verticales punteadas\n//    que bajan de cada objeto, representando su existencia en el tiempo\n\n// 3. MENSAJES SÍNCRONOS: flecha sólida →\n//    El emisor espera la respuesta antes de continuar\n//    GameManager → Player : Inicializar()\n\n// 4. MENSAJES DE RESPUESTA: flecha punteada - - →\n//    Retorno de un mensaje síncrono\n//    Player - - → GameManager : return vida\n\n// 5. ACTIVACIÓN (activation bar): rectángulo delgado sobre la lifeline\n//    Indica que el objeto está procesando (ejecutando un método)\n\n// 6. TIEMPO: fluye de arriba hacia abajo\n//    El primer mensaje está arriba, el último abajo"
+      },
+      {
+        "id": "doc-3",
+        "title": "Ejemplo: Sequence Diagram del Sistema de Daño",
+        "type": "code",
+        "content": "// SEQUENCE DIAGRAM: El jugador recibe daño de un enemigo\n\n[EnemyAI]          [Player]          [UIManager]\n    |                  |                   |\n    |──Atacar(10)──→   |                   |\n    |                  |──ActualizarVida──→ |\n    |                  |                   |\n    |                  | ←──UpdateUI()──── |\n    |                  |                   |\n// Lectura:\n// 1. EnemyAI envía Atacar(10) a Player  (mensaje síncrono →)\n// 2. Player envía ActualizarVida a UIManager\n// 3. UIManager confirma con UpdateUI() a Player\n// El tiempo fluye de arriba hacia abajo: primero ocurre Atacar,\n// luego ActualizarVida, luego UpdateUI."
+      },
+      {
+        "id": "doc-4",
+        "title": "Traducción Sequence Diagram → Código C#",
+        "type": "code",
+        "content": "// SEQUENCE DIAGRAM:\n// [GameManager] → [SceneLoader] : CargarEscena(\"Nivel2\")\n// [SceneLoader] → [AudioManager] : DetenerMusica()\n// [SceneLoader] - - → [GameManager] : return OK\n\n// CÓDIGO C# EQUIVALENTE:\npublic class GameManager : MonoBehaviour\n{\n    public void IrSiguienteNivel()\n    {\n        // Mensaje 1: GameManager → SceneLoader\n        sceneLoader.CargarEscena(\"Nivel2\");\n    }\n}\n\npublic class SceneLoader : MonoBehaviour\n{\n    public void CargarEscena(string nombre)\n    {\n        // Mensaje 2: SceneLoader → AudioManager\n        audioManager.DetenerMusica();\n        // ... cargar escena\n        // Mensaje 3: retorno implícito al GameManager\n    }\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de los Sequence Diagrams",
+        "type": "list",
+        "items": [
+          "El tiempo fluye hacia abajo: el mensaje más arriba ocurre primero.",
+          "Las lifelines son las líneas verticales punteadas de cada objeto.",
+          "Las flechas sólidas (→) son mensajes síncronos: el emisor espera respuesta.",
+          "Las flechas punteadas (- -→) son mensajes de retorno o respuesta.",
+          "El objeto que envía el mensaje es el emisor; el que lo recibe es el receptor.",
+          "Los sequence diagrams muestran la colaboración entre objetos en tiempo de ejecución."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ds_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un **sequence diagram** de UML, ¿qué representa la línea vertical punteada que baja de cada objeto?",
+      "options": [
+        "La **lifeline**: indica la existencia del objeto a lo largo del tiempo.",
+        "Un mensaje asíncrono enviado por el objeto hacia abajo.",
+        "La jerarquía de herencia entre los objetos del diagrama.",
+        "El tiempo que tarda el objeto en procesar cada mensaje.",
+        "La relación de composición entre el objeto y sus partes."
+      ],
+      "correctIndex": 0,
+      "explanation": "La línea vertical punteada es la <strong>lifeline</strong> (línea de vida) de cada objeto. Representa la existencia del objeto a lo largo del tiempo. El tiempo fluye hacia abajo en el <strong>sequence diagram</strong>, por lo que los mensajes más arriba ocurren antes."
+    },
+    {
+      "id": "ds_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un **sequence diagram**, ¿qué tipo de flecha se usa para un mensaje síncrono (el emisor espera la respuesta)?",
+      "options": [
+        "Flecha sólida con punta rellena (──→)",
+        "Flecha punteada (- - →)",
+        "Flecha con punta hueca (──▷)",
+        "Flecha doble con puntas en ambos extremos (←──→)",
+        "Flecha curva que regresa al mismo objeto"
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>mensajes síncronos</strong> en un <strong>sequence diagram</strong> se representan con una <strong>flecha sólida</strong> (──→). El emisor espera a que el receptor complete el procesamiento antes de continuar. Las flechas punteadas (- -→) se usan para los mensajes de <strong>retorno</strong> o respuesta."
+    },
+    {
+      "id": "ds_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En el siguiente **sequence diagram**, ¿cuál mensaje ocurre PRIMERO?\n```\n[GameManager]    [Player]    [UI]\n      |               |          |\n      |──Iniciar()──→ |          |\n      |               |──Show()─→|\n      |               |          |\n```",
+      "options": [
+        "GameManager envía Iniciar() a Player.",
+        "Player envía Show() a UI.",
+        "UI envía una respuesta a Player.",
+        "GameManager recibe un mensaje de retorno.",
+        "Todos los mensajes ocurren simultáneamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "En un <strong>sequence diagram</strong>, el tiempo fluye <strong>de arriba hacia abajo</strong>. El mensaje más arriba ocurre primero. <code>GameManager ──Iniciar()──→ Player</code> está más arriba que <code>Player ──Show()──→ UI</code>, por lo que ocurre <strong>primero</strong>."
+    },
+    {
+      "id": "ds_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Lee este **sequence diagram**:\n```\n[Player]      [EnemyAI]     [GameManager]\n    |               |               |\n    |               |──Detectar()──→|\n    |               |               |\n    |←──Atacar()────|               |\n    |               |               |\n    |──TakeDamage()─|               |\n```\n¿Qué objeto envía el mensaje `Atacar()` y a quién?",
+      "options": [
+        "EnemyAI envía Atacar() a Player.",
+        "Player envía Atacar() a EnemyAI.",
+        "GameManager envía Atacar() a EnemyAI.",
+        "Player envía Atacar() a GameManager.",
+        "EnemyAI envía Atacar() a GameManager."
+      ],
+      "correctIndex": 0,
+      "explanation": "En el <strong>sequence diagram</strong>, la flecha <code>←──Atacar()────</code> sale de <code>EnemyAI</code> (donde empieza la flecha) y apunta hacia <code>Player</code> (donde termina con la punta). Por lo tanto, <strong>EnemyAI</strong> es el <strong>emisor</strong> y <strong>Player</strong> es el <strong>receptor</strong> del mensaje <code>Atacar()</code>."
+    },
+    {
+      "id": "ds_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el código C# que corresponde a este fragmento de **sequence diagram**?\n```\n[GameManager] → [SceneLoader] : CargarNivel(\"Boss\")\n[SceneLoader] → [AudioManager] : CambiarMusica(\"boss_theme\")\n```",
+      "options": [
+        "sceneLoader.CargarNivel(\"Boss\"); y dentro: audioManager.CambiarMusica(\"boss_theme\");",
+        "audioManager.CambiarMusica(\"boss_theme\"); y luego: sceneLoader.CargarNivel(\"Boss\");",
+        "gameManager.CargarNivel(\"Boss\"); y gameManager.CambiarMusica(\"boss_theme\");",
+        "SceneLoader.CargarNivel(); AudioManager.CambiarMusica(); en el mismo método.",
+        "CargarNivel y CambiarMusica son llamados de forma simultánea en threads separados."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>sequence diagram</strong> muestra que primero <code>GameManager</code> llama a <code>sceneLoader.CargarNivel(\"Boss\")</code>. Luego, <em>dentro</em> del método <code>CargarNivel</code>, el <code>SceneLoader</code> llama a <code>audioManager.CambiarMusica(\"boss_theme\")</code>. El orden de los mensajes de arriba a abajo define el orden de ejecución del código."
+    },
+    {
+      "id": "ds_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué representa una flecha punteada `- - →` en un **sequence diagram**?",
+      "options": [
+        "Un mensaje de retorno o respuesta al mensaje síncrono original.",
+        "Un mensaje asíncrono donde el emisor no espera respuesta.",
+        "Una llamada a un método estático de la clase.",
+        "Un error o excepción lanzada durante la ejecución.",
+        "Una relación de herencia entre los dos objetos del diagrama."
+      ],
+      "correctIndex": 0,
+      "explanation": "La flecha punteada (<strong>- - →</strong>) en un <strong>sequence diagram</strong> representa un <strong>mensaje de retorno</strong> (respuesta). Indica que el objeto receptor terminó de procesar el mensaje síncrono y devuelve un resultado al emisor. Por ejemplo, después de <code>GetVida()</code>, la respuesta <code>- - → return 80</code> indica que retornó el valor 80."
+    },
+    {
+      "id": "ds_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Lee este **sequence diagram** completo del inicio de una partida:\n```\n[MenuUI]    [GameManager]   [Player]    [LevelLoader]\n    |              |             |              |\n    |──Jugar()────→|             |              |\n    |              |──Crear()───→|              |\n    |              |             |              |\n    |              |──CargarNivel(1)────────────→|\n    |              |             |              |\n    |              |←──NivelListo()─────────────|\n    |              |             |              |\n    |←──OcultarMenu()──|         |              |\n```\n¿Cuál es el ÚLTIMO objeto en recibir un mensaje?",
+      "options": [
+        "MenuUI, recibe OcultarMenu() de GameManager.",
+        "LevelLoader, recibe CargarNivel(1) de GameManager.",
+        "Player, recibe Crear() de GameManager.",
+        "GameManager, recibe Jugar() de MenuUI.",
+        "Todos los objetos reciben mensajes al mismo tiempo."
+      ],
+      "correctIndex": 0,
+      "explanation": "El tiempo fluye de arriba hacia abajo. El orden es: (1) <code>MenuUI → GameManager: Jugar()</code>, (2) <code>GameManager → Player: Crear()</code>, (3) <code>GameManager → LevelLoader: CargarNivel(1)</code>, (4) <code>LevelLoader → GameManager: NivelListo()</code>, (5) <code>GameManager → MenuUI: OcultarMenu()</code>. El <strong>último</strong> mensaje lo recibe <strong>MenuUI</strong>."
+    },
+    {
+      "id": "ds_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuántos objetos (participants) aparecen en este **sequence diagram**?\n```\n[EnemySpawner] → [WaveData] : ObtenerEnemigos()\n[WaveData] - - → [EnemySpawner] : return lista[]\n[EnemySpawner] → [Nivel] : SpawnearEnemigos(lista[])\n[Nivel] → [Enemigo] : Inicializar(posicion)\n```",
+      "options": [
+        "4 objetos: EnemySpawner, WaveData, Nivel y Enemigo.",
+        "3 objetos: EnemySpawner, WaveData y Nivel.",
+        "2 objetos: EnemySpawner y Nivel.",
+        "5 objetos: uno por cada flecha del diagrama.",
+        "1 objeto: EnemySpawner es el único que envía mensajes."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>objetos</strong> (<strong>participants</strong>) son los que aparecen entre corchetes en la parte superior: <code>EnemySpawner</code>, <code>WaveData</code>, <code>Nivel</code> y <code>Enemigo</code>. Son <strong>4 objetos</strong>. Las flechas punteadas de retorno no agregan nuevos objetos, solo representan respuestas entre los ya existentes."
+    },
+    {
+      "id": "ds_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este sequence diagram:",
+      "code": "[Player]    [HealthSystem]    [UIManager]\n    |               |                |\n    |──TakeDamage(20)──→             |\n    |               |──UpdateUI()───→|\n    |               |                |",
+      "question": "¿Qué objeto envía el mensaje `TakeDamage(20)` y a quién?",
+      "target": "Player envía TakeDamage(20) a HealthSystem",
+      "acceptedAnswers": ["Player a HealthSystem", "Player envía TakeDamage a HealthSystem", "Player → HealthSystem", "Player envia TakeDamage(20) a HealthSystem"],
+      "hints": [
+        "La flecha sale del objeto emisor y apunta hacia el receptor.",
+        "La punta de la flecha (→) indica el destino del mensaje.",
+        "Lee: ¿de qué objeto sale la flecha de TakeDamage(20)?"
+      ],
+      "explanation": "<code>Player</code> es el <strong>emisor</strong> del mensaje <code>TakeDamage(20)</code> porque la flecha sale de su <strong>lifeline</strong>. <code>HealthSystem</code> es el <strong>receptor</strong> porque la flecha apunta hacia su lifeline. La notación es: Emisor ──Mensaje──→ Receptor."
+    },
+    {
+      "id": "ds_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este sequence diagram:",
+      "code": "[GameManager]    [Player]    [ScoreUI]\n      |               |             |\n      |──StartGame()─→|             |\n      |               |             |\n      |──ShowUI()─────────────────→ |\n      |               |             |\n      |←──Ready()─────|             |",
+      "question": "¿Cuántos mensajes envía `GameManager` en total en este sequence diagram?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos"],
+      "hints": [
+        "Cuenta las flechas que salen de la lifeline de GameManager.",
+        "Una flecha que regresa hacia GameManager es un mensaje que RECIBE, no que envía.",
+        "StartGame() y ShowUI() salen de GameManager; Ready() llega a GameManager."
+      ],
+      "explanation": "<code>GameManager</code> <strong>envía</strong> 2 mensajes: <code>StartGame()</code> a <code>Player</code> y <code>ShowUI()</code> a <code>ScoreUI</code>. El mensaje <code>Ready()</code> va <em>hacia</em> <code>GameManager</code> (lo recibe), no lo envía. En total GameManager envía <strong>2</strong> mensajes."
+    },
+    {
+      "id": "ds_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sequence diagram de un sistema de compra en un juego:",
+      "code": "[Player]    [ShopUI]    [Inventory]    [Currency]\n    |           |              |               |\n    |──Buy()──→ |              |               |\n    |           |──CheckGold()─────────────── →|\n    |           |              |               |\n    |           |←──return 500─────────────── -|\n    |           |              |               |\n    |           |──AddItem()──→|               |",
+      "question": "¿Qué tipo de flecha representa `return 500` en el diagrama y qué significa?",
+      "target": "flecha punteada, es un mensaje de retorno",
+      "acceptedAnswers": ["punteada", "flecha punteada", "retorno", "mensaje de retorno", "respuesta", "return", "- -→"],
+      "hints": [
+        "Las flechas de retorno tienen un estilo diferente a las flechas de mensaje.",
+        "Se usan para indicar que un método devolvió un valor.",
+        "¿Qué símbolo se usa en UML para representar un mensaje de regreso?"
+      ],
+      "explanation": "La flecha <code>←── return 500 ───-</code> es una <strong>flecha punteada</strong>, que en los <strong>sequence diagrams</strong> representa un <strong>mensaje de retorno</strong>. Indica que <code>Currency</code> respondió a la llamada <code>CheckGold()</code> devolviendo el valor <code>500</code>. Las flechas punteadas siempre van en dirección opuesta al mensaje original."
+    },
+    {
+      "id": "ds_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este sequence diagram de detección de colisión:",
+      "code": "[Projectile]    [Player]    [EffectsManager]    [AudioManager]\n      |               |               |                  |\n      |──OnCollision()→|              |                  |\n      |               |──PlayHit()───→|                  |\n      |               |              |──PlaySound()─────→|\n      |               |              |                  |",
+      "question": "¿Cuál es el tercer mensaje enviado en orden de tiempo en este sequence diagram?",
+      "target": "PlaySound()",
+      "acceptedAnswers": ["PlaySound()", "PlaySound", "EffectsManager → AudioManager: PlaySound()"],
+      "hints": [
+        "El tiempo fluye de arriba hacia abajo.",
+        "El primer mensaje es OnCollision(), el segundo es PlayHit().",
+        "¿Cuál es el mensaje que aparece más abajo en el diagrama?"
+      ],
+      "explanation": "El orden temporal de los mensajes (de arriba hacia abajo): (1) <code>Projectile → Player: OnCollision()</code>, (2) <code>Player → EffectsManager: PlayHit()</code>, (3) <code>EffectsManager → AudioManager: PlaySound()</code>. El <strong>tercer mensaje</strong> es <strong>PlaySound()</strong>."
+    },
+    {
+      "id": "ds_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sequence diagram del sistema de guardado:",
+      "code": "[Player]    [SaveManager]    [FileSystem]    [UIManager]\n    |               |                |               |\n    |──SaveGame()──→|                |               |\n    |               |──SerializeData()→              |\n    |               |←─-return data--               |\n    |               |──WriteFile(data)──────────────→|\n    |               |                |               |\n    |               |←─-return OK────────────────── -|\n    |               |                |               |\n    |←──ShowSaved()─|                |               |",
+      "question": "¿Cuántos mensajes en total (síncronos + retorno) hay en este sequence diagram?",
+      "target": "6",
+      "acceptedAnswers": ["6", "seis"],
+      "hints": [
+        "Cuenta tanto las flechas sólidas (mensajes) como las punteadas (retornos).",
+        "Los mensajes son: SaveGame, SerializeData, WriteFile, ShowSaved.",
+        "Los retornos son: return data, return OK. Suma todos."
+      ],
+      "explanation": "Mensajes síncronos (flechas sólidas): (1) <code>SaveGame()</code>, (2) <code>SerializeData()</code>, (3) <code>WriteFile(data)</code>, (4) <code>ShowSaved()</code>. Mensajes de retorno (flechas punteadas): (5) <code>return data</code>, (6) <code>return OK</code>. Total: <strong>6 mensajes</strong>."
+    },
+    {
+      "id": "ds_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee este sequence diagram de inicio de nivel y su código C# parcial:",
+      "code": "// SEQUENCE DIAGRAM:\n[GameManager] → [LevelManager] : LoadLevel(2)\n[LevelManager] → [EnemySpawner] : SpawnEnemies()\n[LevelManager] → [Player] : SetSpawnPoint(pos)\n[LevelManager] - - → [GameManager] : return true\n\n// CÓDIGO C#:\npublic void LoadLevel(int nivel)\n{\n    enemySpawner._______();\n    player.SetSpawnPoint(spawnPos);\n    // retorna implícitamente\n}",
+      "question": "¿Qué nombre de método va en el espacio en blanco del código C# para que corresponda al sequence diagram?",
+      "target": "SpawnEnemies",
+      "acceptedAnswers": ["SpawnEnemies", "SpawnEnemies()", "SpawnEnemies()", "spawnEnemies"],
+      "hints": [
+        "El segundo mensaje en el sequence diagram es el que LevelManager envía a EnemySpawner.",
+        "El nombre del mensaje en el diagrama es exactamente el nombre del método en el código.",
+        "Busca el mensaje enviado a EnemySpawner en el sequence diagram."
+      ],
+      "explanation": "En el <strong>sequence diagram</strong>, <code>LevelManager</code> envía el mensaje <code>SpawnEnemies()</code> a <code>EnemySpawner</code>. Este mensaje corresponde directamente a la llamada de método <code>enemySpawner.<strong>SpawnEnemies()</strong></code> en el código C#. Los mensajes del diagrama se traducen 1:1 a llamadas de método en el código."
+    },
+    {
+      "id": "ds_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la notación del mensaje en el sequence diagram. El objeto `Player` envía el mensaje `Jump()` al objeto `PhysicsEngine`:",
+      "codeTemplate": "Player ──Jump()──__________ PhysicsEngine",
+      "expectedAnswer": "→",
+      "alternateAnswers": ["→", "->", "──→"],
+      "placeholder": "Escribe el símbolo de flecha...",
+      "hints": [
+        "Los mensajes síncronos en sequence diagrams usan una flecha que apunta hacia el receptor.",
+        "La punta de la flecha indica la dirección del mensaje.",
+        "Es una flecha simple que apunta hacia la derecha."
+      ],
+      "explanation": "La notación de un mensaje síncrono en un <strong>sequence diagram</strong> es: <code>Emisor ──Mensaje()──<strong>→</strong> Receptor</code>. La flecha (<strong>→</strong>) apunta hacia el objeto que recibe el mensaje. Para los retornos se usa flecha punteada (<code>- - →</code>)."
+    },
+    {
+      "id": "ds_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Lee el código C# y completa el sequence diagram con el mensaje faltante:\n```csharp\npublic class Player : MonoBehaviour\n{\n    void Die()\n    {\n        gameManager.OnPlayerDeath(); // mensaje 1\n        uiManager.ShowGameOver();    // mensaje 2\n    }\n}\n```",
+      "codeTemplate": "[Player] → [GameManager] : OnPlayerDeath()\n[Player] → [__________] : ShowGameOver()",
+      "expectedAnswer": "UIManager",
+      "alternateAnswers": ["uiManager", "UI", "UImanager", "UiManager"],
+      "placeholder": "Escribe el nombre del objeto receptor...",
+      "hints": [
+        "El segundo mensaje llama a ShowGameOver().",
+        "¿A qué objeto se llama ShowGameOver() en el código C#?",
+        "Busca en el código C# quién tiene el método ShowGameOver()."
+      ],
+      "explanation": "En el código, <code>uiManager.ShowGameOver()</code> indica que <code>Player</code> envía el mensaje <code>ShowGameOver()</code> al objeto <code>UIManager</code>. En el <strong>sequence diagram</strong>, el receptor del segundo mensaje es <strong>UIManager</strong> (o <code>uiManager</code> con la convención de nomenclatura usada)."
+    },
+    {
+      "id": "ds_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el código C# completo que implementa exactamente este sequence diagram:\n```\n[GameManager] → [Player] : SetVida(100)\n[GameManager] → [UIManager] : MostrarHUD()\n[GameManager] → [EnemySpawner] : IniciarOleada(1)\n```\n\nAsumir que GameManager tiene referencias: `player`, `uiManager`, `enemySpawner`.",
+      "codeTemplate": null,
+      "expectedAnswer": "player.SetVida(100);\nuiManager.MostrarHUD();\nenemySpawner.IniciarOleada(1);",
+      "alternateAnswers": [
+        "this.player.SetVida(100);\nthis.uiManager.MostrarHUD();\nthis.enemySpawner.IniciarOleada(1);"
+      ],
+      "placeholder": "Escribe las tres llamadas de método en orden...",
+      "hints": [
+        "Cada flecha del sequence diagram corresponde a una llamada de método en C#.",
+        "El orden de arriba hacia abajo en el diagrama es el orden de ejecución en el código.",
+        "El emisor es GameManager, así que el código va dentro de un método de GameManager."
+      ],
+      "explanation": "Cada mensaje del <strong>sequence diagram</strong> se traduce directamente a una llamada de método: <code>GameManager → Player: SetVida(100)</code> → <code>player.SetVida(100);</code>. El orden de los mensajes en el diagrama (de arriba hacia abajo) define el orden de ejecución en el código C#."
+    },
+    {
+      "id": "ds_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el **sequence diagram** completo (en formato de texto) para este código C# de Unity:\n```csharp\npublic class InputHandler : MonoBehaviour\n{\n    void Update()\n    {\n        if (Input.GetKeyDown(KeyCode.E))\n        {\n            player.Interactuar();\n            dialogManager.MostrarDialogo(\"Hola!\");\n            audioManager.ReproducirSonido(\"interact\");\n        }\n    }\n}\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "[InputHandler] → [Player] : Interactuar()\n[InputHandler] → [DialogManager] : MostrarDialogo(\"Hola!\")\n[InputHandler] → [AudioManager] : ReproducirSonido(\"interact\")",
+      "alternateAnswers": [
+        "InputHandler → Player : Interactuar()\nInputHandler → DialogManager : MostrarDialogo(\"Hola!\")\nInputHandler → AudioManager : ReproducirSonido(\"interact\")"
+      ],
+      "placeholder": "Escribe el sequence diagram en notación de texto...",
+      "hints": [
+        "Cada llamada a método en el código se convierte en un mensaje del sequence diagram.",
+        "El formato es: [Emisor] → [Receptor] : NombreMétodo(parámetros)",
+        "El orden en el código determina el orden de los mensajes de arriba a abajo."
+      ],
+      "explanation": "Cada llamada de método en el código se convierte en un mensaje del <strong>sequence diagram</strong>: <code>player.Interactuar()</code> → <code>[InputHandler] → [Player] : Interactuar()</code>. El <code>InputHandler</code> es siempre el emisor (es quien tiene el código) y cada objeto llamado es el receptor. El orden en el código define el orden temporal del diagrama."
+    },
+    {
+      "id": "ds_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el sequence diagram con el mensaje de retorno correcto. El `HealthSystem` responde a `GetVida()` devolviendo el valor `75`:",
+      "codeTemplate": "[Player] ──GetVida()──→ [HealthSystem]\n[HealthSystem] __________→ [Player] : return 75",
+      "expectedAnswer": "- -",
+      "alternateAnswers": ["--", "- - ", "punteada", "···"],
+      "placeholder": "Escribe el tipo de flecha para el retorno...",
+      "hints": [
+        "Los mensajes de retorno usan un tipo de flecha diferente a los mensajes síncronos.",
+        "Las flechas de retorno son discontinuas o punteadas.",
+        "Se representan con guiones en lugar de una línea sólida."
+      ],
+      "explanation": "Los mensajes de <strong>retorno</strong> en un <strong>sequence diagram</strong> usan una <strong>flecha punteada</strong> (<code>- -→</code>). Esto diferencia las respuestas de los mensajes síncronos iniciales (flecha sólida <code>──→</code>). La flecha punteada va en dirección opuesta al mensaje original: de <code>HealthSystem</code> de vuelta a <code>Player</code>."
+    },
+    {
+      "id": "ds_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el código C# completo de la clase `CombatSystem` que implementa este sequence diagram:\n```\n[CombatSystem] → [Attacker] : GetDano()\n[Attacker] - -→ [CombatSystem] : return 25\n[CombatSystem] → [Defender] : TakeDamage(25)\n[CombatSystem] → [UIManager] : ActualizarVida(Defender.vida)\n```\n\nAsumir que CombatSystem tiene campos: `attacker`, `defender`, `uiManager`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class CombatSystem\n{\n    public void ResolverCombate()\n    {\n        int dano = attacker.GetDano();\n        defender.TakeDamage(dano);\n        uiManager.ActualizarVida(defender.vida);\n    }\n}",
+      "alternateAnswers": [
+        "public void ResolverCombate() {\n    int dano = attacker.GetDano();\n    defender.TakeDamage(dano);\n    uiManager.ActualizarVida(defender.vida);\n}"
+      ],
+      "placeholder": "Escribe la clase CombatSystem con el método completo...",
+      "hints": [
+        "La flecha de retorno (- -→ return 25) indica que GetDano() devuelve un valor que debes guardar en una variable.",
+        "Guarda el retorno de GetDano() en una variable `int dano` para pasársela a TakeDamage().",
+        "Los tres mensajes síncronos se traducen a tres líneas de código en orden."
+      ],
+      "explanation": "La flecha punteada <code>- - → return 25</code> indica que <code>attacker.GetDano()</code> retorna un valor, que guardamos en <code>int dano</code>. Luego ese valor se pasa como argumento a <code>defender.TakeDamage(dano)</code>. Finalmente <code>uiManager.ActualizarVida(defender.vida)</code> actualiza la UI. El <strong>sequence diagram</strong> captura exactamente esta secuencia de llamadas."
+    }
+  ]
+}

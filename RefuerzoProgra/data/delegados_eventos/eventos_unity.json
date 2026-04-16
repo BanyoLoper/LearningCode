@@ -1,0 +1,385 @@
+{
+  "id": "eventos_unity",
+  "title": "Eventos en Unity",
+  "icon": "🎮",
+  "color": "#6A1B9A",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un UnityEvent?",
+        "type": "definition",
+        "content": "Un <strong>UnityEvent</strong> es el sistema de eventos nativo de Unity, parte del namespace <code>UnityEngine.Events</code>. A diferencia de los C# <strong>events</strong>, un <strong>UnityEvent</strong> puede ser configurado directamente en el Inspector de Unity sin escribir código. Esto permite a los diseñadores de niveles conectar lógica (\"cuando este botón se presione, llama a este método\") sin tocar scripts. También puede ser utilizado por código con <strong><code>+=</code></strong> (equivalente a <code>AddListener</code>) y <strong><code>-=</code></strong> (<code>RemoveListener</code>)."
+      },
+      {
+        "id": "doc-2",
+        "title": "UnityEvent: Inspector y Código",
+        "type": "code",
+        "content": "using UnityEngine;\nusing UnityEngine.Events;\n\npublic class Puerta : MonoBehaviour\n{\n    // Aparece en el Inspector para wiring visual\n    public UnityEvent OnAbrirse;\n    public UnityEvent OnCerrarse;\n\n    bool abierta = false;\n\n    public void Activar()\n    {\n        abierta = !abierta;\n        if (abierta)\n            OnAbrirse.Invoke();   // llama a todos los listeners del Inspector y código\n        else\n            OnCerrarse.Invoke();\n    }\n}\n\n// Suscripción por código (equivalente a += en C# events)\npublic class SistemaSonido : MonoBehaviour\n{\n    [SerializeField] Puerta puerta;\n\n    void OnEnable()\n    {\n        puerta.OnAbrirse.AddListener(ReproducirSonidoAbrir);\n        puerta.OnCerrarse.AddListener(ReproducirSonidoCerrar);\n    }\n\n    void OnDisable()\n    {\n        puerta.OnAbrirse.RemoveListener(ReproducirSonidoAbrir);\n        puerta.OnCerrarse.RemoveListener(ReproducirSonidoCerrar);\n    }\n\n    void ReproducirSonidoAbrir()  => Debug.Log(\"Sonido: puerta abre\");\n    void ReproducirSonidoCerrar() => Debug.Log(\"Sonido: puerta cierra\");\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Button.onClick: UI Events",
+        "type": "code",
+        "content": "using UnityEngine;\nusing UnityEngine.UI;\n\npublic class MenuManager : MonoBehaviour\n{\n    [SerializeField] Button btnJugar;\n    [SerializeField] Button btnOpciones;\n    [SerializeField] Button btnSalir;\n\n    void OnEnable()\n    {\n        // AddListener en lugar de += para UnityEvent\n        btnJugar.onClick.AddListener(IniciarJuego);\n        btnOpciones.onClick.AddListener(AbrirOpciones);\n        btnSalir.onClick.AddListener(SalirJuego);\n    }\n\n    void OnDisable()\n    {\n        btnJugar.onClick.RemoveListener(IniciarJuego);\n        btnOpciones.onClick.RemoveListener(AbrirOpciones);\n        btnSalir.onClick.RemoveListener(SalirJuego);\n    }\n\n    void IniciarJuego()  => UnityEngine.SceneManagement.SceneManager.LoadScene(\"Nivel1\");\n    void AbrirOpciones() => Debug.Log(\"Abriendo opciones...\");\n    void SalirJuego()    => Application.Quit();\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "UnityEvent vs C# event: Comparación",
+        "type": "note",
+        "content": "<strong>UnityEvent</strong> vs C# <strong>event</strong>: ¿cuándo usar cada uno? Usa <strong>UnityEvent</strong> cuando quieras que los diseñadores conecten lógica desde el Inspector sin tocar código (botones de UI, triggers de nivel). Usa C# <strong>event</strong> cuando la lógica sea solo código (sistemas de puntuación, muerte de enemigos), ya que es más rápido en ejecución y tiene tipado más estricto. <strong>UnityEvent</strong> tiene más overhead porque serializa los listeners. <strong>UnityEvent&lt;T&gt;</strong> permite pasar parámetros, pero en el Inspector solo funciona si está correctamente tipado."
+      },
+      {
+        "id": "doc-5",
+        "title": "Buenas Prácticas con Eventos en Unity",
+        "type": "list",
+        "items": [
+          "Usa AddListener/RemoveListener en OnEnable/OnDisable, igual que con C# events.",
+          "Button.onClick es un UnityEvent: usa AddListener para suscribirse por código.",
+          "Si conectas listeners en el Inspector Y en código, ambos se ejecutarán al invocar.",
+          "RemoveAllListeners() elimina todos los listeners de código pero preserva los del Inspector.",
+          "Prefiere C# event para lógica de gameplay crítica; UnityEvent para wiring de diseñador.",
+          "UnityEvent<T> (genérico) permite pasar datos, pero debe declararse como clase concreta para serializarse."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "eu_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué ventaja principal tiene **UnityEvent** sobre un C# **event** estándar?",
+      "options": [
+        "Puede ser configurado visualmente en el Inspector sin escribir código.",
+        "Es más rápido en ejecución porque no usa reflection.",
+        "No necesita ser desuscrito en OnDisable para evitar memory leaks.",
+        "Puede invocar métodos privados de cualquier clase sin restricciones.",
+        "Automáticamente maneja referencias a objetos destruidos sin errores."
+      ],
+      "correctIndex": 0,
+      "explanation": "La ventaja clave de <strong>UnityEvent</strong> es su integración con el Inspector: los diseñadores pueden conectar métodos visualmente sin tocar código. Esto facilita el trabajo colaborativo entre programadores y diseñadores. En rendimiento, el C# <strong>event</strong> es más rápido; <strong>UnityEvent</strong> prioriza la accesibilidad desde el editor."
+    },
+    {
+      "id": "eu_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué método se usa para suscribir un listener a un **UnityEvent** por código?",
+      "options": [
+        "AddListener()",
+        "Subscribe()",
+        "+=",
+        "Register()",
+        "Attach()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>UnityEvent</strong> usa <code>AddListener(metodo)</code> para suscribir por código, y <code>RemoveListener(metodo)</code> para desuscribir. Aunque internamente <code>UnityEvent</code> también acepta <code>+=</code> en algunas versiones, la API oficial y recomendada es <strong><code>AddListener</code></strong> y <strong><code>RemoveListener</code></strong>."
+    },
+    {
+      "id": "eu_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cómo se suscribe por código al evento `onClick` de un **Button** de Unity UI?",
+      "options": [
+        "btnJugar.onClick.AddListener(IniciarJuego);",
+        "btnJugar.onClick += IniciarJuego;",
+        "btnJugar.Subscribe(IniciarJuego);",
+        "btnJugar.OnClick(IniciarJuego);",
+        "btnJugar.AddEventListener(\"click\", IniciarJuego);"
+      ],
+      "correctIndex": 0,
+      "explanation": "El evento <code>onClick</code> de <code>Button</code> es un <strong>UnityEvent</strong>, por lo que se usa <code>AddListener()</code>: <code>btnJugar.onClick.AddListener(IniciarJuego);</code>. La sintaxis <code>+=</code> no funciona con <strong>UnityEvent</strong> de la misma manera que con C# events."
+    },
+    {
+      "id": "eu_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué namespace se encuentra la clase **UnityEvent**?",
+      "options": [
+        "UnityEngine.Events",
+        "UnityEngine.UI",
+        "System.Events",
+        "UnityEngine.Delegates",
+        "UnityEngine.Core"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>UnityEvent</strong> se encuentra en el namespace <code>UnityEngine.Events</code>. Para usarlo, necesitas agregar <code>using UnityEngine.Events;</code> al inicio del script. La clase <code>Button</code> y otros componentes de UI que usan <code>UnityEvent</code> internamente están en <code>UnityEngine.UI</code>."
+    },
+    {
+      "id": "eu_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué ocurre si conectas un listener en el **Inspector** Y también llamas a `AddListener()` por código para el mismo **UnityEvent**?",
+      "options": [
+        "Ambos listeners se ejecutan cuando se invoca el evento.",
+        "El listener del Inspector sobrescribe el del código.",
+        "El listener del código sobrescribe el del Inspector.",
+        "Unity lanza una excepción por listener duplicado.",
+        "Solo el listener del Inspector funciona en builds de producción."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>UnityEvent</strong> mantiene dos listas separadas: los listeners persistentes (Inspector) y los listeners en tiempo de ejecución (AddListener por código). Al invocar el evento, <strong>ambos se ejecutan</strong>. Esto permite combinar configuración visual con lógica programática."
+    },
+    {
+      "id": "eu_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuándo es más adecuado usar C# **event** en lugar de **UnityEvent**?",
+      "options": [
+        "Para sistemas de gameplay críticos (puntuación, muerte de enemigos) donde el rendimiento importa y no se necesita wiring en el Inspector.",
+        "Para botones de la UI que los diseñadores deben configurar.",
+        "Cuando necesitas que el evento se vea en el Inspector serializado.",
+        "Para eventos de trigger y collider en el mundo del juego.",
+        "Cuando quieres pasar más de 4 parámetros con el evento."
+      ],
+      "correctIndex": 0,
+      "explanation": "C# <strong>event</strong> es más rápido que <strong>UnityEvent</strong> (no usa reflection ni serialización) y tiene tipado más estricto. Es la elección correcta para lógica de gameplay crítica: sistema de puntuación, muerte de enemigos, cambios de estado del juego. Usa <strong>UnityEvent</strong> cuando el <em>wiring</em> visual del Inspector sea una ventaja real (UI, nivel)."
+    },
+    {
+      "id": "eu_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué método elimina TODOS los listeners registrados por código en un **UnityEvent**, pero preserva los conectados en el Inspector?",
+      "options": [
+        "RemoveAllListeners()",
+        "ClearListeners()",
+        "RemoveListener(null)",
+        "UnsubscribeAll()",
+        "Reset()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>RemoveAllListeners()</code> elimina únicamente los listeners registrados en tiempo de ejecución (via <code>AddListener</code>). Los listeners persistentes configurados en el <strong>Inspector</strong> se conservan. Esto es útil cuando necesitas limpiar todos los listeners de código sin afectar la configuración del diseñador."
+    },
+    {
+      "id": "eu_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tienes este código:\n```csharp\npublic class PanelMenu : MonoBehaviour\n{\n    [SerializeField] Button btnStart;\n\n    void Start()\n    {\n        btnStart.onClick.AddListener(ComenzarPartida);\n    }\n    void ComenzarPartida() => Debug.Log(\"Iniciando...\");\n}\n```\n¿Cuál es el problema de suscribirse en `Start` sin desuscribirse?",
+      "options": [
+        "Si el panel se desactiva y reactiva, se añade un segundo listener duplicado, haciendo que ComenzarPartida se llame dos veces por clic.",
+        "Start solo se ejecuta una vez, por lo que el listener nunca se registra.",
+        "AddListener en Start lanza NullReferenceException si el botón no está asignado en Awake.",
+        "El listener se destruye automáticamente al cambiar de escena, así que no es necesario RemoveListener.",
+        "No hay ningún problema; suscribirse en Start es la práctica recomendada."
+      ],
+      "correctIndex": 0,
+      "explanation": "Si el objeto se desactiva y reactiva, <code>Start</code> no vuelve a ejecutarse, pero si el objeto se destruye y recrea, o si <code>OnEnable</code> se usa en cambio, se agrega el listener otra vez. El patrón correcto es <strong><code>OnEnable</code></strong> + <strong><code>AddListener</code></strong> y <strong><code>OnDisable</code></strong> + <strong><code>RemoveListener</code></strong> para garantizar exactamente un listener activo."
+    },
+    {
+      "id": "eu_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta declaración de campo:",
+      "code": "using UnityEngine.Events;\n\npublic class Trampa : MonoBehaviour\n{\n    public UnityEvent OnActivarse;\n}",
+      "question": "¿Qué permite hacer la declaración `public UnityEvent OnActivarse` que un C# event estándar no haría?",
+      "target": "configurarlo en el Inspector",
+      "acceptedAnswers": ["configurarlo en el Inspector", "wiring en el Inspector", "verlo en el Inspector", "conectarlo visualmente desde el Inspector", "asignar listeners en el Inspector"],
+      "hints": [
+        "Los campos public de tipo UnityEvent son serializables por Unity.",
+        "Piensa en qué herramienta de Unity permite al diseñador hacer conexiones visuales.",
+        "UnityEvent aparece como un panel expandible en el componente del Inspector."
+      ],
+      "explanation": "Al ser <code>public</code> y de tipo <strong>UnityEvent</strong>, el campo <code>OnActivarse</code> aparece en el <strong>Inspector</strong> como un panel donde los diseñadores pueden conectar métodos visualmente sin escribir código. Esto hace que el <strong>UnityEvent</strong> sea ideal para flujos de trabajo colaborativos entre programadores y diseñadores."
+    },
+    {
+      "id": "eu_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento de UI:",
+      "code": "using UnityEngine.UI;\n\npublic class PauseMenu : MonoBehaviour\n{\n    [SerializeField] Button btnReanudar;\n\n    void OnEnable()  => btnReanudar.onClick.AddListener(Reanudar);\n    void OnDisable() => btnReanudar.onClick.RemoveListener(Reanudar);\n\n    void Reanudar() => Time.timeScale = 1f;\n}",
+      "question": "¿Qué método de `Button.onClick` corresponde a la desuscripción en este código?",
+      "target": "RemoveListener",
+      "acceptedAnswers": ["RemoveListener", "RemoveListener(Reanudar)", ".RemoveListener"],
+      "hints": [
+        "Busca la llamada en OnDisable.",
+        "Es el método contrario de AddListener.",
+        "Su nombre indica que 'quita' un listener."
+      ],
+      "explanation": "<strong><code>RemoveListener(Reanudar)</code></strong> es el método de <strong>UnityEvent</strong> que elimina el listener registrado. Es equivalente a <code>-=</code> en C# events. En <code>OnDisable</code> se llama para garantizar que cuando el panel se desactiva, el botón deje de llamar a <code>Reanudar</code>."
+    },
+    {
+      "id": "eu_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este escenario:",
+      "code": "// Inspector: btnSaltar.onClick tiene conectado el método 'Saltar' de PlayerController\n// Código:\nvoid OnEnable()\n{\n    btnSaltar.onClick.AddListener(ReproducirSonidoSalto);\n}\nvoid OnDisable()\n{\n    btnSaltar.onClick.RemoveListener(ReproducirSonidoSalto);\n}",
+      "question": "Cuando el usuario hace clic en `btnSaltar`, ¿cuántos métodos se ejecutan en total?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos", "dos métodos"],
+      "hints": [
+        "Hay un listener conectado en el Inspector y otro añadido por código.",
+        "UnityEvent mantiene los listeners del Inspector y los de código por separado, pero los ejecuta todos.",
+        "Cuenta: Saltar (Inspector) + ReproducirSonidoSalto (código) = ?"
+      ],
+      "explanation": "Al hacer clic, <strong>UnityEvent</strong> ejecuta todos sus listeners: <code>Saltar</code> (conectado en el Inspector) y <code>ReproducirSonidoSalto</code> (agregado por código). Total: <strong>2 métodos</strong>. Ambas listas (persistente del Inspector y en tiempo de ejecución del código) se invocan juntas."
+    },
+    {
+      "id": "eu_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara estos dos sistemas:",
+      "code": "// Sistema A: C# event\npublic event System.Action OnPlayerDead;\nvoid Morir() => OnPlayerDead?.Invoke();\n\n// Sistema B: UnityEvent\npublic UnityEvent OnPlayerDead;\nvoid Morir() => OnPlayerDead.Invoke();",
+      "question": "¿En cuál de los dos sistemas (A o B) el campo puede tener valor null al ser invocado y requiere verificación?",
+      "target": "A",
+      "acceptedAnswers": ["A", "Sistema A", "el C# event", "el event de C#"],
+      "hints": [
+        "Un C# event es null por defecto si no tiene suscriptores.",
+        "UnityEvent es un objeto que se inicializa automáticamente.",
+        "¿Cuál de los dos usa ?.Invoke() y cuál usa .Invoke() directamente?"
+      ],
+      "explanation": "En el <strong>Sistema A</strong> (C# event), si no hay suscriptores, el delegate es <code>null</code> y llamar a <code>OnPlayerDead()</code> sin verificar lanza <code>NullReferenceException</code>. En el <strong>Sistema B</strong> (<strong>UnityEvent</strong>), el objeto siempre está inicializado (no es null) y <code>Invoke()</code> simplemente no hace nada si no hay listeners."
+    },
+    {
+      "id": "eu_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código con UnityEvent genérico:",
+      "code": "using UnityEngine.Events;\n\n[System.Serializable]\npublic class IntEvent : UnityEvent<int> { }\n\npublic class ScoreManager : MonoBehaviour\n{\n    public IntEvent OnScoreCambio;\n    int score = 0;\n\n    public void Puntuar(int pts)\n    {\n        score += pts;\n        OnScoreCambio.Invoke(score);\n    }\n}",
+      "question": "¿Por qué es necesario declarar la clase `IntEvent` en lugar de usar directamente `UnityEvent<int>` como tipo del campo?",
+      "target": "para que sea serializable en el Inspector",
+      "acceptedAnswers": [
+        "para que sea serializable en el Inspector",
+        "para serializarlo",
+        "UnityEvent<int> no es serializable directamente",
+        "para que aparezca en el Inspector",
+        "porque los tipos genéricos no se serializan directamente en Unity"
+      ],
+      "hints": [
+        "Unity no puede serializar tipos genéricos directamente (como UnityEvent<int>).",
+        "Para que aparezca en el Inspector, el tipo debe ser concreto y marcado con [System.Serializable].",
+        "Crear una clase que hereda de UnityEvent<int> hace que el tipo sea concreto y serializable."
+      ],
+      "explanation": "Unity no puede serializar tipos genéricos como <code>UnityEvent&lt;int&gt;</code> directamente en el Inspector. Para lograrlo, se crea una clase concreta que hereda de <code>UnityEvent&lt;int&gt;</code> y se marca con <strong><code>[System.Serializable]</code></strong>. Así Unity puede serializarla y mostrarla en el Inspector como un campo configurable."
+    },
+    {
+      "id": "eu_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de sistema de menú:",
+      "code": "public class MainMenu : MonoBehaviour\n{\n    [SerializeField] Button btnJugar;\n    [SerializeField] Button btnSalir;\n\n    void Awake()\n    {\n        btnJugar.onClick.AddListener(() => SceneManager.LoadScene(1));\n        btnSalir.onClick.AddListener(Application.Quit);\n    }\n}",
+      "question": "¿Cuál es el riesgo de registrar los listeners en `Awake` en lugar de `OnEnable`/`OnDisable`?",
+      "target": "no hay desuscripción",
+      "acceptedAnswers": [
+        "no hay desuscripción",
+        "no se desuscriben los listeners",
+        "los listeners nunca se eliminan",
+        "si el objeto se recrea se duplican los listeners",
+        "falta el RemoveListener"
+      ],
+      "hints": [
+        "Awake se ejecuta una vez al crearse el objeto.",
+        "Si el menú se destruye y recrea, Awake vuelve a ejecutarse.",
+        "¿Hay algún RemoveListener en este código?"
+      ],
+      "explanation": "El código no tiene <code>RemoveListener</code>. Si el menú se destruye y recrea (o si hubiera un <code>OnEnable</code> en su lugar), los listeners se acumularían. Aunque en este caso concreto (Awake en un menú simple) podría funcionar, la buena práctica es siempre emparejar <strong>AddListener</strong> en <strong><code>OnEnable</code></strong> con <strong>RemoveListener</strong> en <strong><code>OnDisable</code></strong>."
+    },
+    {
+      "id": "eu_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa para suscribir el método `IniciarJuego` al evento `onClick` del botón `btnPlay` usando la API de **UnityEvent**:",
+      "codeTemplate": "btnPlay.onClick.__________(IniciarJuego);",
+      "expectedAnswer": "AddListener",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método de suscripción de UnityEvent...",
+      "hints": [
+        "El método de UnityEvent para suscribir un listener empieza con Add.",
+        "Es el equivalente de += en C# events.",
+        "Su nombre en inglés significa 'agregar oyente'."
+      ],
+      "explanation": "<strong><code>AddListener(metodo)</code></strong> es la API de <strong>UnityEvent</strong> para suscribir listeners. <code>btnPlay.onClick.AddListener(IniciarJuego)</code> registra <code>IniciarJuego</code> para que se llame cada vez que el botón sea presionado."
+    },
+    {
+      "id": "eu_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa para desuscribir el método `IniciarJuego` del evento `onClick` del botón `btnPlay`:",
+      "codeTemplate": "btnPlay.onClick.__________(IniciarJuego);",
+      "expectedAnswer": "RemoveListener",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método de desuscripción de UnityEvent...",
+      "hints": [
+        "Es el método contrario de AddListener.",
+        "Su nombre empieza con Remove.",
+        "Se debe llamar en OnDisable para evitar referencias colgantes."
+      ],
+      "explanation": "<strong><code>RemoveListener(metodo)</code></strong> elimina el listener del <strong>UnityEvent</strong>. Debe llamarse en <strong><code>OnDisable</code></strong> para garantizar que cuando el objeto se desactiva o destruye, el botón deje de intentar llamar a un método de un objeto posiblemente inválido."
+    },
+    {
+      "id": "eu_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la declaración del campo **UnityEvent** que aparecerá en el Inspector, llamado `OnActivarTrampa`:",
+      "codeTemplate": "using UnityEngine.Events;\n\npublic __________ OnActivarTrampa;",
+      "expectedAnswer": "UnityEvent",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de evento de Unity...",
+      "hints": [
+        "Es la clase de Unity para eventos configurables en el Inspector.",
+        "Está en el namespace UnityEngine.Events.",
+        "Su nombre combina el nombre del motor y la palabra Event."
+      ],
+      "explanation": "<strong>UnityEvent</strong> es el tipo correcto. Al declararlo como <code>public</code>, aparecerá en el Inspector del componente como un panel donde los diseñadores pueden conectar métodos sin código. Para invocarlo se usa <code>OnActivarTrampa.Invoke()</code>."
+    },
+    {
+      "id": "eu_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método `OnEnable` de `MenuManager` que suscribe `IniciarPartida` al `onClick` de `btnStart` y `CerrarApp` al `onClick` de `btnExit`. Ambos son `Button` de Unity UI.",
+      "codeTemplate": null,
+      "expectedAnswer": "void OnEnable()\n{\n    btnStart.onClick.AddListener(IniciarPartida);\n    btnExit.onClick.AddListener(CerrarApp);\n}",
+      "alternateAnswers": [
+        "void OnEnable() { btnStart.onClick.AddListener(IniciarPartida); btnExit.onClick.AddListener(CerrarApp); }"
+      ],
+      "placeholder": "Escribe el método OnEnable() completo...",
+      "hints": [
+        "Usa AddListener() para cada botón dentro de OnEnable.",
+        "El evento de un botón se accede como btnStart.onClick.",
+        "Registra cada método en su botón correspondiente."
+      ],
+      "explanation": "En <code>OnEnable</code> se registran todos los listeners de botones con <code>AddListener</code>. El método correspondiente en <code>OnDisable</code> debe llamar a <code>RemoveListener</code> con los mismos métodos para garantizar la limpieza correcta."
+    },
+    {
+      "id": "eu_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método `OnDisable` de `MenuManager` que desuscribe correctamente `IniciarPartida` de `btnStart.onClick` y `CerrarApp` de `btnExit.onClick`.",
+      "codeTemplate": null,
+      "expectedAnswer": "void OnDisable()\n{\n    btnStart.onClick.RemoveListener(IniciarPartida);\n    btnExit.onClick.RemoveListener(CerrarApp);\n}",
+      "alternateAnswers": [
+        "void OnDisable() { btnStart.onClick.RemoveListener(IniciarPartida); btnExit.onClick.RemoveListener(CerrarApp); }"
+      ],
+      "placeholder": "Escribe el método OnDisable() completo...",
+      "hints": [
+        "Usa RemoveListener() para cada botón dentro de OnDisable.",
+        "Debe ser el espejo exacto del OnEnable, cambiando Add por Remove.",
+        "Llama a RemoveListener con los mismos métodos que registraste en OnEnable."
+      ],
+      "explanation": "<code>OnDisable</code> debe ser el espejo de <code>OnEnable</code>: cada <code>AddListener</code> tiene su <code>RemoveListener</code> correspondiente. Esto garantiza que al desactivar o destruir el <code>MenuManager</code>, los botones no intenten llamar a métodos de un objeto que ya no existe."
+    },
+    {
+      "id": "eu_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la clase `PuertaController` completa como MonoBehaviour que: (1) tiene un campo `public UnityEvent OnAbrir`, (2) tiene un método `Activar()` que invoca `OnAbrir`, y (3) tiene un campo serializado `Button btnAbrir` que en `OnEnable` llama a `AddListener(Activar)` y en `OnDisable` llama a `RemoveListener(Activar)`.",
+      "codeTemplate": null,
+      "expectedAnswer": "using UnityEngine;\nusing UnityEngine.UI;\nusing UnityEngine.Events;\n\npublic class PuertaController : MonoBehaviour\n{\n    public UnityEvent OnAbrir;\n    [SerializeField] Button btnAbrir;\n\n    void OnEnable()  => btnAbrir.onClick.AddListener(Activar);\n    void OnDisable() => btnAbrir.onClick.RemoveListener(Activar);\n\n    public void Activar()\n    {\n        OnAbrir.Invoke();\n    }\n}",
+      "alternateAnswers": [
+        "using UnityEngine;\nusing UnityEngine.UI;\nusing UnityEngine.Events;\npublic class PuertaController : MonoBehaviour\n{\n    public UnityEvent OnAbrir;\n    [SerializeField] private Button btnAbrir;\n    void OnEnable() { btnAbrir.onClick.AddListener(Activar); }\n    void OnDisable() { btnAbrir.onClick.RemoveListener(Activar); }\n    public void Activar() { OnAbrir.Invoke(); }\n}"
+      ],
+      "placeholder": "Escribe la clase completa...",
+      "hints": [
+        "Necesitas los using para UnityEngine.UI y UnityEngine.Events.",
+        "UnityEvent se invoca con .Invoke(), no con ?.Invoke() (no puede ser null).",
+        "El patrón es: OnEnable con AddListener, OnDisable con RemoveListener, y el método Activar que lanza el UnityEvent."
+      ],
+      "explanation": "La clase combina los dos conceptos: usa el <strong>Button.onClick</strong> (UnityEvent de UI) para detectar el clic del usuario, y su propio <strong>UnityEvent</strong> <code>OnAbrir</code> para notificar a otros sistemas. <code>UnityEvent.Invoke()</code> (sin <code>?.</code>) es seguro porque <strong>UnityEvent</strong> nunca es null."
+    }
+  ]
+}

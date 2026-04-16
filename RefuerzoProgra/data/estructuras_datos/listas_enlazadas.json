@@ -1,0 +1,372 @@
+{
+  "id": "listas_enlazadas",
+  "title": "Listas Enlazadas",
+  "icon": "🔗",
+  "color": "#0D47A1",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es una Lista Enlazada? Nodos y Punteros",
+        "type": "definition",
+        "content": "Una <strong>lista enlazada</strong> (<em>linked list</em>) es una colección de <strong>nodos</strong> donde cada nodo contiene un valor y una referencia (<em>next-pointer</em>) al siguiente nodo. A diferencia de los arrays y listas, los elementos <em>no están contiguos en memoria</em>: cada nodo puede estar en cualquier lugar del <em>heap</em>. En C#, la clase <code>LinkedList&lt;T&gt;</code> es una <strong>lista doblemente enlazada</strong>: cada nodo tiene referencias al nodo siguiente (<code>Next</code>) y al anterior (<code>Previous</code>). El primer nodo se llama <strong>cabeza</strong> (<em>head</em>) y el último <strong>cola</strong> (<em>tail</em>)."
+      },
+      {
+        "id": "doc-2",
+        "title": "LinkedList<T> en C#: Operaciones Principales",
+        "type": "code",
+        "content": "using System.Collections.Generic;\n\n// LinkedList de items del inventario\nLinkedList<string> inventario = new LinkedList<string>();\n\n// Agregar al inicio y al final — O(1)\nLinkedListNode<string> nodoPrimero = inventario.AddFirst(\"Espada\");\nLinkedListNode<string> nodoUltimo = inventario.AddLast(\"Escudo\");\ninventario.AddLast(\"Poción\");\n// inventario: Espada <-> Escudo <-> Poción\n\n// Insertar ANTES o DESPUÉS de un nodo específico — O(1)\n// (si ya tienes la referencia al nodo)\ninventario.AddAfter(nodoPrimero, \"Amuleto\");\n// inventario: Espada <-> Amuleto <-> Escudo <-> Poción\n\n// Eliminar un nodo por referencia — O(1)\ninventario.Remove(nodoPrimero); // elimina Espada\n\n// Recorrer la lista\nforeach (string item in inventario)\n{\n    Debug.Log(item);\n}\n\n// Acceder al primer y último elemento — O(1)\nstring primero = inventario.First.Value; // Amuleto\nstring ultimo = inventario.Last.Value;   // Poción"
+      },
+      {
+        "id": "doc-3",
+        "title": "Cuándo usar LinkedList vs List<T> en Unity",
+        "type": "analogy",
+        "content": "La <strong>LinkedList&lt;T&gt;</strong> brilla cuando necesitas <strong>insertar o eliminar elementos frecuentemente</strong> en el medio de la colección. En un <strong>inventario con orden dinámico</strong>: si los ítems se insertan constantemente en posiciones específicas (antes o después de otro ítem), <strong>LinkedList&lt;T&gt;</strong> lo hace en <strong>O(1)</strong> si tienes el nodo, mientras que <strong>List&lt;T&gt;</strong> necesita desplazar elementos (<strong>O(n)</strong>). Sin embargo, <strong>LinkedList&lt;T&gt;</strong> tiene acceso <strong>O(n)</strong> por índice (debe recorrer desde el inicio), mientras que <strong>List&lt;T&gt;</strong> tiene acceso <strong>O(1)</strong>. Regla: si accedes frecuentemente por índice → usa <strong>List&lt;T&gt;</strong>. Si insertas/eliminas frecuentemente en el medio → usa <strong>LinkedList&lt;T&gt;</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "LinkedListNode<T>: El Concepto de Nodo",
+        "type": "note",
+        "content": "Cada elemento en una <strong>LinkedList&lt;T&gt;</strong> está envuelto en un <code>LinkedListNode&lt;T&gt;</code>. El nodo tiene tres propiedades: <code>Value</code> (el dato almacenado), <code>Next</code> (referencia al siguiente nodo, <code>null</code> si es el último) y <code>Previous</code> (referencia al anterior, <code>null</code> si es el primero). Guardar la referencia al nodo es clave para lograr inserciones y eliminaciones en <strong>O(1)</strong>: <code>lista.AddAfter(miNodo, nuevoValor)</code> o <code>lista.Remove(miNodo)</code>. Si no tienes la referencia y buscas por valor, la búsqueda es <strong>O(n)</strong>."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de LinkedList",
+        "type": "list",
+        "items": [
+          "Cada elemento es un nodo con Value, Next y Previous (lista doblemente enlazada).",
+          "Inserción/eliminación con referencia al nodo: O(1). Sin referencia (búsqueda + operación): O(n).",
+          "Acceso por índice: O(n) — debe recorrer desde el inicio.",
+          "List<T> es mejor para acceso frecuente por índice (O(1) con array interno).",
+          "LinkedList<T> es mejor para inserciones/eliminaciones frecuentes en el medio.",
+          "Usa LinkedList en: entity lists con spawn/despawn frecuente, inventarios con inserción ordenada."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "le_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es un **nodo** en el contexto de una lista enlazada?",
+      "options": [
+        "Un elemento que contiene el valor almacenado y referencias al nodo siguiente y anterior.",
+        "Un índice numérico que indica la posición del elemento en la lista.",
+        "Una función que permite agregar elementos al inicio de la lista.",
+        "El nombre del primer elemento de la lista enlazada.",
+        "Un tipo especial de array que almacena pares clave-valor."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>nodo</strong> en una <code>LinkedList&lt;T&gt;</code> es un objeto <code>LinkedListNode&lt;T&gt;</code> que contiene: <code>Value</code> (el dato), <code>Next</code> (referencia al nodo siguiente) y <code>Previous</code> (referencia al nodo anterior). Esta estructura permite la inserción y eliminación eficiente sin desplazar otros elementos."
+    },
+    {
+      "id": "le_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué complejidad temporal tiene insertar un elemento al inicio de una `LinkedList<T>` si ya tienes referencia al primer nodo?",
+      "options": [
+        "O(1) — solo actualiza los punteros, sin mover otros elementos.",
+        "O(n) — debe recorrer toda la lista para insertar al inicio.",
+        "O(log n) — usa búsqueda binaria para encontrar la posición.",
+        "O(n²) — por la doble naturaleza de la lista doblemente enlazada.",
+        "Depende del tipo T almacenado en la lista."
+      ],
+      "correctIndex": 0,
+      "explanation": "Insertar en <strong>LinkedList&lt;T&gt;</strong> cuando tienes la referencia al nodo es <strong>O(1)</strong>: solo actualiza el <em>next-pointer</em> del nuevo nodo y el <em>previous-pointer</em> del nodo siguiente. No necesita mover ningún otro elemento. Esto es ventaja sobre <strong>List&lt;T&gt;</strong>, donde insertar al inicio requiere desplazar todos los elementos."
+    },
+    {
+      "id": "le_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué propiedad del objeto `LinkedListNode<T>` contiene el dato almacenado en ese nodo?",
+      "options": [
+        "Value",
+        "Data",
+        "Item",
+        "Content",
+        "Element"
+      ],
+      "correctIndex": 0,
+      "explanation": "La propiedad <strong><code>Value</code></strong> de <code>LinkedListNode&lt;T&gt;</code> contiene el dato almacenado. El nodo también tiene <code>Next</code> (referencia al siguiente) y <code>Previous</code> (referencia al anterior). Para acceder al valor del primer nodo de una lista: <code>lista.First.Value</code>."
+    },
+    {
+      "id": "le_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la complejidad de acceder a un elemento por índice (por ejemplo, el quinto elemento) en una `LinkedList<T>`?",
+      "options": [
+        "O(n) — debe recorrer desde el inicio nodo por nodo hasta llegar al índice.",
+        "O(1) — acceso directo por índice como en List<T> y arrays.",
+        "O(log n) — usa punteros de salto para búsqueda binaria.",
+        "O(1) si es el primero o último; O(n) para los demás.",
+        "LinkedList<T> no soporta acceso por índice en absoluto."
+      ],
+      "correctIndex": 0,
+      "explanation": "El acceso por índice en <strong>LinkedList&lt;T&gt;</strong> es <strong>O(n)</strong> porque los nodos no están en memoria contigua: debe recorrer nodo por nodo desde el inicio (o el final) hasta llegar al índice deseado. Esta es la principal desventaja vs <strong>List&lt;T&gt;</strong> y arrays, que son <strong>O(1)</strong> por índice."
+    },
+    {
+      "id": "le_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes un sistema de entidades en Unity donde los enemigos se crean y destruyen constantemente. Las entidades se procesan en orden pero se insertan/eliminan frecuentemente. ¿Qué estructura es más eficiente?",
+      "options": [
+        "LinkedList<Enemy> — inserciones y eliminaciones O(1) con referencia al nodo.",
+        "List<Enemy> — acceso O(1) por índice compensa el costo de inserción.",
+        "Array de Enemy — es la estructura más rápida para cualquier caso.",
+        "Stack<Enemy> — LIFO es eficiente para crear y destruir entidades.",
+        "Queue<Enemy> — FIFO garantiza orden justo de procesamiento."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>LinkedList&lt;Enemy&gt;</strong> es óptima cuando las operaciones principales son insertar y eliminar (spawn/despawn) de posiciones no conocidas de antemano. Si cada <code>Enemy</code> guarda su propio <code>LinkedListNode&lt;Enemy&gt;</code>, su eliminación es <strong>O(1)</strong>. <strong>List&lt;T&gt;</strong> es mejor si el acceso por índice es la operación principal."
+    },
+    {
+      "id": "le_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia entre `LinkedList<T>.AddFirst()` y `LinkedList<T>.AddLast()`?",
+      "options": [
+        "AddFirst() inserta al inicio de la lista; AddLast() inserta al final. Ambos son O(1).",
+        "AddFirst() es O(1) porque la cabeza es accesible; AddLast() es O(n) porque debe recorrer hasta el final.",
+        "AddFirst() y AddLast() son equivalentes; solo difieren en el nombre.",
+        "AddFirst() reemplaza el primer elemento; AddLast() agrega sin reemplazar.",
+        "AddFirst() solo funciona con tipos primitivos; AddLast() con cualquier tipo."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>AddFirst()</code> inserta al inicio (<em>head</em>) y <code>AddLast()</code> inserta al final (<em>tail</em>). Ambos son <strong>O(1)</strong> porque <code>LinkedList&lt;T&gt;</code> mantiene referencias tanto a la cabeza como a la cola. Esto es una ventaja sobre <strong>List&lt;T&gt;</strong>, donde insertar al inicio es <strong>O(n)</strong>."
+    },
+    {
+      "id": "le_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿En cuál de estos casos de Unity sería MEJOR usar `List<T>` en lugar de `LinkedList<T>`?",
+      "options": [
+        "Acceder frecuentemente a elementos por índice (ej. waypoints[i]) en un bucle de Update().",
+        "Insertar y eliminar enemigos constantemente desde el medio de una lista de entidades.",
+        "Mantener una lista de items de inventario con inserción frecuente en posiciones arbitrarias.",
+        "Un sistema donde los nodos guardan referencia a sí mismos para eliminación O(1).",
+        "Una lista de eventos donde el orden de inserción es impredecible."
+      ],
+      "correctIndex": 0,
+      "explanation": "El acceso por índice frecuente en <code>Update()</code> favorece <strong>List&lt;T&gt;</strong>: su acceso O(1) por índice (basado en array interno) es mucho más rápido que el O(n) de <strong>LinkedList&lt;T&gt;</strong>. Además, <strong>List&lt;T&gt;</strong> es más <em>cache-friendly</em> al tener datos contiguos en memoria, lo que importa en bucles de Unity que corren 60 veces por segundo."
+    },
+    {
+      "id": "le_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "En una `LinkedList<string>` con nodos [A → B → C → D], ¿qué ocurre con los punteros al eliminar el nodo B con `lista.Remove(nodoB)`?",
+      "options": [
+        "El nodo A apunta directamente a C, y C apunta directamente a A. B queda sin referencias.",
+        "Todos los nodos se desplazan una posición y la lista queda [A → C → D] en memoria contigua.",
+        "El nodo B se marca como null pero sigue ocupando espacio en la lista.",
+        "La lista se destruye y debe reconstruirse sin B.",
+        "El nodo D pasa a ser el nuevo inicio de la lista."
+      ],
+      "correctIndex": 0,
+      "explanation": "Al eliminar el nodo B: <code>A.Next</code> pasa a apuntar a C, y <code>C.Previous</code> pasa a apuntar a A. El nodo B queda sin referencias y el <strong>Garbage Collector</strong> lo recogerá. La lista queda [A → C → D]. Esta actualización de punteros es <strong>O(1)</strong> — no hay desplazamiento de elementos como en <strong>List&lt;T&gt;</strong>."
+    },
+    {
+      "id": "le_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de LinkedList:",
+      "code": "LinkedList<string> inventario = new LinkedList<string>();\ninventario.AddLast(\"Espada\");\ninventario.AddLast(\"Escudo\");\ninventario.AddLast(\"Poción\");\nDebug.Log(inventario.Count);",
+      "question": "¿Qué valor imprime `inventario.Count`?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres"],
+      "hints": [
+        "Se llamó AddLast() tres veces.",
+        "Count devuelve el número de nodos en la lista.",
+        "Cada AddLast() agrega un nodo."
+      ],
+      "explanation": "<code>Count</code> en <strong>LinkedList&lt;T&gt;</strong> devuelve el número de nodos. Se llamó <strong>AddLast()</strong> tres veces, por lo tanto <code>inventario.Count == 3</code>. La propiedad <code>Count</code> se mantiene actualizada automáticamente con cada inserción y eliminación."
+    },
+    {
+      "id": "le_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "LinkedList<int> lista = new LinkedList<int>();\nlista.AddLast(10);\nlista.AddLast(20);\nlista.AddLast(30);\n\nstring primero = lista.First.Value.ToString();\nDebug.Log(primero);",
+      "question": "¿Qué valor imprime `Debug.Log(primero)`?",
+      "target": "10",
+      "acceptedAnswers": ["10", "diez"],
+      "hints": [
+        "First devuelve el primer nodo de la LinkedList.",
+        "El primer nodo es el que se agregó primero.",
+        "Value accede al dato almacenado en el nodo."
+      ],
+      "explanation": "<code>lista.First</code> devuelve el primer nodo (<code>LinkedListNode&lt;int&gt;</code>), y <code>.Value</code> accede al dato almacenado: <strong>10</strong>. El primer nodo fue el resultado del primer <code>AddLast(10)</code>. De manera análoga, <code>lista.Last.Value</code> devolvería 30."
+    },
+    {
+      "id": "le_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza estas dos operaciones y su complejidad:",
+      "code": "// Operación A en List<T>\nList<string> lista = new List<string> { \"A\", \"B\", \"C\", \"D\" };\nlista.Insert(1, \"X\"); // insertar después de A\n\n// Operación B en LinkedList<T>\nLinkedList<string> linked = new LinkedList<string>();\nLinkedListNode<string> nodoA = linked.AddLast(\"A\");\nlinked.AddLast(\"B\"); linked.AddLast(\"C\"); linked.AddLast(\"D\");\nlinked.AddAfter(nodoA, \"X\"); // insertar después de A",
+      "question": "¿Qué notación Big-O describe la complejidad de la Operación B (insertar en LinkedList con referencia al nodo)?",
+      "target": "O(1)",
+      "acceptedAnswers": ["O(1)", "O1", "constante", "tiempo constante"],
+      "hints": [
+        "La LinkedList solo actualiza punteros al insertar.",
+        "No necesita desplazar ningún elemento.",
+        "La notación es O de uno."
+      ],
+      "explanation": "La Operación B es <strong>O(1)</strong>: <code>AddAfter(nodoA, \"X\")</code> solo actualiza los punteros del nuevo nodo y de sus vecinos — sin importar el tamaño de la lista. La Operación A (List.Insert) es <strong>O(n)</strong> porque debe desplazar B, C y D una posición."
+    },
+    {
+      "id": "le_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de inventario con LinkedList:",
+      "code": "LinkedList<Item> inventario = new LinkedList<Item>();\nLinkedListNode<Item> nodoEspada = inventario.AddFirst(espada);\ninventario.AddLast(escudo);\ninventario.AddAfter(nodoEspada, pocion);\n\nDebug.Log(inventario.First.Value.nombre);",
+      "question": "¿Cuál es el nombre del primer ítem en el inventario después de todas las operaciones?",
+      "target": "espada",
+      "acceptedAnswers": ["espada", "Espada", "el nombre de espada"],
+      "hints": [
+        "AddFirst() inserta al inicio — espada fue el primero.",
+        "AddAfter() inserta después de nodoEspada, no al inicio.",
+        "El primer nodo sigue siendo el que se insertó con AddFirst()."
+      ],
+      "explanation": "<code>AddFirst(espada)</code> coloca a <em>espada</em> al inicio. <code>AddLast(escudo)</code> la agrega al final. <code>AddAfter(nodoEspada, pocion)</code> inserta la poción <em>después</em> de espada, resultando en: [espada → pocion → escudo]. <code>First.Value</code> sigue siendo <strong>espada</strong>."
+    },
+    {
+      "id": "le_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta comparación de estructuras:",
+      "code": "// Escenario: 10,000 entidades, se elimina una entidad aleatoria cada frame\n\n// Con List<T>:\nList<Enemy> enemies; // Remove() → O(n): hasta 10,000 desplazamientos\n\n// Con LinkedList<T>:\nLinkedList<Enemy> enemies; // Remove(nodo) → O(1): solo actualiza punteros",
+      "question": "¿Cuánto tarda en el peor caso eliminar una entidad de la LinkedList si ya tienes referencia al nodo?",
+      "target": "O(1)",
+      "acceptedAnswers": ["O(1)", "O1", "constante", "tiempo constante"],
+      "hints": [
+        "Con referencia al nodo, no hay búsqueda lineal.",
+        "Solo se actualizan los punteros Next y Previous del vecindario del nodo.",
+        "La notación es O de uno."
+      ],
+      "explanation": "Con referencia al nodo, la eliminación en <strong>LinkedList&lt;T&gt;</strong> es <strong>O(1)</strong>: actualiza <code>anterior.Next</code> y <code>siguiente.Previous</code>, sin recorrer la lista. Con 10,000 entidades, esto evita hasta 10,000 desplazamientos de memoria que haría <code>List&lt;T&gt;.Remove()</code>."
+    },
+    {
+      "id": "le_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza la propiedad Next de un nodo en el último elemento de la lista:",
+      "code": "LinkedList<string> lista = new LinkedList<string>();\nlista.AddLast(\"Primero\");\nlista.AddLast(\"Segundo\");\nlista.AddLast(\"Ultimo\");\n\nLinkedListNode<string> nodoUltimo = lista.Last;\nDebug.Log(nodoUltimo.Next == null);",
+      "question": "¿Qué imprime `Debug.Log(nodoUltimo.Next == null)` y por qué?",
+      "target": "True",
+      "acceptedAnswers": ["True", "true", "verdadero", "Verdadero"],
+      "hints": [
+        "El último nodo de la lista no tiene un siguiente elemento.",
+        "Cuando no hay nodo siguiente, la referencia Next vale null.",
+        "True o False — ¿qué devuelve comparar null con null?"
+      ],
+      "explanation": "Imprime <strong>True</strong>. El último nodo no tiene sucesor, por lo que <code>Next == null</code>. Análogamente, el primer nodo tiene <code>Previous == null</code>. Esta propiedad se usa para recorrer la lista manualmente: <code>nodo = nodo.Next</code> hasta que <code>nodo == null</code> indica el fin de la lista."
+    },
+    {
+      "id": "le_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de una LinkedList de strings para el inventario del jugador:",
+      "codeTemplate": "LinkedList<string> inventario = new __________<string>();",
+      "expectedAnswer": "LinkedList",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de lista enlazada...",
+      "hints": [
+        "La clase de lista enlazada en C# tiene 'Linked' en su nombre.",
+        "Es una lista donde cada elemento apunta al siguiente.",
+        "El tipo completo es LinkedList seguido del tipo genérico."
+      ],
+      "explanation": "<code>LinkedList&lt;string&gt;</code> crea una lista doblemente enlazada vacía. A diferencia de <code>List&lt;T&gt;</code>, cada elemento es un <code>LinkedListNode&lt;T&gt;</code> con referencias al nodo anterior y siguiente, lo que permite inserciones y eliminaciones <strong>O(1)</strong> cuando tienes la referencia al nodo."
+    },
+    {
+      "id": "le_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para agregar el ítem `\"Espada\"` al FINAL de la lista enlazada de inventario:",
+      "codeTemplate": "inventario.__________(\"Espada\");",
+      "expectedAnswer": "AddLast",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para agregar al final...",
+      "hints": [
+        "El método de LinkedList<T> para agregar al final tiene 'Last' en su nombre.",
+        "Existe también AddFirst() para agregar al inicio.",
+        "Add + Last = ?"
+      ],
+      "explanation": "<strong>AddLast(value)</strong> agrega un nodo al final de la <strong>LinkedList&lt;T&gt;</strong>. Es <strong>O(1)</strong> porque la lista mantiene una referencia directa al último nodo (<em>tail</em>). El método también retorna el <code>LinkedListNode&lt;T&gt;</code> creado, útil para operaciones futuras de inserción relativa."
+    },
+    {
+      "id": "le_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para acceder al valor del PRIMER nodo de la lista enlazada de inventario:",
+      "codeTemplate": "string primerItem = inventario.__________.Value;",
+      "expectedAnswer": "First",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad que da el primer nodo...",
+      "hints": [
+        "LinkedList<T> tiene propiedades que dan acceso directo al primer y último nodo.",
+        "La propiedad del primer nodo se llama con la palabra 'primero' en inglés.",
+        "First o Last — ¿cuál es el primero?"
+      ],
+      "explanation": "<code>inventario.First</code> devuelve el <code>LinkedListNode&lt;T&gt;</code> de la cabeza (<em>head</em>) de la lista. <code>.Value</code> accede al dato almacenado. Tanto <code>First</code> como <code>Last</code> son <strong>O(1)</strong>. Si la lista está vacía, <code>First</code> y <code>Last</code> son <code>null</code>."
+    },
+    {
+      "id": "le_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el código completo para crear una LinkedList<string>, agregar \"Goblin\" al inicio y luego agregar \"Orco\" después del nodo Goblin usando la referencia devuelta por AddFirst():",
+      "codeTemplate": null,
+      "expectedAnswer": "LinkedList<string> lista = new LinkedList<string>();\nLinkedListNode<string> nodoGoblin = lista.AddFirst(\"Goblin\");\nlista.AddAfter(nodoGoblin, \"Orco\");",
+      "alternateAnswers": [
+        "LinkedList<string> lista = new LinkedList<string>();\nvar nodoGoblin = lista.AddFirst(\"Goblin\");\nlista.AddAfter(nodoGoblin, \"Orco\");"
+      ],
+      "placeholder": "Escribe el código completo con AddFirst y AddAfter...",
+      "hints": [
+        "AddFirst() devuelve el LinkedListNode<string> del nodo creado.",
+        "Guarda ese nodo en una variable LinkedListNode<string>.",
+        "Luego usa AddAfter(nodoGoblin, \"Orco\") para insertar después."
+      ],
+      "explanation": "<code>AddFirst()</code> devuelve el <code>LinkedListNode&lt;string&gt;</code> creado. Guardarlo en <code>nodoGoblin</code> permite luego llamar <code>AddAfter(nodoGoblin, \"Orco\")</code> de forma <strong>O(1)</strong>. La lista queda: [Goblin → Orco]. Si no guardas el nodo, tendrías que buscarlo primero (O(n))."
+    },
+    {
+      "id": "le_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este método que recorre manualmente la LinkedList usando los next-pointers (sin foreach) para imprimir cada nodo:",
+      "codeTemplate": "public void RecorrerLista(LinkedList<string> lista)\n{\n    LinkedListNode<string> nodoActual = lista.__________;\n    while (nodoActual != null)\n    {\n        Debug.Log(nodoActual.Value);\n        nodoActual = nodoActual.Next;\n    }\n}",
+      "expectedAnswer": "First",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad de acceso al primer nodo...",
+      "hints": [
+        "El recorrido comienza desde el primer nodo de la lista.",
+        "La propiedad que da el nodo inicial se llama como el primero en inglés.",
+        "First o Last — comienza desde el inicio."
+      ],
+      "explanation": "El recorrido manual comienza desde <code>lista.First</code>. El <code>while (nodoActual != null)</code> avanza nodo a nodo con <code>nodoActual = nodoActual.Next</code> hasta que <code>Next</code> es <code>null</code> (el último nodo). Esta técnica expone el funcionamiento interno de los <em>next-pointers</em> que <code>foreach</code> usa internamente."
+    },
+    {
+      "id": "le_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un método `void EliminarEnemigo(LinkedList<Enemy> lista, LinkedListNode<Enemy> nodo)` que elimine un enemigo de la lista por su referencia de nodo, verificando que la lista no esté vacía:",
+      "codeTemplate": null,
+      "expectedAnswer": "void EliminarEnemigo(LinkedList<Enemy> lista, LinkedListNode<Enemy> nodo) { if (lista.Count > 0) lista.Remove(nodo); }",
+      "alternateAnswers": [
+        "void EliminarEnemigo(LinkedList<Enemy> lista, LinkedListNode<Enemy> nodo)\n{\n    if (lista.Count > 0)\n        lista.Remove(nodo);\n}",
+        "void EliminarEnemigo(LinkedList<Enemy> lista, LinkedListNode<Enemy> nodo) { if (nodo != null) lista.Remove(nodo); }"
+      ],
+      "placeholder": "Escribe el método completo de eliminación por nodo...",
+      "hints": [
+        "El método Remove() de LinkedList<T> acepta un LinkedListNode<T>.",
+        "Verifica Count > 0 o que el nodo no sea null antes de eliminar.",
+        "La firma del método es void EliminarEnemigo(LinkedList<Enemy> lista, LinkedListNode<Enemy> nodo)."
+      ],
+      "explanation": "<code>lista.Remove(nodo)</code> elimina el nodo en <strong>O(1)</strong>: actualiza los punteros de los nodos vecinos. La verificación <code>lista.Count &gt; 0</code> previene operaciones en lista vacía. Esto es eficiente en sistemas donde cada <code>Enemy</code> guarda su propio <code>LinkedListNode&lt;Enemy&gt;</code> para auto-eliminarse."
+    }
+  ]
+}

@@ -1,0 +1,335 @@
+{
+  "id": "solid_exam",
+  "title": "Examen Final: SOLID y Buenas Prácticas",
+  "icon": "🎓",
+  "color": "#4CAF50",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "sol_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la definición correcta del principio **OCP** (Open/Closed Principle)?",
+      "options": [
+        "Las clases deben estar abiertas para extensión pero cerradas para modificación.",
+        "Las clases deben estar cerradas para extensión y abiertas para modificación.",
+        "Solo las clases abstractas pueden ser modificadas por otros programadores.",
+        "Un método cerrado no puede ser sobrescrito en ninguna subclase.",
+        "Las clases deben sellarse con `sealed` para cumplir el **OCP**."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>OCP</strong> establece que una clase debe poderse <strong>extender</strong> (agregar comportamiento nuevo) sin necesidad de <strong>modificar</strong> su código existente. En Unity esto se logra con clases abstractas, interfaces y polimorfismo: se añade una subclase nueva en lugar de editar la clase base."
+    },
+    {
+      "id": "sol_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué establece el **LSP** (Liskov Substitution Principle)?",
+      "options": [
+        "Un objeto de una subclase debe poder usarse en cualquier lugar donde se espere la clase base sin alterar el comportamiento correcto del programa.",
+        "Una subclase debe tener al menos un método más que su clase base.",
+        "Las subclases solo pueden sobrescribir métodos virtuales, nunca abstractos.",
+        "El **LSP** prohíbe el uso de `override` en clases derivadas.",
+        "Toda clase base debe ser `abstract` para cumplir el **LSP**."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>LSP</strong> dice que si <code>B</code> hereda de <code>A</code>, entonces cualquier código que trabaje con <code>A</code> debe funcionar correctamente usando <code>B</code> en su lugar. Si una subclase rompe las precondiciones o postcondiciones de la clase base (por ejemplo, lanzar una excepción en un método que se supone siempre retorna un valor), viola el <strong>LSP</strong>."
+    },
+    {
+      "id": "sol_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué dice el **ISP** (Interface Segregation Principle) respecto al diseño de interfaces?",
+      "options": [
+        "Es mejor tener varias interfaces pequeñas y específicas que una sola interfaz grande con muchos métodos.",
+        "Todas las interfaces deben tener exactamente un método para cumplir el **ISP**.",
+        "Las interfaces no deben ser implementadas por más de una clase a la vez.",
+        "El **ISP** prohíbe que una clase implemente más de una interfaz.",
+        "Una interfaz grande es preferible porque unifica el contrato en un solo lugar."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>ISP</strong> indica que los clientes no deberían verse obligados a depender de métodos que no usan. Si una interfaz <code>IEnemyBehaviour</code> tiene métodos de movimiento, combate, UI <em>y</em> audio, una clase que solo necesita moverse debe implementar métodos vacíos inútiles. La solución es segregar: <code>IMovable</code>, <code>ICombatant</code>, <code>IRenderable</code>, etc."
+    },
+    {
+      "id": "sol_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué establece el **DIP** (Dependency Inversion Principle)?",
+      "options": [
+        "Los módulos de alto nivel no deben depender de módulos de bajo nivel; ambos deben depender de abstracciones (interfaces o clases abstractas).",
+        "Las dependencias deben inyectarse siempre mediante el constructor, nunca por el Inspector.",
+        "Los módulos de bajo nivel deben conocer y controlar a los módulos de alto nivel.",
+        "El **DIP** prohíbe el uso de `new` dentro de cualquier clase.",
+        "Toda dependencia debe ser resolvida con un **Singleton**."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>DIP</strong> invierte la dirección clásica de dependencia: en lugar de que un sistema de armas conozca directamente la clase <code>Pistol</code>, depende de una interfaz <code>IWeapon</code>. Esto permite cambiar la implementación concreta (pistola, rifle, espada) sin tocar el código de alto nivel, facilitando pruebas y extensión."
+    },
+    {
+      "id": "sol_ex_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En Unity C#, ¿cuál es la convención correcta para nombrar un campo privado serializable que referencia un `AudioSource`?",
+      "options": [
+        "`[SerializeField] private AudioSource _audioSource;` usando el prefijo de guión bajo y **camelCase**.",
+        "`public AudioSource AudioSource;` usando **PascalCase** para que sea visible en el Inspector.",
+        "`[SerializeField] public AudioSource audioSource;` para que sea editable y público.",
+        "`private AudioSource AudioSource;` usando **PascalCase** para campos privados.",
+        "`[SerializeField] private audioSource _Audio;` mezclando convenciones."
+      ],
+      "correctIndex": 0,
+      "explanation": "La convención más extendida en C# para Unity es declarar campos privados con prefijo <code>_</code> y <strong>camelCase</strong> (por ejemplo, <code>_audioSource</code>), y usar <code>[SerializeField]</code> para exponerlos en el Inspector <em>sin</em> hacerlos <code>public</code>. Esto mantiene la encapsulación y evita que otros scripts accedan al campo directamente."
+    },
+    {
+      "id": "sol_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la principal desventaja de abusar del patrón **Singleton** en un proyecto de Unity?",
+      "options": [
+        "Genera acoplamiento global: cualquier clase puede modificar el estado del **Singleton**, haciendo el código difícil de probar y de mantener.",
+        "Los **Singletons** consumen mucha más memoria RAM que las clases normales.",
+        "Unity no soporta el patrón **Singleton** en `MonoBehaviours`.",
+        "El patrón **Singleton** viola exclusivamente el **OCP** y ningún otro principio.",
+        "Los **Singletons** impiden usar el sistema de prefabs de Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>Singleton</strong> crea una dependencia global implícita: cualquier clase en cualquier parte del proyecto puede llamar a <code>GameManager.Instance.DoSomething()</code>, lo que hace muy difícil rastrear quién modifica el estado, escribir pruebas unitarias (no se puede inyectar un mock) y reutilizar componentes en otros proyectos. Úsalo con moderación y prefiere la inyección de dependencias."
+    },
+    {
+      "id": "sol_ex_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuándo se prefiere **composición** sobre **herencia** en el diseño orientado a objetos?",
+      "options": [
+        "Cuando se quiere reutilizar comportamiento entre clases que no comparten una relación 'es un', combinando componentes pequeños e independientes.",
+        "Siempre que una clase necesite acceder a métodos `protected` de otra clase.",
+        "La herencia es siempre preferible porque permite reutilizar código con menos archivos.",
+        "La composición solo se usa cuando el lenguaje no soporta herencia múltiple.",
+        "La composición viola el **LSP** y debe evitarse en proyectos Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "La herencia modela relaciones '<em>es un</em>' (un <code>Dog</code> <em>es un</em> <code>Animal</code>). La <strong>composición</strong> modela relaciones '<em>tiene un</em>': un personaje '<em>tiene un</em>' componente de salud, '<em>tiene un</em>' componente de movimiento. En Unity el sistema de componentes ya es composición pura. Preferir composición sobre herencia reduce el acoplamiento y facilita cambiar comportamientos en tiempo de ejecución."
+    },
+    {
+      "id": "sol_ex_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué significa el principio **YAGNI** (You Aren't Gonna Need It) en el desarrollo de software?",
+      "options": [
+        "No implementes funcionalidad hasta que sea estrictamente necesaria; evita añadir código especulativo que quizás nunca se use.",
+        "Debes diseñar siempre pensando en todos los casos de uso posibles antes de escribir código.",
+        "**YAGNI** prohíbe el uso de patrones de diseño porque son sobre-ingeniería.",
+        "Toda función debe implementarse en la primera iteración del proyecto para ahorrar tiempo.",
+        "**YAGNI** es una variante del principio **DRY** aplicada a bases de datos."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>YAGNI</strong> es un principio ágil que dice: no escribas código porque <em>crees</em> que lo necesitarás en el futuro. Ese código especulativo añade complejidad, debe mantenerse y probarse, y a menudo nunca se usa. Implementa solo lo que el requisito actual exige. Si el requisito cambia, se añade entonces."
+    },
+    {
+      "id": "sol_ex_009",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta jerarquía de clases:",
+      "code": "public abstract class Weapon : MonoBehaviour\n{\n    public abstract void Attack();\n}\n\npublic class Sword : Weapon\n{\n    public override void Attack() { /* corte */ }\n}\n\npublic class Bow : Weapon\n{\n    public override void Attack() { /* disparo */ }\n}",
+      "question": "¿Qué principio **SOLID** se aplica al poder agregar `Axe : Weapon` sin modificar la clase `Weapon` ni el código que la usa?",
+      "target": "OCP",
+      "acceptedAnswers": ["OCP", "Open/Closed Principle", "Open Closed Principle", "principio abierto cerrado", "abierto para extensión"],
+      "hints": [
+        "Puedes añadir un arma nueva sin tocar la clase base `Weapon`.",
+        "El principio tiene que ver con estar 'abierto' a algo y 'cerrado' a algo.",
+        "Su sigla es O-C-P, el segundo principio de **SOLID**."
+      ],
+      "explanation": "Al heredar de <code>Weapon</code> y sobreescribir <code>Attack()</code>, cualquier código que trabaje con <code>Weapon</code> funciona automáticamente con <code>Axe</code> sin modificar nada existente. Esto es el <strong>OCP</strong>: la clase base está <strong>cerrada</strong> para modificación y <strong>abierta</strong> para extensión mediante herencia o interfaces."
+    },
+    {
+      "id": "sol_ex_010",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa estas dos interfaces:",
+      "code": "// Versión A — interfaz única\npublic interface IEntity\n{\n    void Move();\n    void Attack();\n    void ShowHealthBar();\n    void PlayDeathSound();\n    void SaveToFile();\n}\n\n// Versión B — interfaces segregadas\npublic interface IMovable    { void Move(); }\npublic interface ICombatant  { void Attack(); }\npublic interface IRenderable { void ShowHealthBar(); }\npublic interface IAudible    { void PlayDeathSound(); }\npublic interface IPersistable{ void SaveToFile(); }",
+      "question": "¿Qué principio **SOLID** justifica preferir la Versión B sobre la Versión A?",
+      "target": "ISP",
+      "acceptedAnswers": ["ISP", "Interface Segregation Principle", "principio de segregación de interfaces", "segregación de interfaces"],
+      "hints": [
+        "El problema con la Versión A es que una entidad estática debe implementar `Move()` aunque no se mueva.",
+        "El principio habla de dividir interfaces grandes en partes más pequeñas.",
+        "Su sigla es I-S-P, el cuarto principio de **SOLID**."
+      ],
+      "explanation": "La Versión A viola el <strong>ISP</strong>: una clase como <code>StaticTrap</code> (trampa fija) tendría que implementar <code>Move()</code> y <code>PlayDeathSound()</code> aunque no los necesite. La Versión B segrega la interfaz: <code>StaticTrap</code> solo implementa <code>ICombatant</code> y <code>IRenderable</code>. Ninguna clase es forzada a depender de métodos que no usa."
+    },
+    {
+      "id": "sol_ex_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este código de Unity:",
+      "code": "public class PlayerShooter : MonoBehaviour\n{\n    [SerializeField] private AudioSource _gunSound;\n    [SerializeField] private ParticleSystem _muzzleFlash;\n\n    private int _ammo = 30;\n\n    public void Shoot()\n    {\n        if (_ammo <= 0) return;\n        _ammo--;\n        _gunSound.Play();\n        _muzzleFlash.Play();\n    }\n}",
+      "question": "¿Qué atributo de Unity se usa para exponer `_gunSound` y `_muzzleFlash` en el Inspector sin hacerlos `public`?",
+      "target": "[SerializeField]",
+      "acceptedAnswers": ["[SerializeField]", "SerializeField", "serialize field", "Serialize Field"],
+      "hints": [
+        "Permite asignar referencias desde el Inspector de Unity manteniendo la encapsulación.",
+        "Es un atributo que se escribe entre corchetes antes de la declaración del campo.",
+        "Se escribe exactamente así: [SerializeField]."
+      ],
+      "explanation": "<code>[SerializeField]</code> le indica a Unity que serialice y muestre el campo privado en el Inspector, permitiendo asignar referencias en tiempo de diseño <em>sin</em> exponer el campo como <code>public</code>. Esto mantiene la <strong>encapsulación</strong>: otros scripts no pueden acceder a <code>_gunSound</code> directamente, pero el diseñador puede asignarlo desde el editor."
+    },
+    {
+      "id": "sol_ex_012",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Revisa este fragmento de código:",
+      "code": "/// <summary>\n/// Aplica daño al jugador y verifica si debe morir.\n/// </summary>\n/// <param name=\"amount\">Cantidad de daño recibido.</param>\n/// <returns>True si el jugador muere tras recibir el daño.</returns>\npublic bool TakeDamage(int amount)\n{\n    _health -= amount;\n    return _health <= 0;\n}",
+      "question": "¿Qué estilo de documentación en C# se usa en este fragmento, identificado por las tres barras `///`?",
+      "target": "comentarios XML",
+      "acceptedAnswers": ["comentarios XML", "XML comments", "XML documentation", "documentación XML", "/// comentarios", "triple slash", "summary XML"],
+      "hints": [
+        "Se escriben con tres barras diagonales seguidas: `///`.",
+        "Usan etiquetas como `<summary>`, `<param>` y `<returns>`.",
+        "Visual Studio y otros IDEs los muestran como tooltips de IntelliSense."
+      ],
+      "explanation": "Los <strong>comentarios XML</strong> (<code>///</code>) son el estándar de documentación en C#. Las etiquetas <code>&lt;summary&gt;</code>, <code>&lt;param&gt;</code> y <code>&lt;returns&gt;</code> permiten que IDEs como Visual Studio generen tooltips de <strong>IntelliSense</strong> y que herramientas como DocFX produzcan documentación automática. Es una buena práctica documentar así todos los métodos públicos."
+    },
+    {
+      "id": "sol_ex_013",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este sistema de armas:",
+      "code": "public interface IWeapon\n{\n    void Fire();\n}\n\npublic class Pistol : IWeapon\n{\n    public void Fire() { Debug.Log(\"Pistol fired\"); }\n}\n\npublic class PlayerShooter : MonoBehaviour\n{\n    [SerializeField] private MonoBehaviour _weaponBehaviour;\n    private IWeapon _weapon;\n\n    void Start()\n    {\n        _weapon = _weaponBehaviour as IWeapon;\n    }\n\n    public void Shoot() => _weapon?.Fire();\n}",
+      "question": "¿Qué principio **SOLID** aplica `PlayerShooter` al depender de `IWeapon` en lugar de depender directamente de `Pistol`?",
+      "target": "DIP",
+      "acceptedAnswers": ["DIP", "Dependency Inversion Principle", "principio de inversión de dependencias", "inversión de dependencias"],
+      "hints": [
+        "`PlayerShooter` no conoce la clase `Pistol`; solo conoce la interfaz.",
+        "El principio habla de depender de abstracciones, no de implementaciones concretas.",
+        "Su sigla es D-I-P, el quinto principio de **SOLID**."
+      ],
+      "explanation": "<code>PlayerShooter</code> depende de la abstracción <code>IWeapon</code>, no de la clase concreta <code>Pistol</code>. Esto aplica el <strong>DIP</strong>: el módulo de alto nivel (<code>PlayerShooter</code>) y el de bajo nivel (<code>Pistol</code>) ambos dependen de la abstracción (<code>IWeapon</code>). Se puede cambiar <code>Pistol</code> por <code>Rifle</code> o <code>Sword</code> sin modificar <code>PlayerShooter</code>."
+    },
+    {
+      "id": "sol_ex_014",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Estudia este código problemático:",
+      "code": "public class EnemyFlying : Enemy\n{\n    // La clase base Enemy tiene:\n    // public virtual void MoveOnGround() { rb.AddForce(Vector3.forward); }\n\n    public override void MoveOnGround()\n    {\n        throw new System.NotImplementedException(\n            \"Los enemigos voladores no caminan\");\n    }\n}",
+      "question": "¿Qué principio **SOLID** viola `EnemyFlying` al lanzar una excepción en un método que la clase base garantiza que siempre funciona?",
+      "target": "LSP",
+      "acceptedAnswers": ["LSP", "Liskov Substitution Principle", "principio de sustitución de Liskov", "sustitución de Liskov"],
+      "hints": [
+        "El problema es que `EnemyFlying` no puede usarse donde se espera un `Enemy` sin romper el programa.",
+        "El principio habla de que las subclases deben poder sustituir a su clase base.",
+        "Su sigla es L-S-P, el tercer principio de **SOLID**."
+      ],
+      "explanation": "<code>EnemyFlying</code> viola el <strong>LSP</strong>: cualquier código que llame a <code>enemy.MoveOnGround()</code> esperando que funcione, se romperá si recibe un <code>EnemyFlying</code>. La solución es rediseñar la jerarquía: separar <code>IGroundMovable</code> de <code>IFlyable</code> con el <strong>ISP</strong>, de modo que <code>EnemyFlying</code> nunca esté obligado a implementar <code>MoveOnGround()</code>."
+    },
+    {
+      "id": "sol_ex_015",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el campo privado siguiendo la convención de nombres de Unity C#: prefijo guión bajo y **camelCase** para un `Rigidbody` privado serializable en un script de movimiento.",
+      "codeTemplate": "public class PlayerMovement : MonoBehaviour\n{\n    [SerializeField] private Rigidbody __________;\n    [SerializeField] private float _speed = 5f;\n\n    public void Move(Vector3 direction)\n    {\n        __________.AddForce(direction * _speed);\n    }\n}",
+      "expectedAnswer": "_rb",
+      "alternateAnswers": ["_rigidbody", "_body", "_rigidBody"],
+      "placeholder": "Escribe el nombre del campo privado con prefijo _...",
+      "hints": [
+        "Los campos privados usan prefijo guión bajo: `_`.",
+        "Después del guión bajo va **camelCase**: primera letra minúscula.",
+        "Una abreviatura común para Rigidbody es 'rb'."
+      ],
+      "explanation": "La convención en proyectos Unity C# es nombrar campos privados con prefijo <code>_</code> seguido de <strong>camelCase</strong>: <code>_rb</code>, <code>_speed</code>, <code>_health</code>. Esto los distingue visualmente de parámetros y variables locales, y comunica intención: es un dato interno de la clase, no parte de su API pública."
+    },
+    {
+      "id": "sol_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Aplica el **DRY** (Don't Repeat Yourself): los dos métodos hacen exactamente lo mismo. Completa el método privado compartido que ambos deben llamar para evitar la duplicación.",
+      "codeTemplate": "public class EnemySpawner : MonoBehaviour\n{\n    public void SpawnOnDeath(Vector3 position)\n    {\n        __________( position );\n    }\n\n    public void SpawnOnRespawn(Vector3 position)\n    {\n        __________( position );\n    }\n\n    private void SpawnEnemy(Vector3 pos)\n    {\n        Instantiate(enemyPrefab, pos, Quaternion.identity);\n    }\n}",
+      "expectedAnswer": "SpawnEnemy",
+      "alternateAnswers": ["SpawnEnemy(position)", "this.SpawnEnemy"],
+      "placeholder": "Escribe el nombre del método privado a llamar...",
+      "hints": [
+        "Ambos métodos públicos deben delegar al mismo método privado.",
+        "El método privado ya existe y se llama con **PascalCase**.",
+        "**DRY** = Don't Repeat Yourself: un solo lugar para la lógica de spawn."
+      ],
+      "explanation": "El principio <strong>DRY</strong> (Don't Repeat Yourself) dice que cada pieza de conocimiento debe tener una representación única y sin ambigüedad en el sistema. Duplicar la llamada a <code>Instantiate</code> en dos métodos crea dos lugares donde recordar hacer cambios. Extraerlo a <code>SpawnEnemy</code> centraliza la lógica: si cambia el prefab o los parámetros, se edita en un solo sitio."
+    },
+    {
+      "id": "sol_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Diseña una interfaz que aplique el **ISP**: el enemigo volador solo necesita volar, no caminar. Completa el nombre de la interfaz correcta que debe implementar `FlyingEnemy`.",
+      "codeTemplate": "public interface IGroundMovable\n{\n    void Walk();\n    void Run();\n}\n\npublic interface __________\n{\n    void Fly();\n    void Hover();\n}\n\n// FlyingEnemy solo implementa la interfaz de vuelo\npublic class FlyingEnemy : MonoBehaviour, __________\n{\n    public void Fly()  { /* lógica de vuelo */ }\n    public void Hover(){ /* lógica de flotar */ }\n}",
+      "expectedAnswer": "IFlyable",
+      "alternateAnswers": ["IFlying", "IAirMovable", "IFly"],
+      "placeholder": "Escribe el nombre de la interfaz de vuelo...",
+      "hints": [
+        "Las interfaces en C# se nombran con prefijo `I` seguido de **PascalCase**.",
+        "El nombre debe describir la capacidad: volar.",
+        "Una convención común es usar adjetivos: `IFlyable`, `IMovable`, `IDamageable`."
+      ],
+      "explanation": "El <strong>ISP</strong> se aplica creando la interfaz <code>IFlyable</code> separada de <code>IGroundMovable</code>. <code>FlyingEnemy</code> implementa solo <code>IFlyable</code> y nunca se ve obligado a implementar <code>Walk()</code>. Las interfaces en C# llevan el prefijo <code>I</code> (<strong>PascalCase</strong>) por convención: <code>IWeapon</code>, <code>IDamageable</code>, <code>IInteractable</code>."
+    },
+    {
+      "id": "sol_ex_018",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el comentario de documentación **XML** (`///`) completo para el siguiente método, incluyendo `<summary>`, `<param name=\"damage\">` y `<returns>`. El método aplica daño y retorna `true` si el personaje muere.",
+      "codeTemplate": "// Añade aquí la documentación XML\npublic bool TakeDamage(int damage)\n{\n    _health -= damage;\n    return _health <= 0;\n}",
+      "expectedAnswer": "/// <summary>\n/// Aplica daño al personaje y verifica si muere.\n/// </summary>\n/// <param name=\"damage\">Cantidad de daño recibido.</param>\n/// <returns>True si el personaje muere; false si sigue vivo.</returns>",
+      "alternateAnswers": [
+        "/// <summary>Aplica daño al personaje.</summary>\n/// <param name=\"damage\">Cantidad de daño.</param>\n/// <returns>True si muere.</returns>"
+      ],
+      "placeholder": "Escribe las tres líneas /// con sus etiquetas XML...",
+      "hints": [
+        "Cada línea del comentario XML empieza con `///`.",
+        "Usa `<summary>` para describir qué hace el método.",
+        "Usa `<param name=\"damage\">` y `<returns>` para los parámetros y el valor de retorno."
+      ],
+      "explanation": "Los comentarios <strong>XML</strong> con <code>///</code> son la mejor práctica para documentar APIs en C#. <code>&lt;summary&gt;</code> describe el propósito general, <code>&lt;param name=\"...\"&gt;</code> documenta cada parámetro y <code>&lt;returns&gt;</code> explica el valor de retorno. IDEs como Visual Studio o Rider los muestran como <strong>IntelliSense</strong> al usar el método."
+    },
+    {
+      "id": "sol_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Aplica el **OCP**: existe una clase `DamageCalculator` que solo calcula daño físico. Sin modificar esa clase, escribe una nueva clase `MagicDamageCalculator` que herede de `DamageCalculator` y sobreescriba el método `Calculate(int baseDamage)` multiplicando el daño base por 1.5f y retornando el resultado como `int`.",
+      "codeTemplate": "// Clase existente — NO la modifiques\npublic class DamageCalculator\n{\n    public virtual int Calculate(int baseDamage)\n    {\n        return baseDamage;\n    }\n}\n\n// Escribe aquí tu nueva clase:",
+      "expectedAnswer": "public class MagicDamageCalculator : DamageCalculator\n{\n    public override int Calculate(int baseDamage)\n    {\n        return (int)(baseDamage * 1.5f);\n    }\n}",
+      "alternateAnswers": [
+        "public class MagicDamageCalculator : DamageCalculator { public override int Calculate(int baseDamage) { return (int)(baseDamage * 1.5f); } }"
+      ],
+      "placeholder": "Escribe la clase MagicDamageCalculator completa...",
+      "hints": [
+        "Hereda de `DamageCalculator` con `: DamageCalculator`.",
+        "Usa `override` para sobreescribir el método `virtual Calculate`.",
+        "Multiplica `baseDamage * 1.5f` y convierte a `int` con un cast."
+      ],
+      "explanation": "Al crear <code>MagicDamageCalculator : DamageCalculator</code> y sobreescribir <code>Calculate</code>, extendemos el comportamiento <em>sin tocar</em> la clase original. Esto es el <strong>OCP</strong> en acción: <code>DamageCalculator</code> está <strong>cerrada</strong> para modificación y <strong>abierta</strong> para extensión. Si mañana se necesita <code>FireDamageCalculator</code>, se crea otra subclase sin alterar nada existente."
+    },
+    {
+      "id": "sol_ex_020",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Refactoriza este código para eliminar el **Singleton** abusivo y aplicar el **DIP**: en lugar de llamar a `AudioManager.Instance.PlaySFX(...)` directamente, declara una dependencia privada serializable de tipo `IAudioService` llamada `_audio` y úsala en `PlayFireSound()`. Escribe la interfaz `IAudioService` con el método `PlaySFX(string clipName)` y la clase `PlayerWeapon` refactorizada completa.",
+      "codeTemplate": "// ANTES — Singleton abusivo\npublic class PlayerWeapon : MonoBehaviour\n{\n    public void PlayFireSound()\n    {\n        AudioManager.Instance.PlaySFX(\"gunshot\");\n    }\n}\n\n// DESPUÉS — escribe aquí la interfaz y la clase refactorizadas:",
+      "expectedAnswer": "public interface IAudioService\n{\n    void PlaySFX(string clipName);\n}\n\npublic class PlayerWeapon : MonoBehaviour\n{\n    [SerializeField] private MonoBehaviour _audioBehaviour;\n    private IAudioService _audio;\n\n    void Start()\n    {\n        _audio = _audioBehaviour as IAudioService;\n    }\n\n    public void PlayFireSound()\n    {\n        _audio?.PlaySFX(\"gunshot\");\n    }\n}",
+      "alternateAnswers": [
+        "public interface IAudioService { void PlaySFX(string clipName); }\npublic class PlayerWeapon : MonoBehaviour { [SerializeField] private MonoBehaviour _audioBehaviour; private IAudioService _audio; void Start() { _audio = _audioBehaviour as IAudioService; } public void PlayFireSound() { _audio?.PlaySFX(\"gunshot\"); } }"
+      ],
+      "placeholder": "Escribe la interfaz IAudioService y la clase PlayerWeapon refactorizada...",
+      "hints": [
+        "Declara `IAudioService` con el método `void PlaySFX(string clipName)`.",
+        "En `PlayerWeapon` usa `[SerializeField] private MonoBehaviour _audioBehaviour` para asignarlo desde el Inspector.",
+        "En `Start()` convierte `_audioBehaviour as IAudioService` y guárdalo en el campo privado `_audio`."
+      ],
+      "explanation": "Al depender de <code>IAudioService</code> en lugar de <code>AudioManager.Instance</code>, se aplica el <strong>DIP</strong>: <code>PlayerWeapon</code> ya no conoce la implementación concreta del audio. Esto elimina el acoplamiento global del <strong>Singleton</strong>, permite inyectar un mock en pruebas unitarias y facilita cambiar el sistema de audio sin tocar <code>PlayerWeapon</code>. El <code>[SerializeField]</code> mantiene la asignación desde el Inspector respetando la encapsulación."
+    }
+  ]
+}

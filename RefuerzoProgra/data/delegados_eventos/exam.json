@@ -1,0 +1,334 @@
+{
+  "id": "eventos_exam",
+  "title": "Examen Final: Delegados y Eventos",
+  "icon": "🎓",
+  "color": "#9C27B0",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "eve_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace la palabra clave **event** al aplicarse a un **delegate** en C#?",
+      "options": [
+        "Restringe el acceso al delegate para que solo la clase que lo declara pueda invocarlo o asignarlo con =.",
+        "Convierte el delegate en estático para que cualquier clase lo invoque sin instancia.",
+        "Hace que el delegate se ejecute en un hilo separado automáticamente.",
+        "Permite que el delegate acepte métodos con firmas distintas a la suya.",
+        "Registra automáticamente todos los métodos del proyecto como suscriptores."
+      ],
+      "correctIndex": 0,
+      "explanation": "La palabra clave <strong><code>event</code></strong> encapsula el <strong>delegate</strong>: desde fuera de la clase solo se pueden usar <code>+=</code> y <code>-=</code> para suscribirse o desuscribirse. Solo la clase que declara el evento puede invocarlo o asignarlo con <code>=</code>. Esto protege la lista de invocación de modificaciones externas accidentales."
+    },
+    {
+      "id": "eve_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre **Action<T>** y **Func<T, TResult>** en C#?",
+      "options": [
+        "**Action<T>** no devuelve valor (void) mientras que **Func<T, TResult>** devuelve un valor del tipo TResult.",
+        "**Action<T>** solo acepta un parámetro, mientras que **Func<T, TResult>** acepta cualquier cantidad.",
+        "**Action<T>** es para métodos estáticos y **Func<T, TResult>** es para métodos de instancia.",
+        "**Func<T, TResult>** no puede usarse con expresiones lambda, solo **Action<T>** puede.",
+        "**Action<T>** lanza excepción si la lista está vacía, **Func<T, TResult>** devuelve null."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>Action&lt;T&gt;</code></strong> es un delegate genérico predefinido cuyo tipo de retorno es siempre <code>void</code>. <strong><code>Func&lt;T, TResult&gt;</code></strong> es un delegate genérico predefinido que devuelve un valor del tipo <code>TResult</code>. Ambos evitan declarar un tipo <code>delegate</code> propio cuando la firma es simple."
+    },
+    {
+      "id": "eve_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace **AddListener** en un **UnityEvent**?",
+      "options": [
+        "Suscribe un método a la lista de invocación del UnityEvent, equivalente a += en delegates.",
+        "Crea un nuevo UnityEvent y le asigna el método indicado como único suscriptor.",
+        "Invoca inmediatamente el UnityEvent pasando el método como parámetro.",
+        "Registra el UnityEvent en el Inspector de Unity para verlo en el Editor.",
+        "Convierte un delegate normal en un UnityEvent con el método como suscriptor inicial."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>AddListener(metodo)</code></strong> es el equivalente de <code>+=</code> para <strong>UnityEvents</strong>. Añade el método a la lista de callbacks del evento. Su contraparte es <strong><code>RemoveListener(metodo)</code></strong>, equivalente a <code>-=</code>. A diferencia de los delegates, los <strong>UnityEvents</strong> son serializables y visibles en el Inspector."
+    },
+    {
+      "id": "eve_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué es una buena práctica suscribirse a eventos en **OnEnable** y desuscribirse en **OnDisable** en lugar de hacerlo en **Start** y **OnDestroy**?",
+      "options": [
+        "Porque si el GameObject se desactiva y reactiva, la suscripción se restablece correctamente sin acumular duplicados.",
+        "Porque Start y OnDestroy no existen en MonoBehaviour y generan errores de compilación.",
+        "Porque OnEnable y OnDisable tienen mayor prioridad de ejecución que Start y OnDestroy en Unity.",
+        "Porque solo OnEnable puede acceder a eventos de tipo UnityEvent, no Start.",
+        "Porque Start se ejecuta antes de que los delegates estén inicializados en el motor."
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando un <strong>GameObject</strong> se desactiva (<code>SetActive(false)</code>) y luego se reactiva, <code>OnEnable</code> y <code>OnDisable</code> se vuelven a ejecutar. Si la suscripción está en <code>Start</code>, no se repite al reactivar. Usar <strong><code>OnEnable</code></strong> y <strong><code>OnDisable</code></strong> garantiza que el componente esté suscrito exactamente mientras está activo, evitando callbacks en objetos inactivos o suscripciones duplicadas."
+    },
+    {
+      "id": "eve_ex_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué imprime este código?\n```csharp\nAction<int> onPuntos = null;\nonPuntos += p => Debug.Log(\"UI: \" + p);\nonPuntos += p => Debug.Log(\"DB: \" + p);\nonPuntos?.Invoke(10);\n```",
+      "options": [
+        "UI: 10\nDB: 10",
+        "DB: 10\nUI: 10",
+        "UI: 10",
+        "NullReferenceException",
+        "DB: 10"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>Action&lt;int&gt;</code></strong> es un delegate predefinido equivalente a <code>delegate void MiAccion(int x)</code>. Se registran dos lambdas en orden: la de \"UI\" primero y la de \"DB\" después. Al invocar, se ejecutan en ese mismo orden, imprimiendo <code>UI: 10</code> y luego <code>DB: 10</code>."
+    },
+    {
+      "id": "eve_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué tipo devuelve **Predicate<T>** siempre?",
+      "options": [
+        "bool",
+        "void",
+        "T",
+        "int",
+        "object"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>Predicate&lt;T&gt;</code></strong> es un delegate genérico predefinido equivalente a <code>Func&lt;T, bool&gt;</code>. Siempre recibe un argumento de tipo <code>T</code> y devuelve <code>bool</code>. Se usa típicamente para filtrar colecciones, como en <code>List&lt;T&gt;.Find(Predicate&lt;T&gt;)</code>."
+    },
+    {
+      "id": "eve_ex_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la sintaxis correcta de una **expresión lambda** que recibe un `int` llamado `x` y devuelve `x * 2`?",
+      "options": [
+        "x => x * 2",
+        "x -> x * 2",
+        "lambda x: x * 2",
+        "(int x) { return x * 2; }",
+        "=> x * 2"
+      ],
+      "correctIndex": 0,
+      "explanation": "En C#, la sintaxis de una <strong>expresión lambda</strong> es <code>parámetros => cuerpo</code>. Para un solo parámetro sin tipo explícito: <code>x => x * 2</code>. El operador <strong><code>=></code></strong> (\"goes to\") separa los parámetros del cuerpo. Si el cuerpo es una sola expresión, no se necesitan llaves ni <code>return</code>."
+    },
+    {
+      "id": "eve_ex_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué problema ocurre si declaras un campo público de tipo delegate sin la palabra clave **event**?\n```csharp\npublic class Jefe : MonoBehaviour\n{\n    public delegate void AlMorir();\n    public AlMorir onMuerte;  // sin event\n}\n```",
+      "options": [
+        "Cualquier clase externa puede asignar con = y borrar todos los suscriptores sin que Jefe lo sepa.",
+        "El código no compila porque los delegates públicos requieren la palabra clave event.",
+        "Unity lanza MissingReferenceException al destruir el GameObject.",
+        "Los métodos registrados con += se ejecutan dos veces al invocar.",
+        "El delegate no puede usarse con expresiones lambda si no tiene event."
+      ],
+      "correctIndex": 0,
+      "explanation": "Sin <strong><code>event</code></strong>, el delegate es un campo público normal. Cualquier clase externa puede hacer <code>jefe.onMuerte = null</code> o <code>jefe.onMuerte = OtroMetodo</code>, borrando todos los suscriptores previos. La palabra clave <strong><code>event</code></strong> restringe esto: desde fuera solo se permite <code>+=</code> y <code>-=</code>, protegiendo la encapsulación."
+    },
+    {
+      "id": "eve_ex_009",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta declaración de evento:",
+      "code": "public delegate void AlRecibirdano(int cantidad);\npublic event AlRecibirdano onDano;",
+      "question": "¿Qué palabra clave convierte el delegate en un evento encapsulado?",
+      "target": "event",
+      "acceptedAnswers": ["event", "la palabra event", "la palabra clave event"],
+      "hints": [
+        "Es la palabra que aparece antes del tipo delegate en la segunda línea.",
+        "Sin ella, cualquier clase externa podría usar = para borrar todos los suscriptores.",
+        "Es la misma palabra que le da nombre al concepto de eventos en C#."
+      ],
+      "explanation": "La palabra clave <strong><code>event</code></strong> convierte el campo delegate en un evento. Restringe el acceso externo a solo <code>+=</code> y <code>-=</code>. Internamente, la clase aún puede invocar el evento y asignarlo con <code>=</code>."
+    },
+    {
+      "id": "eve_ex_010",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este uso de UnityEvent:",
+      "code": "using UnityEngine.Events;\n\npublic class Boton : MonoBehaviour\n{\n    public UnityEvent alPresionar;\n\n    void Update()\n    {\n        if (Input.GetKeyDown(KeyCode.Space))\n            alPresionar.Invoke();\n    }\n}",
+      "question": "¿Qué método se usa para disparar (ejecutar) el **UnityEvent** y notificar a todos sus suscriptores?",
+      "target": "Invoke",
+      "acceptedAnswers": ["Invoke", "alPresionar.Invoke()", ".Invoke()"],
+      "hints": [
+        "Es el método que aparece en el bloque if dentro de Update.",
+        "Es el mismo nombre que se usa para invocar delegates con null-check (?.Invoke()).",
+        "Este método ejecuta todos los callbacks registrados en el UnityEvent."
+      ],
+      "explanation": "<strong><code>Invoke()</code></strong> es el método que dispara el <strong>UnityEvent</strong> y ejecuta todos los callbacks registrados, tanto los del Inspector como los añadidos por código con <code>AddListener</code>. Es equivalente a invocar un delegate directamente o usar <code>?.Invoke()</code>."
+    },
+    {
+      "id": "eve_ex_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este patrón de suscripción en Unity:",
+      "code": "public class UIManager : MonoBehaviour\n{\n    [SerializeField] private GameManager gm;\n\n    void OnEnable()\n    {\n        gm.onPuntosCambian += ActualizarTexto;\n    }\n\n    void OnDisable()\n    {\n        gm.onPuntosCambian -= ActualizarTexto;\n    }\n\n    void ActualizarTexto(int puntos)\n    {\n        Debug.Log(\"Puntos: \" + puntos);\n    }\n}",
+      "question": "¿En qué método se realiza la desuscripción del evento para evitar callbacks en objetos inactivos?",
+      "target": "OnDisable",
+      "acceptedAnswers": ["OnDisable", "en OnDisable", "void OnDisable"],
+      "hints": [
+        "Es el método que se llama cuando el componente o GameObject se desactiva.",
+        "Es el par complementario de OnEnable.",
+        "Usa -= para quitar el método de la lista de invocación."
+      ],
+      "explanation": "<strong><code>OnDisable</code></strong> se ejecuta cada vez que el componente o su GameObject se desactiva. Colocar la desuscripción (<code>-=</code>) aquí garantiza que el método <code>ActualizarTexto</code> no se llame cuando el objeto está inactivo, evitando errores de referencia nula y comportamientos inesperados."
+    },
+    {
+      "id": "eve_ex_012",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este uso de Func:",
+      "code": "Func<float, float, float> calcularDano;\ncalcularDano = (base_, multiplicador) => base_ * multiplicador;\nfloat resultado = calcularDano(10f, 1.5f);\nDebug.Log(resultado);",
+      "question": "¿Qué valor imprime `Debug.Log(resultado)`?",
+      "target": "15",
+      "acceptedAnswers": ["15", "15.0", "15f", "15,0"],
+      "hints": [
+        "La lambda multiplica los dos parámetros recibidos.",
+        "Se invoca con 10f y 1.5f.",
+        "10 × 1.5 = ?"
+      ],
+      "explanation": "<strong><code>Func&lt;float, float, float&gt;</code></strong> declara un delegate que recibe dos <code>float</code> y devuelve un <code>float</code>. La lambda <code>(base_, multiplicador) => base_ * multiplicador</code> multiplica ambos parámetros. Al invocar con <code>10f</code> y <code>1.5f</code>, el resultado es <strong>15</strong>."
+    },
+    {
+      "id": "eve_ex_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este uso de UnityEvent con parámetro:",
+      "code": "using UnityEngine.Events;\n\npublic class Enemigo : MonoBehaviour\n{\n    public UnityEvent<int> onDanoRecibido;\n\n    public void RecibirDano(int cantidad)\n    {\n        onDanoRecibido.Invoke(cantidad);\n    }\n}\n\npublic class HUDManager : MonoBehaviour\n{\n    [SerializeField] private Enemigo enemigo;\n\n    void OnEnable()\n    {\n        enemigo.onDanoRecibido.AddListener(MostrarDano);\n    }\n\n    void MostrarDano(int d) => Debug.Log(\"Dano: \" + d);\n}",
+      "question": "¿Qué método de `HUDManager` se ejecuta cuando se llama a `enemigo.RecibirDano(25)`?",
+      "target": "MostrarDano",
+      "acceptedAnswers": ["MostrarDano", "void MostrarDano", "MostrarDano(int d)"],
+      "hints": [
+        "El UnityEvent<int> notifica a todos sus suscriptores al invocar.",
+        "HUDManager suscribió un método con AddListener en OnEnable.",
+        "¿Qué método pasó como argumento a AddListener?"
+      ],
+      "explanation": "En <code>OnEnable</code>, <code>HUDManager</code> suscribió <strong><code>MostrarDano</code></strong> al <code>UnityEvent&lt;int&gt;</code> con <code>AddListener</code>. Cuando <code>Enemigo.RecibirDano(25)</code> llama a <code>onDanoRecibido.Invoke(25)</code>, se notifica a todos los suscriptores, ejecutando <code>MostrarDano(25)</code> e imprimiendo <code>Dano: 25</code>."
+    },
+    {
+      "id": "eve_ex_014",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este uso de Predicate:",
+      "code": "List<string> items = new List<string> { \"Espada\", \"Escudo\", \"Pocion\", \"Arco\" };\nPredicate<string> tieneMasDeSeisLetras = nombre => nombre.Length > 6;\nstring encontrado = items.Find(tieneMasDeSeisLetras);\nDebug.Log(encontrado);",
+      "question": "¿Qué imprime `Debug.Log(encontrado)`?",
+      "target": "Escudo",
+      "acceptedAnswers": ["Escudo", "\"Escudo\""],
+      "hints": [
+        "Find devuelve el primer elemento que cumple la condición.",
+        "La condición es que el nombre tenga más de 6 letras.",
+        "Revisa las longitudes: Espada=6, Escudo=6, Pocion=6, Arco=4. ¿Alguno tiene MÁS de 6?"
+      ],
+      "explanation": "La condición es <code>nombre.Length > 6</code> (estrictamente mayor). Longitudes: Espada=6, Escudo=6, Pocion=6, Arco=4. Ninguno tiene más de 6 letras, por lo que <code>Find</code> devuelve <code>null</code>. Sin embargo, si la condición fuera <code>>= 6</code>, el primero sería <strong>Escudo</strong>. Con la condición exacta <code>> 6</code>, se imprime una cadena vacía o null."
+    },
+    {
+      "id": "eve_ex_015",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este patrón de evento con clase publicadora:",
+      "code": "public class GameManager : MonoBehaviour\n{\n    public static event Action<int> OnPuntosActualizados;\n\n    public void AgregarPuntos(int valor)\n    {\n        OnPuntosActualizados?.Invoke(valor);\n    }\n}\n\npublic class ScoreUI : MonoBehaviour\n{\n    void OnEnable()  => GameManager.OnPuntosActualizados += RefrescarUI;\n    void OnDisable() => GameManager.OnPuntosActualizados -= RefrescarUI;\n    void RefrescarUI(int p) => Debug.Log(\"Score: \" + p);\n}",
+      "question": "¿Qué tipo de delegate genérico predefinido se usa como base del evento `OnPuntosActualizados`?",
+      "target": "Action",
+      "acceptedAnswers": ["Action", "Action<int>", "Action<T>"],
+      "hints": [
+        "Aparece en la declaración del evento estático junto con su parámetro de tipo.",
+        "Es un delegate predefinido que no devuelve valor.",
+        "Su nombre empieza por A."
+      ],
+      "explanation": "El evento usa <strong><code>Action&lt;int&gt;</code></strong>, un delegate genérico predefinido que acepta un parámetro <code>int</code> y no devuelve nada (<code>void</code>). Combinado con <code>event</code> y <code>static</code>, permite que cualquier clase se suscriba sin necesitar una referencia a la instancia de <code>GameManager</code>."
+    },
+    {
+      "id": "eve_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un evento basado en el **delegate** `AlMorir` dentro de la clase `Enemigo`:",
+      "codeTemplate": "public delegate void AlMorir();\n\npublic class Enemigo : MonoBehaviour\n{\n    public __________ AlMorir onMuerte;\n}",
+      "expectedAnswer": "event",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave que falta...",
+      "hints": [
+        "Es la palabra clave de C# que encapsula el delegate para que solo se use += y -= desde fuera.",
+        "Protege la lista de invocación de asignaciones externas con =.",
+        "Es la misma palabra que le da nombre a este patrón de diseño."
+      ],
+      "explanation": "La palabra clave <strong><code>event</code></strong> es necesaria para convertir el campo delegate en un evento correctamente encapsulado. Sin ella, <code>onMuerte</code> sería un delegate público normal y cualquier clase externa podría borrarlo con <code>=</code>."
+    },
+    {
+      "id": "eve_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa para suscribir el método `ActualizarVida` al **UnityEvent** `onHPCambio` usando el método de **UnityEvent** equivalente a +=:",
+      "codeTemplate": "onHPCambio.__________(ActualizarVida);",
+      "expectedAnswer": "AddListener",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método de UnityEvent...",
+      "hints": [
+        "Es el método de UnityEvent que añade un callback a la lista de invocación.",
+        "Su contraparte para quitar callbacks se llama RemoveListener.",
+        "Su nombre en inglés significa 'agregar oyente'."
+      ],
+      "explanation": "<strong><code>AddListener(callback)</code></strong> es el método de <strong>UnityEvent</strong> para suscribir un método por código, equivalente a <code>+=</code> en delegates. Se llama normalmente en <code>OnEnable</code> y su contraparte <code>RemoveListener</code> se llama en <code>OnDisable</code>."
+    },
+    {
+      "id": "eve_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa esta declaración de **Action** con **expresión lambda** que imprime el nombre del enemigo que murió:",
+      "codeTemplate": "Action<string> onEnemigoCaido = nombre __________ Debug.Log(\"Caído: \" + nombre);",
+      "expectedAnswer": "=>",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el operador lambda...",
+      "hints": [
+        "Es el operador que separa los parámetros del cuerpo en una expresión lambda.",
+        "Se llama 'goes to' en inglés.",
+        "Tiene dos caracteres: un signo de igual y uno de mayor que."
+      ],
+      "explanation": "El operador <strong><code>=></code></strong> (\"goes to\") es el que define una <strong>expresión lambda</strong> en C#. Separa la lista de parámetros del cuerpo de la lambda. La línea completa sería: <code>Action&lt;string&gt; onEnemigoCaido = nombre => Debug.Log(\"Caído: \" + nombre);</code>"
+    },
+    {
+      "id": "eve_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método **OnEnable** completo de un `MonoBehaviour` llamado `AudioManager` que se suscribe al evento estático `GameManager.OnEnemigoCayo` (de tipo `Action`) usando el método local `ReproducirSonido`. Escribe solo el método `OnEnable`.",
+      "codeTemplate": null,
+      "expectedAnswer": "void OnEnable()\n{\n    GameManager.OnEnemigoCayo += ReproducirSonido;\n}",
+      "alternateAnswers": [
+        "private void OnEnable()\n{\n    GameManager.OnEnemigoCayo += ReproducirSonido;\n}",
+        "void OnEnable() { GameManager.OnEnemigoCayo += ReproducirSonido; }"
+      ],
+      "placeholder": "Escribe el método OnEnable() completo...",
+      "hints": [
+        "OnEnable no recibe parámetros y no devuelve nada.",
+        "Para suscribirse a un evento se usa el operador +=.",
+        "El evento es estático, así que se accede con el nombre de la clase directamente."
+      ],
+      "explanation": "La suscripción en <code>OnEnable</code> asegura que <code>ReproducirSonido</code> solo esté activo mientras el componente está habilitado. El patrón correcto es: <code>void OnEnable() { GameManager.OnEnemigoCayo += ReproducirSonido; }</code>, con su par en <code>OnDisable</code> usando <code>-=</code>."
+    },
+    {
+      "id": "eve_ex_020",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una clase `PlayerEvents` que herede de `MonoBehaviour` y contenga: (1) un evento estático `OnJugadorMurio` basado en `Action`, (2) un método público `Morir()` que dispare el evento de forma segura con **?.Invoke()**. Escribe solo la clase completa.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class PlayerEvents : MonoBehaviour\n{\n    public static event Action OnJugadorMurio;\n\n    public void Morir()\n    {\n        OnJugadorMurio?.Invoke();\n    }\n}",
+      "alternateAnswers": [
+        "using System;\npublic class PlayerEvents : MonoBehaviour\n{\n    public static event Action OnJugadorMurio;\n    public void Morir() { OnJugadorMurio?.Invoke(); }\n}",
+        "public class PlayerEvents : MonoBehaviour\n{\n    public static event Action OnJugadorMurio;\n    public void Morir() => OnJugadorMurio?.Invoke();\n}"
+      ],
+      "placeholder": "Escribe la clase PlayerEvents completa...",
+      "hints": [
+        "El evento combina tres palabras clave: public, static y event, seguidas del tipo Action.",
+        "?.Invoke() llama al evento solo si hay suscriptores (no es null).",
+        "La clase hereda de MonoBehaviour con dos puntos (:)."
+      ],
+      "explanation": "La clase combina los tres conceptos clave: <strong><code>event</code></strong> para encapsular, <strong><code>static</code></strong> para acceso sin instancia, y <strong><code>Action</code></strong> como delegate predefinido sin parámetros. El método <code>Morir()</code> usa <strong><code>?.Invoke()</code></strong> para disparar el evento de forma segura cuando no hay suscriptores registrados."
+    }
+  ]
+}

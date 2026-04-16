@@ -1,0 +1,334 @@
+{
+  "id": "pensamiento_exam",
+  "title": "Examen Final: Pensamiento Computacional",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "pen_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Lee este pseudocódigo de IA de un enemigo guardián:\n```\nSI distancia < 3 ENTONCES\n    Atacar()\nSI NO SI distancia < 12 ENTONCES\n    Perseguir()\nSI NO\n    Patrullar()\nFIN SI\n```\n¿Qué acción ejecuta el enemigo si la distancia al jugador es `5`?",
+      "options": [
+        "Perseguir(), porque 5 no es menor que 3 pero sí menor que 12.",
+        "Atacar(), porque 5 es menor que 12.",
+        "Patrullar(), porque 5 es mayor que 3.",
+        "Todas: Atacar, Perseguir y Patrullar en ese orden.",
+        "Ninguna: el pseudocódigo tiene un error de lógica."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con distancia = 5: la primera condición (<code>5 &lt; 3</code>) es falsa. Se evalúa la segunda (<code>5 &lt; 12</code>), que es verdadera. Se ejecuta <strong>Perseguir()</strong>. La cadena <strong>SI / SI NO SI / SI NO</strong> es mutuamente excluyente: solo se ejecuta el primer bloque cuya condición sea verdadera."
+    },
+    {
+      "id": "pen_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un **flowchart**, ¿qué símbolo representa una instrucción de proceso como `vida = vida - dano`?",
+      "options": [
+        "Rectángulo",
+        "Rombo",
+        "Óvalo",
+        "Paralelogramo",
+        "Flecha doble"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>rectángulo</strong> es el símbolo de <strong>proceso</strong> en el <strong>flowchart</strong>. Contiene cualquier instrucción ejecutable: asignaciones, cálculos, llamadas a funciones internas. El rombo es para decisiones, el óvalo para inicio/fin y el paralelogramo para entrada/salida."
+    },
+    {
+      "id": "pen_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué relación UML está representada por el símbolo `◆────`?",
+      "options": [
+        "**Composición**: el componente no puede existir sin el todo.",
+        "**Agregación**: el componente puede existir de forma independiente.",
+        "**Herencia**: la subclase hereda del padre.",
+        "**Dependencia**: una clase usa temporalmente a otra.",
+        "**Asociación** simple sin restricciones."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>diamante relleno</strong> (◆) indica <strong>composición</strong> (<strong>composition</strong>). Es la relación más fuerte entre todo y parte: si el todo se destruye, las partes también. Por ejemplo, <code>Nivel ◆──── Enemigo</code>: si el Nivel se descarga, sus Enemigos desaparecen con él."
+    },
+    {
+      "id": "pen_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Lee este **sequence diagram**:\n```\n[GameManager]    [Player]    [UIManager]\n      |               |             |\n      |──StartGame()─→|             |\n      |               |             |\n      |──ShowHUD()────────────────→ |\n```\n¿Cuál mensaje ocurre PRIMERO?",
+      "options": [
+        "GameManager envía StartGame() a Player.",
+        "GameManager envía ShowHUD() a UIManager.",
+        "UIManager envía una respuesta a GameManager.",
+        "Player notifica a GameManager que está listo.",
+        "Ambos mensajes ocurren al mismo tiempo."
+      ],
+      "correctIndex": 0,
+      "explanation": "En un <strong>sequence diagram</strong>, el tiempo fluye <strong>de arriba hacia abajo</strong>. El mensaje <code>StartGame()</code> aparece más arriba que <code>ShowHUD()</code>, por lo tanto ocurre <strong>primero</strong>. El orden vertical es el orden cronológico de ejecución."
+    },
+    {
+      "id": "pen_ex_005",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este pseudocódigo:",
+      "code": "suma = 0\nPARA i DESDE 0 HASTA 4 HACER\n    suma = suma + i\nFIN PARA",
+      "question": "¿Cuántas veces se ejecuta el cuerpo del bucle?",
+      "target": "5",
+      "acceptedAnswers": ["5", "cinco"],
+      "hints": [
+        "El bucle va desde i = 0 hasta i = 4.",
+        "Cuenta los valores que toma i: 0, 1, 2, 3, 4.",
+        "¿Cuántos números hay entre 0 y 4 inclusive?"
+      ],
+      "explanation": "\"DESDE 0 HASTA 4\" genera los valores 0, 1, 2, 3, 4. Son <strong>5 iteraciones</strong>. El cuerpo del bucle se ejecuta exactamente 5 veces, acumulando en <code>suma</code> los valores 0+1+2+3+4 = 10."
+    },
+    {
+      "id": "pen_ex_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este diagrama de clase UML:",
+      "code": "[Personaje | -vida: int | -nombre: string | +Moverse(): void]\n      ▲\n[Jugador | -puntos: int | +Saltar(): void]",
+      "question": "¿Cuántos **attributes** tiene `Jugador` en total (propios + heredados)?",
+      "target": "3",
+      "acceptedAnswers": ["3", "tres"],
+      "hints": [
+        "Jugador tiene su propio attribute: puntos.",
+        "La herencia hace que Jugador también tenga todos los attributes de Personaje.",
+        "Personaje tiene vida y nombre. Jugador tiene puntos. Suma los tres."
+      ],
+      "explanation": "Por <strong>herencia</strong>, <code>Jugador</code> recibe los <strong>attributes</strong> de <code>Personaje</code>: <code>vida</code> y <code>nombre</code>. Más su propio <strong>attribute</strong>: <code>puntos</code>. Total: <strong>3 attributes</strong> (2 heredados + 1 propio)."
+    },
+    {
+      "id": "pen_ex_007",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este flowchart:",
+      "code": "(INICIO)\n    ↓\n[vidas = 3, nivel = 1]\n    ↓\n◇ ¿vidas > 0?\n    ↓ SÍ\n[JugarNivel(nivel)]\n    ↓\n◇ ¿nivelCompletado?\n    ↓ SÍ          ↓ NO\n[nivel++]     [vidas--]\n    ↓               ↓\n    └───────────────┘\n          ↓\n    └──→ (vuelve al primer ◇)\n    ↓ NO (primer rombo)\n[GameOver()]\n    ↓\n  (FIN)",
+      "question": "¿Cuántos rombos de decisión hay en este flowchart?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos"],
+      "hints": [
+        "Cuenta los símbolos ◇ en el diagrama.",
+        "El primero verifica si quedan vidas.",
+        "El segundo verifica si se completó el nivel."
+      ],
+      "explanation": "El flowchart contiene <strong>2 rombos</strong> de decisión: el primero (<code>¿vidas &gt; 0?</code>) controla si el juego continúa, y el segundo (<code>¿nivelCompletado?</code>) determina si el jugador avanza de nivel o pierde una vida. Cada <code>if</code> o condición de bucle en el código corresponde a un rombo en el flowchart."
+    },
+    {
+      "id": "pen_ex_008",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee este sequence diagram:",
+      "code": "[Player]    [AbilityManager]    [VFXSystem]    [AudioSystem]\n    |               |                  |               |\n    |──UseAbility()→|                  |               |\n    |               |──PlayVFX()──────→|               |\n    |               |──PlaySound()─────────────────── →|\n    |               |←──return OK──────────────────── -|\n    |←──AbilityDone()─|                |               |",
+      "question": "¿Cuál es el ÚLTIMO mensaje que recibe `Player` en este sequence diagram?",
+      "target": "AbilityDone()",
+      "acceptedAnswers": ["AbilityDone()", "AbilityDone", "AbilityManager → Player: AbilityDone()"],
+      "hints": [
+        "El tiempo fluye de arriba hacia abajo.",
+        "Busca las flechas que apuntan HACIA Player (no las que salen de Player).",
+        "Player envía UseAbility() y después recibe un mensaje. ¿Cuál es?"
+      ],
+      "explanation": "El único mensaje que <code>Player</code> <strong>recibe</strong> (la flecha apunta hacia Player) es <code>AbilityDone()</code>, enviado por <code>AbilityManager</code>. Es el último mensaje del diagrama (más abajo) y llega a <code>Player</code> para notificarle que la habilidad terminó."
+    },
+    {
+      "id": "pen_ex_009",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la traducción del pseudocódigo a C#:\n```\nMIENTRAS jugador.estaVivo HACER\n    ActualizarJuego()\nFIN MIENTRAS\n```",
+      "codeTemplate": "__________ (jugador.estaVivo)\n{\n    ActualizarJuego();\n}",
+      "expectedAnswer": "while",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave del bucle en C#...",
+      "hints": [
+        "MIENTRAS en pseudocódigo equivale a una palabra clave de C# de 5 letras.",
+        "Es el bucle que evalúa la condición ANTES de ejecutar el cuerpo.",
+        "En inglés, 'mientras' se traduce como esta palabra."
+      ],
+      "explanation": "La estructura <strong>MIENTRAS...HACER...FIN MIENTRAS</strong> del pseudocódigo se traduce directamente a <strong><code>while</code></strong> en C#. La condición entre paréntesis se evalúa antes de cada iteración."
+    },
+    {
+      "id": "pen_ex_010",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Lee el diagrama UML y completa el modificador de acceso correcto en C#:\n```\n[Jugador\n | -vida: int\n | +Nombre: string\n]\n```",
+      "codeTemplate": "public class Jugador\n{\n    __________ int vida;    // tiene '-' en UML\n    public string Nombre;   // tiene '+' en UML\n}",
+      "expectedAnswer": "private",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el modificador para el attribute '-vida'...",
+      "hints": [
+        "El símbolo '-' en UML corresponde a la visibilidad más restrictiva.",
+        "Solo la propia clase puede acceder a estos campos.",
+        "Lo opuesto a 'public' en C#."
+      ],
+      "explanation": "El símbolo <strong>-</strong> en <strong>UML</strong> indica visibilidad <strong>private</strong> en C#. Solo la propia clase puede acceder a ese <strong>attribute</strong>. El símbolo <code>+</code> equivale a <code>public</code>. Esta convención de encapsulamiento es fundamental en la programación orientada a objetos."
+    },
+    {
+      "id": "pen_ex_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código C# que corresponde a este fragmento de sequence diagram:\n```\n[EnemyAI] → [Player] : TakeDamage(15)\n```",
+      "codeTemplate": "// Dentro del método de EnemyAI:\n__________.TakeDamage(15);",
+      "expectedAnswer": "player",
+      "alternateAnswers": ["Player", "jugador", "target"],
+      "placeholder": "Escribe el nombre del objeto receptor...",
+      "hints": [
+        "El mensaje va hacia el objeto Player.",
+        "En C#, para llamar un método en otro objeto, usas la referencia a ese objeto.",
+        "El objeto receptor en el sequence diagram es Player."
+      ],
+      "explanation": "El mensaje <code>[EnemyAI] → [Player] : TakeDamage(15)</code> indica que <code>EnemyAI</code> llama al método <code>TakeDamage(15)</code> en el objeto <code>Player</code>. En C#, esto se escribe como <code><strong>player</strong>.TakeDamage(15);</code>, donde <code>player</code> es la referencia al objeto Player."
+    },
+    {
+      "id": "pen_ex_012",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el pseudocódigo para este código C# de Unity:\n```csharp\nif (municion > 0)\n{\n    Disparar();\n    municion--;\n}\nelse\n{\n    RecargarArma();\n}\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "SI municion > 0 ENTONCES\n    Disparar()\n    municion = municion - 1\nSI NO\n    RecargarArma()\nFIN SI",
+      "alternateAnswers": [
+        "SI municion > 0 ENTONCES\n    Disparar()\n    municion--\nSI NO\n    RecargarArma()\nFIN SI"
+      ],
+      "placeholder": "Escribe el pseudocódigo equivalente...",
+      "hints": [
+        "El if se traduce a SI...ENTONCES.",
+        "El else se traduce a SI NO.",
+        "Cierra la estructura con FIN SI al final."
+      ],
+      "explanation": "Cada estructura de C# tiene su equivalente en pseudocódigo: <code>if</code> → <strong>SI...ENTONCES</strong>, <code>else</code> → <strong>SI NO</strong>, y se cierra con <strong>FIN SI</strong>. El operador de decremento <code>municion--</code> se puede escribir como <code>municion = municion - 1</code> en pseudocódigo para mayor claridad."
+    },
+    {
+      "id": "pen_ex_013",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué símbolo del **flowchart** se usa para representar la operación `Debug.Log(\"Game Over\")` en Unity?",
+      "options": [
+        "Paralelogramo, porque es una operación de salida de datos.",
+        "Rectángulo, porque es una instrucción de proceso.",
+        "Rombo, porque Debug.Log implica una decisión de qué imprimir.",
+        "Óvalo, porque Debug.Log es el fin del programa.",
+        "Cualquier símbolo es válido; depende del programador."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Debug.Log()</code> es una operación de <strong>salida</strong> (<strong>output</strong>): muestra información en la consola. Las operaciones de entrada/salida en un <strong>flowchart</strong> se representan con el <strong>paralelogramo</strong>. El rectángulo se reserva para procesos internos sin I/O."
+    },
+    {
+      "id": "pen_ex_014",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Lee este diagrama UML:\n```\n[Escena | -nombre: string | +Cargar(): void]\n[NPC | -dialogo: string | +Hablar(): void]\n[Item | -nombre: string | +Usar(): void]\n\nEscena ◆──1──── 0..* NPC\nEscena ◇──1──── 0..* Item\n```\n¿Qué afirmación es CORRECTA sobre este diagrama?",
+      "options": [
+        "Los NPC se destruyen cuando la Escena se destruye, pero los Item pueden sobrevivir.",
+        "Los Item se destruyen cuando la Escena se destruye, pero los NPC pueden sobrevivir.",
+        "Tanto NPC como Item se destruyen cuando la Escena se destruye.",
+        "Ni NPC ni Item dependen de la existencia de Escena.",
+        "El diagrama tiene un error: no se pueden mezclar composición y agregación."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Escena ◆──── NPC</code> es <strong>composición</strong>: los NPC son parte integral de la Escena y se destruyen con ella. <code>Escena ◇──── Item</code> es <strong>agregación</strong>: los Item pueden existir independientemente (por ejemplo, persistir entre escenas en el inventario del jugador). El <strong>diamante relleno</strong> (◆) indica dependencia fuerte y el <strong>diamante vacío</strong> (◇) indica dependencia débil."
+    },
+    {
+      "id": "pen_ex_015",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee este pseudocódigo y determina el valor final:",
+      "code": "resultado = 1\nPARA i DESDE 1 HASTA 4 HACER\n    resultado = resultado * i\nFIN PARA",
+      "question": "¿Cuál es el valor final de `resultado`?",
+      "target": "24",
+      "acceptedAnswers": ["24", "veinticuatro"],
+      "hints": [
+        "El bucle multiplica resultado por i en cada iteración.",
+        "Iteración 1: resultado = 1 * 1 = 1. Iteración 2: resultado = 1 * 2 = 2.",
+        "Este algoritmo calcula el factorial de 4 (4! = 1 × 2 × 3 × 4)."
+      ],
+      "explanation": "Iteraciones: (1) resultado = 1×1 = 1; (2) resultado = 1×2 = 2; (3) resultado = 2×3 = 6; (4) resultado = 6×4 = <strong>24</strong>. Este pseudocódigo calcula el factorial de 4 (4! = 24). El patrón de <code>resultado = resultado * i</code> es el algoritmo clásico de factorial iterativo."
+    },
+    {
+      "id": "pen_ex_016",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el **sequence diagram** completo (en notación de texto) para este método de C#:\n```csharp\npublic class LevelManager : MonoBehaviour\n{\n    public void CompletarNivel()\n    {\n        scoreManager.GuardarPuntuacion();\n        audioManager.ReproducirVictoria();\n        sceneLoader.CargarSiguiente();\n    }\n}\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "[LevelManager] → [ScoreManager] : GuardarPuntuacion()\n[LevelManager] → [AudioManager] : ReproducirVictoria()\n[LevelManager] → [SceneLoader] : CargarSiguiente()",
+      "alternateAnswers": [
+        "LevelManager → ScoreManager : GuardarPuntuacion()\nLevelManager → AudioManager : ReproducirVictoria()\nLevelManager → SceneLoader : CargarSiguiente()"
+      ],
+      "placeholder": "Escribe las tres líneas del sequence diagram...",
+      "hints": [
+        "Cada llamada de método en C# se convierte en un mensaje del sequence diagram.",
+        "El emisor es siempre LevelManager (es quien tiene el código).",
+        "Formato: [Emisor] → [Receptor] : NombreMetodo()"
+      ],
+      "explanation": "Cada llamada <code>objeto.Metodo()</code> en C# se convierte en un mensaje <code>[Emisor] → [Receptor] : Metodo()</code> en el <strong>sequence diagram</strong>. El orden de las llamadas en el código define el orden temporal del diagrama (de arriba hacia abajo). <code>LevelManager</code> es el emisor de todos los mensajes."
+    },
+    {
+      "id": "pen_ex_017",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el código C# correcto que traduce este pseudocódigo?\n```\nFUNCION MaxVida(nivel)\n    RETORNAR 100 + nivel * 20\nFIN FUNCION\n```",
+      "options": [
+        "public int MaxVida(int nivel) { return 100 + nivel * 20; }",
+        "public void MaxVida(int nivel) { return 100 + nivel * 20; }",
+        "public int MaxVida() { int nivel = 100 + nivel * 20; }",
+        "int MaxVida(nivel) { RETORNAR 100 + nivel * 20; }",
+        "public MaxVida(int nivel) { return 100; return nivel * 20; }"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>FUNCION</strong> del pseudocódigo que tiene <strong>RETORNAR</strong> con un valor entero se traduce a un método <code>public int</code> en C#. El parámetro <code>nivel</code> se declara con su tipo (<code>int nivel</code>). El <code>RETORNAR</code> se traduce a <code>return</code>. <code>void</code> solo se usa cuando la función no retorna nada."
+    },
+    {
+      "id": "pen_ex_018",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este diagrama UML:",
+      "code": "[Arma | -dano: int | +Atacar(): void]\n[Espada | -alcance: float | +AtaqueGiratorio(): void]\n\nEspada ──▷ Arma",
+      "question": "¿Cuántos **methods** tiene `Espada` en total (propios + heredados)?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos"],
+      "hints": [
+        "La herencia hace que Espada tenga los methods de Arma.",
+        "Arma tiene el method Atacar().",
+        "Espada tiene su propio method AtaqueGiratorio(). Suma los dos."
+      ],
+      "explanation": "Por <strong>herencia</strong>, <code>Espada</code> hereda el <strong>method</strong> <code>Atacar(): void</code> de <code>Arma</code>. Más su propio <strong>method</strong>: <code>AtaqueGiratorio(): void</code>. Total: <strong>2 methods</strong> (1 heredado + 1 propio). También hereda el <strong>attribute</strong> <code>dano: int</code>."
+    },
+    {
+      "id": "pen_ex_019",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Lee el flowchart y completa el código C#:\n```\n(INICIO)\n    ↓\n[i = 0]\n    ↓\n◇ ¿i < oleadas?\n    ↓ SÍ\n[SpawnOleada(i)]\n    ↓\n[i++]\n    ↓\n└──→ (vuelve al rombo)\n    ↓ NO\n(FIN)\n```",
+      "codeTemplate": "int i = 0;\n__________ (i < oleadas)\n{\n    SpawnOleada(i);\n    i++;\n}",
+      "expectedAnswer": "while",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la estructura de bucle de C#...",
+      "hints": [
+        "El rombo con flecha que regresa representa un bucle en C#.",
+        "La condición del rombo (¿i < oleadas?) va directamente entre los paréntesis del bucle.",
+        "El bucle que evalúa la condición antes de ejecutar el cuerpo es el..."
+      ],
+      "explanation": "El patrón del <strong>flowchart</strong> — inicializar → rombo de condición → cuerpo → incremento → volver al rombo — corresponde a un bucle <strong><code>while</code></strong> (o equivalentemente un <code>for</code>). La condición del rombo se convierte directamente en la condición del <code>while</code>."
+    },
+    {
+      "id": "pen_ex_020",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la clase C# completa que corresponde a este diagrama de clases UML:\n```\n[Proyectil\n | -velocidad: float\n | -dano: int\n | +Lanzar(direccion: Vector3): void\n | +GetDano(): int\n]\n\nProyectil ──▷ MonoBehaviour\n```",
+      "codeTemplate": null,
+      "expectedAnswer": "public class Proyectil : MonoBehaviour\n{\n    private float velocidad;\n    private int dano;\n\n    public void Lanzar(Vector3 direccion) { }\n    public int GetDano() { return dano; }\n}",
+      "alternateAnswers": [
+        "public class Proyectil : MonoBehaviour {\n    private float velocidad;\n    private int dano;\n    public void Lanzar(Vector3 direccion) {}\n    public int GetDano() { return dano; }\n}"
+      ],
+      "placeholder": "Escribe la clase C# completa con herencia...",
+      "hints": [
+        "La flecha ──▷ hacia MonoBehaviour significa que Proyectil hereda de MonoBehaviour.",
+        "Los attributes con '-' se declaran como private; los methods con '+' como public.",
+        "Los parámetros del method (direccion: Vector3) se escriben como (Vector3 direccion) en C#."
+      ],
+      "explanation": "Traducción del <strong>class diagram</strong> a C#: <code>──▷ MonoBehaviour</code> → <code>: MonoBehaviour</code> (herencia), <code>-velocidad: float</code> → <code>private float velocidad;</code>, <code>-dano: int</code> → <code>private int dano;</code>, <code>+Lanzar(direccion: Vector3): void</code> → <code>public void Lanzar(Vector3 direccion)</code>, <code>+GetDano(): int</code> → <code>public int GetDano()</code>. Esta es la traducción directa de <strong>UML</strong> a código C# de Unity."
+    }
+  ]
+}

@@ -1,0 +1,374 @@
+{
+  "id": "eventos",
+  "title": "Eventos (event)",
+  "icon": "🔔",
+  "color": "#8E24AA",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "La Palabra Clave event",
+        "type": "definition",
+        "content": "La palabra clave <strong>event</strong> agrega una capa de encapsulación sobre un <strong>delegate</strong>. Al declarar un campo con <code>event</code>, solo la clase que lo declara (<strong>publisher</strong>) puede invocar el evento o asignarlo con <code>=</code>. Las clases externas (<strong>subscribers</strong>) únicamente pueden suscribirse (<strong>+=</strong>) o desuscribirse (<strong>-=</strong>). Sin <code>event</code>, cualquier clase externa podría invocar el delegate o borrar todos sus suscriptores con <code>=</code>, rompiendo el encapsulamiento."
+      },
+      {
+        "id": "doc-2",
+        "title": "Patrón Publisher-Subscriber",
+        "type": "code",
+        "content": "// PUBLISHER: quien lanza el evento\npublic class GameManager : MonoBehaviour\n{\n    // Declaración: delegate + event\n    public delegate void OnScoreCambioHandler(int nuevoScore);\n    public event OnScoreCambioHandler OnScoreCambio;\n\n    int score = 0;\n\n    public void AgregarPuntos(int pts)\n    {\n        score += pts;\n        // Solo el publisher puede invocar el evento\n        OnScoreCambio?.Invoke(score);\n    }\n}\n\n// SUBSCRIBER: quien escucha el evento\npublic class ScoreUI : MonoBehaviour\n{\n    [SerializeField] GameManager gm;\n\n    // Suscribir en OnEnable, desuscribir en OnDisable\n    void OnEnable()  => gm.OnScoreCambio += ActualizarTexto;\n    void OnDisable() => gm.OnScoreCambio -= ActualizarTexto;\n\n    void ActualizarTexto(int score)\n    {\n        Debug.Log(\"Score: \" + score);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "EventArgs y el Patrón Estándar de .NET",
+        "type": "code",
+        "content": "// Datos del evento: hereda de EventArgs\npublic class EnemyDeathEventArgs : System.EventArgs\n{\n    public int BountyPoints { get; }\n    public Vector3 Position  { get; }\n\n    public EnemyDeathEventArgs(int pts, Vector3 pos)\n    {\n        BountyPoints = pts;\n        Position     = pos;\n    }\n}\n\npublic class Enemy : MonoBehaviour\n{\n    // Patrón estándar: EventHandler<T> ya declara el delegate por nosotros\n    public event System.EventHandler<EnemyDeathEventArgs> OnDeath;\n\n    public void Die()\n    {\n        var args = new EnemyDeathEventArgs(100, transform.position);\n        OnDeath?.Invoke(this, args); // sender = this\n    }\n}\n\n// Suscriptor\npublic class AchievementSystem : MonoBehaviour\n{\n    [SerializeField] Enemy enemy;\n\n    void OnEnable()  => enemy.OnDeath += HandleDeath;\n    void OnDisable() => enemy.OnDeath -= HandleDeath;\n\n    void HandleDeath(object sender, EnemyDeathEventArgs e)\n    {\n        Debug.Log($\"Enemigo muerto en {e.Position}, recompensa: {e.BountyPoints}\");\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "¿Por qué Suscribir en OnEnable y Desuscribir en OnDisable?",
+        "type": "note",
+        "content": "En Unity, el patrón correcto es suscribirse a eventos en <strong><code>OnEnable</code></strong> y desuscribirse en <strong><code>OnDisable</code></strong>. Si te suscribes en <code>Start</code> pero nunca te desuscribes, el <strong>delegate</strong> mantiene una referencia al objeto incluso después de que este sea destruido o desactivado, causando errores de <code>MissingReferenceException</code> o llamadas a métodos en objetos destruidos. <strong><code>OnDisable</code></strong> se llama tanto al desactivar el objeto como al destruirlo, garantizando la limpieza."
+      },
+      {
+        "id": "doc-5",
+        "title": "event vs delegate: Diferencias Clave",
+        "type": "list",
+        "items": [
+          "Sin event: cualquier clase externa puede invocar el delegate o borrarlo con =.",
+          "Con event: solo la clase declarante puede invocar o asignar con = (encapsulación).",
+          "Los subscribers externos solo pueden usar += y -= en un event.",
+          "Si alguien usa = en un event desde fuera, el compilador da error.",
+          "Usa event cuando el delegate sirva para notificar a múltiples objetos externos.",
+          "El patrón canónico de Unity: OnEnable para += y OnDisable para -=."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ev_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la principal diferencia entre un **delegate** campo y un **event** en C#?",
+      "options": [
+        "Con event, solo la clase que lo declara puede invocarlo o asignarlo con =; las clases externas solo pueden usar += y -=.",
+        "Un event solo puede tener un suscriptor a la vez; el delegate permite múltiples.",
+        "Un event es más rápido que un delegate porque no crea una lista de invocación.",
+        "La palabra clave event hace que el delegate sea estático automáticamente.",
+        "Solo los eventos declarados con event pueden recibir lambdas como suscriptores."
+      ],
+      "correctIndex": 0,
+      "explanation": "La palabra clave <strong><code>event</code></strong> encapsula el <strong>delegate</strong>: restringe el acceso externo a solo <strong><code>+=</code></strong> y <strong><code>-=</code></strong>. Sin <code>event</code>, cualquier objeto externo podría invocar el delegate o borrar todos sus suscriptores con <code>=</code>, rompiendo el patrón <strong>publisher-subscriber</strong>."
+    },
+    {
+      "id": "ev_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En el patrón **publisher-subscriber**, ¿qué rol tiene la clase que declara el **event**?",
+      "options": [
+        "Publisher: es quien lanza (invoca) el evento cuando algo ocurre.",
+        "Subscriber: es quien recibe la notificación del evento.",
+        "Observer: es quien decide si el evento debe propagarse o no.",
+        "Mediator: conecta al publisher y al subscriber sin que se conozcan.",
+        "Handler: es quien procesa los datos del EventArgs."
+      ],
+      "correctIndex": 0,
+      "explanation": "En el patrón <strong>publisher-subscriber</strong>, el <strong>publisher</strong> es la clase que declara e invoca el <strong>event</strong>. Los <strong>subscribers</strong> son los que se suscriben con <strong><code>+=</code></strong> para recibir notificaciones. El publisher no necesita conocer quiénes son sus subscribers."
+    },
+    {
+      "id": "ev_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de Unity se recomienda suscribirse a un **event** para evitar referencias colgantes?",
+      "options": [
+        "OnEnable",
+        "Start",
+        "Awake",
+        "Update",
+        "OnTriggerEnter"
+      ],
+      "correctIndex": 0,
+      "explanation": "El patrón correcto en Unity es suscribirse en <strong><code>OnEnable</code></strong> y desuscribirse en <strong><code>OnDisable</code></strong>. <code>OnDisable</code> se llama tanto al desactivar el objeto como al destruirlo, garantizando que el <strong>event</strong> no retenga referencias a objetos inválidos y evitando <code>MissingReferenceException</code>."
+    },
+    {
+      "id": "ev_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué ocurre si una clase externa intenta invocar directamente un **event** declarado en otra clase?",
+      "options": [
+        "El compilador lanza un error: el evento solo puede ser invocado desde la clase que lo declara.",
+        "El evento se invoca normalmente, igual que un delegate.",
+        "Se lanza una excepción en tiempo de ejecución.",
+        "El evento se invoca pero ignora los parámetros pasados.",
+        "Unity lanza una advertencia pero el código compila y funciona."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>event</strong> solo puede ser invocado desde la clase donde está declarado. Si una clase externa intenta llamarlo como <code>otroObjeto.OnMuerte()</code>, el compilador genera un <strong>error CS0070</strong>: el evento solo puede aparecer a la izquierda de <code>+=</code> o <code>-=</code> en código externo."
+    },
+    {
+      "id": "ev_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la declaración correcta de un **event** en C# que usa el **delegate** `AlMorirHandler`?",
+      "options": [
+        "public event AlMorirHandler OnMorir;",
+        "public AlMorirHandler event OnMorir;",
+        "event public AlMorirHandler OnMorir;",
+        "public eventhandler AlMorirHandler OnMorir;",
+        "public OnMorir event AlMorirHandler;"
+      ],
+      "correctIndex": 0,
+      "explanation": "La sintaxis correcta es: modificador → <code>event</code> → tipo-delegate → nombre. Por tanto: <code>public event AlMorirHandler OnMorir;</code>. La palabra clave <code>event</code> siempre va después del modificador de acceso y antes del tipo del delegate."
+    },
+    {
+      "id": "ev_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué ventaja tiene suscribirse en **OnEnable** y desuscribirse en **OnDisable** en lugar de usar **Start** y **OnDestroy**?",
+      "options": [
+        "OnDisable se ejecuta tanto al destruir el objeto como al desactivarlo, cubriendo ambos casos de limpieza.",
+        "Start y OnDestroy no son métodos de MonoBehaviour válidos para esto.",
+        "OnEnable/OnDisable son más rápidos en ejecución que Start/OnDestroy.",
+        "Unity no permite suscribirse a eventos en Start.",
+        "Solo OnEnable garantiza que el evento esté inicializado en el publisher."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>OnDisable</code></strong> se llama en dos situaciones: al desactivar el <code>GameObject</code> y al destruirlo. <code>OnDestroy</code> solo se llama al destruir. Si el objeto se desactiva pero no se destruye, y no te desuscribes en <code>OnDisable</code>, el evento seguirá invocando métodos de un objeto inactivo, lo que puede causar comportamientos inesperados."
+    },
+    {
+      "id": "ev_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirve la clase `EventArgs` en el patrón estándar de eventos de .NET?",
+      "options": [
+        "Para encapsular los datos adicionales que el publisher quiere enviar a los subscribers junto con el evento.",
+        "Para reemplazar al delegate cuando se usa el patrón estándar.",
+        "Para que el evento pueda ser serializado por Unity en el Inspector.",
+        "Para limitar el número de subscribers que puede tener un event.",
+        "Para hacer que el event sea thread-safe automáticamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong><code>EventArgs</code></strong> es la clase base para los datos del evento. Al crear una clase que hereda de <code>EventArgs</code> (ej: <code>EnemyDeathEventArgs</code>), puedes incluir información adicional como la posición del enemigo o los puntos de recompensa. Los <strong>subscribers</strong> reciben estos datos en el segundo parámetro del handler."
+    },
+    {
+      "id": "ev_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tienes este código:\n```csharp\npublic class GameManager : MonoBehaviour {\n    public event System.Action OnGameOver;\n    public void TerminarJuego() => OnGameOver?.Invoke();\n}\npublic class UIManager : MonoBehaviour {\n    [SerializeField] GameManager gm;\n    void OnEnable()  { gm.OnGameOver += MostrarPantalla; }\n    void OnDisable() { gm.OnGameOver -= MostrarPantalla; }\n    void MostrarPantalla() => Debug.Log(\"Game Over\");\n}\n```\n¿Qué pasaría si `UIManager` se desactiva ANTES de que se llame a `TerminarJuego()`?",
+      "options": [
+        "MostrarPantalla no se ejecutará porque se desuscribió en OnDisable.",
+        "MostrarPantalla se ejecutará igualmente porque el delegate ya tiene la referencia.",
+        "OnGameOver lanzará NullReferenceException al no tener suscriptores.",
+        "Unity reactivará UIManager automáticamente para ejecutar el handler.",
+        "El evento se guardará en cola y se ejecutará cuando UIManager se reactive."
+      ],
+      "correctIndex": 0,
+      "explanation": "Al desactivarse <code>UIManager</code>, se ejecuta <strong><code>OnDisable</code></strong>, que llama a <code>gm.OnGameOver -= MostrarPantalla</code>. Esto elimina <code>MostrarPantalla</code> de la lista de invocación. Cuando después se llama a <code>TerminarJuego()</code>, <code>MostrarPantalla</code> ya no está en la lista y no se ejecuta. Este es exactamente el comportamiento deseado del patrón."
+    },
+    {
+      "id": "ev_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta declaración:",
+      "code": "public event System.Action<int> OnScoreCambio;",
+      "question": "¿Qué palabra clave garantiza que ninguna clase externa pueda invocar directamente `OnScoreCambio` ni reemplazar su lista de suscriptores con `=`?",
+      "target": "event",
+      "acceptedAnswers": ["event", "la palabra clave event", "keyword event"],
+      "hints": [
+        "Es la palabra clave que aparece entre public y System.Action.",
+        "Sin ella, cualquier clase externa podría invocar el delegate.",
+        "Es la misma palabra que le da nombre al concepto de 'evento'."
+      ],
+      "explanation": "La palabra clave <strong><code>event</code></strong> encapsula el delegate subyacente. Restringe el acceso externo: fuera de la clase declarante, solo se puede usar <strong><code>+=</code></strong> y <strong><code>-=</code></strong>. Intentar invocar o asignar con <code>=</code> desde otra clase genera un error de compilación."
+    },
+    {
+      "id": "ev_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este patrón de Unity:",
+      "code": "public class ScoreUI : MonoBehaviour\n{\n    [SerializeField] GameManager gm;\n\n    void OnEnable()  => gm.OnScoreCambio += RefrescarUI;\n    void OnDisable() => gm.OnScoreCambio -= RefrescarUI;\n\n    void RefrescarUI(int score) { /* actualiza texto */ }\n}",
+      "question": "¿En qué método se suscribe `ScoreUI` al evento y en qué método se desuscribe?",
+      "target": "OnEnable y OnDisable",
+      "acceptedAnswers": ["OnEnable y OnDisable", "OnEnable / OnDisable", "se suscribe en OnEnable y desuscribe en OnDisable"],
+      "hints": [
+        "Busca el operador += para encontrar dónde se suscribe.",
+        "Busca el operador -= para encontrar dónde se desuscribe.",
+        "Ambos métodos son lifecycle methods de MonoBehaviour."
+      ],
+      "explanation": "El patrón correcto en Unity es: suscribirse en <strong><code>OnEnable</code></strong> (con <code>+=</code>) y desuscribirse en <strong><code>OnDisable</code></strong> (con <code>-=</code>). Esto garantiza que cuando el objeto se desactive o destruya, se limpie la suscripción y no queden referencias colgantes al evento."
+    },
+    {
+      "id": "ev_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "public class Enemy : MonoBehaviour\n{\n    public event System.Action<int> OnDeath;\n\n    public void Die()\n    {\n        OnDeath?.Invoke(100);\n    }\n}\n\npublic class ScoreSystem : MonoBehaviour\n{\n    [SerializeField] Enemy enemy;\n    int totalScore = 0;\n\n    void OnEnable()  => enemy.OnDeath += SumarPuntos;\n    void OnDisable() => enemy.OnDeath -= SumarPuntos;\n\n    void SumarPuntos(int pts) => totalScore += pts;\n}",
+      "question": "Si `ScoreSystem` está activo y `enemy.Die()` se llama dos veces, ¿cuánto vale `totalScore` al final?",
+      "target": "200",
+      "acceptedAnswers": ["200"],
+      "hints": [
+        "Cada vez que se llama Die(), se invoca el evento con el valor 100.",
+        "SumarPuntos acumula los puntos en totalScore.",
+        "100 + 100 = ?"
+      ],
+      "explanation": "Cada vez que se llama <code>enemy.Die()</code>, se invoca <code>OnDeath?.Invoke(100)</code>, lo que ejecuta <code>SumarPuntos(100)</code>. Tras dos llamadas: <code>totalScore = 0 + 100 + 100 = <strong>200</strong></code>."
+    },
+    {
+      "id": "ev_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este intento de código externo:",
+      "code": "// En alguna clase externa:\npublic class HackerClass : MonoBehaviour\n{\n    [SerializeField] GameManager gm;\n\n    void Start()\n    {\n        // Intento de invocar directamente el event\n        gm.OnGameOver(); // <-- esta línea\n    }\n}",
+      "question": "¿Qué tipo de error produce la línea marcada si `OnGameOver` está declarado con la palabra clave `event`?",
+      "target": "error de compilación",
+      "acceptedAnswers": ["error de compilación", "compile error", "error de compilador", "CS0070", "error en tiempo de compilación", "no compila"],
+      "hints": [
+        "El event no puede ser invocado desde fuera de la clase que lo declara.",
+        "Este error lo detecta el compilador antes de ejecutar el programa.",
+        "No es un error en tiempo de ejecución, es anterior a eso."
+      ],
+      "explanation": "Intentar invocar un <strong>event</strong> desde una clase externa produce un <strong>error de compilación</strong> (CS0070). El compilador rechaza el código antes de ejecutarlo. Esta es precisamente la protección que aporta <code>event</code>: solo la clase <strong>publisher</strong> puede disparar el evento."
+    },
+    {
+      "id": "ev_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código con EventArgs personalizado:",
+      "code": "public class LevelCompleteArgs : System.EventArgs\n{\n    public int StarsEarned { get; }\n    public float TimeLeft  { get; }\n\n    public LevelCompleteArgs(int stars, float time)\n    {\n        StarsEarned = stars;\n        TimeLeft    = time;\n    }\n}\n\npublic class LevelManager : MonoBehaviour\n{\n    public event System.EventHandler<LevelCompleteArgs> OnLevelComplete;\n\n    public void CompletarNivel(int estrellas, float tiempoRestante)\n    {\n        var args = new LevelCompleteArgs(estrellas, tiempoRestante);\n        OnLevelComplete?.Invoke(this, args);\n    }\n}",
+      "question": "¿Cómo accedería un subscriber al número de estrellas ganadas dentro de su handler `void Handler(object sender, LevelCompleteArgs e)`?",
+      "target": "e.StarsEarned",
+      "acceptedAnswers": ["e.StarsEarned", "args.StarsEarned", "e.StarsEarned;"],
+      "hints": [
+        "Los datos del evento están en el segundo parámetro del handler.",
+        "El segundo parámetro se llama 'e' en la firma del handler.",
+        "La clase LevelCompleteArgs tiene una propiedad para las estrellas."
+      ],
+      "explanation": "En el handler, el segundo parámetro (<code>e</code>) es de tipo <code>LevelCompleteArgs</code>. Para acceder a las estrellas se usa <strong><code>e.StarsEarned</code></strong>. El primer parámetro (<code>sender</code>) es el objeto que disparó el evento (el <code>LevelManager</code>)."
+    },
+    {
+      "id": "ev_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este bug común:",
+      "code": "public class UIManager : MonoBehaviour\n{\n    [SerializeField] GameManager gm;\n\n    void Start()\n    {\n        gm.OnGameOver += MostrarPantallaFinal;\n        // No hay desuscripción en ningún lugar\n    }\n\n    void MostrarPantallaFinal() { /* ... */ }\n}",
+      "question": "Si este `UIManager` se destruye pero `GameManager` sigue activo y lanza `OnGameOver`, ¿qué excepción puede ocurrir?",
+      "target": "MissingReferenceException",
+      "acceptedAnswers": ["MissingReferenceException", "MissingReferenceException en Unity", "missing reference exception"],
+      "hints": [
+        "El delegate mantiene una referencia al UIManager destruido.",
+        "Unity detecta que intentas usar un objeto que ya no existe.",
+        "El nombre de la excepción incluye la palabra 'Missing' y 'Reference'."
+      ],
+      "explanation": "Cuando <code>UIManager</code> se destruye sin haberse desuscrito, el evento <code>OnGameOver</code> sigue teniendo la referencia a <code>MostrarPantallaFinal</code>. Al invocarlo, Unity intenta llamar al método de un objeto destruido y lanza <strong><code>MissingReferenceException</code></strong>. La solución es siempre desuscribirse en <strong><code>OnDisable</code></strong>."
+    },
+    {
+      "id": "ev_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un **event** llamado `OnEnemyDead` que usa `System.Action` como tipo delegate:",
+      "codeTemplate": "public __________ System.Action OnEnemyDead;",
+      "expectedAnswer": "event",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave que falta...",
+      "hints": [
+        "Es la palabra clave que encapsula el delegate y restringe el acceso externo.",
+        "Sin ella, cualquier clase externa podría invocar o reemplazar la lista.",
+        "Es la misma palabra que le da nombre al concepto."
+      ],
+      "explanation": "La palabra clave <strong><code>event</code></strong> transforma el delegate en un evento encapsulado. La declaración completa es: <code>public event System.Action OnEnemyDead;</code>. Esto garantiza que solo la clase declarante pueda invocar el evento."
+    },
+    {
+      "id": "ev_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa para suscribir el método `OnPlayerDead` al evento `onMuerte` del objeto `player`:",
+      "codeTemplate": "void OnEnable() => player.onMuerte __________ OnPlayerDead;",
+      "expectedAnswer": "+=",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el operador de suscripción...",
+      "hints": [
+        "Este operador agrega un método a la lista de suscriptores del evento.",
+        "Es el mismo operador que se usa para multicast delegates.",
+        "El operador contrario para desuscribirse es -=."
+      ],
+      "explanation": "El operador <strong><code>+=</code></strong> suscribe el método al evento. En el contexto de un <strong>event</strong>, es la única forma que tienen las clases externas de registrar un handler. Intentar usar <code>=</code> desde fuera causaría un error de compilación."
+    },
+    {
+      "id": "ev_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método `OnDisable` para desuscribir correctamente el método `OnPlayerDead` del evento `onMuerte`:",
+      "codeTemplate": "void OnDisable() => player.onMuerte __________ OnPlayerDead;",
+      "expectedAnswer": "-=",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el operador de desuscripción...",
+      "hints": [
+        "Este operador elimina un método de la lista de suscriptores.",
+        "Es esencial llamarlo en OnDisable para evitar referencias colgantes.",
+        "Es el opuesto del operador de suscripción."
+      ],
+      "explanation": "El operador <strong><code>-=</code></strong> elimina el método de la lista de invocación del evento. Es crucial hacerlo en <strong><code>OnDisable</code></strong> para garantizar que cuando el objeto se desactive o destruya, el evento no intente invocar métodos de un objeto inválido."
+    },
+    {
+      "id": "ev_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Declara el evento `OnScoreCambio` en la clase `GameManager`. El evento debe transmitir el nuevo score (int). Usa `System.Action<int>` como tipo. Escribe solo la línea de declaración.",
+      "codeTemplate": null,
+      "expectedAnswer": "public event System.Action<int> OnScoreCambio;",
+      "alternateAnswers": [
+        "public event Action<int> OnScoreCambio;"
+      ],
+      "placeholder": "Escribe la declaración del event...",
+      "hints": [
+        "La sintaxis es: [acceso] event [tipo-delegate] [nombre];",
+        "El tipo delegate es System.Action<int> para pasar un int.",
+        "El nombre del evento por convención empieza con On."
+      ],
+      "explanation": "La declaración correcta es <code>public event System.Action&lt;int&gt; OnScoreCambio;</code>. <code>System.Action&lt;int&gt;</code> es un delegate genérico que no devuelve nada y acepta un parámetro <code>int</code>. La palabra clave <strong><code>event</code></strong> garantiza la encapsulación."
+    },
+    {
+      "id": "ev_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el método `Die()` de la clase `Enemy` que invoca el evento `OnDeath` de forma segura. `OnDeath` es de tipo `event System.Action`. Solo escribe el cuerpo del método.",
+      "codeTemplate": null,
+      "expectedAnswer": "public void Die()\n{\n    OnDeath?.Invoke();\n}",
+      "alternateAnswers": [
+        "void Die() { OnDeath?.Invoke(); }",
+        "public void Die() { if (OnDeath != null) OnDeath(); }"
+      ],
+      "placeholder": "Escribe el método Die() completo...",
+      "hints": [
+        "Usa ?.Invoke() para invocar el evento de forma segura sin verificar null manualmente.",
+        "El método debería ser public para que otros sistemas puedan matarlo.",
+        "La invocación segura evita NullReferenceException si no hay suscriptores."
+      ],
+      "explanation": "El método correcto es: <code>public void Die() { OnDeath?.Invoke(); }</code>. Solo la clase <code>Enemy</code> (el <strong>publisher</strong>) puede invocar el evento. El operador <strong><code>?.Invoke()</code></strong> es la forma moderna y segura de invocarlo cuando podría no haber suscriptores."
+    },
+    {
+      "id": "ev_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe la clase `AchievementUI` completa como MonoBehaviour que: (1) tiene una referencia serializada a `Enemy`, (2) se suscribe a `enemy.OnDeath` en `OnEnable`, (3) se desuscribe en `OnDisable`, y (4) el handler `HandleDeath` imprime \"¡Logro desbloqueado!\" con Debug.Log. `OnDeath` es de tipo `event System.Action`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class AchievementUI : MonoBehaviour\n{\n    [SerializeField] Enemy enemy;\n\n    void OnEnable()  => enemy.OnDeath += HandleDeath;\n    void OnDisable() => enemy.OnDeath -= HandleDeath;\n\n    void HandleDeath()\n    {\n        Debug.Log(\"¡Logro desbloqueado!\");\n    }\n}",
+      "alternateAnswers": [
+        "public class AchievementUI : MonoBehaviour\n{\n    [SerializeField] private Enemy enemy;\n    void OnEnable() { enemy.OnDeath += HandleDeath; }\n    void OnDisable() { enemy.OnDeath -= HandleDeath; }\n    void HandleDeath() => Debug.Log(\"¡Logro desbloqueado!\");\n}"
+      ],
+      "placeholder": "Escribe la clase completa...",
+      "hints": [
+        "El patrón subscriber siempre tiene: referencia al publisher, OnEnable con +=, OnDisable con -=, y el método handler.",
+        "El tipo del handler debe coincidir con la firma del evento (System.Action = void sin parámetros).",
+        "Usa [SerializeField] para exponer la referencia al Inspector sin hacerla public."
+      ],
+      "explanation": "El patrón completo de <strong>subscriber</strong> en Unity incluye: campo serializado para el <strong>publisher</strong>, suscripción en <strong><code>OnEnable</code></strong>, desuscripción en <strong><code>OnDisable</code></strong>, y el método handler con la firma correcta. Este patrón evita fugas de memoria y errores de referencias colgantes."
+    }
+  ]
+}

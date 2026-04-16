@@ -1,0 +1,368 @@
+{
+  "id": "poco",
+  "title": "Clases Normales y POCO",
+  "icon": "🏗️",
+  "color": "#5C6BC0",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un POCO?",
+        "type": "definition",
+        "content": "Un <strong>POCO</strong> (Plain Old C# Object) es una clase C# que <strong>no hereda de MonoBehaviour</strong> ni de ninguna clase de Unity. Es una clase pura que solo contiene datos y lógica de negocio. Ejemplo: <code>public class PlayerStats { public int health; public float speed; }</code>. Un <strong>POCO</strong> se instancia con <code>new PlayerStats()</code> como cualquier objeto de C# estándar, sin necesidad de un <strong>GameObject</strong> en la escena."
+      },
+      {
+        "id": "doc-2",
+        "title": "POCO vs MonoBehaviour",
+        "type": "code",
+        "content": "// ❌ Anti-patrón: lógica de daño dentro de MonoBehaviour\npublic class EnemyBad : MonoBehaviour\n{\n    public int health = 100;\n    public int armor = 20;\n\n    // Esta lógica NO necesita MonoBehaviour\n    public int CalculateDamage(int rawDamage, bool isCritical)\n    {\n        float multiplier = isCritical ? 2.0f : 1.0f;\n        return Mathf.Max(0, (int)(rawDamage * multiplier) - armor);\n    }\n}\n\n// ✅ Patrón correcto: lógica en POCO + MonoBehaviour como fachada\npublic class DamageCalculator   // POCO puro\n{\n    public int armor;\n    public DamageCalculator(int armor) { this.armor = armor; }\n\n    public int Calculate(int rawDamage, bool isCritical)\n    {\n        float multiplier = isCritical ? 2.0f : 1.0f;\n        return Mathf.Max(0, (int)(rawDamage * multiplier) - armor);\n    }\n}\n\npublic class Enemy : MonoBehaviour   // Solo coordinación Unity\n{\n    public int health = 100;\n    private DamageCalculator _calc = new DamageCalculator(20);\n\n    public void TakeDamage(int raw, bool crit)\n    {\n        health -= _calc.Calculate(raw, crit);\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Ventajas del POCO para Testing",
+        "type": "analogy",
+        "content": "Imagina que quieres probar que tu fórmula de daño funciona correctamente. Si la lógica está en un <strong>MonoBehaviour</strong>, necesitas cargar Unity, crear una escena y un <strong>GameObject</strong> solo para correr el test. Con un <strong>POCO</strong>, puedes escribir: <code>var calc = new DamageCalculator(20); Assert.AreEqual(30, calc.Calculate(50, false));</code>. El test corre instantáneamente sin Unity. Esto se llama <strong>unit testing</strong> y es imposible de forma práctica si toda tu lógica vive en <strong>MonoBehaviour</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Cuándo NO heredar de MonoBehaviour",
+        "type": "note",
+        "content": "No necesitas <strong>MonoBehaviour</strong> cuando la clase: (1) solo contiene datos (<code>ItemData</code>, <code>QuestInfo</code>), (2) realiza cálculos puros como fórmulas de daño o IA de pathfinding, (3) representa un modelo de dominio como <code>PlayerStats</code>, <code>Inventory</code> o <code>QuestState</code>, o (4) va a ser probada con <strong>unit tests</strong>. Heredar de <strong>MonoBehaviour</strong> cuando no es necesario agrega overhead de memoria, impide usar <code>new</code>, y acopla innecesariamente tu lógica al ciclo de vida de Unity (<code>Start</code>, <code>Update</code>, etc.)."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de POCO",
+        "type": "list",
+        "items": [
+          "Un POCO no hereda de MonoBehaviour ni requiere un GameObject para existir.",
+          "Se instancia con new MiClase() como cualquier objeto C# normal.",
+          "Ideal para modelos de datos: ItemData, PlayerStats, QuestInfo.",
+          "Facilita el unit testing porque no depende del ciclo de vida de Unity.",
+          "Separar lógica en POCO reduce el acoplamiento con el motor.",
+          "MonoBehaviour debe actuar como fachada que conecta los POCO con Unity."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "poco_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué significa el acrónimo **POCO** en el contexto de C# y Unity?",
+      "options": [
+        "Plain Old C# Object — una clase C# que no hereda de MonoBehaviour.",
+        "Partially Organized Component Object — un componente de Unity simplificado.",
+        "Pure Object-Oriented C# Output — resultado de compilar clases abstractas.",
+        "Prefab Object with Custom Operations — un prefab con scripts personalizados.",
+        "Pooled C# Object — un objeto reutilizable del sistema de Object Pooling."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>POCO</strong> significa <strong>Plain Old C# Object</strong>: una clase C# estándar sin herencia de <code>MonoBehaviour</code> ni dependencias de Unity. Representa objetos de datos o lógica pura, instanciables con <code>new MiClase()</code>."
+    },
+    {
+      "id": "poco_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cómo se instancia un **POCO** llamado `PlayerStats` en C#?",
+      "options": [
+        "var stats = new PlayerStats();",
+        "var stats = Instantiate(PlayerStats);",
+        "var stats = GameObject.AddComponent<PlayerStats>();",
+        "var stats = FindObjectOfType<PlayerStats>();",
+        "var stats = ScriptableObject.CreateInstance<PlayerStats>();"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>POCO</strong> se instancia con <code>new PlayerStats()</code>, igual que cualquier clase C# estándar. Los métodos <code>Instantiate</code>, <code>AddComponent</code> y <code>FindObjectOfType</code> son exclusivos de <code>MonoBehaviour</code> y <strong>GameObjects</strong>."
+    },
+    {
+      "id": "poco_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Tienes un `MonoBehaviour` con 400 líneas que calcula daño, gestiona stats y controla animaciones. ¿Qué código deberías mover primero a un **POCO**?",
+      "options": [
+        "La lógica de cálculo de daño, ya que no necesita acceso a Transform ni a componentes de Unity.",
+        "El método Update(), porque es el más largo y causa más problemas.",
+        "Las referencias a otros GameObjects, porque no deberían estar en MonoBehaviour.",
+        "El método Start(), porque la inicialización pertenece a clases separadas.",
+        "Las variables públicas, porque los POCO solo pueden tener variables privadas."
+      ],
+      "correctIndex": 0,
+      "explanation": "La lógica de cálculo de daño (fórmulas matemáticas, modificadores) no depende de Unity. Es el candidato ideal para extraer a un <strong>POCO</strong>: se puede probar con <strong>unit tests</strong> y no necesita <code>Transform</code>, <code>Collider</code> ni ningún componente del motor."
+    },
+    {
+      "id": "poco_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estas clases es un **POCO** válido para representar un ítem de inventario en un RPG?",
+      "options": [
+        "public class Item { public string name; public int value; public float weight; }",
+        "public class Item : MonoBehaviour { public string name; public int value; }",
+        "public class Item : ScriptableObject { public string name; }",
+        "public class Item : Component { public int value; }",
+        "public class Item : Behaviour { public float weight; }"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>POCO</strong> correcto es la clase que <strong>no hereda de nada</strong> de Unity. Las otras opciones heredan de <code>MonoBehaviour</code>, <code>ScriptableObject</code>, <code>Component</code> o <code>Behaviour</code>, lo que las convierte en tipos de Unity con overhead adicional."
+    },
+    {
+      "id": "poco_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué los **POCO** facilitan el **unit testing** en proyectos Unity?",
+      "options": [
+        "Porque no dependen del ciclo de vida de Unity y pueden instanciarse con new en cualquier entorno de prueba.",
+        "Porque Unity Test Runner solo acepta clases que no hereden de MonoBehaviour.",
+        "Porque los POCO se compilan más rápido que los MonoBehaviour.",
+        "Porque los POCO tienen acceso directo a los sistemas de física de Unity.",
+        "Porque MonoBehaviour está deprecado y no soporta Assert de NUnit."
+      ],
+      "correctIndex": 0,
+      "explanation": "Los <strong>POCO</strong> no necesitan una escena, un <strong>GameObject</strong> ni el ciclo de vida de Unity (<code>Start</code>/<code>Update</code>) para funcionar. Puedes crear una instancia con <code>new</code> directamente en el test y verificar su comportamiento sin inicializar Unity."
+    },
+    {
+      "id": "poco_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En el patrón **POCO** + **MonoBehaviour como fachada**, ¿cuál es el rol del MonoBehaviour?",
+      "options": [
+        "Actúa como fachada que conecta la lógica pura del POCO con el sistema de Unity (Input, Physics, Rendering).",
+        "Contiene toda la lógica del juego para mantener el código centralizado.",
+        "Reemplaza al POCO cuando la clase necesita más de 5 métodos.",
+        "Es el único lugar donde se pueden declarar variables públicas en Unity.",
+        "Gestiona la serialización JSON de los datos del POCO."
+      ],
+      "correctIndex": 0,
+      "explanation": "El patrón correcto convierte al <strong>MonoBehaviour</strong> en una <strong>fachada</strong> liviana: delega la lógica de negocio al <strong>POCO</strong> y solo se encarga de recibir eventos de Unity (<code>OnCollisionEnter</code>, <code>Update</code>) y traducirlos en llamadas al <strong>POCO</strong>."
+    },
+    {
+      "id": "poco_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es el problema concreto de tener lógica de cálculo de stats (fuerza, defensa, velocidad) directamente en un `MonoBehaviour` en lugar de en un **POCO**?",
+      "options": [
+        "No se puede probar la lógica de stats sin crear una escena de Unity, lo que hace los tests lentos y frágiles.",
+        "Los MonoBehaviour no pueden tener variables de tipo float para stats.",
+        "Unity destruye automáticamente las variables de stats al cambiar de escena.",
+        "Los cálculos de stats son demasiado pesados para ejecutarse en Update().",
+        "Los MonoBehaviour no pueden tener más de 10 variables de stats sin degradación de rendimiento."
+      ],
+      "correctIndex": 0,
+      "explanation": "La penalización real es de <strong>testeabilidad</strong>: para probar una fórmula de stats en un <code>MonoBehaviour</code> necesitas el contexto completo de Unity. Con un <strong>POCO</strong> de stats, escribes <code>new StatsCalculator().Compute(str, def)</code> y el test corre sin Unity en milisegundos."
+    },
+    {
+      "id": "poco_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Tu juego RPG tiene una clase `QuestManager : MonoBehaviour` con 600 líneas que maneja: estado de quests, lógica de progresión, recompensas y persistencia. Según el principio de responsabilidad única, ¿cuál sería la mejor refactorización?",
+      "options": [
+        "Crear POCOs separados: QuestState, ProgressionLogic, RewardCalculator; y un QuestFacade : MonoBehaviour que los coordina.",
+        "Dividir el MonoBehaviour en dos: QuestManagerA y QuestManagerB de 300 líneas cada uno.",
+        "Mover toda la lógica a un ScriptableObject para que sea accesible desde cualquier escena.",
+        "Usar herencia: crear QuestManagerBase y heredar QuestManagerFull con las 600 líneas.",
+        "Convertir todas las funciones privadas en públicas para facilitar el acceso desde otros scripts."
+      ],
+      "correctIndex": 0,
+      "explanation": "La solución correcta aplica el principio de responsabilidad única: cada <strong>POCO</strong> tiene una sola razón de cambio. <code>QuestFacade : MonoBehaviour</code> solo coordina y conecta con Unity. Dividir en dos <code>MonoBehaviour</code> no soluciona el acoplamiento con Unity ni mejora el testing."
+    },
+    {
+      "id": "poco_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "question": "¿Cómo se llama el patrón en que un MonoBehaviour delega toda la lógica de negocio a clases C# puras y solo actúa como intermediario con Unity?",
+      "target": "fachada",
+      "acceptedAnswers": ["fachada", "façade", "facade", "patron fachada", "patrón fachada", "MonoBehaviour como fachada"],
+      "hints": [
+        "En arquitectura de software, una 'fachada' es una interfaz simplificada que oculta la complejidad interna.",
+        "El MonoBehaviour recibe eventos de Unity y los delega a clases puras sin lógica propia.",
+        "La palabra viene del francés y significa 'frente de edificio'. En inglés se escribe façade o facade."
+      ],
+      "explanation": "El patrón <strong>fachada</strong> (<strong>façade</strong>) convierte al <code>MonoBehaviour</code> en un coordinador liviano. Recibe los eventos de Unity (<code>Update</code>, <code>OnCollisionEnter</code>) y los traduce en llamadas a <strong>POCOs</strong> que contienen la lógica real."
+    },
+    {
+      "id": "poco_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código:",
+      "code": "public class DamageFormula\n{\n    private int _baseDamage;\n    public DamageFormula(int base) { _baseDamage = base; }\n    public int Apply(float multiplier) => (int)(_baseDamage * multiplier);\n}",
+      "question": "¿Esta clase es un POCO o un MonoBehaviour? Responde solo con el tipo.",
+      "target": "POCO",
+      "acceptedAnswers": ["POCO", "poco", "Plain Old C# Object", "clase POCO"],
+      "hints": [
+        "Observa la declaración de la clase: ¿de qué hereda?",
+        "Si no hereda de MonoBehaviour ni de ninguna clase de Unity, es un tipo de clase C# puro.",
+        "Se puede instanciar con new DamageFormula(10) sin necesitar un GameObject."
+      ],
+      "explanation": "Es un <strong>POCO</strong>: no hereda de <code>MonoBehaviour</code> ni de ninguna clase de Unity. Se instancia con <code>new DamageFormula(10)</code> y puede usarse en pruebas unitarias sin contexto de Unity."
+    },
+    {
+      "id": "poco_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento:",
+      "code": "public class WeaponHandler : MonoBehaviour\n{\n    [SerializeField] private int _baseDamage = 25;\n    [SerializeField] private float _critChance = 0.15f;\n\n    public int Fire(bool isCrit)\n    {\n        float mult = isCrit ? 2.5f : 1.0f;\n        return (int)(_baseDamage * mult);\n    }\n}",
+      "question": "¿Qué método debería moverse a un POCO para desacoplar la lógica de Unity?",
+      "target": "Fire",
+      "acceptedAnswers": ["Fire", "el método Fire", "Fire(bool isCrit)", "método Fire"],
+      "hints": [
+        "Busca el método que solo hace cálculos matemáticos sin usar ninguna API de Unity.",
+        "¿Algún método usa Transform, Physics, Debug.Log u otras clases de Unity?",
+        "El método que solo multiplica números es candidato ideal para extraer a un POCO."
+      ],
+      "explanation": "El método <strong><code>Fire</code></strong> solo realiza un cálculo matemático: no necesita <code>Transform</code>, <code>Physics</code> ni ningún sistema de Unity. Extraerlo a un <strong>POCO</strong> como <code>DamageCalculator</code> permite testearlo con <code>Assert.AreEqual(62, calc.Fire(true))</code>."
+    },
+    {
+      "id": "poco_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "question": "En el contexto de testing, ¿qué tipo de prueba puedes escribir fácilmente para un POCO pero NO para un MonoBehaviour que depende de la escena de Unity?",
+      "target": "unit test",
+      "acceptedAnswers": ["unit test", "unit testing", "prueba unitaria", "test unitario", "pruebas unitarias"],
+      "hints": [
+        "Es un tipo de prueba que verifica una sola unidad de código de forma aislada.",
+        "En inglés se llama 'unit test' y en español 'prueba unitaria'.",
+        "No requiere base de datos, red, ni en este caso: Unity y una escena cargada."
+      ],
+      "explanation": "Un <strong>unit test</strong> (prueba unitaria) verifica una función o clase de forma aislada. Los <strong>POCO</strong> son perfectos para esto: se instancian con <code>new</code> sin Unity. Los <code>MonoBehaviour</code> requieren la infraestructura completa del motor para inicializarse."
+    },
+    {
+      "id": "poco_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este inventario:",
+      "code": "public class Inventory\n{\n    private List<Item> _items = new List<Item>();\n\n    public void Add(Item item) => _items.Add(item);\n    public bool Remove(Item item) => _items.Remove(item);\n    public int Count => _items.Count;\n}",
+      "question": "¿Esta clase Inventory necesita heredar de MonoBehaviour para funcionar en un juego Unity?",
+      "target": "No",
+      "acceptedAnswers": ["No", "no", "No necesita", "no necesita", "no necesita heredar"],
+      "hints": [
+        "Analiza si algún método usa APIs de Unity como Debug.Log, Physics, Input o Transform.",
+        "Los POCO pueden perfectamente gestionar listas de datos sin necesidad de Unity.",
+        "Un MonoBehaviour de 'contenedor' solo agrega overhead innecesario."
+      ],
+      "explanation": "<strong>No</strong> necesita heredar de <code>MonoBehaviour</code>. Esta clase <strong>POCO</strong> de inventario solo gestiona una lista en memoria: no accede a física, input ni rendering. Un <code>MonoBehaviour</code> que necesite el inventario simplemente declara <code>private Inventory _inv = new Inventory();</code>."
+    },
+    {
+      "id": "poco_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Dado este MonoBehaviour:",
+      "code": "public class EnemyAI : MonoBehaviour\n{\n    public float health = 100f;\n    public float armor = 15f;\n\n    // Calcula daño final considerando armadura y resistencias\n    public float ComputeFinalDamage(float raw, float piercing)\n    {\n        float effective = Mathf.Max(0f, armor - piercing);\n        return Mathf.Max(1f, raw - effective);\n    }\n\n    void Update() { /* mover al objetivo */ }\n}",
+      "question": "¿Cuál es el nombre del principio de diseño que motiva extraer ComputeFinalDamage a un POCO separado?",
+      "target": "responsabilidad única",
+      "acceptedAnswers": ["responsabilidad única", "single responsibility", "SRP", "principio de responsabilidad única", "single responsibility principle"],
+      "hints": [
+        "Es uno de los principios SOLID de diseño orientado a objetos.",
+        "Su nombre describe que cada clase debe tener solo un motivo para cambiar.",
+        "En inglés es 'Single Responsibility Principle' y su sigla es SRP."
+      ],
+      "explanation": "El <strong>principio de responsabilidad única</strong> (SRP — Single Responsibility Principle) establece que una clase debe tener solo un motivo para cambiar. <code>EnemyAI</code> mezcla movimiento Unity y lógica de daño: son dos responsabilidades distintas que deben separarse."
+    },
+    {
+      "id": "poco_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la instanciación del POCO `DamageCalculator` con `armor = 20` dentro de un MonoBehaviour:",
+      "codeTemplate": "public class EnemyFacade : MonoBehaviour\n{\n    private DamageCalculator _calc = new __________;\n}",
+      "expectedAnswer": "DamageCalculator(20)",
+      "alternateAnswers": ["DamageCalculator(armor: 20)"],
+      "placeholder": "Escribe el constructor del POCO...",
+      "hints": [
+        "Los POCO se instancian con new NombreClase(argumentos).",
+        "El constructor de DamageCalculator recibe el valor de armor como parámetro.",
+        "Necesitas pasar el valor 20 al constructor."
+      ],
+      "explanation": "Un <strong>POCO</strong> se instancia con <code>new DamageCalculator(20)</code>. No necesitas <code>AddComponent</code> ni <code>Instantiate</code>. El <code>MonoBehaviour</code> guarda la referencia en un campo privado para usarla en sus métodos."
+    },
+    {
+      "id": "poco_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración del POCO `PlayerStats` que NO hereda de ninguna clase de Unity:",
+      "codeTemplate": "public class PlayerStats\n{\n    public int health;\n    public float speed;\n    public __________\n}",
+      "expectedAnswer": "int level;",
+      "alternateAnswers": ["int level", "float stamina;", "string name;"],
+      "placeholder": "Agrega un campo más al POCO...",
+      "hints": [
+        "Un POCO es una clase C# sin herencia de Unity. Solo necesita campos y métodos normales.",
+        "Puedes agregar cualquier campo de tipo int, float, string, etc.",
+        "No escribas : MonoBehaviour ni ninguna herencia de Unity."
+      ],
+      "explanation": "Un <strong>POCO</strong> como <code>PlayerStats</code> solo contiene campos y métodos C# puros. Cualquier campo (<code>int level</code>, <code>float stamina</code>) es válido. Lo importante es la <strong>ausencia</strong> de herencia de Unity."
+    },
+    {
+      "id": "poco_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el POCO completo `HealFormula` con un campo `bonusHeal` (int) y un método `Apply(int baseHeal)` que retorna `baseHeal + bonusHeal`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class HealFormula { public int bonusHeal; public int Apply(int baseHeal) { return baseHeal + bonusHeal; } }",
+      "alternateAnswers": [
+        "public class HealFormula\n{\n    public int bonusHeal;\n    public int Apply(int baseHeal) => baseHeal + bonusHeal;\n}",
+        "public class HealFormula { public int bonusHeal; public int Apply(int baseHeal) => baseHeal + bonusHeal; }"
+      ],
+      "placeholder": "Escribe el POCO completo...",
+      "hints": [
+        "La clase NO debe heredar de MonoBehaviour ni de ninguna clase de Unity.",
+        "Declara el campo: public int bonusHeal;",
+        "El método Apply recibe un int y retorna la suma de baseHeal + bonusHeal."
+      ],
+      "explanation": "<code>HealFormula</code> es un <strong>POCO</strong> válido: sin herencia de Unity, campo simple y método puro. Se puede testear con <code>var f = new HealFormula { bonusHeal = 10 }; Assert.AreEqual(30, f.Apply(20));</code> sin necesitar Unity."
+    },
+    {
+      "id": "poco_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el MonoBehaviour `WeaponFacade` para usar el POCO `DamageCalculator` al recibir daño:",
+      "codeTemplate": "public class WeaponFacade : MonoBehaviour\n{\n    private DamageCalculator _calc = new DamageCalculator(10);\n\n    void OnHit(int rawDamage)\n    {\n        int final = _calc.__________;\n        Debug.Log(\"Daño final: \" + final);\n    }\n}",
+      "expectedAnswer": "Calculate(rawDamage)",
+      "alternateAnswers": ["Calculate(rawDamage, false)", "Compute(rawDamage)"],
+      "placeholder": "Llama al método del POCO...",
+      "hints": [
+        "El POCO DamageCalculator tiene un método llamado Calculate.",
+        "Pásale el parámetro rawDamage que recibe OnHit.",
+        "Es una llamada de método normal: _calc.NombreMetodo(argumento)."
+      ],
+      "explanation": "El <strong>MonoBehaviour</strong> actúa como <strong>fachada</strong>: recibe el evento de Unity y delega el cálculo al <strong>POCO</strong> con <code>_calc.Calculate(rawDamage)</code>. El <code>MonoBehaviour</code> no hace el cálculo, solo coordina."
+    },
+    {
+      "id": "poco_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Refactoriza este MonoBehaviour extrayendo la lógica de puntuación a un POCO `ScoreTracker`. Escribe solo la clase POCO con los campos `score` (int) y `multiplier` (float), y el método `AddPoints(int pts)` que suma `pts * multiplier` a `score`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class ScoreTracker { public int score; public float multiplier = 1f; public void AddPoints(int pts) { score += (int)(pts * multiplier); } }",
+      "alternateAnswers": [
+        "public class ScoreTracker\n{\n    public int score;\n    public float multiplier = 1f;\n    public void AddPoints(int pts)\n    {\n        score += (int)(pts * multiplier);\n    }\n}"
+      ],
+      "placeholder": "Escribe el POCO ScoreTracker completo...",
+      "hints": [
+        "La clase no hereda de MonoBehaviour. Declara los dos campos: int score y float multiplier.",
+        "El método AddPoints recibe un int pts y suma (int)(pts * multiplier) al campo score.",
+        "Usa (int) para el cast del resultado del float a int."
+      ],
+      "explanation": "<code>ScoreTracker</code> es un <strong>POCO</strong> puro. El cast <code>(int)(pts * multiplier)</code> trunca el resultado a entero. Ahora el <code>MonoBehaviour</code> puede ser: <code>private ScoreTracker _tracker = new ScoreTracker(); void OnEnemyKilled(int pts) { _tracker.AddPoints(pts); }</code>"
+    },
+    {
+      "id": "poco_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa el unit test para el POCO `DamageCalculator` que verifica que con armor=10 y rawDamage=50 el resultado es 40:",
+      "codeTemplate": "// NUnit test — no requiere Unity\n[Test]\npublic void DamageCalculator_ReducesDamageByArmor()\n{\n    var calc = new DamageCalculator(10);\n    int result = calc.Calculate(50);\n    Assert.AreEqual(__________, result);\n}",
+      "expectedAnswer": "40",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el valor esperado...",
+      "hints": [
+        "El cálculo es rawDamage - armor = 50 - 10.",
+        "armor=10, rawDamage=50, resultado esperado es la diferencia.",
+        "50 - 10 = ?"
+      ],
+      "explanation": "<code>Assert.AreEqual(40, result)</code> verifica que <code>50 - 10 = 40</code>. Este test corre sin Unity gracias a que <code>DamageCalculator</code> es un <strong>POCO</strong> puro. Si la lógica estuviera en un <code>MonoBehaviour</code>, necesitarías el <strong>Unity Test Runner</strong> con modo Play, lo que es mucho más lento."
+    }
+  ]
+}

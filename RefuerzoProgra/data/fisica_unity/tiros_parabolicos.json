@@ -1,0 +1,381 @@
+{
+  "id": "tiros_parabolicos",
+  "title": "Tiros Parabólicos",
+  "icon": "🏹",
+  "color": "#FB8C00",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Tiro Parabólico?",
+        "type": "definition",
+        "content": "Un tiro parabólico es el movimiento de un proyectil lanzado con una velocidad inicial que tiene componentes horizontal y vertical. La componente horizontal (<strong>vx</strong>) es constante (no hay fricción del aire en la física básica), mientras que la componente vertical (<strong>vy</strong>) cambia debido a la gravedad. En Unity, si usas un <strong>Rigidbody</strong> con gravedad activada y aplicas una velocidad inicial, el motor calcula la parábola automáticamente."
+      },
+      {
+        "id": "doc-2",
+        "title": "Descomponer la Velocidad Inicial",
+        "type": "code",
+        "content": "// Lanzar un proyectil con ángulo y velocidad inicial\npublic float velocidadInicial = 20f;\npublic float anguloGrados = 45f;\n\nvoid Disparar()\n{\n    float angRad = anguloGrados * Mathf.Deg2Rad;  // convertir a radianes\n    float vx = velocidadInicial * Mathf.Cos(angRad); // componente horizontal\n    float vy = velocidadInicial * Mathf.Sin(angRad); // componente vertical\n\n    Rigidbody rb = proyectil.GetComponent<Rigidbody>();\n    rb.velocity = new Vector3(0, vy, vx); // en el plano Z (hacia adelante) y Y (arriba)\n}\n\n// Alternativamente con AddForce e Impulse\nrb.AddForce(new Vector3(0, vy, vx), ForceMode.VelocityChange);"
+      },
+      {
+        "id": "doc-3",
+        "title": "Fórmulas de Tiro Parabólico",
+        "type": "note",
+        "content": "Las fórmulas clave son: <br/><strong>vx = v₀ · cos(θ)</strong> — velocidad horizontal constante <br/><strong>vy = v₀ · sin(θ)</strong> — velocidad vertical inicial <br/><strong>Tiempo de vuelo: t = 2·vy / g</strong> (cuando el suelo está al mismo nivel) <br/><strong>Alcance: R = vx · t = v₀² · sin(2θ) / g</strong> <br/><strong>Altura máxima: h = vy² / (2·g)</strong> <br/>El ángulo de <strong>45°</strong> maximiza el alcance horizontal. En Unity, <code>g = 9.81 m/s²</code> por defecto (configurable en Physics Settings)."
+      },
+      {
+        "id": "doc-4",
+        "title": "Proyectil en Unity con Rigidbody",
+        "type": "code",
+        "content": "public class BalaDeCañon : MonoBehaviour\n{\n    public float velocidad = 25f;\n    public float angulo = 45f;\n    Rigidbody rb;\n\n    void Start()\n    {\n        rb = GetComponent<Rigidbody>();\n        float rad = angulo * Mathf.Deg2Rad;\n        // Aplicar velocidad inicial: la gravedad hará el resto\n        rb.velocity = new Vector3(0f, velocidad * Mathf.Sin(rad), velocidad * Mathf.Cos(rad));\n    }\n\n    void OnCollisionEnter(Collision col)\n    {\n        // Explotar al impactar\n        Instantiate(explosion, transform.position, Quaternion.identity);\n        Destroy(gameObject);\n    }\n}"
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave del Tiro Parabólico",
+        "type": "list",
+        "items": [
+          "El eje afectado por la gravedad en Unity es el eje Y (vertical).",
+          "vx = v₀ · cos(θ) permanece constante durante todo el vuelo.",
+          "vy = v₀ · sin(θ) decrece por la gravedad hasta cero (punto más alto) y luego aumenta negativamente.",
+          "Para convertir grados a radianes en C#: usa Mathf.Deg2Rad o multiplica por (Mathf.PI / 180).",
+          "El ángulo de 45° da el máximo alcance cuando el suelo está al mismo nivel del punto de lanzamiento.",
+          "La trayectoria parabólica con Rigidbody es automática: solo necesitas asignar rb.velocity inicial."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "tp_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Al descomponer la velocidad inicial de un proyectil lanzado con ángulo θ, ¿qué fórmula da la componente horizontal (vx)?",
+      "options": [
+        "vx = v₀ · cos(θ)",
+        "vx = v₀ · sin(θ)",
+        "vx = v₀ · tan(θ)",
+        "vx = v₀ / cos(θ)",
+        "vx = v₀²· cos(θ)"
+      ],
+      "correctIndex": 0,
+      "explanation": "La componente horizontal se obtiene con el <strong>coseno</strong> del ángulo: <strong>vx = v₀ · cos(θ)</strong>. Recuerda: el coseno da el lado 'adyacente' en el triángulo rectángulo, que corresponde al eje horizontal. El seno da la componente vertical (vy)."
+    },
+    {
+      "id": "tp_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es el eje afectado por la gravedad en Unity (donde vy cambia durante el vuelo de un proyectil)?",
+      "options": [
+        "El eje Y (vertical)",
+        "El eje X (horizontal derecha/izquierda)",
+        "El eje Z (profundidad)",
+        "Los ejes X y Z simultáneamente",
+        "Depende de la orientación del objeto, puede ser cualquier eje"
+      ],
+      "correctIndex": 0,
+      "explanation": "En Unity, la gravedad actúa sobre el <strong>eje Y</strong> (0, -9.81, 0) por defecto. Durante un tiro parabólico, la componente vertical <strong>vy</strong> (en el eje Y) decrece continuamente por efecto de la gravedad, mientras que <strong>vx</strong> (en Z o X según la dirección de lanzamiento) permanece constante."
+    },
+    {
+      "id": "tp_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Con qué ángulo de lanzamiento se obtiene el **máximo alcance horizontal** en un tiro parabólico (cuando el punto de lanzamiento y de caída están a la misma altura)?",
+      "options": [
+        "45°",
+        "30°",
+        "60°",
+        "90°",
+        "0°"
+      ],
+      "correctIndex": 0,
+      "explanation": "El ángulo de <strong>45°</strong> maximiza el alcance horizontal porque equilibra las componentes horizontal y vertical. A 45°, sin(2·45°) = sin(90°) = 1, que es su valor máximo en la fórmula R = v₀² · sin(2θ) / g. A 90° el proyectil sube verticalmente y cae en el mismo lugar."
+    },
+    {
+      "id": "tp_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué función de Unity convierte un ángulo en grados a radianes para usar con `Mathf.Sin` y `Mathf.Cos`?",
+      "options": [
+        "Multiplicar por Mathf.Deg2Rad",
+        "Multiplicar por Mathf.Rad2Deg",
+        "Usar Mathf.ToRadians(angulo)",
+        "Dividir entre Mathf.PI",
+        "Usar Convert.ToRadians(angulo)"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Mathf.Deg2Rad</code> es una constante (≈ 0.01745) que convierte grados a radianes al multiplicar: <code>float rad = grados * Mathf.Deg2Rad</code>. Las funciones trigonométricas de Unity (<code>Mathf.Sin</code>, <code>Mathf.Cos</code>) reciben radianes, no grados, por lo que esta conversión es obligatoria."
+    },
+    {
+      "id": "tp_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un proyectil se lanza con velocidad inicial 20 m/s a 30°. ¿Cuál es su componente vertical inicial (vy) aproximada? (sin 30° = 0.5)",
+      "options": [
+        "10 m/s",
+        "17.3 m/s",
+        "20 m/s",
+        "5 m/s",
+        "14.1 m/s"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>vy = v₀ · sin(θ) = 20 · sin(30°) = 20 · 0.5 = 10 m/s</strong>. La componente vertical es 10 m/s hacia arriba. La componente horizontal sería vx = 20 · cos(30°) = 20 · 0.866 ≈ 17.3 m/s. Siempre usa sin para el eje vertical y cos para el horizontal."
+    },
+    {
+      "id": "tp_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué componente de la velocidad de un proyectil permanece **constante** durante todo el vuelo (sin resistencia del aire)?",
+      "options": [
+        "La componente horizontal (vx)",
+        "La componente vertical (vy)",
+        "La velocidad total (magnitud del vector velocidad)",
+        "Ninguna componente permanece constante",
+        "Ambas componentes permanecen constantes"
+      ],
+      "correctIndex": 0,
+      "explanation": "La componente horizontal <strong>vx</strong> permanece constante porque no hay fuerza horizontal que la modifique (sin resistencia del aire). La gravedad solo actúa verticalmente, modificando <strong>vy</strong> continuamente. Esta es la propiedad fundamental del movimiento parabólico."
+    },
+    {
+      "id": "tp_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál es la forma más correcta de lanzar una bala de cañón parabólica en Unity usando **Rigidbody**?",
+      "options": [
+        "Asignar rb.velocity con los componentes vx y vy calculados desde el ángulo, dejar que la gravedad haga el resto.",
+        "Llamar rb.AddForce en cada FixedUpdate con un vector hacia el destino calculado.",
+        "Usar transform.Translate con una trayectoria precomputada de puntos.",
+        "Desactivar la gravedad y usar Lerp entre posición inicial y final.",
+        "Usar un AnimationCurve para definir manualmente la trayectoria Y del proyectil."
+      ],
+      "correctIndex": 0,
+      "explanation": "La forma más natural y correcta es asignar <code>rb.velocity</code> con los componentes iniciales y dejar que Unity calcule la parábola automáticamente gracias a la gravedad. Esto garantiza que la física sea realista y se integre con el resto del motor (colisiones, etc.)."
+    },
+    {
+      "id": "tp_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Si quieres que un proyectil no sea afectado por la gravedad (como un laser recto), ¿qué propiedad del **Rigidbody** debes desactivar?",
+      "options": [
+        "rb.useGravity = false",
+        "rb.isKinematic = true",
+        "rb.constraints = RigidbodyConstraints.FreezePositionY",
+        "rb.drag = 0",
+        "Physics.gravity = Vector3.zero"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>rb.useGravity = false</code> desactiva la gravedad solo para ese objeto, sin afectar otros. El proyectil seguirá en línea recta con la velocidad asignada. <em>isKinematic</em> desactivaría toda la física (incluyendo colisiones físicas), que no es lo que queremos para un proyectil."
+    },
+    {
+      "id": "tp_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta fórmula de tiro parabólico:",
+      "code": "float vx = velocidadInicial * Mathf.Cos(angRad);\nfloat vy = velocidadInicial * Mathf.Sin(angRad);",
+      "question": "¿Qué función trigonométrica se usa para calcular la componente **vertical** inicial del proyectil?",
+      "target": "Sin",
+      "acceptedAnswers": ["Sin", "Mathf.Sin", "seno", "sin"],
+      "hints": [
+        "La componente vertical está relacionada con el lado 'opuesto' en el triángulo de velocidades.",
+        "Hay dos funciones trigonométricas principales: Cos y Sin.",
+        "El coseno da el horizontal, el _____ da el vertical."
+      ],
+      "explanation": "<strong>Mathf.Sin(ángulo)</strong> calcula la componente vertical inicial (<strong>vy</strong>). El seno del ángulo da la proyección sobre el eje vertical. El coseno (<code>Mathf.Cos</code>) da la proyección sobre el eje horizontal (<strong>vx</strong>)."
+    },
+    {
+      "id": "tp_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de lanzamiento:",
+      "code": "float rad = 45f * Mathf.Deg2Rad;\nfloat vx = 30f * Mathf.Cos(rad);\nfloat vy = 30f * Mathf.Sin(rad);\nrb.velocity = new Vector3(0, vy, vx);",
+      "question": "¿Cuál es el valor aproximado de `vx` y `vy` cuando el ángulo es 45° y v₀ = 30? (cos 45° = sin 45° ≈ 0.707)",
+      "target": "21.21",
+      "acceptedAnswers": ["21.21", "21.2", "≈21.21", "21", "21.21 m/s"],
+      "hints": [
+        "A 45°, el coseno y el seno son iguales (≈ 0.707).",
+        "Multiplica 30 por 0.707.",
+        "30 × 0.707 = ?"
+      ],
+      "explanation": "A 45°, <code>cos(45°) = sin(45°) ≈ 0.707</code>, por lo que <strong>vx = vy = 30 × 0.707 ≈ 21.21 m/s</strong>. Esto explica por qué 45° maximiza el alcance: las dos componentes son iguales y se equilibran perfectamente."
+    },
+    {
+      "id": "tp_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "float angRad = anguloGrados * Mathf.Deg2Rad;",
+      "question": "¿Por qué es necesario multiplicar el ángulo en grados por `Mathf.Deg2Rad` antes de usarlo en `Mathf.Sin` o `Mathf.Cos`?",
+      "target": "porque Mathf.Sin y Mathf.Cos reciben radianes, no grados",
+      "acceptedAnswers": [
+        "porque Mathf.Sin y Mathf.Cos reciben radianes, no grados",
+        "las funciones trigonométricas usan radianes",
+        "Mathf.Sin usa radianes",
+        "para convertir a radianes",
+        "porque trabajan en radianes"
+      ],
+      "hints": [
+        "Las funciones trigonométricas matemáticas operan en una unidad diferente a los grados.",
+        "Un círculo completo = 2π radianes = 360°.",
+        "Deg2Rad significa 'Degrees to Radians'."
+      ],
+      "explanation": "<code>Mathf.Sin</code> y <code>Mathf.Cos</code> esperan el ángulo en <strong>radianes</strong>, no en grados. <code>Mathf.Deg2Rad ≈ 0.01745</code> es el factor de conversión (π/180). Sin esta conversión, los resultados serían incorrectos: <code>Mathf.Sin(45)</code> daría sin(45 radianes), no sin(45°)."
+    },
+    {
+      "id": "tp_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza la fórmula del tiempo de vuelo:",
+      "code": "// Tiempo de vuelo cuando el suelo está al mismo nivel\nfloat tiempoVuelo = 2f * vy / Physics.gravity.magnitude;",
+      "question": "¿Qué valor tiene `Physics.gravity.magnitude` en Unity por defecto (en m/s²)?",
+      "target": "9.81",
+      "acceptedAnswers": ["9.81", "9.81 m/s²", "≈9.81", "9.8"],
+      "hints": [
+        "Es la aceleración gravitacional terrestre estándar.",
+        "Se expresa en metros por segundo al cuadrado.",
+        "Es un valor físico conocido mundialmente: aproximadamente 9.__ m/s²."
+      ],
+      "explanation": "La gravedad por defecto en Unity es <code>Vector3(0, -9.81, 0)</code>, por lo que <code>Physics.gravity.magnitude = 9.81 m/s²</code>. Este valor se puede cambiar en <em>Edit → Project Settings → Physics</em>. Para un planeta con menos gravedad (como la Luna = 1.62 m/s²), se modificaría ahí."
+    },
+    {
+      "id": "tp_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código de predicción de trayectoria:",
+      "code": "for (int i = 0; i < puntos; i++)\n{\n    float t = i * paso;\n    float x = vx * t;\n    float y = vy * t - 0.5f * g * t * t;\n    lineRenderer.SetPosition(i, new Vector3(0, y, x));\n}",
+      "question": "¿Qué representa el término `0.5f * g * t * t` en la fórmula de posición vertical?",
+      "target": "la caída por la gravedad",
+      "acceptedAnswers": [
+        "la caída por la gravedad",
+        "el efecto de la gravedad",
+        "la distancia caída por gravedad",
+        "desplazamiento por gravedad",
+        "½ · g · t²"
+      ],
+      "hints": [
+        "Es la segunda parte de la ecuación cinemática: y = vy·t - ½·g·t².",
+        "Corresponde al desplazamiento producido por la aceleración gravitacional.",
+        "Sin este término, el proyectil viajaría en línea recta."
+      ],
+      "explanation": "El término <strong>½·g·t²</strong> (o <code>0.5f * g * t * t</code>) representa la <strong>caída debida a la gravedad</strong>. Es la componente cinemática de la aceleración constante: cuánto cae el proyectil desde la trayectoria rectilínea en el tiempo t. Sin él, solo habría movimiento recto."
+    },
+    {
+      "id": "tp_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este fragmento de cálculo de alcance:",
+      "code": "float alcance = (velocidad * velocidad * Mathf.Sin(2 * angRad)) / Physics.gravity.magnitude;",
+      "question": "Según la fórmula, ¿qué ángulo (en grados) produce el valor máximo de `Mathf.Sin(2 * angRad)`?",
+      "target": "45",
+      "acceptedAnswers": ["45", "45°", "45 grados"],
+      "hints": [
+        "Mathf.Sin tiene su valor máximo (1.0) cuando el argumento es 90°.",
+        "Si el argumento es 2·θ = 90°, entonces θ = ?",
+        "Divide 90° entre 2."
+      ],
+      "explanation": "<code>Mathf.Sin(2θ)</code> es máximo cuando <code>2θ = 90°</code>, es decir, cuando <strong>θ = 45°</strong>. En ese punto, sin(90°) = 1, que es el valor máximo posible, maximizando el alcance R = v₀² · sin(2θ) / g. Por eso 45° es el ángulo óptimo."
+    },
+    {
+      "id": "tp_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea que convierte el ángulo en grados a radianes para usar en las funciones trigonométricas:",
+      "codeTemplate": "float angRad = anguloGrados * Mathf.__________;\n",
+      "expectedAnswer": "Deg2Rad",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la constante de conversión...",
+      "hints": [
+        "Es una constante de Mathf que convierte Degrees (grados) a Radians (radianes).",
+        "Su nombre es una abreviatura de 'Degrees to Radians'."
+      ],
+      "explanation": "<code>Mathf.Deg2Rad</code> es la constante π/180 ≈ 0.01745. Multiplicar los grados por esta constante da el equivalente en radianes, que es la unidad que usan <code>Mathf.Sin</code> y <code>Mathf.Cos</code>."
+    },
+    {
+      "id": "tp_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la expresión que calcula la componente vertical inicial (vy) de un proyectil:",
+      "codeTemplate": "float vy = velocidadInicial * Mathf.__________(angRad);\n",
+      "expectedAnswer": "Sin",
+      "alternateAnswers": ["sin"],
+      "placeholder": "Escribe la función trigonométrica correcta...",
+      "hints": [
+        "La componente vertical usa la función del 'lado opuesto'.",
+        "En un triángulo rectángulo, el eje vertical corresponde a... ¿seno o coseno?"
+      ],
+      "explanation": "<strong>Mathf.Sin(angRad)</strong> calcula la componente vertical. Regla mnemotécnica: 'Sin = vertical, Cos = horizontal'. <code>vy = v₀ · sin(θ)</code> y <code>vx = v₀ · cos(θ)</code> son las fórmulas fundamentales de la descomposición vectorial."
+    },
+    {
+      "id": "tp_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código que asigna la velocidad inicial al Rigidbody de la bala de cañón, moviéndose hacia adelante (Z) y hacia arriba (Y):",
+      "codeTemplate": "float rad = angulo * Mathf.Deg2Rad;\nfloat vx = speed * Mathf.Cos(rad);\nfloat vy = speed * Mathf.Sin(rad);\nrb.velocity = new Vector3(0, vy, __________);",
+      "expectedAnswer": "vx",
+      "alternateAnswers": ["speed * Mathf.Cos(rad)", "speed * Mathf.Cos(angulo * Mathf.Deg2Rad)"],
+      "placeholder": "Escribe la componente horizontal para el eje Z...",
+      "hints": [
+        "El eje Z es el eje de profundidad (hacia adelante) en Unity.",
+        "La componente horizontal ya fue calculada como una variable.",
+        "¿Qué variable contiene la componente horizontal?"
+      ],
+      "explanation": "El vector velocidad inicial es <code>new Vector3(0, vy, vx)</code>: sin movimiento en X, velocidad vertical en Y y velocidad horizontal en Z (hacia adelante). Unity calculará automáticamente la trayectoria parabólica gracias a la gravedad."
+    },
+    {
+      "id": "tp_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que calcula el **tiempo de vuelo** de un proyectil cuando cae al mismo nivel de donde se lanzó (usa la variable `vy` para la componente vertical y `g` para la gravedad):",
+      "codeTemplate": null,
+      "expectedAnswer": "float tiempoVuelo = 2f * vy / g;",
+      "alternateAnswers": [
+        "float tiempoVuelo = (2 * vy) / g;",
+        "float t = 2f * vy / g;"
+      ],
+      "placeholder": "Escribe la fórmula del tiempo de vuelo...",
+      "hints": [
+        "La fórmula es t = 2·vy / g.",
+        "El tiempo de vuelo es el doble del tiempo que tarda en llegar al punto más alto.",
+        "Declara una variable float llamada tiempoVuelo."
+      ],
+      "explanation": "<strong>t = 2·vy / g</strong> es la fórmula del tiempo de vuelo cuando el punto de caída está al mismo nivel que el lanzamiento. El factor 2 aparece porque el tiempo de subida es igual al tiempo de bajada (simetría parabólica). En Unity, usa <code>Physics.gravity.magnitude</code> para g."
+    },
+    {
+      "id": "tp_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el `Start` de la bala de cañón para asignar su velocidad inicial usando el ángulo y la velocidad dadas, de modo que vuele en una parábola automáticamente:",
+      "codeTemplate": "void Start()\n{\n    Rigidbody rb = GetComponent<Rigidbody>();\n    float rad = angulo * Mathf.Deg2Rad;\n    rb.__________ = new Vector3(0, speed * Mathf.Sin(rad), speed * Mathf.Cos(rad));\n}",
+      "expectedAnswer": "velocity",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad del Rigidbody para asignar la velocidad inicial...",
+      "hints": [
+        "La propiedad del Rigidbody que representa la velocidad actual es de tres letras.",
+        "Es la misma palabra en inglés que 'velocidad': velocity."
+      ],
+      "explanation": "<code>rb.velocity</code> asigna la velocidad inicial directamente. Una vez establecida, Unity aplica la gravedad en cada <strong>FixedUpdate</strong>, produciendo la trayectoria parabólica automáticamente. Es la forma más limpia de lanzar proyectiles parabólicos."
+    },
+    {
+      "id": "tp_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `Disparar` completo que: (1) instancia el prefab `proyectilPrefab` en la posición del `cañon`, (2) obtiene su Rigidbody, y (3) le asigna la velocidad inicial parabólica con `velocidad` y `angulo` variables de clase:",
+      "codeTemplate": null,
+      "expectedAnswer": "void Disparar()\n{\n    GameObject bala = Instantiate(proyectilPrefab, cañon.position, cañon.rotation);\n    Rigidbody rb = bala.GetComponent<Rigidbody>();\n    float rad = angulo * Mathf.Deg2Rad;\n    rb.velocity = new Vector3(0, velocidad * Mathf.Sin(rad), velocidad * Mathf.Cos(rad));\n}",
+      "alternateAnswers": [
+        "void Disparar() { GameObject bala = Instantiate(proyectilPrefab, cañon.position, cañon.rotation); Rigidbody rb = bala.GetComponent<Rigidbody>(); float rad = angulo * Mathf.Deg2Rad; rb.velocity = new Vector3(0, velocidad * Mathf.Sin(rad), velocidad * Mathf.Cos(rad)); }"
+      ],
+      "placeholder": "Escribe el método Disparar() completo...",
+      "hints": [
+        "Paso 1: Instantiate(prefab, posición, rotación) crea el GameObject.",
+        "Paso 2: GetComponent<Rigidbody>() en el objeto instanciado.",
+        "Paso 3: rb.velocity = new Vector3(0, v₀·sin(rad), v₀·cos(rad))."
+      ],
+      "explanation": "El flujo completo es: instanciar el proyectil, obtener su Rigidbody, calcular las componentes vx/vy desde el ángulo, y asignar rb.velocity. Unity se encarga del resto: la gravedad modifica vy en cada FixedUpdate, produciendo la trayectoria parabólica realista."
+    }
+  ]
+}

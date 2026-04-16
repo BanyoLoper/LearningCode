@@ -1,0 +1,356 @@
+{
+  "id": "fisica_exam",
+  "title": "Examen Final: Física en Unity",
+  "icon": "🎓",
+  "color": "#FF9800",
+  "documentation": {
+    "sections": []
+  },
+  "questions": [
+    {
+      "id": "fis_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué método de Unity debes aplicar fuerzas con **AddForce** para que la física sea independiente del framerate?",
+      "options": [
+        "FixedUpdate",
+        "Update",
+        "LateUpdate",
+        "Start",
+        "Awake"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FixedUpdate</strong> se ejecuta a intervalos de tiempo fijos (0.02 s por defecto), independientemente de los FPS. Aplicar <code>AddForce</code> aquí garantiza que la física sea consistente en todas las máquinas. En <strong>Update</strong> el intervalo varía con el framerate, lo que produce movimientos inconsistentes."
+    },
+    {
+      "id": "fis_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué ocurre cuando se activa **isKinematic** en un **Rigidbody**?",
+      "options": [
+        "El objeto deja de ser afectado por la gravedad y las fuerzas externas, pero puede moverse por código.",
+        "El objeto se vuelve invisible pero sigue participando en colisiones.",
+        "El objeto pasa a ser un trigger y los demás lo atraviesan.",
+        "El objeto se mueve solo por la gravedad sin responder a ninguna fuerza.",
+        "El objeto se destruye al desactivar la física."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con <strong>isKinematic = true</strong>, el motor de física no controla el objeto: la gravedad y las fuerzas no lo afectan. Sin embargo, puedes moverlo con <code>rb.MovePosition()</code> o animaciones. Es ideal para plataformas móviles o puertas controladas por código."
+    },
+    {
+      "id": "fis_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre **OnCollisionEnter** y **OnTriggerEnter**?",
+      "options": [
+        "OnCollisionEnter ocurre cuando los colliders son sólidos y se bloquean físicamente; OnTriggerEnter ocurre cuando uno tiene 'Is Trigger' activado y los objetos se atraviesan.",
+        "OnCollisionEnter solo funciona con Rigidbody kinematic; OnTriggerEnter funciona con todos.",
+        "OnTriggerEnter devuelve información de velocidad de impacto; OnCollisionEnter no.",
+        "OnCollisionEnter se llama en FixedUpdate; OnTriggerEnter se llama en Update.",
+        "No hay diferencia, son intercambiables dependiendo del nombre que prefieras."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>OnCollisionEnter</strong> se dispara cuando dos colliders sólidos se tocan y se bloquean físicamente entre sí. <strong>OnTriggerEnter</strong> se dispara cuando al menos un collider tiene <em>Is Trigger</em> activado, permitiendo que los objetos se atraviesen. Usa triggers para zonas de detección y collisions para objetos sólidos."
+    },
+    {
+      "id": "fis_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el modo **ForceMode** correcto para aplicar un impulso instantáneo de salto ignorando la masa del objeto?",
+      "options": [
+        "ForceMode.VelocityChange",
+        "ForceMode.Force",
+        "ForceMode.Impulse",
+        "ForceMode.Acceleration",
+        "ForceMode.Kinematic"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>ForceMode.VelocityChange</strong> aplica un cambio inmediato de velocidad ignorando la masa, ideal para saltos que deben sentirse iguales sin importar el peso del personaje. <em>ForceMode.Impulse</em> también es instantáneo pero sí considera la masa. <em>ForceMode.Force</em> y <em>Acceleration</em> se aplican de forma continua."
+    },
+    {
+      "id": "fis_ex_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirven los **constraints** en un **Rigidbody**?",
+      "options": [
+        "Para congelar posición o rotación en ejes específicos, evitando que la física los modifique.",
+        "Para aumentar la velocidad máxima del objeto en la dirección indicada.",
+        "Para deshabilitar todas las colisiones sin quitar el componente Rigidbody.",
+        "Para limitar la masa del Rigidbody a un valor máximo.",
+        "Para hacer que el objeto se mueva solo por restricciones de animación."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>constraints</strong> permiten 'congelar' ejes de posición o rotación. Por ejemplo, <code>RigidbodyConstraints.FreezeRotation</code> evita que la física voltee al personaje, y <code>FreezePositionY</code> impide movimiento vertical. Es muy útil en juegos 2D o personajes humanoides."
+    },
+    {
+      "id": "fis_ex_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Para qué sirve **Transform.Translate** con el parámetro **Space.Self**?",
+      "options": [
+        "Mueve el objeto en relación a su propio sistema de coordenadas local, por lo que 'adelante' siempre es hacia donde el objeto mira.",
+        "Mueve el objeto en relación al sistema de coordenadas del mundo, por lo que 'adelante' siempre es el eje Z global.",
+        "Mueve el objeto ignorando la rotación del padre en la jerarquía.",
+        "Aplica el movimiento en el espacio de la cámara principal.",
+        "Space.Self hace que el movimiento sea relativo al Rigidbody adjunto."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Space.Self</strong> usa el espacio local del objeto: el eje Z apunta hacia donde mira el objeto, X hacia su derecha e Y hacia su arriba. Con <strong>Space.World</strong>, los ejes son siempre los globales sin importar la rotación del objeto. <code>Space.Self</code> es ideal para mover un personaje en la dirección en que está orientado."
+    },
+    {
+      "id": "fis_ex_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuándo debes usar **CharacterController.Move** en lugar de un **Rigidbody** para mover un personaje?",
+      "options": [
+        "Cuando necesitas control preciso del movimiento sin que la física del motor lo afecte, como en juegos de plataformas o shooters en primera persona.",
+        "Cuando el personaje necesita reaccionar físicamente a explosiones y empujones de otros objetos.",
+        "Cuando el personaje debe acumular velocidad por la gravedad de forma realista con el motor de física.",
+        "Cuando se necesita detectar colisiones únicamente con triggers.",
+        "CharacterController.Move y Rigidbody son equivalentes; se elige por preferencia de rendimiento."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>CharacterController</strong> da al programador control total sobre el movimiento: tú calculas la gravedad, el salto y la velocidad manualmente. Es ideal para FPS y plataformas donde necesitas respuesta inmediata al input sin que la física 'interfiera'. El <strong>Rigidbody</strong> es mejor cuando el personaje debe interactuar físicamente con el entorno."
+    },
+    {
+      "id": "fis_ex_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué diferencia hay entre **Time.deltaTime** y **Time.fixedDeltaTime**?",
+      "options": [
+        "Time.deltaTime es el tiempo variable entre frames de Update; Time.fixedDeltaTime es el intervalo fijo entre llamadas a FixedUpdate.",
+        "Time.deltaTime siempre vale 0.02 s; Time.fixedDeltaTime varía según los FPS.",
+        "Ambos tienen el mismo valor pero Time.fixedDeltaTime solo funciona dentro de FixedUpdate.",
+        "Time.deltaTime solo existe en el editor; Time.fixedDeltaTime funciona en builds.",
+        "No hay diferencia práctica, se pueden intercambiar libremente."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Time.deltaTime</strong> es el tiempo transcurrido desde el último frame de <code>Update</code> y varía según los FPS. <strong>Time.fixedDeltaTime</strong> es el intervalo constante de <code>FixedUpdate</code> (0.02 s por defecto). Usa <code>Time.deltaTime</code> en <code>Update</code> y <code>Time.fixedDeltaTime</code> en <code>FixedUpdate</code> para movimientos frame-independent."
+    },
+    {
+      "id": "fis_ex_009",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de movimiento:",
+      "code": "void Update()\n{\n    transform.Translate(Vector3.forward * speed * Time.deltaTime, Space.Self);\n}",
+      "question": "¿Qué parámetro de `Space` hace que el objeto siempre se mueva hacia donde **él mismo** mira, sin importar su rotación global?",
+      "target": "Space.Self",
+      "acceptedAnswers": ["Space.Self", "Self", "space self", "Space Self"],
+      "hints": [
+        "El parámetro de Space que usa el sistema de coordenadas local del objeto.",
+        "Hay dos opciones: Space.World y Space.___.",
+        "En inglés, 'self' significa 'uno mismo'."
+      ],
+      "explanation": "<strong>Space.Self</strong> usa el espacio local del objeto: el eje Z siempre apunta hacia donde mira el objeto. Con <code>Space.World</code>, el eje Z apunta siempre al norte global sin importar la rotación. Para mover un personaje en la dirección en que está orientado, usa <code>Space.Self</code>."
+    },
+    {
+      "id": "fis_ex_010",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de movimiento suave:",
+      "code": "void Update()\n{\n    transform.position = Vector3.__________(transform.position, objetivo.position, velocidad * Time.deltaTime);\n}",
+      "question": "¿Qué función de **Vector3** avanza exactamente `velocidad * Time.deltaTime` unidades por frame y garantiza llegar al destino sin sobrepasarlo?",
+      "target": "MoveTowards",
+      "acceptedAnswers": ["MoveTowards", "Vector3.MoveTowards", "movetowards"],
+      "hints": [
+        "La función 'mueve hacia' el destino un máximo de distancia fija por frame.",
+        "Su nombre en inglés es dos palabras unidas: 'Move' + 'Towards'.",
+        "A diferencia de Lerp, esta función garantiza llegar exactamente al punto destino."
+      ],
+      "explanation": "<strong>Vector3.MoveTowards</strong> avanza desde el punto actual hacia el destino un máximo de <code>maxDistanceDelta</code> unidades. Cuando la distancia restante es menor al paso, llega exactamente al destino. Es más predecible que <code>Lerp</code> para movimientos a velocidad constante."
+    },
+    {
+      "id": "fis_ex_011",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de tiro parabólico:",
+      "code": "float vy = velocidad * Mathf.Sin(angulo * Mathf.Deg2Rad);\nfloat vz = velocidad * Mathf.Cos(angulo * Mathf.Deg2Rad);\nrb.velocity = new Vector3(0f, vy, vz);",
+      "question": "¿Qué función trigonométrica se usa para calcular la componente **vertical** (Y) de la velocidad inicial en un tiro parabólico?",
+      "target": "Mathf.Sin",
+      "acceptedAnswers": ["Mathf.Sin", "Sin", "seno", "sin", "Sine"],
+      "hints": [
+        "La componente vertical usa la función trigonométrica que vale 1 a 90 grados.",
+        "En inglés es 'Sine', abreviada como 'Sin'.",
+        "La componente horizontal usa Cos; la vertical usa ___."
+      ],
+      "explanation": "En un tiro parabólico, la <strong>componente vertical</strong> es <code>vy = v × sin(θ)</code> y la <strong>componente horizontal</strong> es <code>vz = v × cos(θ)</code>. En Unity se usa <code>Mathf.Sin(angulo * Mathf.Deg2Rad)</code> porque <code>Mathf.Sin</code> espera radianes, no grados."
+    },
+    {
+      "id": "fis_ex_012",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método de seguimiento de cámara:",
+      "code": "Vector3 camVel = Vector3.zero;\n\nvoid LateUpdate()\n{\n    transform.position = Vector3.SmoothDamp(\n        transform.position, objetivo.position,\n        ref camVel, 0.25f);\n}",
+      "question": "¿Por qué se llama este código en `LateUpdate` y no en `Update`?",
+      "target": "para que la cámara se actualice después de que el personaje se haya movido",
+      "acceptedAnswers": [
+        "para que la cámara se actualice después de que el personaje se haya movido",
+        "LateUpdate se ejecuta después de todos los Update",
+        "para evitar que la cámara se mueva antes que el personaje",
+        "la cámara debe seguir al jugador después de su movimiento en Update"
+      ],
+      "hints": [
+        "El jugador se mueve en su propio Update.",
+        "LateUpdate se llama DESPUÉS de que todos los Update del frame hayan terminado.",
+        "Si la cámara se mueve en Update, podría ejecutarse antes del Update del jugador."
+      ],
+      "explanation": "<strong>LateUpdate</strong> se ejecuta después de todos los <code>Update</code> del frame. Al colocar el seguimiento de cámara aquí, garantizamos que el personaje ya se movió (en su <code>Update</code>) antes de que la cámara actualice su posición. Esto evita el 'jitter' (temblor) de la cámara."
+    },
+    {
+      "id": "fis_ex_013",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de movimiento del personaje con CharacterController:",
+      "code": "float velocidadY = 0f;\n\nvoid Update()\n{\n    if (cc.isGrounded) velocidadY = 0f;\n    velocidadY += Physics.gravity.y * Time.deltaTime;\n    Vector3 move = new Vector3(h, velocidadY, v) * speed;\n    cc.Move(move * Time.deltaTime);\n}",
+      "question": "¿Por qué el **CharacterController** necesita que el programador calcule manualmente `velocidadY` en lugar de usar `Physics.gravity` automáticamente?",
+      "target": "porque CharacterController no usa el motor de física y no tiene gravedad automática",
+      "acceptedAnswers": [
+        "porque CharacterController no usa el motor de física y no tiene gravedad automática",
+        "CharacterController ignora la física de Unity",
+        "no tiene Rigidbody por lo que la gravedad no se aplica sola",
+        "debe calcularse manualmente porque no hay Rigidbody"
+      ],
+      "hints": [
+        "El CharacterController no tiene Rigidbody.",
+        "Sin Rigidbody, el motor de física de Unity no aplica gravedad automáticamente.",
+        "El programador debe simular la gravedad acumulando velocidad vertical."
+      ],
+      "explanation": "<strong>CharacterController</strong> no tiene <strong>Rigidbody</strong>, por lo que el motor de física no le aplica gravedad. El programador debe simular la gravedad manualmente acumulando <code>velocidadY</code> con <code>Physics.gravity.y * Time.deltaTime</code> y aplicándola cada frame con <code>cc.Move()</code>."
+    },
+    {
+      "id": "fis_ex_014",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este cálculo de tiempo de vuelo en tiro parabólico:",
+      "code": "float vy = velocidad * Mathf.Sin(angulo * Mathf.Deg2Rad);\nfloat t_subida = vy / Mathf.Abs(Physics.gravity.y);\nfloat t_vuelo = 2f * t_subida;",
+      "question": "¿Por qué el tiempo total de vuelo es el **doble** del tiempo de subida en un tiro parabólico sin resistencia del aire?",
+      "target": "porque la trayectoria es simétrica: sube y baja en el mismo tiempo",
+      "acceptedAnswers": [
+        "porque la trayectoria es simétrica",
+        "por simetría",
+        "el tiempo de bajada es igual al de subida",
+        "la trayectoria es simétrica",
+        "porque sube y baja en el mismo tiempo",
+        "porque la gravedad desacelera y acelera simétricamente"
+      ],
+      "hints": [
+        "La física del tiro parabólico es reversible en el tiempo sin rozamiento.",
+        "El proyectil llega a la altura máxima con velocidad vertical igual a cero, luego baja.",
+        "La gravedad desacelera al subir y acelera al bajar de forma simétrica."
+      ],
+      "explanation": "Sin resistencia del aire, la trayectoria parabólica es perfectamente <strong>simétrica</strong>: el tiempo que tarda en llegar a la altura máxima (donde la velocidad vertical es cero) es exactamente igual al tiempo que tarda en caer de vuelta al nivel inicial. Por eso el tiempo total de vuelo es <code>t = 2 × vy / g</code>."
+    },
+    {
+      "id": "fis_ex_015",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código que combina Update y FixedUpdate:",
+      "code": "private Vector3 inputDir;\n\nvoid Update()\n{\n    inputDir = new Vector3(Input.GetAxis(\"Horizontal\"), 0f, Input.GetAxis(\"Vertical\"));\n}\n\nvoid FixedUpdate()\n{\n    rb.AddForce(inputDir * speed);\n}",
+      "question": "¿Por qué se lee el **Input** en `Update` y se aplica la fuerza en `FixedUpdate` en lugar de hacerlo todo en un solo método?",
+      "target": "porque el input debe leerse cada frame en Update y la física debe aplicarse en FixedUpdate para ser consistente",
+      "acceptedAnswers": [
+        "porque el input debe leerse cada frame en Update y la física debe aplicarse en FixedUpdate para ser consistente",
+        "Input se puede perder en FixedUpdate porque no corre cada frame",
+        "para no perder eventos de input y mantener física consistente",
+        "el input se lee en Update para no perderse y la física va en FixedUpdate para ser consistente",
+        "porque FixedUpdate puede saltar frames y perder el input"
+      ],
+      "hints": [
+        "FixedUpdate puede llamarse más o menos veces que Update según los FPS.",
+        "Los eventos de Input se registran una vez por frame de Update.",
+        "Si Input está en FixedUpdate, podrías perder pulsaciones cortas de teclas."
+      ],
+      "explanation": "El <strong>Input</strong> se actualiza una vez por frame de <code>Update</code>. Si se leyera en <code>FixedUpdate</code>, que puede correr a diferente frecuencia, se podrían perder pulsaciones cortas. Al guardar el input en una variable y usarla en <code>FixedUpdate</code>, se obtiene lo mejor de ambos: input responsivo y física consistente."
+    },
+    {
+      "id": "fis_ex_016",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el método correcto para que el **CharacterController** `cc` aplique el vector `movimiento` al personaje con detección de colisiones:",
+      "codeTemplate": "void Update()\n{\n    Vector3 movimiento = new Vector3(h, velocidadY, v) * speed * Time.deltaTime;\n    cc.__________(movimiento);\n}",
+      "expectedAnswer": "Move",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método del CharacterController...",
+      "hints": [
+        "El método del CharacterController para aplicar movimiento tiene un nombre muy simple.",
+        "Es la palabra en inglés para 'mover', con mayúscula inicial."
+      ],
+      "explanation": "<code>CharacterController.Move()</code> recibe un <code>Vector3</code> de desplazamiento y lo aplica resolviendo colisiones automáticamente. A diferencia de <code>AddForce</code>, el programador calcula todo manualmente, lo que da control total sobre el comportamiento del personaje."
+    },
+    {
+      "id": "fis_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código para calcular la **velocidad inicial vertical** de un proyectil lanzado con ángulo `angulo` (en grados) y rapidez `speed`:",
+      "codeTemplate": "float anguloRad = angulo * Mathf.Deg2Rad;\nfloat vy = speed * Mathf.__________(anguloRad);\nfloat vz = speed * Mathf.Cos(anguloRad);\nrb.velocity = new Vector3(0f, vy, vz);",
+      "expectedAnswer": "Sin",
+      "alternateAnswers": ["Mathf.Sin"],
+      "placeholder": "Escribe la función trigonométrica para la componente vertical...",
+      "hints": [
+        "La componente vertical usa la función trigonométrica que vale 1 a 90°.",
+        "La componente horizontal usa Cos; la vertical usa ___.",
+        "Es la abreviatura de 'Sine' en inglés."
+      ],
+      "explanation": "En un tiro parabólico: <code>vy = speed × sin(θ)</code> y <code>vz = speed × cos(θ)</code>. <strong>Mathf.Sin</strong> calcula el seno del ángulo en radianes. La conversión <code>Mathf.Deg2Rad</code> es necesaria porque Unity trabaja con radianes en sus funciones trigonométricas."
+    },
+    {
+      "id": "fis_ex_018",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la interpolación esférica de rotación para que el enemigo gire gradualmente hacia `rotacionDestino` a `velocidadRot` por segundo:",
+      "codeTemplate": "void Update()\n{\n    transform.rotation = Quaternion.__________(transform.rotation, rotacionDestino, velocidadRot * Time.deltaTime);\n}",
+      "expectedAnswer": "Slerp",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la función de interpolación esférica para cuaterniones...",
+      "hints": [
+        "La interpolación esférica para cuaterniones mantiene velocidad angular constante.",
+        "Su nombre combina 'S' de Spherical con 'lerp'.",
+        "Es la versión 'esférica' de Lerp: S___."
+      ],
+      "explanation": "<strong>Quaternion.Slerp</strong> (Spherical Linear Interpolation) interpola rotaciones siguiendo el arco más corto en la esfera de cuaterniones, manteniendo velocidad angular uniforme. Es la opción correcta para rotar objetos suavemente. <code>Quaternion.Lerp</code> es más rápido pero puede producir velocidad variable en rotaciones grandes."
+    },
+    {
+      "id": "fis_ex_019",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que mueve el objeto con **Transform.Translate** hacia adelante a `velocidad * Time.deltaTime` unidades por frame, usando el **espacio local** del objeto (**Space.Self**):",
+      "codeTemplate": null,
+      "expectedAnswer": "transform.Translate(Vector3.forward * velocidad * Time.deltaTime, Space.Self);",
+      "alternateAnswers": [
+        "transform.Translate(Vector3.forward * velocidad * Time.deltaTime);",
+        "transform.Translate(new Vector3(0f, 0f, velocidad * Time.deltaTime), Space.Self);"
+      ],
+      "placeholder": "Escribe la línea completa con Translate y Space.Self...",
+      "hints": [
+        "Usa transform.Translate con dos argumentos: el vector de movimiento y el espacio.",
+        "El vector de movimiento es Vector3.forward multiplicado por velocidad y Time.deltaTime.",
+        "El espacio local se especifica con Space.Self como segundo parámetro."
+      ],
+      "explanation": "<code>transform.Translate(Vector3.forward * velocidad * Time.deltaTime, Space.Self)</code> mueve el objeto en su propia dirección forward con velocidad frame-independent. Sin el parámetro <code>Space.Self</code>, el valor por defecto también es <code>Space.Self</code>, pero es buena práctica escribirlo explícitamente para mayor claridad."
+    },
+    {
+      "id": "fis_ex_020",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método `FixedUpdate` completo que aplica un salto al **Rigidbody** `rb` cuando la variable booleana `saltando` es `true`, usando **ForceMode.VelocityChange** con magnitud `fuerzaSalto` hacia arriba, y luego pone `saltando` en `false`:",
+      "codeTemplate": null,
+      "expectedAnswer": "void FixedUpdate()\n{\n    if (saltando)\n    {\n        rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.VelocityChange);\n        saltando = false;\n    }\n}",
+      "alternateAnswers": [
+        "void FixedUpdate() { if (saltando) { rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.VelocityChange); saltando = false; } }",
+        "void FixedUpdate()\n{\n    if (saltando == true)\n    {\n        rb.AddForce(Vector3.up * fuerzaSalto, ForceMode.VelocityChange);\n        saltando = false;\n    }\n}"
+      ],
+      "placeholder": "Escribe el FixedUpdate completo con AddForce y ForceMode.VelocityChange...",
+      "hints": [
+        "El salto debe aplicarse en FixedUpdate, no en Update.",
+        "ForceMode.VelocityChange aplica el impulso ignorando la masa del objeto.",
+        "Después de aplicar la fuerza, pon saltando = false para que solo salte una vez."
+      ],
+      "explanation": "El patrón correcto para saltos: detectar el input en <code>Update</code> (poner <code>saltando = true</code>) y aplicar la fuerza en <strong>FixedUpdate</strong> para garantizar consistencia física. <code>ForceMode.VelocityChange</code> aplica el cambio de velocidad inmediatamente ignorando la masa, por lo que el salto siempre tiene la misma altura independientemente del peso del personaje."
+    }
+  ]
+}

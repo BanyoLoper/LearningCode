@@ -1,0 +1,372 @@
+{
+  "id": "action_func",
+  "title": "Action y Func",
+  "icon": "λ",
+  "color": "#7B1FA2",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Action, Func y Predicate: Delegates Genéricos",
+        "type": "definition",
+        "content": "<strong>Action</strong>, <strong>Func</strong> y <strong>Predicate</strong> son delegates genéricos predefinidos en .NET que evitan declarar tu propio tipo <strong>delegate</strong> para casos comunes. <strong>Action&lt;T&gt;</strong> encapsula un método que <em>no devuelve nada</em> (void) y puede aceptar de 0 a 16 parámetros. <strong>Func&lt;T, TResult&gt;</strong> encapsula un método que <em>sí devuelve un valor</em>; el último tipo genérico siempre es el tipo de retorno. <strong>Predicate&lt;T&gt;</strong> es un caso especial de <code>Func&lt;T, bool&gt;</code>: toma un elemento y devuelve <code>true</code> o <code>false</code>, ideal para filtros."
+      },
+      {
+        "id": "doc-2",
+        "title": "Action y Func en la Práctica",
+        "type": "code",
+        "content": "// Action: no devuelve nada\nAction saludar         = () => Debug.Log(\"Hola\");\nAction<string> gritar  = nombre => Debug.Log(\"¡\" + nombre + \"!\");\nAction<int, int> sumar = (a, b) => Debug.Log(a + b);\n\nsaludar();          // Hola\ngritar(\"Mario\");    // ¡Mario!\nsumar(3, 7);        // 10\n\n// Func: el ÚLTIMO tipo es el retorno\nFunc<int, int, int> multiplicar = (a, b) => a * b;\nFunc<string, int>   longitud    = s => s.Length;\nFunc<bool>          esMañana    = () => System.DateTime.Now.Hour < 12;\n\nint producto = multiplicar(4, 5);  // 20\nint len      = longitud(\"Unity\"); // 5\n\n// Predicate: Func<T, bool> especializado\nPredicate<int> esPar = n => n % 2 == 0;\nbool resultado = esPar(4); // true"
+      },
+      {
+        "id": "doc-3",
+        "title": "Callbacks y Corrutinas en Unity",
+        "type": "code",
+        "content": "// Patrón callback con Action: notificar cuando termina algo\npublic class AnimacionManager : MonoBehaviour\n{\n    // Recibe un callback que se llama al terminar\n    public void ReproducirAnimacion(string nombre, Action onComplete)\n    {\n        StartCoroutine(AnimarYNotificar(nombre, onComplete));\n    }\n\n    IEnumerator AnimarYNotificar(string nombre, Action onComplete)\n    {\n        Debug.Log(\"Animando: \" + nombre);\n        yield return new WaitForSeconds(1f);\n        onComplete?.Invoke(); // llama al callback al terminar\n    }\n}\n\n// Uso: pasar lambda como callback\npublic class EnemyController : MonoBehaviour\n{\n    [SerializeField] AnimacionManager anim;\n\n    void Die()\n    {\n        anim.ReproducirAnimacion(\"Muerte\", () =>\n        {\n            Debug.Log(\"Animación terminada, destruyendo objeto\");\n            Destroy(gameObject);\n        });\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "LINQ con Lambdas",
+        "type": "code",
+        "content": "using System.Linq;\n\nList<int> scores = new List<int> { 15, 42, 8, 97, 23, 55 };\n\n// Where: filtrar (usa Predicate/Func<T, bool>)\nvar altos = scores.Where(s => s > 30);\n// altos: { 42, 97, 55 }\n\n// Select: transformar (proyectar)\nvar dobles = scores.Select(s => s * 2);\n// dobles: { 30, 84, 16, 194, 46, 110 }\n\n// FirstOrDefault: primer elemento que cumple condición\nint primeroAlto = scores.FirstOrDefault(s => s > 50); // 97\n\n// OrderBy: ordenar\nvar ordenados = scores.OrderBy(s => s);\n// ordenados: { 8, 15, 23, 42, 55, 97 }\n\n// Any / All\nbool hayMayorA90 = scores.Any(s => s > 90);  // true\nbool todosPositivos = scores.All(s => s > 0); // true\n\n// Uso típico en Unity: filtrar enemigos activos\nvar vivos = FindObjectsOfType<Enemy>().Where(e => e.HP > 0).ToList();"
+      },
+      {
+        "id": "doc-5",
+        "title": "Cuándo Usar Cada Uno",
+        "type": "list",
+        "items": [
+          "Action: cuando el método no devuelve valor. Ideal para callbacks de eventos (onComplete, onDeath).",
+          "Func<T, TResult>: cuando el método devuelve un valor. El último tipo genérico es el retorno.",
+          "Predicate<T>: para condiciones de filtrado; equivale a Func<T, bool>.",
+          "Lambda (=>): forma compacta de escribir métodos anónimos asignables a delegates.",
+          "LINQ: usa lambdas internamente en Where, Select, OrderBy, FirstOrDefault, Any, All.",
+          "Ventaja sobre delegate propio: no necesitas declarar un nuevo tipo, el código es más conciso."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "af_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué tipo de retorno tiene siempre un **Action** o **Action<T>**?",
+      "options": [
+        "void — no devuelve ningún valor.",
+        "bool — devuelve true o false.",
+        "int — devuelve un entero.",
+        "El tipo especificado como último parámetro genérico.",
+        "object — devuelve cualquier tipo."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Action</strong> y <strong>Action&lt;T&gt;</strong> siempre tienen retorno <code>void</code>. Si necesitas un delegate que devuelva un valor, usa <strong>Func&lt;T, TResult&gt;</strong>, donde el último tipo genérico es el tipo de retorno."
+    },
+    {
+      "id": "af_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia principal entre **Action<T>** y **Func<T, TResult>**?",
+      "options": [
+        "Action no devuelve valor (void); Func devuelve un valor del tipo especificado como último parámetro genérico.",
+        "Action puede tener cualquier retorno; Func siempre devuelve bool.",
+        "Func no puede recibir parámetros; Action sí puede.",
+        "Action es para métodos estáticos; Func es para métodos de instancia.",
+        "No hay diferencia; son sinónimos en C#."
+      ],
+      "correctIndex": 0,
+      "explanation": "La diferencia clave: <strong>Action</strong> es para métodos <code>void</code> (no devuelven nada), mientras que <strong>Func</strong> devuelve un valor. En <code>Func&lt;int, string&gt;</code>, el último tipo (<code>string</code>) es el retorno, y los anteriores son los parámetros."
+    },
+    {
+      "id": "af_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué hace el operador **lambda** `=>` en C#?",
+      "options": [
+        "Separa los parámetros del cuerpo en una expresión lambda, definiendo un método anónimo.",
+        "Es el operador de comparación mayor o igual que.",
+        "Declara una propiedad de solo lectura.",
+        "Realiza una conversión explícita de tipos.",
+        "Es el operador de delegación entre clases base y derivadas."
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong><code>=></code></strong> define una expresión <strong>lambda</strong>: a la izquierda van los parámetros y a la derecha el cuerpo. Por ejemplo: <code>x => x * 2</code> define un método anónimo que recibe <code>x</code> y devuelve <code>x * 2</code>. Es la forma compacta de escribir métodos para asignar a delegates."
+    },
+    {
+      "id": "af_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de estas expresiones **lambda** es equivalente al método `bool EsPar(int n) { return n % 2 == 0; }`?",
+      "options": [
+        "n => n % 2 == 0",
+        "n => { n % 2 == 0 }",
+        "=> n % 2 == 0",
+        "bool n => n % 2 == 0",
+        "(n) { return n % 2 == 0 }"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>lambda</strong> equivalente es <code>n => n % 2 == 0</code>. El parámetro <code>n</code> está a la izquierda de <code>=></code> y la expresión de retorno a la derecha. En expresiones lambda de una sola línea sin llaves, el valor de la expresión se devuelve implícitamente."
+    },
+    {
+      "id": "af_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué devuelve `scores.Where(s => s > 50)` si `scores = { 20, 60, 35, 80 }`?",
+      "options": [
+        "{ 60, 80 }",
+        "{ 20, 35 }",
+        "{ 20, 60, 35, 80 }",
+        "60",
+        "true"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>LINQ</strong> <code>Where</code> filtra los elementos que cumplen la condición. La <strong>lambda</strong> <code>s => s > 50</code> devuelve <code>true</code> para 60 y 80. El resultado es una secuencia con esos dos valores: <strong>{ 60, 80 }</strong>."
+    },
+    {
+      "id": "af_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué tipo de delegate deberías usar para un **callback** `onComplete` que se pasa a una corrutina y no necesita parámetros ni retorno?",
+      "options": [
+        "Action",
+        "Func<bool>",
+        "Predicate<bool>",
+        "Func<void>",
+        "delegate()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Action</strong> (sin parámetros genéricos) representa un delegate <code>void</code> sin parámetros. Es el tipo perfecto para un <strong>callback</strong> de <code>onComplete</code>: cuando la corrutina termina, simplemente invoca <code>onComplete?.Invoke()</code>. <code>Func&lt;void&gt;</code> no existe en C# (void no es un tipo genérico válido)."
+    },
+    {
+      "id": "af_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Dado:\n```csharp\nFunc<int, int, float> calcular = (a, b) => (float)a / b;\nfloat resultado = calcular(7, 2);\n```\n¿Qué valor tiene `resultado`?",
+      "options": [
+        "3.5f",
+        "3",
+        "3.0f",
+        "0.5f",
+        "Error: Func no puede tener dos parámetros de entrada"
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Func&lt;int, int, float&gt;</code> declara un delegate que recibe dos <code>int</code> y devuelve un <code>float</code>. El último tipo genérico es siempre el retorno. La expresión <code>(float)7 / 2</code> = <strong>3.5f</strong>. Sin el cast, sería división entera: 7 / 2 = 3."
+    },
+    {
+      "id": "af_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué imprime este código?\n```csharp\nList<string> nombres = new List<string> { \"Ana\", \"Beatriz\", \"Al\", \"Carlos\" };\nvar cortos = nombres.Where(n => n.Length <= 3).ToList();\nDebug.Log(string.Join(\", \", cortos));\n```",
+      "options": [
+        "Ana, Al",
+        "Ana, Al, Carlos",
+        "Beatriz, Carlos",
+        "Ana",
+        "Al"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>lambda</strong> <code>n => n.Length <= 3</code> filtra los nombres con 3 o menos caracteres. \"Ana\" tiene 3 → pasa, \"Beatriz\" tiene 7 → no pasa, \"Al\" tiene 2 → pasa, \"Carlos\" tiene 6 → no pasa. Resultado: <strong>Ana, Al</strong>."
+    },
+    {
+      "id": "af_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta declaración:",
+      "code": "Action<string> mostrar = nombre => Debug.Log(\"Hola \" + nombre);",
+      "question": "¿Cuántos parámetros recibe la lambda asignada a `mostrar`?",
+      "target": "1",
+      "acceptedAnswers": ["1", "uno", "un parámetro"],
+      "hints": [
+        "Mira el tipo genérico de Action: Action<string> indica un parámetro de tipo string.",
+        "La lambda tiene la forma: parámetro => cuerpo.",
+        "Hay un solo nombre de parámetro antes del =>."
+      ],
+      "explanation": "<code>Action&lt;string&gt;</code> declara un delegate con <strong>1 parámetro</strong> de tipo <code>string</code> y retorno <code>void</code>. La <strong>lambda</strong> <code>nombre => Debug.Log(...)</code> tiene un solo parámetro (<code>nombre</code>), que corresponde a ese <code>string</code>."
+    },
+    {
+      "id": "af_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Func<int, int, int> potencia = (base_, exp) =>\n{\n    int resultado = 1;\n    for (int i = 0; i < exp; i++) resultado *= base_;\n    return resultado;\n};\n\nDebug.Log(potencia(3, 4));",
+      "question": "¿Qué valor imprime `Debug.Log(potencia(3, 4))`?",
+      "target": "81",
+      "acceptedAnswers": ["81"],
+      "hints": [
+        "La función calcula base elevada a la potencia exp.",
+        "3 elevado a la 4 es 3 × 3 × 3 × 3.",
+        "3 × 3 = 9, 9 × 3 = 27, 27 × 3 = ?"
+      ],
+      "explanation": "La lambda calcula <code>base_</code> elevado a <code>exp</code>: 3<sup>4</sup> = 3 × 3 × 3 × 3 = <strong>81</strong>. <code>Func&lt;int, int, int&gt;</code> indica dos parámetros <code>int</code> de entrada y un <code>int</code> de retorno (siempre el último tipo es el retorno)."
+    },
+    {
+      "id": "af_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este método con callback:",
+      "code": "public void CargarEscena(string nombre, Action onCargado)\n{\n    StartCoroutine(Cargar(nombre, onCargado));\n}\n\nIEnumerator Cargar(string nombre, Action callback)\n{\n    yield return SceneManager.LoadSceneAsync(nombre);\n    callback?.Invoke();\n}\n\n// Llamada:\nCargarEscena(\"Nivel2\", () => Debug.Log(\"¡Listo!\"));",
+      "question": "¿Qué se imprime en la consola cuando la escena termina de cargar?",
+      "target": "¡Listo!",
+      "acceptedAnswers": ["¡Listo!", "\"¡Listo!\"", "Listo"],
+      "hints": [
+        "Cuando la carga termina, se invoca el callback.",
+        "El callback es la lambda pasada al llamar a CargarEscena.",
+        "La lambda imprime el string que está dentro de Debug.Log."
+      ],
+      "explanation": "Cuando la escena termina de cargar, se ejecuta <code>callback?.Invoke()</code>, que llama a la <strong>lambda</strong> <code>() => Debug.Log(\"¡Listo!\")</code>. El resultado es que se imprime <strong>¡Listo!</strong> en la consola. Este es el patrón de <strong>callback</strong> de <code>onComplete</code> con <strong>Action</strong>."
+    },
+    {
+      "id": "af_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código LINQ:",
+      "code": "List<int> hp = new List<int> { 100, 0, 75, 0, 50 };\nbool hayMuertos = hp.Any(h => h == 0);\nDebug.Log(hayMuertos);",
+      "question": "¿Qué imprime `Debug.Log(hayMuertos)`?",
+      "target": "True",
+      "acceptedAnswers": ["True", "true"],
+      "hints": [
+        "Any devuelve true si al menos un elemento cumple la condición.",
+        "La condición es h == 0.",
+        "¿Hay algún 0 en la lista hp?"
+      ],
+      "explanation": "<code>Any(h => h == 0)</code> devuelve <code>true</code> si <em>al menos un</em> elemento es 0. La lista contiene dos ceros (índices 1 y 3), por lo que el resultado es <strong>True</strong>. En Unity, <code>Debug.Log(true)</code> imprime <code>True</code> con T mayúscula."
+    },
+    {
+      "id": "af_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código LINQ en Unity:",
+      "code": "Enemy[] todos = FindObjectsOfType<Enemy>();\nvar vivos = todos.Where(e => e.HP > 0)\n                 .OrderBy(e => e.HP)\n                 .ToList();\nDebug.Log(vivos.Count);",
+      "question": "Si existen 5 enemigos con HP: 0, 30, 0, 10, 80 — ¿qué imprime `Debug.Log(vivos.Count)`?",
+      "target": "3",
+      "acceptedAnswers": ["3"],
+      "hints": [
+        "Where filtra los que tienen HP mayor a 0.",
+        "Cuenta cuántos enemigos tienen HP > 0 en la lista {0, 30, 0, 10, 80}.",
+        "Los que tienen HP = 0 quedan excluidos."
+      ],
+      "explanation": "<code>Where(e => e.HP > 0)</code> filtra solo los enemigos con HP > 0. De la lista {0, 30, 0, 10, 80}, pasan: 30, 10 y 80 → 3 enemigos. <code>OrderBy</code> los ordena por HP pero no cambia la cantidad. <code>vivos.Count</code> = <strong>3</strong>."
+    },
+    {
+      "id": "af_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código con Predicate:",
+      "code": "Predicate<string> esNombreCorto = nombre => nombre.Length < 5;\n\nList<string> enemigos = new List<string> { \"Goblin\", \"Orc\", \"Ent\", \"Dragon\" };\nstring primeroCorto = enemigos.Find(esNombreCorto);\nDebug.Log(primeroCorto);",
+      "question": "¿Qué imprime `Debug.Log(primeroCorto)`?",
+      "target": "Orc",
+      "acceptedAnswers": ["Orc", "\"Orc\""],
+      "hints": [
+        "Find devuelve el PRIMER elemento que cumple el Predicate.",
+        "El Predicate busca nombres con menos de 5 caracteres.",
+        "Revisa la lista en orden: Goblin (6), Orc (3)... ¿cuál es el primero que tiene menos de 5 letras?"
+      ],
+      "explanation": "<code>Find</code> devuelve el primer elemento que satisface el <strong>Predicate</strong>. Revisando en orden: \"Goblin\" tiene 6 letras (no cumple), \"Orc\" tiene 3 letras (cumple). El resultado es <strong>Orc</strong>. \"Ent\" también cumpliría, pero <code>Find</code> devuelve el primero."
+    },
+    {
+      "id": "af_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un **Action** que recibe un `int` y un `string`:",
+      "codeTemplate": "__________ <int, string> notificar;",
+      "expectedAnswer": "Action",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo delegate genérico correcto...",
+      "hints": [
+        "Este delegate genérico es para métodos que no devuelven valor.",
+        "Su nombre empieza con A mayúscula.",
+        "La alternativa que devuelve valor se llama Func."
+      ],
+      "explanation": "<strong>Action</strong> es el delegate genérico para métodos que no devuelven nada (void). <code>Action&lt;int, string&gt;</code> declara un delegate que recibe un <code>int</code> y un <code>string</code>. Los tipos genéricos son todos parámetros de entrada (ninguno es retorno)."
+    },
+    {
+      "id": "af_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un **Func** que recibe dos `float` y devuelve un `float`:",
+      "codeTemplate": "__________ <float, float, float> calcular;",
+      "expectedAnswer": "Func",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo delegate genérico correcto...",
+      "hints": [
+        "Este delegate genérico es para métodos que SÍ devuelven un valor.",
+        "El último tipo genérico es el tipo de retorno.",
+        "La alternativa sin retorno se llama Action."
+      ],
+      "explanation": "<strong>Func</strong> es el delegate genérico para métodos con retorno. <code>Func&lt;float, float, float&gt;</code> recibe dos <code>float</code> como parámetros y devuelve un <code>float</code>. En <strong>Func</strong>, el <em>último</em> tipo siempre es el retorno."
+    },
+    {
+      "id": "af_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la **lambda** que se asigna a este `Action<int>` para imprimir el parámetro multiplicado por 10:",
+      "codeTemplate": "Action<int> imprimir = n => Debug.Log(__________);\nimprimir(5); // debe imprimir 50",
+      "expectedAnswer": "n * 10",
+      "alternateAnswers": ["n*10"],
+      "placeholder": "Escribe la expresión dentro de Debug.Log...",
+      "hints": [
+        "La lambda recibe el parámetro n.",
+        "Debes multiplicar n por 10.",
+        "El resultado de n cuando se invoca con 5 debe ser 50."
+      ],
+      "explanation": "La expresión correcta es <code>n * 10</code>. La <strong>lambda</strong> completa es: <code>n => Debug.Log(n * 10)</code>. Al invocar <code>imprimir(5)</code>, <code>n = 5</code>, y <code>5 * 10 = 50</code> se imprime en la consola."
+    },
+    {
+      "id": "af_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el método **LINQ** que filtra la lista `enemies` para obtener solo los enemigos con `HP > 0`:",
+      "codeTemplate": "var vivos = enemies.__________(e => e.HP > 0).ToList();",
+      "expectedAnswer": "Where",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método LINQ de filtrado...",
+      "hints": [
+        "Este método LINQ filtra elementos según una condición.",
+        "Su nombre en inglés significa 'donde'.",
+        "Devuelve los elementos para los que la lambda devuelve true."
+      ],
+      "explanation": "El método <strong>LINQ</strong> <code>Where</code> filtra la secuencia, devolviendo solo los elementos para los que la <strong>lambda</strong> devuelve <code>true</code>. <code>enemies.Where(e => e.HP > 0)</code> devuelve todos los enemigos vivos. <code>ToList()</code> materializa la consulta en una <code>List&lt;T&gt;</code>."
+    },
+    {
+      "id": "af_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la llamada al método `RealizarAtaque(string target, Action onImpacto)` pasando el nombre `\"Goblin\"` y una **lambda** que imprima `\"¡Golpe!\"` como **callback**.",
+      "codeTemplate": null,
+      "expectedAnswer": "RealizarAtaque(\"Goblin\", () => Debug.Log(\"¡Golpe!\"));",
+      "alternateAnswers": [
+        "RealizarAtaque(\"Goblin\", () => { Debug.Log(\"¡Golpe!\"); });",
+        "RealizarAtaque(\"Goblin\", delegate() { Debug.Log(\"¡Golpe!\"); });"
+      ],
+      "placeholder": "Escribe la llamada completa con la lambda...",
+      "hints": [
+        "El primer argumento es el string \"Goblin\".",
+        "El segundo argumento es una lambda de tipo Action (void, sin parámetros).",
+        "Una lambda sin parámetros empieza con () =>."
+      ],
+      "explanation": "La llamada correcta es <code>RealizarAtaque(\"Goblin\", () => Debug.Log(\"¡Golpe!\"));</code>. La <strong>lambda</strong> <code>() => Debug.Log(\"¡Golpe!\")</code> tiene retorno <code>void</code> y cero parámetros, por lo que es compatible con el tipo <strong>Action</strong> del parámetro <code>onImpacto</code>."
+    },
+    {
+      "id": "af_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una corrutina `IEnumerator EsperarYEjecutar(float segundos, Action callback)` que espere `segundos` y luego invoque `callback` de forma segura.",
+      "codeTemplate": null,
+      "expectedAnswer": "IEnumerator EsperarYEjecutar(float segundos, Action callback)\n{\n    yield return new WaitForSeconds(segundos);\n    callback?.Invoke();\n}",
+      "alternateAnswers": [
+        "IEnumerator EsperarYEjecutar(float segundos, Action callback)\n{\n    yield return new WaitForSeconds(segundos);\n    if (callback != null) callback();\n}"
+      ],
+      "placeholder": "Escribe la corrutina completa...",
+      "hints": [
+        "Una corrutina devuelve IEnumerator y usa yield return para pausar.",
+        "WaitForSeconds(segundos) es lo que pausa la ejecución.",
+        "Usa ?.Invoke() para llamar al callback de forma segura si no es null."
+      ],
+      "explanation": "La corrutina correcta usa <code>yield return new WaitForSeconds(segundos)</code> para pausar y luego <code>callback?.Invoke()</code> para ejecutar el <strong>callback</strong> de forma segura. El operador <code>?.</code> evita la excepción si nadie pasó un callback (null). Este patrón con <strong>Action</strong> es extremadamente común en Unity para animaciones, transiciones y efectos."
+    }
+  ]
+}

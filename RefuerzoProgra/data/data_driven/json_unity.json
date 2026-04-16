@@ -1,0 +1,384 @@
+{
+  "id": "json_unity",
+  "title": "JSON en Unity",
+  "icon": "📄",
+  "color": "#00796B",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "El Formato JSON",
+        "type": "definition",
+        "content": "<strong>JSON</strong> (JavaScript Object Notation) es un formato de texto ligero para representar datos estructurados. Un objeto <strong>JSON</strong> es una colección de pares <strong>key</strong>-<strong>value</strong> entre llaves: <code>{ \"hp\": 100, \"name\": \"Goblin\" }</code>. Un array <strong>JSON</strong> es una lista de valores entre corchetes: <code>[1, 2, 3]</code> o <code>[{...}, {...}]</code>. Los tipos de datos soportados son: string (entre comillas dobles), number (entero o decimal), boolean (<code>true</code>/<code>false</code>), null, object y array. <strong>JSON</strong> es el formato más popular para intercambiar datos en videojuegos modernos."
+      },
+      {
+        "id": "doc-2",
+        "title": "JsonUtility vs Newtonsoft Json.NET",
+        "type": "code",
+        "content": "// ─── JsonUtility (built-in de Unity) ───\n// ✅ Rápido, sin instalación, funciona en todas las plataformas\n// ❌ NO soporta Dictionary directamente\n// ❌ NO soporta tipos abstractos ni interfaces\n// ❌ Requiere [System.Serializable] en las clases\n\n[System.Serializable]\npublic class ItemData { public string id; public int price; }\n\nstring json = JsonUtility.ToJson(item);          // objeto → JSON\nItemData item = JsonUtility.FromJson<ItemData>(json); // JSON → objeto\n\n// ─── Newtonsoft Json.NET (via Package Manager) ───\n// ✅ Soporta Dictionary<string, T>\n// ✅ Soporta tipos abstractos, interfaces, LINQ\n// ✅ No necesita [System.Serializable]\n// ⚠️ Requiere instalación desde Package Manager o NuGet\n\nusing Newtonsoft.Json;\nvar dict = JsonConvert.DeserializeObject<Dictionary<string, ItemData>>(json);\nstring jsonOut = JsonConvert.SerializeObject(dict, Formatting.Indented);"
+      },
+      {
+        "id": "doc-3",
+        "title": "Cargar JSON: Resources vs StreamingAssets vs Runtime",
+        "type": "analogy",
+        "content": "Hay tres formas principales de acceder a archivos JSON en Unity. <strong>Resources</strong>: coloca el archivo en <code>Assets/Resources/</code> y carga con <code>Resources.Load&lt;TextAsset&gt;(\"items\")</code>. Es simple pero empaqueta todos los archivos en la build, aumentando su tamaño. <strong>StreamingAssets</strong>: coloca el archivo en <code>Assets/StreamingAssets/</code> y lee con <code>File.ReadAllText(Application.streamingAssetsPath + \"/items.json\")</code>. Los archivos se copian sin modificar a la build y se pueden reemplazar después de la compilación — ideal para datos configurables. <strong>Runtime desde un servidor</strong>: descarga el <strong>JSON</strong> con <code>UnityWebRequest</code> para actualizar datos sin publicar una nueva build."
+      },
+      {
+        "id": "doc-4",
+        "title": "Datos Anidados en JSON",
+        "type": "code",
+        "content": "// JSON con datos anidados\n// items.json\n/*\n{\n  \"items\": [\n    {\n      \"id\": \"sword_01\",\n      \"name\": \"Espada de Hierro\",\n      \"stats\": { \"attack\": 25, \"durability\": 100 },\n      \"tags\": [\"weapon\", \"melee\"]\n    }\n  ]\n}\n*/\n\n// Clases C# para parsear datos anidados con JsonUtility\n[System.Serializable]\npublic class WeaponStats\n{\n    public int attack;\n    public int durability;\n}\n\n[System.Serializable]\npublic class ItemData\n{\n    public string id;\n    public string name;\n    public WeaponStats stats;  // objeto anidado\n    public string[] tags;      // array anidado\n}\n\n[System.Serializable]\npublic class ItemDatabase\n{\n    public ItemData[] items; // objeto raíz requerido por JsonUtility\n}\n\n// Carga y parseo\nTextAsset file = Resources.Load<TextAsset>(\"items\");\nItemDatabase db = JsonUtility.FromJson<ItemDatabase>(file.text);"
+      },
+      {
+        "id": "doc-5",
+        "title": "Limitaciones de JsonUtility",
+        "type": "list",
+        "items": [
+          "No soporta Dictionary<K,V> — usa Newtonsoft Json.NET para eso.",
+          "No puede parsear un array JSON en el nivel raíz; necesita un objeto envolvente.",
+          "Ignora campos privados aunque tengan [SerializeField].",
+          "No soporta tipos nullable (int?, float?).",
+          "No soporta polimorfismo: si tienes una lista de objetos de subclases, no distingue el tipo.",
+          "Para JSON complejo (tipos abstractos, GUID, herencia), usa Newtonsoft Json.NET."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "dddj_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué significa la sigla **JSON**?",
+      "options": [
+        "JavaScript Object Notation — un formato de texto para representar datos estructurados.",
+        "Java Serialized Object Network — un protocolo de red de Java.",
+        "Just Simple Object Names — un sistema de nomenclatura de objetos.",
+        "Joint System Object Notation — un estándar ISO para objetos.",
+        "JavaScript Standard Object Nodes — una especificación de nodos de objetos."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>JSON</strong> significa <strong>JavaScript Object Notation</strong>. A pesar de su nombre, no está ligado a JavaScript — es un formato de texto independiente del lenguaje, ampliamente usado para intercambiar datos entre sistemas. En Unity se usa para guardar configuraciones de juego, stats de personajes y bases de datos de ítems."
+    },
+    {
+      "id": "dddj_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de los siguientes es un objeto **JSON** válido para representar un ítem de juego?",
+      "options": [
+        "{ \"id\": \"potion_01\", \"name\": \"Poción HP\", \"price\": 50 }",
+        "{ id: 'potion_01', name: 'Poción HP', price: 50 }",
+        "[ \"id\": \"potion_01\", \"name\": \"Poción HP\" ]",
+        "{ \"id\" = \"potion_01\"; \"name\" = \"Poción HP\" }",
+        "JSON(id=\"potion_01\", name=\"Poción HP\", price=50)"
+      ],
+      "correctIndex": 0,
+      "explanation": "Un objeto <strong>JSON</strong> válido usa llaves <code>{ }</code>, las <strong>keys</strong> van entre comillas dobles, los pares se separan con comas, y se usa <code>:</code> entre clave y valor. Las opciones incorrectas usan comillas simples (inválido), corchetes de array, punto y coma, o sintaxis de función."
+    },
+    {
+      "id": "dddj_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la limitación más importante de **JsonUtility** de Unity respecto a colecciones?",
+      "options": [
+        "No soporta Dictionary<K,V> directamente; para usarlo necesitas Newtonsoft Json.NET.",
+        "No puede leer archivos JSON de más de 1 MB de tamaño.",
+        "Solo funciona con tipos primitivos como int, float y string.",
+        "No puede leer arrays JSON, solo objetos individuales.",
+        "Requiere conexión a internet para funcionar correctamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "La limitación más conocida de <strong>JsonUtility</strong> es que <strong>no soporta <code>Dictionary&lt;K,V&gt;</code> directamente</strong>. Si necesitas deserializar datos en un <strong>Dictionary</strong>, debes usar <strong>Newtonsoft Json.NET</strong> (disponible via Package Manager). JsonUtility sí soporta arrays y listas."
+    },
+    {
+      "id": "dddj_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿En qué carpeta de Unity se deben colocar los archivos JSON para cargarlos con `Resources.Load<TextAsset>()`?",
+      "options": [
+        "Assets/Resources/",
+        "Assets/StreamingAssets/",
+        "Assets/Data/",
+        "Assets/Scripts/",
+        "Assets/Plugins/"
+      ],
+      "correctIndex": 0,
+      "explanation": "Los archivos en <code><strong>Assets/Resources/</strong></code> pueden cargarse en <strong>runtime</strong> con <code>Resources.Load&lt;TextAsset&gt;(\"nombreArchivo\")</code>. La desventaja es que Unity empaqueta todos los recursos de esta carpeta en la build. Para archivos que deben ser modificables post-compilación, usa <strong>StreamingAssets</strong>."
+    },
+    {
+      "id": "dddj_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la ventaja principal de colocar archivos JSON en **StreamingAssets** en lugar de **Resources**?",
+      "options": [
+        "Los archivos en StreamingAssets se copian sin modificar a la build y pueden reemplazarse después de compilar, permitiendo actualizar datos sin generar una nueva build.",
+        "Los archivos en StreamingAssets se cargan más rápido porque están comprimidos automáticamente.",
+        "StreamingAssets cifra automáticamente los archivos JSON para proteger los datos del juego.",
+        "Solo los archivos en StreamingAssets pueden ser leídos con JsonUtility.",
+        "StreamingAssets permite cargar archivos JSON sin necesitar System.IO."
+      ],
+      "correctIndex": 0,
+      "explanation": "La ventaja clave de <strong>StreamingAssets</strong> es que los archivos se copian sin modificar a la build final y están accesibles en el sistema de archivos del dispositivo. Esto permite <strong>reemplazar o modificar los archivos JSON después de compilar</strong>, ideal para patches de balance o configuraciones por plataforma."
+    },
+    {
+      "id": "dddj_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Por qué **JsonUtility** no puede hacer parse de un array JSON directamente en el nivel raíz?\n```json\n[ {\"name\":\"Goblin\"}, {\"name\":\"Orc\"} ]\n```",
+      "options": [
+        "JsonUtility requiere siempre un objeto raíz con campos nombrados; no puede deserializar un array como elemento de nivel superior.",
+        "JsonUtility no soporta arrays de ningún tipo.",
+        "El array JSON es inválido si no tiene una clave.",
+        "JsonUtility solo puede parsear objetos con menos de 10 campos.",
+        "Unity no puede leer archivos JSON que contengan arrays."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>JsonUtility</strong> solo puede deserializar objetos con una clase C# correspondiente. Un array en el nivel raíz no corresponde a ninguna clase. La solución es envolverlo: <code>{ \"enemies\": [{...}, {...}] }</code> y tener una clase con <code>public EnemyData[] enemies;</code>. <strong>Newtonsoft Json.NET</strong> sí puede <strong>parsear</strong> arrays raíz."
+    },
+    {
+      "id": "dddj_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estos fragmentos carga correctamente un archivo JSON desde **StreamingAssets** en Unity?",
+      "options": [
+        "string path = Application.streamingAssetsPath + \"/items.json\";\nstring json = File.ReadAllText(path);",
+        "string json = Resources.Load<TextAsset>(\"StreamingAssets/items\").text;",
+        "string json = JsonUtility.Load(\"items.json\");",
+        "string json = Application.dataPath + \"items.json\";",
+        "TextAsset json = AssetDatabase.LoadAssetAtPath(\"items.json\");"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para leer desde <strong>StreamingAssets</strong>, se usa <code>Application.streamingAssetsPath</code> para obtener la ruta correcta en cualquier plataforma, y <code>File.ReadAllText(path)</code> (del namespace <code>System.IO</code>) para leer el contenido. <code>Resources.Load</code> solo funciona para archivos en la carpeta <code>Resources/</code>."
+    },
+    {
+      "id": "dddj_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Necesitas cargar un archivo `enemies.json` con esta estructura y que el juego funcione correctamente. ¿Qué clase C# es necesaria para que **JsonUtility** pueda deserializarlo?\n```json\n{ \"enemies\": [ {\"name\":\"Goblin\",\"hp\":80}, {\"name\":\"Orc\",\"hp\":200} ] }\n```",
+      "options": [
+        "[System.Serializable] public class EnemyDatabase { public EnemyData[] enemies; }",
+        "public class EnemyDatabase { private EnemyData[] enemies; }",
+        "[System.Serializable] public class EnemyDatabase { public List<EnemyData> enemies; }",
+        "public static class EnemyDatabase { public static EnemyData[] enemies; }",
+        "[System.Serializable] public class EnemyDatabase : MonoBehaviour { public EnemyData[] enemies; }"
+      ],
+      "correctIndex": 0,
+      "explanation": "La clase necesita: <code><strong>[System.Serializable]</strong></code> para que <code>JsonUtility</code> la procese; el campo <code><strong>public EnemyData[] enemies</strong></code> que coincide exactamente con la <strong>key</strong> <code>\"enemies\"</code> del <strong>JSON</strong>; y los campos deben ser <code>public</code> (o con <code>[SerializeField]</code>). Las clases estáticas o con campos privados no funcionan con <code>JsonUtility</code>."
+    },
+    {
+      "id": "dddj_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta estructura JSON:",
+      "code": "{\n  \"itemId\": \"sword_iron\",\n  \"displayName\": \"Espada de Hierro\",\n  \"attackPower\": 25,\n  \"isEquipped\": false\n}",
+      "question": "¿Cómo se llama cada elemento del par `\"attackPower\": 25` en terminología JSON?",
+      "target": "key-value",
+      "acceptedAnswers": ["key-value", "clave-valor", "key value", "par clave-valor", "par key-value"],
+      "hints": [
+        "En JSON, los datos se organizan en pares de dos elementos.",
+        "El primer elemento (\"attackPower\") identifica al dato; el segundo (25) es el dato en sí.",
+        "En inglés se llaman 'key' y 'value'."
+      ],
+      "explanation": "En <strong>JSON</strong>, los datos se organizan en pares <strong>key-value</strong> (clave-valor). La <strong>key</strong> es el identificador (<code>\"attackPower\"</code>) y el <strong>value</strong> es el dato (<code>25</code>). Entender esta estructura es fundamental para diseñar esquemas <strong>JSON</strong> para videojuegos."
+    },
+    {
+      "id": "dddj_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este código de carga de JSON en Unity:",
+      "code": "TextAsset jsonFile = Resources.Load<TextAsset>(\"enemies\");\nEnemyDatabase db = JsonUtility.FromJson<EnemyDatabase>(jsonFile.text);\nDebug.Log(db.enemies[0].name);",
+      "question": "¿En qué carpeta dentro de Assets debe estar el archivo `enemies.json` para que `Resources.Load` lo encuentre?",
+      "target": "Resources",
+      "acceptedAnswers": ["Resources", "Assets/Resources", "Assets/Resources/", "la carpeta Resources"],
+      "hints": [
+        "Resources.Load solo puede acceder a archivos en una carpeta específica de Unity.",
+        "El nombre de esa carpeta es el mismo que el de la función usada.",
+        "La carpeta se llama igual que el método: Resources."
+      ],
+      "explanation": "El método <code>Resources.Load&lt;T&gt;()</code> solo puede cargar archivos ubicados dentro de <code><strong>Assets/Resources/</strong></code> (o subcarpetas de ella). En este caso, el archivo debe estar en <code>Assets/Resources/enemies.json</code>. La ruta que se pasa al método es relativa a esa carpeta y sin extensión."
+    },
+    {
+      "id": "dddj_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este código que falla en Unity:",
+      "code": "// enemies.json\n// [ {\"name\":\"Goblin\"}, {\"name\":\"Orc\"} ]\n\nTextAsset file = Resources.Load<TextAsset>(\"enemies\");\n// Esto falla:\nEnemyData[] enemies = JsonUtility.FromJson<EnemyData[]>(file.text);",
+      "question": "¿Por qué falla este código? Identifica la limitación de JsonUtility que causa el problema.",
+      "target": "JsonUtility no puede parsear arrays en el nivel raíz",
+      "acceptedAnswers": [
+        "JsonUtility no puede parsear arrays en el nivel raíz",
+        "no soporta array raíz",
+        "necesita objeto raíz",
+        "array en nivel raíz",
+        "no puede deserializar arrays directamente"
+      ],
+      "hints": [
+        "El archivo JSON empieza con [ ] (array) en lugar de { } (objeto).",
+        "JsonUtility necesita que el nivel superior del JSON sea un objeto con campos nombrados.",
+        "La solución sería envolver el array en un objeto: { \"enemies\": [...] }"
+      ],
+      "explanation": "<strong>JsonUtility</strong> no puede hacer <strong>parse</strong> de un array <strong>JSON</strong> en el nivel raíz. Requiere un objeto envolvente. La solución es cambiar el JSON a <code>{ \"enemies\": [{...}] }</code> y usar una clase <code>EnemyDatabase</code> con <code>public EnemyData[] enemies;</code>."
+    },
+    {
+      "id": "dddj_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Compara las dos herramientas:",
+      "code": "// Opción A: JsonUtility\nItemData item = JsonUtility.FromJson<ItemData>(json);\n\n// Opción B: Newtonsoft Json.NET\nvar dict = JsonConvert.DeserializeObject<Dictionary<string, ItemData>>(json);",
+      "question": "¿Cuál herramienta (A o B) debes usar si necesitas deserializar datos directamente en un **Dictionary**?",
+      "target": "Newtonsoft Json.NET",
+      "acceptedAnswers": ["Newtonsoft Json.NET", "Json.NET", "Newtonsoft", "opción B", "B"],
+      "hints": [
+        "JsonUtility tiene una limitación conocida con los diccionarios.",
+        "Newtonsoft Json.NET es una librería más completa que soporta más tipos.",
+        "La Opción B usa JsonConvert.DeserializeObject, que es de Newtonsoft."
+      ],
+      "explanation": "Debes usar <strong>Newtonsoft Json.NET</strong> (Opción B). <code>JsonUtility</code> de Unity no soporta <strong>Dictionary</strong> directamente. <strong>Newtonsoft Json.NET</strong> puede deserializar <strong>JSON</strong> en <code>Dictionary&lt;string, T&gt;</code>, listas de tipos abstractos y estructuras más complejas que <code>JsonUtility</code> no puede manejar."
+    },
+    {
+      "id": "dddj_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este JSON con datos anidados:",
+      "code": "{\n  \"bossName\": \"Dragon Rojo\",\n  \"phases\": [\n    { \"phaseId\": 1, \"hp\": 1000, \"damageMultiplier\": 1.0 },\n    { \"phaseId\": 2, \"hp\": 500,  \"damageMultiplier\": 1.5 },\n    { \"phaseId\": 3, \"hp\": 200,  \"damageMultiplier\": 2.0 }\n  ]\n}",
+      "question": "¿Cuántas clases C# distintas marcadas con [System.Serializable] necesitas para deserializar este JSON con JsonUtility?",
+      "target": "2",
+      "acceptedAnswers": ["2", "dos"],
+      "hints": [
+        "El JSON tiene dos niveles distintos de datos: el boss en sí y las fases.",
+        "Necesitas una clase para el objeto raíz (con bossName y phases).",
+        "Y otra clase para cada objeto dentro del array phases (con phaseId, hp, damageMultiplier)."
+      ],
+      "explanation": "Necesitas <strong>2 clases</strong>: una <code>BossData</code> con <code>string bossName</code> y <code>PhaseData[] phases</code>, y otra <code>PhaseData</code> con <code>int phaseId</code>, <code>int hp</code> y <code>float damageMultiplier</code>. Cada nivel de anidamiento <strong>JSON</strong> que tenga campos propios necesita su propia clase con <code>[System.Serializable]</code>."
+    },
+    {
+      "id": "dddj_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza la ruta de carga:",
+      "code": "string path = Application.streamingAssetsPath + \"/config/level_01.json\";\nstring json = System.IO.File.ReadAllText(path);\nLevelConfig config = JsonUtility.FromJson<LevelConfig>(json);",
+      "question": "¿En qué carpeta dentro de Assets debe estar el archivo `level_01.json` para que esta ruta funcione?",
+      "target": "StreamingAssets/config",
+      "acceptedAnswers": [
+        "StreamingAssets/config",
+        "Assets/StreamingAssets/config",
+        "Assets/StreamingAssets/config/",
+        "StreamingAssets/config/"
+      ],
+      "hints": [
+        "Application.streamingAssetsPath apunta a la carpeta StreamingAssets de Unity.",
+        "El código concatena \"/config/level_01.json\" a esa ruta base.",
+        "Por lo tanto, el archivo está en StreamingAssets dentro de una subcarpeta."
+      ],
+      "explanation": "El código construye la ruta concatenando <code>Application.streamingAssetsPath</code> (que apunta a <code>Assets/StreamingAssets/</code>) con <code>\"/config/level_01.json\"</code>. Por lo tanto, el archivo debe estar en <code><strong>Assets/StreamingAssets/config/level_01.json</strong></code>. <strong>StreamingAssets</strong> permite actualizar archivos sin recompilar."
+    },
+    {
+      "id": "dddj_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la llamada a **JsonUtility** para deserializar el string `jsonText` en un objeto de tipo `ItemData`:",
+      "codeTemplate": "ItemData item = JsonUtility.__________(jsonText);",
+      "expectedAnswer": "FromJson<ItemData>",
+      "alternateAnswers": ["FromJson<ItemData>(jsonText)"],
+      "placeholder": "Escribe el método de deserialización con su tipo genérico...",
+      "hints": [
+        "JsonUtility tiene dos métodos principales: uno para serializar (To) y otro para deserializar (From).",
+        "Deserializar significa convertir JSON en un objeto C#.",
+        "El método comienza con 'FromJson' y necesita el tipo entre <>."
+      ],
+      "explanation": "<code>JsonUtility.<strong>FromJson&lt;ItemData&gt;</strong>(jsonText)</code> es el método para <strong>parsear</strong> (deserializar) un string <strong>JSON</strong> en un objeto C# de tipo <code>ItemData</code>. El método genérico inverso es <code>JsonUtility.ToJson(item)</code> para convertir un objeto C# en JSON."
+    },
+    {
+      "id": "dddj_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para cargar un archivo JSON llamado `\"weapons\"` desde la carpeta **Resources** de Unity:",
+      "codeTemplate": "TextAsset jsonFile = Resources.Load<__________>(\"weapons\");\nstring json = jsonFile.text;",
+      "expectedAnswer": "TextAsset",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo de asset para archivos de texto...",
+      "hints": [
+        "Resources.Load necesita el tipo de asset que estás cargando.",
+        "Los archivos de texto (JSON, CSV, TXT) se cargan como un tipo especial de Unity.",
+        "El tipo se llama TextAsset."
+      ],
+      "explanation": "<code>Resources.Load&lt;<strong>TextAsset</strong>&gt;(\"weapons\")</code> carga el archivo <code>weapons.json</code> de la carpeta <code>Resources/</code> como un <code>TextAsset</code>. Este tipo de Unity envuelve archivos de texto y expone su contenido mediante la propiedad <code>.text</code> como un string."
+    },
+    {
+      "id": "dddj_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la ruta para leer un archivo `\"items.json\"` desde **StreamingAssets** usando `File.ReadAllText`:",
+      "codeTemplate": "string path = Application.__________ + \"/items.json\";\nstring json = System.IO.File.ReadAllText(path);",
+      "expectedAnswer": "streamingAssetsPath",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad de Application para StreamingAssets...",
+      "hints": [
+        "Application tiene una propiedad que devuelve la ruta a la carpeta StreamingAssets.",
+        "La propiedad sigue el patrón camelCase: empieza con 'streaming'.",
+        "Se llama streamingAssetsPath."
+      ],
+      "explanation": "<code>Application.<strong>streamingAssetsPath</strong></code> devuelve la ruta absoluta a la carpeta <code>StreamingAssets/</code> en la plataforma actual (PC, Android, iOS, etc.). Al concatenar el nombre del archivo, obtenemos la ruta completa. Esta propiedad es la forma correcta de acceder a <strong>StreamingAssets</strong> en <strong>runtime</strong>."
+    },
+    {
+      "id": "dddj_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe las dos clases C# necesarias para deserializar con JsonUtility este JSON:\n`{ \"items\": [ {\"id\":\"potion\",\"price\":50}, {\"id\":\"sword\",\"price\":300} ] }`",
+      "codeTemplate": null,
+      "expectedAnswer": "[System.Serializable]\npublic class ItemData\n{\n    public string id;\n    public int price;\n}\n\n[System.Serializable]\npublic class ItemDatabase\n{\n    public ItemData[] items;\n}",
+      "alternateAnswers": [
+        "[System.Serializable]\npublic class ItemData { public string id; public int price; }\n\n[System.Serializable]\npublic class ItemDatabase { public ItemData[] items; }"
+      ],
+      "placeholder": "Escribe las dos clases con [System.Serializable]...",
+      "hints": [
+        "Necesitas una clase para el array (con el campo 'items') y otra para cada elemento del array.",
+        "Ambas clases necesitan [System.Serializable] para que JsonUtility las procese.",
+        "Los campos deben ser public y sus nombres deben coincidir exactamente con las keys del JSON."
+      ],
+      "explanation": "Se necesitan dos clases: <code><strong>ItemData</strong></code> para cada elemento del array (con <code>id</code> y <code>price</code>) e <code><strong>ItemDatabase</strong></code> como contenedor raíz (con el array <code>items</code>). Ambas necesitan <code>[System.Serializable]</code>. Los nombres de campos deben coincidir exactamente con las <strong>keys</strong> del <strong>JSON</strong>."
+    },
+    {
+      "id": "dddj_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el código completo para cargar `\"enemies.json\"` desde Resources, deserializarlo en un `EnemyDatabase` e imprimir el nombre del primer enemigo con Debug.Log:",
+      "codeTemplate": null,
+      "expectedAnswer": "TextAsset file = Resources.Load<TextAsset>(\"enemies\");\nEnemyDatabase db = JsonUtility.FromJson<EnemyDatabase>(file.text);\nDebug.Log(db.enemies[0].name);",
+      "alternateAnswers": [
+        "TextAsset jsonFile = Resources.Load<TextAsset>(\"enemies\");\nEnemyDatabase db = JsonUtility.FromJson<EnemyDatabase>(jsonFile.text);\nDebug.Log(db.enemies[0].name);"
+      ],
+      "placeholder": "Escribe las 3 líneas: cargar, parsear e imprimir...",
+      "hints": [
+        "Paso 1: Resources.Load<TextAsset>(\"enemies\") para cargar el archivo.",
+        "Paso 2: JsonUtility.FromJson<EnemyDatabase>(file.text) para parsear.",
+        "Paso 3: Debug.Log accediendo al nombre del primer elemento del array enemies."
+      ],
+      "explanation": "El flujo completo es: (1) <code>Resources.Load&lt;TextAsset&gt;</code> carga el archivo como texto, (2) <code>JsonUtility.FromJson&lt;EnemyDatabase&gt;</code> hace el <strong>parse</strong> y devuelve el objeto, (3) <code>db.enemies[0].name</code> accede al primer elemento del array en <strong>runtime</strong>. Este es el patrón estándar para <strong>JSON</strong> en Unity."
+    },
+    {
+      "id": "dddj_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Usando **Newtonsoft Json.NET**, escribe el código para deserializar un JSON de tipo `{\"goblin\":{\"hp\":80},\"orc\":{\"hp\":200}}` directamente en un `Dictionary<string, EnemyData>`. Incluye el using necesario:",
+      "codeTemplate": null,
+      "expectedAnswer": "using Newtonsoft.Json;\n\nDictionary<string, EnemyData> enemies = JsonConvert.DeserializeObject<Dictionary<string, EnemyData>>(json);",
+      "alternateAnswers": [
+        "using Newtonsoft.Json;\nvar enemies = JsonConvert.DeserializeObject<Dictionary<string, EnemyData>>(json);"
+      ],
+      "placeholder": "Escribe el using y la deserialización con JsonConvert...",
+      "hints": [
+        "Newtonsoft Json.NET usa el namespace Newtonsoft.Json.",
+        "El método para deserializar en Newtonsoft es JsonConvert.DeserializeObject<T>().",
+        "El tipo genérico debe ser Dictionary<string, EnemyData> para este JSON."
+      ],
+      "explanation": "<code><strong>JsonConvert.DeserializeObject&lt;Dictionary&lt;string, EnemyData&gt;&gt;(json)</strong></code> de <strong>Newtonsoft Json.NET</strong> puede deserializar directamente en un <strong>Dictionary</strong>. Esto no es posible con <code>JsonUtility</code>. El namespace <code>using Newtonsoft.Json;</code> es necesario para acceder a <code>JsonConvert</code>."
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+{
+  "id": "solid_ocp_lsp",
+  "title": "OCP/LSP — Open/Closed y Liskov",
+  "icon": "🔓",
+  "color": "#43A047",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "OCP — Open/Closed Principle",
+        "type": "definition",
+        "content": "El <strong>OCP</strong> (Open/Closed Principle) establece que una clase debe estar <strong>abierta para extensión pero cerrada para modificación</strong>. Cuando necesitas agregar un nuevo tipo de enemigo, no deberías modificar el código que ya funciona; deberías <em>extender</em> el sistema añadiendo una nueva clase. La herencia y el polimorfismo son las herramientas clave: una clase base o <strong>interface</strong> define el contrato, y cada subtipo lo implementa sin tocar a los demás."
+      },
+      {
+        "id": "doc-2",
+        "title": "Violación clásica del OCP — el if en cascada",
+        "type": "code",
+        "content": "// ❌ VIOLA OCP — cada nuevo enemigo requiere modificar este método\npublic void Attack(Enemy enemy)\n{\n    if (enemy is Goblin)\n        DealSlashDamage();\n    else if (enemy is Orc)\n        DealSmashDamage();\n    else if (enemy is Dragon)  // <-- MODIFICACIÓN para agregar Dragon\n        DealFireDamage();\n}\n\n// ✅ RESPETA OCP — polimorfismo: agregar Dragon no modifica nada existente\npublic abstract class Enemy\n{\n    public abstract void Attack();\n}\npublic class Goblin : Enemy { public override void Attack() => DealSlash(); }\npublic class Orc    : Enemy { public override void Attack() => DealSmash(); }\npublic class Dragon : Enemy { public override void Attack() => DealFire(); } // solo se agrega"
+      },
+      {
+        "id": "doc-3",
+        "title": "LSP — Liskov Substitution Principle",
+        "type": "definition",
+        "content": "El <strong>LSP</strong> (Liskov Substitution Principle) dice que <strong>una subclase debe poder sustituir a su clase base sin alterar el comportamiento correcto del programa</strong>. Si tienes código que usa un <code>Enemy</code>, y reemplazas esa referencia por un <code>Goblin</code> o un <code>Dragon</code>, el código debe seguir funcionando correctamente. Si una subclase lanza una excepción en un método que la clase base garantiza que no falla, viola el <strong>LSP</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Violación clásica del LSP — override que rompe el contrato",
+        "type": "code",
+        "content": "// ❌ VIOLA LSP — FlyingEnemy rompe el contrato de MoveOnGround()\npublic class Enemy\n{\n    public virtual void MoveOnGround() { /* mueve por tierra */ }\n}\npublic class FlyingEnemy : Enemy\n{\n    public override void MoveOnGround()\n    {\n        throw new System.NotImplementedException(); // ← VIOLA LSP\n    }\n}\n\n// ✅ RESPETA LSP — jerarquía correcta con contratos propios\npublic abstract class Enemy        { public abstract void Move(); }\npublic class GroundEnemy : Enemy   { public override void Move() => MoveOnGround(); }\npublic class FlyingEnemy : Enemy   { public override void Move() => Fly(); }"
+      },
+      {
+        "id": "doc-5",
+        "title": "Señales de violación OCP y LSP",
+        "type": "list",
+        "items": [
+          "**OCP**: Cada vez que añades un tipo nuevo debes abrir y modificar métodos existentes.",
+          "**OCP**: Un método tiene una cadena de if/else if que crece con cada nueva funcionalidad.",
+          "**OCP**: Las pruebas de código existente fallan al agregar un nuevo subtipo.",
+          "**LSP**: Una subclase lanza `NotImplementedException` en un método heredado.",
+          "**LSP**: Una subclase ignora o vacía un método que la clase base garantiza que ejecuta algo.",
+          "**LSP**: El código cliente hace cast o chequeo de tipo con `is` para tratar subclases de forma especial."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ocp_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué establece el **OCP** (Open/Closed Principle)?",
+      "options": [
+        "Las clases deben estar abiertas para extensión pero cerradas para modificación.",
+        "Las clases deben ser abiertas y públicas para que otros puedan modificarlas.",
+        "Un método abierto puede ser modificado por cualquier subclase.",
+        "El código debe estar cerrado para extensión una vez que pasa las pruebas.",
+        "Toda clase debe tener un constructor abierto y un destructor cerrado."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>OCP</strong> dice que el código existente no debería modificarse para agregar nuevas funcionalidades; en cambio, debería <em>extenderse</em>. Esto se logra con herencia, polimorfismo e <strong>interfaces</strong>, de modo que agregar un nuevo tipo no rompe el código que ya funciona."
+    },
+    {
+      "id": "ocp_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la señal más clara de que agregar un nuevo tipo de enemigo viola el **OCP**?",
+      "options": [
+        "Tienes que abrir el método `Attack()` existente y agregar un nuevo `else if` para el nuevo enemigo.",
+        "Tienes que crear una nueva clase que hereda de `Enemy`.",
+        "Tienes que agregar un nuevo archivo C# al proyecto.",
+        "Tienes que sobrescribir el método `Attack()` en la nueva subclase.",
+        "Tienes que actualizar el Inspector de Unity para el nuevo prefab."
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando agregar un nuevo tipo de enemigo obliga a modificar un método existente (añadir un <code>else if</code> nuevo), se viola el <strong>OCP</strong>: el código existente debería estar <em>cerrado</em> para modificación. La solución es usar polimorfismo: cada subtipo implementa su propio comportamiento sin tocar el código base."
+    },
+    {
+      "id": "ocp_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué establece el **LSP** (Liskov Substitution Principle)?",
+      "options": [
+        "Una subclase debe poder reemplazar a su clase base sin alterar el comportamiento correcto del programa.",
+        "Una subclase puede sustituir métodos de la clase base con lanzamiento de excepciones.",
+        "La clase base debe poder reemplazar a cualquier subclase en tiempo de ejecución.",
+        "Toda sustitución de variables debe hacerse con el operador `=`.",
+        "Los tipos de Liskov solo aplican a interfaces, no a clases abstractas."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>LSP</strong> garantiza que el código que usa una clase base siga funcionando correctamente cuando se usa una subclase en su lugar. Si <code>FlyingEnemy</code> hereda de <code>Enemy</code>, todo el código que trabaja con <code>Enemy</code> debería funcionar igual con <code>FlyingEnemy</code>."
+    },
+    {
+      "id": "ocp_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de las siguientes situaciones viola el **LSP**?",
+      "options": [
+        "Una subclase `FlyingEnemy` lanza `NotImplementedException` en el override del método `MoveOnGround()` de la clase base `Enemy`.",
+        "Una subclase `Goblin` sobreescribe `Attack()` para hacer daño de tipo cortante.",
+        "Una subclase `Dragon` agrega el método `Fly()` que no existe en la clase base.",
+        "Una clase abstracta `Enemy` declara `Attack()` como abstracto.",
+        "Una subclase `Orc` llama a `base.TakeDamage()` dentro de su override."
+      ],
+      "correctIndex": 0,
+      "explanation": "Lanzar <code>NotImplementedException</code> en un método heredado viola el <strong>LSP</strong>: el contrato de la clase base dice que <code>MoveOnGround()</code> funciona, pero la subclase rompe esa garantía. Cualquier código que llame a <code>enemy.MoveOnGround()</code> fallará inesperadamente si el <code>enemy</code> es un <code>FlyingEnemy</code>."
+    },
+    {
+      "id": "ocp_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes un sistema con `if (enemy is Goblin) ... else if (enemy is Orc)`. Agregas `Dragon` y debes modificar este método. ¿Qué principio viola esta situación?",
+      "options": [
+        "**OCP**, porque modificar código existente para un nuevo tipo rompe el principio de cierre.",
+        "**SRP**, porque el método tiene dos responsabilidades.",
+        "**LSP**, porque Dragon no puede sustituir a Goblin.",
+        "**DIP**, porque el método depende de implementaciones concretas.",
+        "**ISP**, porque la **interface** de Enemy es demasiado grande."
+      ],
+      "correctIndex": 0,
+      "explanation": "La cadena <code>if/else if</code> por tipo viola el <strong>OCP</strong>: cada vez que agregas un nuevo enemigo debes <em>modificar</em> el método existente. Con polimorfismo, cada clase (<code>Goblin</code>, <code>Orc</code>, <code>Dragon</code>) implementa su propio <code>Attack()</code> y el método que los llama nunca cambia."
+    },
+    {
+      "id": "ocp_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué herramienta de C# permite aplicar el **OCP** al diseñar un sistema de enemigos extensible sin modificar código existente?",
+      "options": [
+        "Polimorfismo mediante clases abstractas o **interfaces** con `override`.",
+        "Variables `public static` compartidas entre todas las clases.",
+        "Directivas `#if` del preprocesador de C#.",
+        "Structs en lugar de clases para cada tipo de enemigo.",
+        "Métodos `sealed` que impiden cualquier sobreescritura."
+      ],
+      "correctIndex": 0,
+      "explanation": "El polimorfismo es el mecanismo clave del <strong>OCP</strong>: define un contrato base (clase abstracta o <strong>interface</strong>) con el método <code>Attack()</code>, y cada nuevo tipo de enemigo lo implementa en una clase separada. El código cliente llama a <code>enemy.Attack()</code> sin saber qué subtipo es — nunca necesita modificarse."
+    },
+    {
+      "id": "ocp_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Por qué hacer un `cast` con `is` o `as` dentro de la lógica de negocio puede ser una señal de violación del **LSP**?",
+      "options": [
+        "Porque significa que el código trata las subclases de forma especial en vez de confiar en el contrato de la clase base, lo que implica que la sustitución no funciona correctamente.",
+        "Porque `is` y `as` son operaciones lentas que impactan el rendimiento del juego.",
+        "Porque el casting solo es válido con tipos valor, no con clases.",
+        "Porque `is` viola la encapsulación al exponer el tipo interno de un objeto.",
+        "Porque el compilador de C# no permite `is` en jerarquías profundas de herencia."
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando el código hace <code>if (enemy is Dragon)</code> para tratar ese tipo de forma diferente, está reconociendo implícitamente que <code>Dragon</code> no puede sustituir correctamente a <code>Enemy</code> — lo que viola el <strong>LSP</strong>. Si el contrato base fuera suficiente, nunca necesitarías verificar el tipo concreto."
+    },
+    {
+      "id": "ocp_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un desarrollador crea `class SilentEnemy : Enemy` y vacía el método `override PlayRoar()` sin hacer nada. ¿Esto viola el **LSP**?",
+      "options": [
+        "Sí, si la clase base garantiza que `PlayRoar()` siempre reproduce un sonido, la subclase rompe ese contrato al vaciarlo.",
+        "No, porque silenciar un sonido es un comportamiento válido para un enemigo silencioso.",
+        "No, porque `override` siempre es una extensión, nunca una violación.",
+        "Sí, pero solo si la clase base es abstracta.",
+        "No, el **LSP** solo aplica cuando se lanza una excepción, no cuando se vacía el método."
+      ],
+      "correctIndex": 0,
+      "explanation": "Depende del contrato: si la clase base garantiza que <code>PlayRoar()</code> produce un audio observable, vaciar el método en la subclase rompe esa garantía y viola el <strong>LSP</strong>. La solución correcta sería rediseñar la jerarquía: quizás <code>SilentEnemy</code> no debería heredar de una clase que define comportamiento de audio."
+    },
+    {
+      "id": "ocp_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este método:",
+      "code": "public void ProcessAttack(Enemy enemy)\n{\n    if (enemy is Goblin)  DealSlash();\n    else if (enemy is Orc)    DealSmash();\n    else if (enemy is Dragon) DealFire();\n}",
+      "question": "¿Qué principio **SOLID** viola esta cadena de `if/else if` al agregar `Dragon`?",
+      "target": "OCP",
+      "acceptedAnswers": ["OCP", "Open/Closed Principle", "Open Closed", "principio abierto cerrado"],
+      "hints": [
+        "Para agregar Dragon fue necesario modificar este método existente.",
+        "El código existente debería estar 'cerrado' para modificación.",
+        "Su sigla es O-C-P: Open/Closed Principle."
+      ],
+      "explanation": "Agregar <code>Dragon</code> obligó a abrir y modificar <code>ProcessAttack()</code>, violando el <strong>OCP</strong>. La solución es polimorfismo: cada enemigo implementa su propio <code>Attack()</code> y <code>ProcessAttack()</code> solo llama <code>enemy.Attack()</code> sin importar el tipo concreto — nunca se modifica."
+    },
+    {
+      "id": "ocp_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta jerarquía:",
+      "code": "public abstract class Enemy\n{\n    public abstract void Attack();\n}\npublic class Goblin : Enemy\n{\n    public override void Attack() => DealSlash();\n}\npublic class Dragon : Enemy\n{\n    public override void Attack() => DealFire();\n}",
+      "question": "¿Esta jerarquía cumple o viola el **OCP**? Escribe la palabra que corresponde.",
+      "target": "cumple",
+      "acceptedAnswers": ["cumple", "cumple el OCP", "respeta el OCP", "no viola", "correcto"],
+      "hints": [
+        "¿Necesitas modificar `Enemy` o `Goblin` para agregar `Dragon`?",
+        "Dragon solo agrega una nueva clase sin tocar las existentes.",
+        "El código cliente llama enemy.Attack() sin saber qué subtipo es."
+      ],
+      "explanation": "Esta jerarquía <strong>cumple</strong> el <strong>OCP</strong>: para agregar <code>Dragon</code> solo se crea una nueva clase que hereda de <code>Enemy</code> e implementa <code>Attack()</code>. No se modifica ni <code>Enemy</code>, ni <code>Goblin</code>, ni ningún método existente. El sistema está <em>abierto para extensión</em> y <em>cerrado para modificación</em>."
+    },
+    {
+      "id": "ocp_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este override:",
+      "code": "public class Enemy\n{\n    public virtual void MoveOnGround()\n    {\n        transform.Translate(direction * speed);\n    }\n}\npublic class FlyingEnemy : Enemy\n{\n    public override void MoveOnGround()\n    {\n        throw new System.NotImplementedException();\n    }\n}",
+      "question": "¿Qué principio **SOLID** viola `FlyingEnemy` al lanzar la excepción en el override?",
+      "target": "LSP",
+      "acceptedAnswers": ["LSP", "Liskov Substitution Principle", "Liskov", "principio de sustitución de Liskov"],
+      "hints": [
+        "El código que usa Enemy espera que MoveOnGround() funcione siempre.",
+        "FlyingEnemy rompe esa garantía al lanzar una excepción.",
+        "Su sigla es L-S-P: Liskov Substitution Principle."
+      ],
+      "explanation": "<code>FlyingEnemy</code> viola el <strong>LSP</strong>: cualquier código que trabaje con <code>Enemy</code> y llame a <code>MoveOnGround()</code> fallará si el objeto es un <code>FlyingEnemy</code>. La subclase no puede sustituir a la clase base. La solución es rediseñar la jerarquía: <code>GroundEnemy</code> y <code>FlyingEnemy</code> deberían tener su propio contrato de movimiento."
+    },
+    {
+      "id": "ocp_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa esta llamada polimórfica:",
+      "code": "public class CombatSystem : MonoBehaviour\n{\n    public void ExecuteAttacks(List<Enemy> enemies)\n    {\n        foreach (Enemy e in enemies)\n        {\n            e.Attack(); // sin if, sin cast\n        }\n    }\n}",
+      "question": "¿Qué principio demuestra `ExecuteAttacks()` al no necesitar `if` ni `cast` para diferentes tipos de enemigos?",
+      "target": "OCP",
+      "acceptedAnswers": ["OCP", "Open/Closed Principle", "principio abierto cerrado", "polimorfismo"],
+      "hints": [
+        "Agregar un nuevo tipo de enemigo no requiere modificar este método.",
+        "El método está 'cerrado' para modificación aunque el sistema sea extensible.",
+        "Es el principio O-C-P."
+      ],
+      "explanation": "<code>ExecuteAttacks()</code> demuestra el <strong>OCP</strong>: el método llama a <code>e.Attack()</code> polimórficamente sin saber qué subtipo es. Puedes agregar <code>Vampire</code>, <code>Zombie</code> o cualquier nuevo enemigo y este método <em>nunca se modifica</em>. Está cerrado para modificación y el sistema está abierto para extensión."
+    },
+    {
+      "id": "ocp_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el diseño de esta clase:",
+      "code": "public class Rectangle\n{\n    public virtual float Width  { get; set; }\n    public virtual float Height { get; set; }\n    public float Area() => Width * Height;\n}\npublic class Square : Rectangle\n{\n    public override float Width\n    {\n        set { base.Width = value; base.Height = value; }\n    }\n    public override float Height\n    {\n        set { base.Width = value; base.Height = value; }\n    }\n}",
+      "question": "¿`Square` viola el **LSP** al heredar de `Rectangle`? Escribe 'sí' o 'no' y el motivo en una palabra.",
+      "target": "sí",
+      "acceptedAnswers": ["sí", "si", "sí, viola", "viola"],
+      "hints": [
+        "En un Rectangle puedes cambiar Width y Height de forma independiente.",
+        "En Square, cambiar Width también cambia Height automáticamente.",
+        "¿Podría Square sustituir a Rectangle sin cambiar el comportamiento del código que los usa?"
+      ],
+      "explanation": "<code>Square</code> viola el <strong>LSP</strong>: el código que usa <code>Rectangle</code> asume que puede cambiar <code>Width</code> y <code>Height</code> de forma independiente. Con <code>Square</code>, cambiar <code>Width</code> modifica <code>Height</code> inesperadamente, rompiendo ese contrato. Este es el ejemplo clásico del <strong>LSP</strong> en la literatura de <strong>SOLID</strong>."
+    },
+    {
+      "id": "ocp_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Estudia este sistema de armas:",
+      "code": "public abstract class Weapon\n{\n    public abstract void Fire();\n    public abstract void Reload();\n}\npublic class Sword : Weapon\n{\n    public override void Fire()   { throw new NotImplementedException(); }\n    public override void Reload() { throw new NotImplementedException(); }\n    public void Slash() { ... }\n}",
+      "question": "¿Qué principio viola `Sword` y qué deberían hacer en su lugar? Escribe el nombre del principio violado.",
+      "target": "LSP",
+      "acceptedAnswers": ["LSP", "Liskov Substitution Principle", "Liskov"],
+      "hints": [
+        "Sword lanza excepciones en métodos que Weapon garantiza que funcionan.",
+        "Una espada no puede disparar ni recargar: la herencia está mal diseñada.",
+        "El principio de Liskov dice que subclases deben sustituir a la base sin romper el programa."
+      ],
+      "explanation": "<code>Sword</code> viola el <strong>LSP</strong>: al lanzar <code>NotImplementedException</code> en <code>Fire()</code> y <code>Reload()</code>, no puede sustituir a <code>Weapon</code> sin romper el programa. La solución respeta también el <strong>ISP</strong>: separar en <code>IRangedWeapon</code> (Fire, Reload) y <code>IMeleeWeapon</code> (Slash), para que <code>Sword</code> solo implemente lo que tiene sentido."
+    },
+    {
+      "id": "ocp_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la clase abstracta `Enemy` que permite aplicar el **OCP** declarando el método `Attack()` como abstracto:",
+      "codeTemplate": "public __________ class Enemy\n{\n    public abstract void Attack();\n}",
+      "expectedAnswer": "abstract",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave que hace la clase abstracta...",
+      "hints": [
+        "Una clase que tiene métodos abstractos debe declararse con una palabra clave especial.",
+        "Esa palabra clave en C# va antes de 'class'.",
+        "La palabra es 'abstract'."
+      ],
+      "explanation": "La palabra clave <code>abstract</code> convierte a <code>Enemy</code> en una clase abstracta: no puede instanciarse directamente y obliga a cada subclase a implementar <code>Attack()</code>. Esto es la base del <strong>OCP</strong>: el sistema se extiende creando nuevas subclases, sin modificar la clase base."
+    },
+    {
+      "id": "ocp_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la subclase `Dragon` para que extienda `Enemy` y respete el **OCP** implementando su propio `Attack()`:",
+      "codeTemplate": "public class Dragon : __________\n{\n    public override void Attack()\n    {\n        DealFireDamage();\n    }\n}",
+      "expectedAnswer": "Enemy",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre de la clase base...",
+      "hints": [
+        "Dragon debe heredar de la clase base que define el contrato de los enemigos.",
+        "La clase base abstracta se llama Enemy.",
+        "La sintaxis de herencia en C# usa el símbolo ':'."
+      ],
+      "explanation": "<code>Dragon : Enemy</code> extiende el sistema de enemigos sin modificar ningún código existente — esto es exactamente el <strong>OCP</strong> en acción. Al heredar de <code>Enemy</code> e implementar <code>Attack()</code> con su propia lógica de fuego, <code>Dragon</code> puede usarse en cualquier lugar donde se espera un <code>Enemy</code>."
+    },
+    {
+      "id": "ocp_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Corrige la violación del **OCP** completando el método que llama a `Attack()` de forma polimórfica, eliminando el `if/else if`:",
+      "codeTemplate": "// ✅ Respeta OCP — sin if, sin cast\npublic void ExecuteAttack(__________ enemy)\n{\n    enemy.Attack();\n}",
+      "expectedAnswer": "Enemy",
+      "alternateAnswers": ["IAttackable"],
+      "placeholder": "Escribe el tipo del parámetro...",
+      "hints": [
+        "El parámetro debe ser del tipo base, no de un tipo concreto.",
+        "Si el parámetro es Enemy, funciona con Goblin, Orc, Dragon y cualquier subtipo.",
+        "Esto es polimorfismo: el tipo base es Enemy."
+      ],
+      "explanation": "Al declarar el parámetro como <code>Enemy</code> (la clase base), el método funciona con <em>cualquier</em> subtipo gracias al polimorfismo. No necesita <code>if/else if</code> porque cada subtipo implementa su propio <code>Attack()</code>. Agregar un nuevo tipo de enemigo no modifica <code>ExecuteAttack()</code> — se respeta el <strong>OCP</strong>."
+    },
+    {
+      "id": "ocp_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la clase `FlyingEnemy` que hereda correctamente de `Enemy` respetando el **LSP**: implementa `Move()` como vuelo, sin lanzar excepciones. La clase base tiene `public abstract void Move();`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class FlyingEnemy : Enemy\n{\n    public override void Move()\n    {\n        Fly();\n    }\n}",
+      "alternateAnswers": [
+        "public class FlyingEnemy : Enemy { public override void Move() { Fly(); } }"
+      ],
+      "placeholder": "Escribe la clase completa respetando el LSP...",
+      "hints": [
+        "FlyingEnemy hereda de Enemy con ':'.",
+        "El método Move() se sobreescribe con 'override' y llama a Fly().",
+        "Nunca lanzar NotImplementedException — eso viola el **LSP**."
+      ],
+      "explanation": "<code>FlyingEnemy</code> respeta el <strong>LSP</strong>: implementa <code>Move()</code> de forma genuina (volar), sin lanzar excepciones. Cualquier código que use <code>Enemy</code> y llame a <code>Move()</code> funcionará correctamente con un <code>FlyingEnemy</code> — la subclase puede sustituir a la base sin romper nada."
+    },
+    {
+      "id": "ocp_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Refactoriza este código que viola el **OCP** completando la solución polimórfica. Reemplaza el `if/else if` por la llamada correcta:",
+      "codeTemplate": "// ❌ Antes — viola OCP\n// if (e is Goblin) e.DealSlash(); else if (e is Orc) e.DealSmash();\n\n// ✅ Después — respeta OCP\npublic void Battle(List<Enemy> enemies)\n{\n    foreach (Enemy e in enemies)\n    {\n        e.__________();\n    }\n}",
+      "expectedAnswer": "Attack",
+      "alternateAnswers": ["attack"],
+      "placeholder": "Escribe el nombre del método polimórfico...",
+      "hints": [
+        "La clase base Enemy declara el método abstracto que cada subtipo implementa.",
+        "El método representa el ataque de cada enemigo.",
+        "Se llama Attack() en la clase base."
+      ],
+      "explanation": "Llamar a <code>e.Attack()</code> de forma polimórfica reemplaza toda la cadena <code>if/else if</code>. Cada subtipo de <code>Enemy</code> implementa su propia versión de <code>Attack()</code>, y el bucle <code>foreach</code> no necesita saber el tipo concreto. Esto respeta el <strong>OCP</strong>: agregar un nuevo enemigo nunca modifica <code>Battle()</code>."
+    },
+    {
+      "id": "ocp_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Diseña la jerarquía correcta que respeta el **LSP** para `GroundEnemy` y `FlyingEnemy`. Ambos heredan de `Enemy` que tiene `public abstract void Move()`. Escribe los encabezados completos de las dos subclases con sus overrides.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class GroundEnemy : Enemy\n{\n    public override void Move() { MoveOnGround(); }\n}\npublic class FlyingEnemy : Enemy\n{\n    public override void Move() { Fly(); }\n}",
+      "alternateAnswers": [
+        "public class GroundEnemy : Enemy { public override void Move() => MoveOnGround(); }\npublic class FlyingEnemy : Enemy { public override void Move() => Fly(); }"
+      ],
+      "placeholder": "Escribe las dos clases completas...",
+      "hints": [
+        "Ambas clases heredan de Enemy y usan 'override' en Move().",
+        "GroundEnemy llama MoveOnGround(); FlyingEnemy llama Fly().",
+        "Ninguna lanza excepciones — eso sería violar el **LSP**."
+      ],
+      "explanation": "Esta jerarquía respeta el <strong>LSP</strong>: tanto <code>GroundEnemy</code> como <code>FlyingEnemy</code> implementan <code>Move()</code> de forma genuina sin romper el contrato de <code>Enemy</code>. Cualquier código que llame a <code>enemy.Move()</code> funcionará correctamente con cualquier subtipo. También respeta el <strong>OCP</strong>: agregar un nuevo tipo no modifica <code>Enemy</code>."
+    }
+  ]
+}

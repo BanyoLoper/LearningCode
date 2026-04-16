@@ -1,0 +1,373 @@
+{
+  "id": "solid_srp",
+  "title": "SRP — Single Responsibility",
+  "icon": "🏛️",
+  "color": "#4CAF50",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es el SRP?",
+        "type": "definition",
+        "content": "El <strong>SRP</strong> (Single Responsibility Principle) establece que <strong>una clase debe tener una sola razón para cambiar</strong>. Dicho de otro modo, cada clase debe encargarse de exactamente <em>una</em> responsabilidad del sistema. Si una clase maneja la física del jugador <em>y</em> la UI <em>y</em> el audio <em>y</em> la persistencia, tiene cuatro razones para cambiar — cuatro formas distintas de romperse cuando algún requisito evoluciona."
+      },
+      {
+        "id": "doc-2",
+        "title": "God Class — el antipatrón clásico",
+        "type": "analogy",
+        "content": "Una <strong>god class</strong> es una clase que lo hace todo. En Unity es muy común ver un <code>MonoBehaviour</code> de 500 líneas que procesa el input del jugador, aplica físicas, actualiza la UI, reproduce sonidos y guarda el progreso. Este tipo de clase viola el <strong>SRP</strong> de manera flagrante: es difícil de leer, de probar y de mantener. Cualquier cambio en el sistema de audio puede, sin querer, romper la lógica de guardado. La solución es <strong>refactorizar</strong> separando cada responsabilidad en su propia clase."
+      },
+      {
+        "id": "doc-3",
+        "title": "Aplicando SRP en MonoBehaviours",
+        "type": "code",
+        "content": "// ❌ ANTES — God class con múltiples responsabilidades\npublic class PlayerGod : MonoBehaviour\n{\n    void Update()\n    {\n        HandleInput();   // responsabilidad 1: input\n        ApplyPhysics();  // responsabilidad 2: física\n        UpdateHUD();     // responsabilidad 3: UI\n        PlaySounds();    // responsabilidad 4: audio\n        SaveProgress();  // responsabilidad 5: persistencia\n    }\n}\n\n// ✅ DESPUÉS — cada clase tiene una sola responsabilidad\npublic class PlayerInputHandler : MonoBehaviour { ... }  // solo input\npublic class PlayerMovement    : MonoBehaviour { ... }  // solo física/movimiento\npublic class PlayerHUD         : MonoBehaviour { ... }  // solo UI\npublic class PlayerAudio       : MonoBehaviour { ... }  // solo audio\npublic class PlayerSaveSystem  : MonoBehaviour { ... }  // solo persistencia"
+      },
+      {
+        "id": "doc-4",
+        "title": "Separar lógica de presentación",
+        "type": "note",
+        "content": "Un error frecuente es mezclar la <strong>lógica de negocio</strong> con la <strong>presentación visual</strong>. Por ejemplo, calcular cuántos puntos otorga un combo <em>dentro</em> del script que actualiza el texto de la UI. El <strong>SRP</strong> sugiere que la lógica del combo viva en una clase de datos/lógica, y que la UI solo <em>muestre</em> lo que recibe — sin calcular nada. Esto facilita testear la lógica sin depender de Unity."
+      },
+      {
+        "id": "doc-5",
+        "title": "Señales de alarma — ¿cuándo viola el SRP?",
+        "type": "list",
+        "items": [
+          "La clase tiene más de ~200 líneas y sigue creciendo.",
+          "El nombre de la clase usa palabras como Manager, Controller, Handler para múltiples dominios a la vez.",
+          "Cambiar la UI obliga a modificar la misma clase que maneja la física.",
+          "Un MonoBehaviour tiene métodos de input, audio, red y guardado al mismo tiempo.",
+          "La clase es imposible de probar sin instanciar una escena entera de Unity.",
+          "El equipo teme tocar esa clase porque 'todo está mezclado allí'."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "srp_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué establece el **SRP** (Single Responsibility Principle)?",
+      "options": [
+        "Una clase debe tener una sola razón para cambiar, es decir, una sola responsabilidad.",
+        "Una clase solo puede tener un método público.",
+        "Una clase debe heredar de una sola clase base.",
+        "Un método no puede tener más de una línea de código.",
+        "Un script de Unity solo puede tener un componente adjunto."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>SRP</strong> dice que cada clase debe tener <strong>una sola razón para cambiar</strong>. Si una clase maneja input, audio y persistencia al mismo tiempo, cualquier cambio en esos dominios puede afectar a la clase entera, generando errores difíciles de rastrear."
+    },
+    {
+      "id": "srp_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cómo se llama el antipatrón que describe una clase que tiene demasiadas responsabilidades y lo controla todo?",
+      "options": [
+        "**God class**",
+        "Singleton",
+        "Factory",
+        "Observer",
+        "Facade"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una <strong>god class</strong> es una clase que centraliza demasiadas responsabilidades. Es el antipatrón directo del <strong>SRP</strong>: una clase que 'lo sabe todo y lo hace todo' se vuelve frágil, difícil de mantener y de probar."
+    },
+    {
+      "id": "srp_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Un `MonoBehaviour` de 500 líneas maneja input, física, UI, sonido y guardado. Según el **SRP**, ¿en cuántas clases debería dividirse mínimamente?",
+      "options": [
+        "5 clases, una por cada responsabilidad identificada.",
+        "2 clases: una de lógica y otra de presentación.",
+        "3 clases: input, lógica y UI.",
+        "Ninguna, 500 líneas es aceptable si está bien comentado.",
+        "10 clases, una por cada método público."
+      ],
+      "correctIndex": 0,
+      "explanation": "Se identificaron 5 responsabilidades distintas (input, física, UI, sonido, guardado). El <strong>SRP</strong> indica que cada una debería vivir en su propia clase: <code>PlayerInputHandler</code>, <code>PlayerMovement</code>, <code>PlayerHUD</code>, <code>PlayerAudio</code> y <code>PlayerSaveSystem</code>."
+    },
+    {
+      "id": "srp_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de los siguientes nombres de clase es la señal más clara de una posible violación del **SRP**?",
+      "options": [
+        "`GameManager` que gestiona input, audio, red y guardado al mismo tiempo.",
+        "`PlayerMovement` que solo mueve al jugador.",
+        "`EnemyHealth` que solo controla los puntos de vida.",
+        "`AudioPlayer` que solo reproduce clips de audio.",
+        "`ScoreCalculator` que solo calcula la puntuación."
+      ],
+      "correctIndex": 0,
+      "explanation": "El nombre <code>GameManager</code> es una señal de alerta: si esa clase gestiona input, audio, red <em>y</em> guardado, tiene cuatro razones para cambiar y viola el <strong>SRP</strong>. Los otros ejemplos tienen nombres específicos que sugieren una sola responsabilidad bien definida."
+    },
+    {
+      "id": "srp_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué ventaja directa ofrece aplicar el **SRP** al dividir un `MonoBehaviour` grande?",
+      "options": [
+        "Cada clase puede modificarse, probarse y reutilizarse de forma independiente.",
+        "El juego corre más rápido porque hay más clases pequeñas.",
+        "Unity compila el proyecto más rápido con clases pequeñas.",
+        "Se elimina la necesidad de usar interfaces.",
+        "Los scripts pequeños no necesitan comentarios."
+      ],
+      "correctIndex": 0,
+      "explanation": "La ventaja principal del <strong>SRP</strong> es el aislamiento: al tener una sola responsabilidad por clase, puedes modificar la lógica de audio sin tocar la física, probar el cálculo de puntos sin levantar una escena, y reutilizar <code>PlayerAudio</code> en otro personaje sin arrastrar código de UI."
+    },
+    {
+      "id": "srp_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes una clase `EnemyController` que mueve al enemigo, calcula daño, muestra su barra de vida y guarda estadísticas. ¿Cuántas responsabilidades viola el **SRP**?",
+      "options": [
+        "4 responsabilidades: movimiento, daño, UI y persistencia.",
+        "1 responsabilidad: todo lo del enemigo es lo mismo.",
+        "2 responsabilidades: lógica y presentación.",
+        "3 responsabilidades: movimiento, combate y datos.",
+        "0 responsabilidades extra, está bien diseñada."
+      ],
+      "correctIndex": 0,
+      "explanation": "Se pueden identificar 4 responsabilidades distintas: movimiento (física), cálculo de daño (lógica de combate), barra de vida (UI/presentación) y estadísticas (persistencia). Cada una es una razón independiente para cambiar, lo que viola el <strong>SRP</strong>."
+    },
+    {
+      "id": "srp_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué significa **refactorizar** en el contexto del **SRP**?",
+      "options": [
+        "Reestructurar el código existente para separar responsabilidades sin cambiar su comportamiento externo.",
+        "Reescribir el juego desde cero con una arquitectura mejor.",
+        "Agregar nuevas funciones a una clase grande para hacerla más completa.",
+        "Eliminar clases pequeñas y consolidarlas en una sola para simplificar.",
+        "Cambiar el lenguaje de programación del proyecto."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Refactorizar</strong> significa mejorar la estructura interna del código sin alterar su comportamiento observable. En el contexto del <strong>SRP</strong>, implica extraer responsabilidades de una <strong>god class</strong> a clases más pequeñas y enfocadas, manteniendo la misma funcionalidad."
+    },
+    {
+      "id": "srp_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Por qué mezclar lógica de negocio con lógica de presentación viola el **SRP**?",
+      "options": [
+        "Porque un cambio en la UI obliga a modificar la clase de lógica, y viceversa, creando dos razones de cambio en una sola clase.",
+        "Porque Unity no permite tener lógica y UI en el mismo script.",
+        "Porque la UI siempre debe estar en C++ y la lógica en C#.",
+        "Porque los métodos de UI no pueden ser privados.",
+        "Porque el **SRP** prohíbe usar `Debug.Log` en clases de lógica."
+      ],
+      "correctIndex": 0,
+      "explanation": "Si en la misma clase calculas la puntuación de un combo <em>y</em> actualizas el texto de la UI, tienes dos razones para cambiar esa clase: cambios en las reglas del combo y cambios en el diseño visual. Separar la lógica de la presentación elimina ese acoplamiento y hace cada parte independientemente mantenible."
+    },
+    {
+      "id": "srp_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este `MonoBehaviour`:",
+      "code": "public class PlayerGod : MonoBehaviour\n{\n    void Update()\n    {\n        HandleInput();\n        ApplyPhysics();\n        UpdateHUD();\n        PlayFootsteps();\n        SaveProgress();\n    }\n}",
+      "question": "¿Cómo se llama el antipatrón que representa esta clase?",
+      "target": "god class",
+      "acceptedAnswers": ["god class", "God class", "God Class", "clase dios", "clase omnisciente"],
+      "hints": [
+        "Esta clase lo hace todo: input, física, UI, audio y guardado.",
+        "El antipatrón tiene nombre mitológico — piensa en una entidad que todo lo controla.",
+        "El término en inglés es 'god class'."
+      ],
+      "explanation": "Esta clase es un ejemplo claro de <strong>god class</strong>: tiene 5 responsabilidades distintas en un solo <code>MonoBehaviour</code>. Viola el <strong>SRP</strong> porque tiene 5 razones para cambiar. La solución es <strong>refactorizar</strong> extrayendo cada responsabilidad a su propia clase."
+    },
+    {
+      "id": "srp_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Lee este principio:",
+      "code": "// \"Una clase debe tener una sola razón para cambiar\"\n// — Robert C. Martin (Uncle Bob)",
+      "question": "¿Cuál es el nombre y la sigla del principio descrito?",
+      "target": "SRP",
+      "acceptedAnswers": ["SRP", "Single Responsibility Principle", "Principio de Responsabilidad Única"],
+      "hints": [
+        "Es el primero de los principios **SOLID**.",
+        "Su sigla en inglés tiene tres letras: S, R, P.",
+        "Single = único, Responsibility = responsabilidad, Principle = principio."
+      ],
+      "explanation": "La cita describe el <strong>SRP</strong> (Single Responsibility Principle), el primero de los cinco principios <strong>SOLID</strong>. Fue popularizado por Robert C. Martin y es fundamental para diseñar código mantenible y extensible."
+    },
+    {
+      "id": "srp_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza estas dos clases:",
+      "code": "// Clase A\npublic class ScoreUI : MonoBehaviour\n{\n    public void UpdateDisplay(int score)\n    {\n        scoreText.text = score.ToString();\n    }\n}\n\n// Clase B\npublic class ScoreCalculator\n{\n    public int Calculate(int basePoints, int multiplier)\n    {\n        return basePoints * multiplier;\n    }\n}",
+      "question": "¿Qué principio demuestran estas dos clases al separar el cálculo de puntos de su visualización?",
+      "target": "SRP",
+      "acceptedAnswers": ["SRP", "Single Responsibility Principle", "Principio de Responsabilidad Única", "responsabilidad única"],
+      "hints": [
+        "Una clase calcula, la otra muestra. Cada una hace solo una cosa.",
+        "Es el primer principio de los **SOLID**.",
+        "Su sigla es S-R-P."
+      ],
+      "explanation": "<code>ScoreCalculator</code> solo calcula; <code>ScoreUI</code> solo muestra. Al separar estas responsabilidades se aplica el <strong>SRP</strong>: cada clase tiene <em>una sola razón para cambiar</em>. Si cambia el diseño visual, solo se modifica <code>ScoreUI</code>. Si cambian las reglas de puntuación, solo se modifica <code>ScoreCalculator</code>."
+    },
+    {
+      "id": "srp_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Cuenta las responsabilidades de esta clase:",
+      "code": "public class EnemyController : MonoBehaviour\n{\n    public void Move()        { /* IA de movimiento */ }\n    public void Attack()      { /* lógica de daño   */ }\n    public void ShowHealthBar(){ /* actualiza UI    */ }\n    public void PlayDeathFX() { /* audio y partículas */ }\n    public void SaveKillStat(){ /* escritura a disco */ }\n}",
+      "question": "¿Cuántas responsabilidades distintas tiene esta clase según el **SRP**?",
+      "target": "5",
+      "acceptedAnswers": ["5", "cinco"],
+      "hints": [
+        "Cuenta cada método — ¿hacen cosas completamente distintas entre sí?",
+        "Movimiento, combate, UI, efectos y persistencia son dominios separados.",
+        "Hay exactamente un método por responsabilidad, y hay 5 métodos."
+      ],
+      "explanation": "<code>EnemyController</code> tiene <strong>5 responsabilidades</strong>: movimiento/IA, lógica de ataque/daño, UI (barra de vida), efectos audiovisuales y persistencia de estadísticas. Según el <strong>SRP</strong> debería dividirse en 5 clases: <code>EnemyMovement</code>, <code>EnemyCombat</code>, <code>EnemyHealthUI</code>, <code>EnemyFX</code> y <code>EnemyStats</code>."
+    },
+    {
+      "id": "srp_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento de código:",
+      "code": "public class PlayerInputHandler : MonoBehaviour\n{\n    void Update()\n    {\n        float h = Input.GetAxis(\"Horizontal\");\n        float v = Input.GetAxis(\"Vertical\");\n        // Notifica a PlayerMovement con los valores\n        movement.Move(h, v);\n    }\n}",
+      "question": "¿Esta clase cumple o viola el **SRP**? Escribe la palabra que corresponde.",
+      "target": "cumple",
+      "acceptedAnswers": ["cumple", "cumple el SRP", "respeta el SRP", "no viola", "correcto"],
+      "hints": [
+        "¿Cuántas cosas distintas hace esta clase?",
+        "Solo lee input y notifica al sistema de movimiento.",
+        "Tiene exactamente una responsabilidad: capturar el input del jugador."
+      ],
+      "explanation": "<code>PlayerInputHandler</code> <strong>cumple</strong> el <strong>SRP</strong>: su única responsabilidad es capturar el input del jugador y delegarlo. No aplica física, no toca la UI ni el audio. Tiene exactamente una razón para cambiar: si cambia el sistema de input de Unity."
+    },
+    {
+      "id": "srp_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Observa este diseño de clase:",
+      "code": "public class UIManager : MonoBehaviour\n{\n    // Actualiza el HUD del jugador\n    public void UpdatePlayerHUD(int health, int ammo) { ... }\n\n    // Calcula si el jugador está en zona de peligro\n    public bool IsInDangerZone(float healthPercent)\n    {\n        return healthPercent < 0.25f;\n    }\n\n    // Muestra el menú de pausa\n    public void ShowPauseMenu() { ... }\n}",
+      "question": "¿Qué método hace que esta clase viole el **SRP** y por qué? Escribe el nombre del método.",
+      "target": "IsInDangerZone",
+      "acceptedAnswers": ["IsInDangerZone", "IsInDangerZone()", "el método IsInDangerZone"],
+      "hints": [
+        "Busca el método que no tiene que ver con mostrar o actualizar pantallas.",
+        "Dos métodos actualizan la UI. Uno hace un cálculo de lógica de negocio.",
+        "El método que calcula si el jugador está en peligro no debería estar en un UIManager."
+      ],
+      "explanation": "<code>IsInDangerZone</code> viola el <strong>SRP</strong> dentro de <code>UIManager</code>: es lógica de negocio (determinar estado del jugador) incrustada en una clase de presentación. Si cambian las reglas de «zona de peligro», debes modificar la clase de UI. Este método debería vivir en <code>PlayerHealth</code> o en un <code>PlayerStateCalculator</code> separado."
+    },
+    {
+      "id": "srp_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el nombre de la clase que debería separarse del `PlayerGod` para manejar únicamente el audio del jugador:",
+      "codeTemplate": "public class __________ : MonoBehaviour\n{\n    public void PlayFootstep() { ... }\n    public void PlayJump()     { ... }\n    public void PlayDeath()    { ... }\n}",
+      "expectedAnswer": "PlayerAudio",
+      "alternateAnswers": ["PlayerAudioController", "PlayerSoundManager", "PlayerSound"],
+      "placeholder": "Escribe el nombre descriptivo de la clase...",
+      "hints": [
+        "El nombre debe indicar que solo maneja audio del jugador.",
+        "Sigue la convención **PascalCase** para nombres de clases.",
+        "Combina 'Player' con la responsabilidad: audio."
+      ],
+      "explanation": "<code>PlayerAudio</code> es un nombre claro y descriptivo que cumple el <strong>SRP</strong>: cualquier desarrollador sabe que esta clase solo maneja sonidos del jugador. Seguir la convención <strong>PascalCase</strong> y usar nombres específicos facilita la lectura y el mantenimiento del proyecto."
+    },
+    {
+      "id": "srp_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "El siguiente método calcula la puntuación pero está dentro de `ScoreUI`. Completa la línea que lo delega correctamente a `ScoreCalculator` para respetar el **SRP**:",
+      "codeTemplate": "public class ScoreUI : MonoBehaviour\n{\n    private __________ calculator;\n\n    public void ShowScore(int basePoints, int multiplier)\n    {\n        int result = calculator.Calculate(basePoints, multiplier);\n        scoreText.text = result.ToString();\n    }\n}",
+      "expectedAnswer": "ScoreCalculator",
+      "alternateAnswers": ["ScoreCalculator calculator", "IScoreCalculator"],
+      "placeholder": "Escribe el tipo de la dependencia...",
+      "hints": [
+        "La clase que calcula puntos se llama ScoreCalculator.",
+        "Se declara como campo privado de tipo ScoreCalculator.",
+        "ScoreUI solo debe mostrar, nunca calcular — delega el cálculo."
+      ],
+      "explanation": "Declarar <code>private ScoreCalculator calculator;</code> separa responsabilidades: <code>ScoreUI</code> solo muestra, mientras <code>ScoreCalculator</code> solo calcula. Así se aplica el <strong>SRP</strong>: cada clase tiene una sola razón para cambiar. <code>ScoreUI</code> cambia si cambia el diseño; <code>ScoreCalculator</code> cambia si cambian las reglas de puntuación."
+    },
+    {
+      "id": "srp_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración de una clase llamada `PlayerSaveSystem` que hereda de `MonoBehaviour` y tiene un método público `SaveProgress()` que no recibe parámetros ni retorna nada. Respeta el **SRP** asegurándote de que solo tenga esa responsabilidad.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class PlayerSaveSystem : MonoBehaviour\n{\n    public void SaveProgress()\n    {\n        // lógica de guardado\n    }\n}",
+      "alternateAnswers": [
+        "public class PlayerSaveSystem : MonoBehaviour { public void SaveProgress() { } }"
+      ],
+      "placeholder": "Escribe la clase completa...",
+      "hints": [
+        "Usa **PascalCase** para el nombre de la clase.",
+        "La clase hereda de MonoBehaviour.",
+        "Solo incluye lo relacionado con guardar progreso — nada de input ni UI."
+      ],
+      "explanation": "<code>PlayerSaveSystem</code> tiene una sola responsabilidad: gestionar la persistencia del progreso. Al no incluir lógica de input, física ni UI, cumple el <strong>SRP</strong>. Cualquier cambio en el sistema de guardado (por ejemplo, pasar de PlayerPrefs a un archivo JSON) solo afecta a esta clase."
+    },
+    {
+      "id": "srp_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el **refactor** para extraer la lógica de movimiento de la `PlayerGod` class. El nuevo script `PlayerMovement` debe recibir el Rigidbody como dependencia:",
+      "codeTemplate": "public class PlayerMovement : MonoBehaviour\n{\n    [SerializeField] private Rigidbody __________;\n\n    public void Move(float horizontal, float vertical)\n    {\n        Vector3 dir = new Vector3(horizontal, 0f, vertical);\n        rb.AddForce(dir * speed);\n    }\n}",
+      "expectedAnswer": "rb",
+      "alternateAnswers": ["rb;", "rigidbody", "body"],
+      "placeholder": "Escribe el nombre del campo privado...",
+      "hints": [
+        "Es convención usar **camelCase** para campos privados en C#.",
+        "El Rigidbody se asigna desde el Inspector con **[SerializeField]**.",
+        "El método Move ya usa la variable 'rb', así que ese es su nombre."
+      ],
+      "explanation": "El campo <code>private Rigidbody rb;</code> con <code>[SerializeField]</code> permite asignar el componente desde el Inspector de Unity. Al extraer el movimiento a <code>PlayerMovement</code>, respetamos el <strong>SRP</strong>: esta clase solo se preocupa por mover al jugador. El <strong>camelCase</strong> (<code>rb</code>) es la convención para campos privados en C#."
+    },
+    {
+      "id": "srp_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "La clase `EnemyGod` viola el **SRP** porque en su método `Die()` actualiza la UI, guarda estadísticas y reproduce audio. Escribe los tres encabezados de clase separados (**PascalCase**, heredando de `MonoBehaviour`) que deberían reemplazarla para esas responsabilidades: `EnemyHealthUI`, `EnemyStats` y `EnemyDeathFX`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public class EnemyHealthUI : MonoBehaviour { }\npublic class EnemyStats : MonoBehaviour { }\npublic class EnemyDeathFX : MonoBehaviour { }",
+      "alternateAnswers": [
+        "public class EnemyHealthUI : MonoBehaviour{}\npublic class EnemyStats : MonoBehaviour{}\npublic class EnemyDeathFX : MonoBehaviour{}"
+      ],
+      "placeholder": "Escribe las tres declaraciones de clase...",
+      "hints": [
+        "Cada clase tiene un nombre en **PascalCase** que describe su única responsabilidad.",
+        "Todas heredan de MonoBehaviour para poder adjuntarse a GameObjects.",
+        "Una para UI, una para estadísticas/persistencia, una para efectos audiovisuales."
+      ],
+      "explanation": "Al dividir <code>EnemyGod.Die()</code> en tres clases separadas se aplica el <strong>SRP</strong>: <code>EnemyHealthUI</code> solo actualiza la interfaz, <code>EnemyStats</code> solo persiste estadísticas y <code>EnemyDeathFX</code> solo reproduce efectos. Cada clase tiene una única razón para cambiar, facilitando el mantenimiento independiente."
+    },
+    {
+      "id": "srp_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "La clase `PlayerGod` de 500 líneas debe dividirse. Completa el array de nombres de clase que representaría el **refactor** correcto según el **SRP**, asignando una responsabilidad por clase:",
+      "codeTemplate": "// Separación correcta de PlayerGod según el SRP:\nstring[] clases = new string[]\n{\n    \"__________\",   // captura de input\n    \"__________\",   // física y movimiento\n    \"__________\",   // interfaz de usuario\n    \"__________\",   // audio\n    \"__________\"    // guardado/carga de datos\n};",
+      "expectedAnswer": "PlayerInputHandler\", \"PlayerMovement\", \"PlayerHUD\", \"PlayerAudio\", \"PlayerSaveSystem",
+      "alternateAnswers": [
+        "PlayerInput\", \"PlayerPhysics\", \"PlayerUI\", \"PlayerSound\", \"PlayerPersistence"
+      ],
+      "placeholder": "Escribe los 5 nombres de clase separados por comas...",
+      "hints": [
+        "Cada nombre debe describir claramente su única responsabilidad.",
+        "Usa el prefijo 'Player' para indicar a qué entidad pertenece.",
+        "Las 5 responsabilidades son: input, movimiento, UI, audio y guardado."
+      ],
+      "explanation": "Un <strong>refactor</strong> correcto del <code>PlayerGod</code> de 500 líneas produce 5 clases con responsabilidad única: <code>PlayerInputHandler</code> (input), <code>PlayerMovement</code> (física), <code>PlayerHUD</code> (UI), <code>PlayerAudio</code> (audio) y <code>PlayerSaveSystem</code> (persistencia). Cada una puede modificarse, probarse y reutilizarse de forma independiente, respetando el <strong>SRP</strong>."
+    }
+  ]
+}

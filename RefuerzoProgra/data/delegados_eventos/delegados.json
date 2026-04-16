@@ -1,0 +1,373 @@
+{
+  "id": "delegados",
+  "title": "Delegados",
+  "icon": "📡",
+  "color": "#9C27B0",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Delegate?",
+        "type": "definition",
+        "content": "Un <strong>delegate</strong> es un tipo que representa referencias a métodos con una firma específica. Funciona como un puntero a función seguro en términos de tipos: garantiza que el método al que apunta recibe los mismos parámetros y devuelve el mismo tipo que la firma del <strong>delegate</strong>. En C# se declara con la palabra clave <code>delegate</code>: <code>public delegate void MiDelegate(int valor);</code>. Una vez declarado, puedes crear instancias de ese tipo y asignarles cualquier método que coincida con esa firma."
+      },
+      {
+        "id": "doc-2",
+        "title": "Declaración, Instanciación e Invocación",
+        "type": "code",
+        "content": "// 1. Declarar el tipo delegate (fuera de la clase o dentro de ella)\npublic delegate void NotificarDano(int cantidad);\n\npublic class Enemigo : MonoBehaviour\n{\n    // 2. Declarar una variable del tipo delegate\n    public NotificarDano alRecibir;\n\n    // 3. Método compatible con la firma\n    void MostrarDano(int d) => Debug.Log(\"Daño: \" + d);\n\n    void Start()\n    {\n        // 4. Instanciar y asignar el método\n        alRecibir = new NotificarDano(MostrarDano);\n        // Forma corta equivalente:\n        alRecibir = MostrarDano;\n\n        // 5. Invocar el delegate\n        alRecibir(25);        // imprime: Daño: 25\n\n        // Invocación segura (null-check)\n        alRecibir?.Invoke(30); // solo llama si no es null\n    }\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Multicast Delegates",
+        "type": "code",
+        "content": "// Los delegates pueden apuntar a VARIOS métodos a la vez (multicast)\npublic delegate void AlMorir();\n\npublic class Jefe : MonoBehaviour\n{\n    public AlMorir onMuerte;\n\n    void MostrarExplosion() => Debug.Log(\"¡Boom!\");\n    void DarPuntos()       => Debug.Log(\"+500 pts\");\n    void DesbloquearLogro() => Debug.Log(\"Logro: Jefe Derrotado\");\n\n    void Start()\n    {\n        // += encadena métodos en la lista de invocación\n        onMuerte += MostrarExplosion;\n        onMuerte += DarPuntos;\n        onMuerte += DesbloquearLogro;\n\n        // Al invocar, se llaman en orden de registro\n        onMuerte?.Invoke();\n        // Salida:\n        // ¡Boom!\n        // +500 pts\n        // Logro: Jefe Derrotado\n\n        // -= elimina un método de la lista\n        onMuerte -= DarPuntos;\n    }\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "Analogía en Unity",
+        "type": "analogy",
+        "content": "Imagina que un <strong>delegate</strong> es un altavoz. Declarar el <strong>delegate</strong> es fabricar el altavoz: defines qué tipo de señal acepta. Asignar un método es conectar un cable al altavoz. Un <strong>multicast delegate</strong> es un altavoz conectado a varios parlantes: al hablar (invocar), todos los parlantes suenan a la vez. En Unity esto es muy útil cuando un evento (muerte de un jefe) debe notificar a la UI, al sistema de puntuación y al sistema de logros de forma desacoplada."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Delegates",
+        "type": "list",
+        "items": [
+          "Un delegate es un tipo — se declara con la palabra clave delegate antes de usarlo.",
+          "La firma del método asignado debe coincidir exactamente con la del delegate.",
+          "Se puede asignar con = (reemplaza) o += (añade al multicast).",
+          "Invocar un delegate null lanza NullReferenceException — usa ?.Invoke() para seguridad.",
+          "Los multicast delegates ejecutan sus métodos en el orden en que se suscribieron.",
+          "-= elimina la primera aparición del método de la lista de invocación."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "del_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué es un **delegate** en C#?",
+      "options": [
+        "Un tipo que representa una referencia a un método con una firma específica.",
+        "Una clase abstracta que define métodos que otras clases deben implementar.",
+        "Una palabra clave que convierte un método en estático.",
+        "Un atributo que marca un método para ser llamado por Unity automáticamente.",
+        "Una interfaz especial para manejar errores en tiempo de ejecución."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>delegate</strong> es un tipo que encapsula una referencia a un método. Garantiza seguridad de tipos: el método asignado debe tener exactamente la misma firma (parámetros y tipo de retorno) que el <strong>delegate</strong>. Piensa en él como un puntero a función con verificación de tipos en tiempo de compilación."
+    },
+    {
+      "id": "del_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la sintaxis correcta para declarar un **delegate** que no recibe parámetros y no devuelve nada?",
+      "options": [
+        "public delegate void MiAccion();",
+        "public void delegate MiAccion();",
+        "delegate public MiAccion void();",
+        "public MiAccion delegate();",
+        "void delegate public MiAccion();"
+      ],
+      "correctIndex": 0,
+      "explanation": "La sintaxis correcta es: <code>public delegate void MiAccion();</code>. El orden es: modificador de acceso → <code>delegate</code> → tipo de retorno → nombre → parámetros. Si el <strong>delegate</strong> no devuelve nada, el tipo de retorno es <code>void</code>."
+    },
+    {
+      "id": "del_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado: `public delegate int Calcular(int a, int b);` — ¿cuál de estos métodos se puede asignar a una variable de tipo `Calcular`?",
+      "options": [
+        "int Sumar(int x, int y) { return x + y; }",
+        "void Sumar(int x, int y) { }",
+        "int Sumar(float x, float y) { return 0; }",
+        "string Sumar(int x, int y) { return \"\"; }",
+        "int Sumar(int x) { return x; }"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>delegate</strong> <code>Calcular</code> exige: retorno <code>int</code> y dos parámetros <code>int</code>. Solo <code>int Sumar(int x, int y)</code> cumple exactamente esa firma. Los nombres de los parámetros no importan, pero el tipo de retorno y los tipos de los parámetros deben coincidir."
+    },
+    {
+      "id": "del_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué operador se usa para añadir un método a la lista de invocación de un **multicast delegate**?",
+      "options": [
+        "+=",
+        "=",
+        "->",
+        ".Add()",
+        "++"
+      ],
+      "correctIndex": 0,
+      "explanation": "El operador <strong><code>+=</code></strong> agrega un método a la lista de invocación del <strong>delegate</strong> sin eliminar los ya registrados. El operador <code>=</code> reemplaza toda la lista, dejando solo ese método. Para eliminar un método se usa <strong><code>-=</code></strong>."
+    },
+    {
+      "id": "del_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué imprime este código?\n```csharp\npublic delegate void Log(string msg);\nLog logger = null;\nlogger += s => Debug.Log(\"A: \" + s);\nlogger += s => Debug.Log(\"B: \" + s);\nlogger?.Invoke(\"test\");\n```",
+      "options": [
+        "A: test\nB: test",
+        "B: test\nA: test",
+        "A: test",
+        "NullReferenceException",
+        "B: test"
+      ],
+      "correctIndex": 0,
+      "explanation": "Los métodos en un <strong>multicast delegate</strong> se invocan en el orden en que se agregaron con <strong><code>+=</code></strong>. Primero se registró la lambda que imprime \"A: \" y luego la de \"B: \", por lo que el resultado es <code>A: test</code> seguido de <code>B: test</code>. El <code>?.Invoke()</code> evita la excepción por null."
+    },
+    {
+      "id": "del_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué ocurre si invocas un **delegate** que tiene valor `null` directamente como `miDelegate()`?",
+      "options": [
+        "Lanza NullReferenceException en tiempo de ejecución.",
+        "No hace nada; el delegate null se ignora automáticamente.",
+        "Lanza ArgumentNullException en tiempo de compilación.",
+        "C# asigna automáticamente un método vacío al delegate null.",
+        "Solo lanza error si el delegate es multicast."
+      ],
+      "correctIndex": 0,
+      "explanation": "Invocar un <strong>delegate</strong> con valor <code>null</code> lanza <code>NullReferenceException</code>. La forma segura es usar <strong><code>?.Invoke()</code></strong>: si el delegate es null, no hace nada. También puedes verificar primero con <code>if (miDelegate != null)</code> antes de invocarlo."
+    },
+    {
+      "id": "del_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tienes un **multicast delegate** con tres métodos registrados. Usas `-=` para quitar uno de ellos. ¿Qué sucede si ese método no estaba en la lista?",
+      "options": [
+        "No ocurre nada; el delegate simplemente no cambia.",
+        "Lanza InvalidOperationException.",
+        "Lanza ArgumentException indicando que el método no existe.",
+        "Elimina todos los métodos de la lista.",
+        "El delegate queda en null."
+      ],
+      "correctIndex": 0,
+      "explanation": "Usar <strong><code>-=</code></strong> con un método que no está en la lista de invocación es seguro: simplemente no ocurre nada y el <strong>delegate</strong> permanece igual. No lanza ninguna excepción. Esto hace que la desuscripción sea segura incluso si se llama más de una vez."
+    },
+    {
+      "id": "del_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué imprime este código?\n```csharp\npublic delegate void Accion();\nAccion d = null;\nvoid A() => Debug.Log(\"A\");\nvoid B() => Debug.Log(\"B\");\nvoid C() => Debug.Log(\"C\");\nd += A;\nd += B;\nd += C;\nd -= B;\nd?.Invoke();\n```",
+      "options": [
+        "A\nC",
+        "A\nB\nC",
+        "A\nB",
+        "B\nC",
+        "C"
+      ],
+      "correctIndex": 0,
+      "explanation": "Se registran A, B y C en ese orden. Luego <strong><code>-=</code></strong> elimina B de la lista. Al invocar, la lista contiene A y C en el orden original, por lo que se imprime <code>A</code> y luego <code>C</code>. Los demás métodos no se ven afectados por la eliminación de B."
+    },
+    {
+      "id": "del_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza esta declaración:",
+      "code": "public delegate void AlMorir();",
+      "question": "¿Qué palabra clave identifica que esta línea declara un tipo delegate?",
+      "target": "delegate",
+      "acceptedAnswers": ["delegate", "la palabra delegate"],
+      "hints": [
+        "Es la palabra clave de C# que aparece entre el modificador de acceso y el tipo de retorno.",
+        "Sin esta palabra, la línea sería una declaración de método normal.",
+        "Es la misma palabra clave que le da nombre al concepto."
+      ],
+      "explanation": "La palabra clave <strong><code>delegate</code></strong> es la que le indica al compilador que se está definiendo un tipo delegate, no un método. El compilador genera una clase especial derivada de <code>System.Delegate</code> con esa firma."
+    },
+    {
+      "id": "del_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "public delegate void NotificarHP(int nuevoHP);\nNotificarHP onHPCambio;\n\nvoid ActualizarUI(int hp) => Debug.Log(\"HP: \" + hp);\n\nvoid Start()\n{\n    onHPCambio = ActualizarUI;\n    onHPCambio(50);\n}",
+      "question": "¿Qué imprime `onHPCambio(50)`?",
+      "target": "HP: 50",
+      "acceptedAnswers": ["HP: 50", "\"HP: 50\"", "HP:50"],
+      "hints": [
+        "El delegate apunta al método ActualizarUI.",
+        "ActualizarUI imprime \"HP: \" seguido del parámetro recibido.",
+        "Se invoca el delegate con el valor 50."
+      ],
+      "explanation": "Al asignar <code>onHPCambio = ActualizarUI</code>, el <strong>delegate</strong> apunta a ese método. Al invocar <code>onHPCambio(50)</code>, se ejecuta <code>ActualizarUI(50)</code>, que imprime <strong>HP: 50</strong>."
+    },
+    {
+      "id": "del_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código multicast:",
+      "code": "public delegate void AlGanarPuntos(int pts);\nAlGanarPuntos onPuntos;\n\nvoid LogPuntos(int p)  => Debug.Log(\"Log: \" + p);\nvoid SonidoPuntos(int p) => Debug.Log(\"Ding: \" + p);\n\nvoid Start()\n{\n    onPuntos += LogPuntos;\n    onPuntos += SonidoPuntos;\n    onPuntos -= LogPuntos;\n    onPuntos?.Invoke(100);\n}",
+      "question": "¿Cuántos métodos quedan en la lista de invocación de `onPuntos` al momento de llamar a `Invoke`?",
+      "target": "1",
+      "acceptedAnswers": ["1", "uno", "un método"],
+      "hints": [
+        "Se agregaron dos métodos con +=.",
+        "Luego se eliminó uno con -=.",
+        "¿Cuántos quedan después de la resta?"
+      ],
+      "explanation": "Se agregan <code>LogPuntos</code> y <code>SonidoPuntos</code> (lista con 2 métodos). Luego se elimina <code>LogPuntos</code> con <strong><code>-=</code></strong>, quedando solo <code>SonidoPuntos</code>. Al invocar, se ejecuta solo ese método, imprimiendo <code>Ding: 100</code>."
+    },
+    {
+      "id": "del_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza esta clase de Unity:",
+      "code": "public delegate int ObtenerScore();\n\npublic class ScoreManager : MonoBehaviour\n{\n    public ObtenerScore calcularScore;\n\n    int ScoreBasico() => 100;\n\n    void Start()\n    {\n        calcularScore = ScoreBasico;\n        int resultado = calcularScore();\n        Debug.Log(resultado);\n    }\n}",
+      "question": "¿Qué valor imprime `Debug.Log(resultado)`?",
+      "target": "100",
+      "acceptedAnswers": ["100"],
+      "hints": [
+        "El delegate apunta al método ScoreBasico.",
+        "ScoreBasico devuelve un valor entero fijo.",
+        "¿Qué devuelve ScoreBasico?"
+      ],
+      "explanation": "El <strong>delegate</strong> <code>calcularScore</code> apunta a <code>ScoreBasico</code>, que devuelve <code>100</code>. Al invocar <code>calcularScore()</code>, se obtiene ese valor, que se asigna a <code>resultado</code> y se imprime. La invocación de un <strong>delegate</strong> con retorno funciona igual que llamar al método directamente."
+    },
+    {
+      "id": "del_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código y predice el output completo:",
+      "code": "public delegate void Efecto();\n\nvoid Flash()  => Debug.Log(\"Flash\");\nvoid Shake()  => Debug.Log(\"Shake\");\nvoid Freeze() => Debug.Log(\"Freeze\");\n\nvoid Start()\n{\n    Efecto fx = Flash;\n    fx += Shake;\n    fx += Freeze;\n    fx -= Flash;\n    fx?.Invoke();\n}",
+      "question": "¿Qué líneas imprime `fx?.Invoke()` en la consola, en orden?",
+      "target": "Shake\nFreeze",
+      "acceptedAnswers": ["Shake\nFreeze", "Shake, Freeze", "Shake y Freeze"],
+      "hints": [
+        "Se asigna Flash con = (no +=), luego se añaden Shake y Freeze.",
+        "Después se elimina Flash con -=.",
+        "Los métodos restantes se invocan en el orden en que fueron añadidos."
+      ],
+      "explanation": "La lista queda: [Flash, Shake, Freeze] después de los tres primeros pasos. Al hacer <code>fx -= Flash</code>, queda [Shake, Freeze]. Al invocar, se ejecutan en orden: <strong>Shake</strong> y luego <strong>Freeze</strong>."
+    },
+    {
+      "id": "del_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código con delegate de retorno:",
+      "code": "public delegate string FormatearNombre(string nombre);\n\nstring ConMayus(string n) => n.ToUpper();\nstring ConPrefijo(string n) => \"Dr. \" + n;\n\nvoid Start()\n{\n    FormatearNombre fmt = ConMayus;\n    string resultado = fmt(\"Ana\");\n    Debug.Log(resultado);\n}",
+      "question": "¿Qué imprime `Debug.Log(resultado)`?",
+      "target": "ANA",
+      "acceptedAnswers": ["ANA", "\"ANA\""],
+      "hints": [
+        "El delegate apunta a ConMayus.",
+        "ToUpper() convierte el string a mayúsculas.",
+        "El parámetro pasado es \"Ana\"."
+      ],
+      "explanation": "<code>fmt</code> apunta a <code>ConMayus</code>. Al invocar <code>fmt(\"Ana\")</code> se ejecuta <code>ConMayus(\"Ana\")</code>, que devuelve <code>\"Ana\".ToUpper()</code> = <strong>ANA</strong>. El método <code>ConPrefijo</code> nunca se usa en este fragmento."
+    },
+    {
+      "id": "del_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración de un **delegate** llamado `AlDisparo` que no recibe parámetros y no devuelve nada:",
+      "codeTemplate": "public __________ void AlDisparo();",
+      "expectedAnswer": "delegate",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave que falta...",
+      "hints": [
+        "Es la palabra clave de C# que define un tipo de referencia a método.",
+        "Va entre el modificador de acceso y el tipo de retorno.",
+        "Es la misma palabra que le da nombre al concepto."
+      ],
+      "explanation": "La palabra clave <strong><code>delegate</code></strong> es obligatoria para declarar un tipo delegate. La sintaxis completa es: <code>public delegate void AlDisparo();</code>. Sin ella, el compilador interpretaría la línea como una declaración de método abstracto."
+    },
+    {
+      "id": "del_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa para añadir el método `MostrarDano` a la lista de invocación del **delegate** `onDano` sin eliminar los métodos ya registrados:",
+      "codeTemplate": "onDano __________ MostrarDano;",
+      "expectedAnswer": "+=",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el operador correcto...",
+      "hints": [
+        "Este operador agrega un método sin quitar los anteriores.",
+        "Es la combinación del operador de suma y el de asignación.",
+        "El operador contrario para quitar métodos es -=."
+      ],
+      "explanation": "El operador <strong><code>+=</code></strong> agrega el método a la lista de invocación del <strong>delegate</strong> conservando los que ya estaban. Si usaras <code>=</code>, reemplazarías toda la lista con solo <code>MostrarDano</code>."
+    },
+    {
+      "id": "del_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la invocación segura del **delegate** `onMuerte` (que puede ser null) usando la sintaxis moderna de C#:",
+      "codeTemplate": "onMuerte__________Invoke();",
+      "expectedAnswer": "?.",
+      "alternateAnswers": ["?."],
+      "placeholder": "Escribe el operador de invocación segura...",
+      "hints": [
+        "Este operador verifica si el objeto es null antes de acceder a su miembro.",
+        "Si es null, simplemente no hace nada.",
+        "Se llama operador de acceso condicional a null y tiene dos caracteres."
+      ],
+      "explanation": "El operador <strong><code>?.</code></strong> (null-conditional) verifica si <code>onMuerte</code> es <code>null</code> antes de llamar a <code>Invoke()</code>. Si es null, la expresión completa devuelve null y no lanza excepción. Es equivalente a: <code>if (onMuerte != null) onMuerte.Invoke();</code>"
+    },
+    {
+      "id": "del_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Declara un **delegate** llamado `AlcanzarMeta` que recibe un `float` (tiempo) y un `int` (monedas) y devuelve `void`. Escribe solo la línea de declaración del tipo delegate.",
+      "codeTemplate": null,
+      "expectedAnswer": "public delegate void AlcanzarMeta(float tiempo, int monedas);",
+      "alternateAnswers": [
+        "delegate void AlcanzarMeta(float tiempo, int monedas);",
+        "public delegate void AlcanzarMeta(float t, int m);"
+      ],
+      "placeholder": "Escribe la declaración completa del delegate...",
+      "hints": [
+        "La sintaxis es: [acceso] delegate [retorno] [Nombre]([parámetros]);",
+        "El tipo de retorno es void y los parámetros son float e int.",
+        "Los nombres de los parámetros pueden ser cualquier identificador válido."
+      ],
+      "explanation": "La declaración correcta es <code>public delegate void AlcanzarMeta(float tiempo, int monedas);</code>. El orden es siempre: modificador → <code>delegate</code> → retorno → nombre → parámetros. Cualquier método con esa firma exacta puede asignarse a una variable de este tipo."
+    },
+    {
+      "id": "del_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para quitar el método `ActualizarMiniMapa` de la lista de invocación del delegate `onPosicionCambia`:",
+      "codeTemplate": "onPosicionCambia __________ ActualizarMiniMapa;",
+      "expectedAnswer": "-=",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el operador para quitar el método...",
+      "hints": [
+        "El operador contrario a += para eliminar un método de la lista.",
+        "Es la combinación del operador de resta y el de asignación.",
+        "Si el método no está en la lista, no ocurre ningún error."
+      ],
+      "explanation": "El operador <strong><code>-=</code></strong> elimina el método de la lista de invocación del <strong>delegate</strong>. Si el método aparece varias veces, elimina solo la primera ocurrencia. Si no estaba en la lista, no lanza excepción, simplemente no hace nada."
+    },
+    {
+      "id": "del_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un bloque `Start()` completo que: (1) declare una variable local `Accion` de tipo `public delegate void Accion()`, (2) le asigne el método `Atacar`, (3) le añada el método `Defender` con multicast, y (4) la invoque de forma segura. Asume que los métodos `Atacar` y `Defender` ya existen.",
+      "codeTemplate": null,
+      "expectedAnswer": "void Start()\n{\n    Accion combo = Atacar;\n    combo += Defender;\n    combo?.Invoke();\n}",
+      "alternateAnswers": [
+        "void Start() { Accion combo = Atacar; combo += Defender; combo?.Invoke(); }",
+        "void Start()\n{\n    Accion combo = null;\n    combo += Atacar;\n    combo += Defender;\n    combo?.Invoke();\n}"
+      ],
+      "placeholder": "Escribe el método Start() completo...",
+      "hints": [
+        "Asigna el primer método con = (no +=) para inicializar la variable.",
+        "Agrega el segundo método con += para hacer el multicast.",
+        "Usa ?.Invoke() para la invocación segura sin verificar null manualmente."
+      ],
+      "explanation": "La secuencia correcta es: asignar el primer método con <code>=</code> (o inicializar en null y usar <code>+=</code> para ambos), encadenar el segundo con <code>+=</code>, e invocar con <code>?.Invoke()</code> para seguridad. Esta es la estructura base del patrón de <strong>delegate</strong> en Unity."
+    }
+  ]
+}

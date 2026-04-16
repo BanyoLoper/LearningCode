@@ -1,0 +1,338 @@
+{
+  "id": "estructuras_exam",
+  "title": "Examen Final: Estructuras de Datos",
+  "icon": "🎓",
+  "documentation": { "sections": [] },
+  "questions": [
+    {
+      "id": "ed_ex_001",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Estás diseñando un RPG en Unity. El jugador tiene exactamente 4 slots de habilidades activas que nunca cambian. ¿Qué estructura usas para almacenarlas?",
+      "options": [
+        "Skill[] habilidades = new Skill[4]; — array de tamaño fijo, ideal para cantidades que no cambian.",
+        "List<Skill> habilidades = new List<Skill>(); — lista dinámica para mayor flexibilidad.",
+        "Stack<Skill> habilidades = new Stack<Skill>(); — LIFO para gestionar el orden de uso.",
+        "Queue<Skill> habilidades = new Queue<Skill>(); — FIFO para ejecutarlas en orden de selección.",
+        "LinkedList<Skill> habilidades = new LinkedList<Skill>(); — eficiente para inserción frecuente."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>array</strong> es la elección correcta: exactamente 4 habilidades, cantidad fija definida en el diseño del juego. <code>Skill[] habilidades = new Skill[4];</code> es más simple, ocupa menos memoria y tiene acceso O(1) sin el overhead de <strong>List&lt;T&gt;</strong>."
+    },
+    {
+      "id": "ed_ex_002",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Tu juego tiene un inventario donde el jugador puede recoger y descartar ítems en cualquier momento. ¿Cuál es la estructura más adecuada?",
+      "options": [
+        "List<Item> inventario = new List<Item>(); — dinámica, soporta Add() y Remove() libremente.",
+        "Item[] inventario = new Item[100]; — array con espacio máximo predefinido.",
+        "Stack<Item> inventario = new Stack<Item>(); — solo permite acceder al último ítem recogido.",
+        "Queue<Item> inventario = new Queue<Item>(); — obliga a consumir ítems en orden de recogida.",
+        "LinkedList<Item> inventario = new LinkedList<Item>(); — complejo innecesariamente para este caso."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>List&lt;Item&gt;</strong> es la estructura ideal para inventarios dinámicos: el jugador recoge ítems con <code>Add()</code> y los descarta con <code>Remove()</code>. Su tamaño se ajusta automáticamente. Un array requeriría conocer el máximo de antemano y dejaría slots vacíos."
+    },
+    {
+      "id": "ed_ex_003",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Implementas un sistema de undo/redo en un editor de niveles de Unity. El usuario presiona Ctrl+Z para deshacer la última acción. ¿Qué estructura usas para el historial?",
+      "options": [
+        "Stack<LevelAction> undoStack; — LIFO: la última acción realizada es la primera en deshacerse.",
+        "Queue<LevelAction> undoQueue; — FIFO: deshace la primera acción realizada, no la última.",
+        "List<LevelAction> undoList; — acceso por índice pero no refleja el orden natural de undo.",
+        "Array LevelAction[]; — tamaño fijo, no permite historial de longitud variable.",
+        "LinkedList<LevelAction> undoLinked; — complejo para una operación siempre en el extremo."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Stack</strong> (LIFO) es perfecto para undo: cada acción se guarda con <strong>Push()</strong> y al presionar Ctrl+Z se recupera con <strong>Pop()</strong>. El último en entrar (la acción más reciente) es el primero en deshacerse. Un Queue invertiría el orden lógico del undo."
+    },
+    {
+      "id": "ed_ex_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un juego por turnos, los enemigos se registran al inicio del nivel y deben atacar en el orden exacto en que fueron registrados. ¿Qué estructura gestiona los turnos?",
+      "options": [
+        "Queue<Enemy> colaTurnos; — FIFO: el primero en registrarse es el primero en atacar.",
+        "Stack<Enemy> pilaTurnos; — LIFO: el último en registrarse atacaría primero.",
+        "List<Enemy> listaTurnos; — no garantiza el orden de procesamiento automáticamente.",
+        "Enemy[] arrayTurnos; — array fijo que no permite agregar enemigos durante la ronda.",
+        "LinkedList<Enemy> linkedTurnos; — optimizada para inserción, no para orden de procesamiento."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Queue</strong> (FIFO) garantiza que los enemigos atacan en el orden en que se registraron. <strong>Enqueue()</strong> al registrar, <strong>Dequeue()</strong> para obtener al siguiente. El principio FIFO coincide exactamente con un sistema de turnos justo por orden de llegada."
+    },
+    {
+      "id": "ed_ex_005",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este tipo de dato en un script de Unity:",
+      "code": "public class PlayerController : MonoBehaviour\n{\n    public float moveSpeed = 5.5f;\n    public int maxHealth = 100;\n    public bool isInvincible = false;\n}",
+      "question": "¿Qué tipo se usa para `moveSpeed` porque la velocidad puede tener valores decimales como 5.5?",
+      "target": "float",
+      "acceptedAnswers": ["float", "Float"],
+      "hints": [
+        "No es int (solo enteros). La velocidad puede ser 5.5, 3.75, etc.",
+        "En Unity casi toda la API usa este tipo para valores continuos.",
+        "Los literales de este tipo requieren la letra 'f' al final: 5.5f."
+      ],
+      "explanation": "<strong>float</strong> es el tipo para números con decimales en Unity. <code>moveSpeed = 5.5f;</code> — la <code>f</code> es obligatoria para distinguirlo de <strong>double</strong>. Unity usa <strong>float</strong> internamente en Vector3, Transform, Time.deltaTime, etc."
+    },
+    {
+      "id": "ed_ex_006",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza estas operaciones en un Stack de navegación de menús:",
+      "code": "Stack<string> menus = new Stack<string>();\nmenus.Push(\"Inicio\");\nmenus.Push(\"Opciones\");\nmenus.Push(\"Gráficos\");\nmenus.Pop();\nstring actual = menus.Peek();",
+      "question": "¿Cuál es el menú `actual` después de cerrar el menú de Gráficos (Pop)?",
+      "target": "Opciones",
+      "acceptedAnswers": ["Opciones", "\"Opciones\""],
+      "hints": [
+        "Pop() elimina el menú en el tope (Gráficos).",
+        "Peek() lee el nuevo tope sin eliminarlo.",
+        "El orden de Push fue: Inicio → Opciones → Gráficos. Al hacer Pop queda..."
+      ],
+      "explanation": "Después de <code>Pop()</code> que elimina <code>\"Gráficos\"</code>, el tope del Stack es <strong>\"Opciones\"</strong>. <code>Peek()</code> lo confirma sin eliminarlo. El Stack de menús sigue siendo [Inicio, Opciones] con Opciones en el tope."
+    },
+    {
+      "id": "ed_ex_007",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este sistema de spawning ordenado:",
+      "code": "Queue<string> oleada = new Queue<string>();\noleada.Enqueue(\"Goblin\");\noleada.Enqueue(\"Goblin\");\noleada.Enqueue(\"Orco\");\noleada.Enqueue(\"Troll\");\n\noleada.Dequeue();\noleada.Dequeue();\nstring siguiente = oleada.Peek();",
+      "question": "¿Qué tipo de enemigo es `siguiente` (el próximo en aparecer)?",
+      "target": "Orco",
+      "acceptedAnswers": ["Orco", "\"Orco\""],
+      "hints": [
+        "FIFO: los primeros en entrar son los primeros en salir.",
+        "Los dos primeros Dequeue() eliminan los dos Goblins.",
+        "Peek() lee el nuevo frente sin eliminarlo."
+      ],
+      "explanation": "Después de dos <code>Dequeue()</code> que eliminan ambos Goblins, el frente de la cola es <strong>\"Orco\"</strong>. <code>Peek()</code> confirma el próximo en aparecer sin sacarlo de la cola."
+    },
+    {
+      "id": "ed_ex_008",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza el estado de esta LinkedList de entidades:",
+      "code": "LinkedList<string> entidades = new LinkedList<string>();\nLinkedListNode<string> nodoA = entidades.AddLast(\"GoblinA\");\nentidades.AddLast(\"GoblinB\");\nentidades.AddAfter(nodoA, \"EsqueletoX\");\n\nDebug.Log(entidades.First.Next.Value);",
+      "question": "¿Qué valor imprime `entidades.First.Next.Value`?",
+      "target": "EsqueletoX",
+      "acceptedAnswers": ["EsqueletoX", "\"EsqueletoX\""],
+      "hints": [
+        "AddLast crea: GoblinA → GoblinB.",
+        "AddAfter(nodoA, \"EsqueletoX\") inserta EsqueletoX DESPUÉS de GoblinA.",
+        "La lista queda: GoblinA → EsqueletoX → GoblinB. ¿Cuál es First.Next?"
+      ],
+      "explanation": "La lista después de todas las operaciones es: [GoblinA → EsqueletoX → GoblinB]. <code>First</code> es el nodo de GoblinA, <code>First.Next</code> es el nodo de <strong>EsqueletoX</strong>, y <code>.Value</code> es su valor. <code>AddAfter(nodoA, ...)</code> insertó entre GoblinA y GoblinB."
+    },
+    {
+      "id": "ed_ex_009",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la declaración del HP del jugador como float con valor inicial 100:",
+      "codeTemplate": "__________ hp = 100f;",
+      "expectedAnswer": "float",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo correcto para HP con decimales...",
+      "hints": [
+        "El HP puede ser 73.5, 12.25, etc. — necesitas decimales.",
+        "El sufijo 'f' en 100f indica que el literal es de este tipo.",
+        "No es int, no es bool."
+      ],
+      "explanation": "<strong>float</strong> es el tipo para el HP porque puede tener valores decimales (daño por veneno, regeneración gradual). La <code>f</code> en <code>100f</code> indica que el literal es de tipo <strong>float</strong>, no <strong>double</strong>."
+    },
+    {
+      "id": "ed_ex_010",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para agregar el enemigo `nuevoGoblin` a la cola de turnos:",
+      "codeTemplate": "Queue<Enemy> colaTurnos = new Queue<Enemy>();\ncolaTurnos.__________(nuevoGoblin);",
+      "expectedAnswer": "Enqueue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para agregar a la cola...",
+      "hints": [
+        "El método de Queue<T> para agregar al final tiene 'queue' en su nombre.",
+        "No es Add() ni Push().",
+        "Empieza con 'En' seguido de 'queue'."
+      ],
+      "explanation": "<strong>Enqueue(item)</strong> agrega el enemigo al final de la cola. Siguiendo el principio <strong>FIFO</strong>, este enemigo esperará hasta que todos los que llegaron antes sean procesados con <strong>Dequeue()</strong>."
+    },
+    {
+      "id": "ed_ex_011",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa para agregar la acción `nuevaAccion` al Stack de historial de undo:",
+      "codeTemplate": "Stack<LevelAction> undoStack = new Stack<LevelAction>();\nundoStack.__________(nuevaAccion);",
+      "expectedAnswer": "Push",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para agregar al Stack...",
+      "hints": [
+        "El método de Stack<T> para agregar al tope.",
+        "No es Add() ni Enqueue().",
+        "En inglés 'empujar hacia arriba de la pila' es..."
+      ],
+      "explanation": "<strong>Push(item)</strong> agrega la acción al tope del <strong>Stack</strong>. Cada vez que el editor realiza una acción, se hace <code>Push()</code>. Al presionar Ctrl+Z, se hace <code>Pop()</code> para recuperar y deshacer la más reciente (LIFO)."
+    },
+    {
+      "id": "ed_ex_012",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para procesar (extraer) el siguiente personaje del frente de la cola de turnos en el sistema por turnos:",
+      "codeTemplate": "Character turnoActivo = colaTurnos.__________(  );",
+      "expectedAnswer": "Dequeue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para extraer del frente de la cola...",
+      "hints": [
+        "Necesitas extraer Y obtener el elemento del frente del Queue.",
+        "Empieza con 'De' seguido de 'queue'.",
+        "Es el opuesto de Enqueue()."
+      ],
+      "explanation": "<strong>Dequeue()</strong> extrae el personaje del frente (el más antiguo en la cola) y lo devuelve. El principio <strong>FIFO</strong> garantiza que el primero en registrarse sea el primero en actuar. La cola se reduce en 1 elemento."
+    },
+    {
+      "id": "ed_ex_013",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la condición que verifica si el Stack de undo no está vacío antes de deshacer:",
+      "codeTemplate": "if (undoStack.__________ > 0)\n{\n    var accion = undoStack.Pop();\n    accion.Revert();\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad que indica cuántos elementos hay...",
+      "hints": [
+        "La propiedad que da el número de elementos en Stack o Queue.",
+        "No es Length (eso es para arrays).",
+        "Empieza con C mayúscula."
+      ],
+      "explanation": "<code>Count</code> es la propiedad de tamaño en <strong>Stack&lt;T&gt;</strong>, <strong>Queue&lt;T&gt;</strong> y <strong>List&lt;T&gt;</strong>. La guardia <code>Count &gt; 0</code> evita la <code>InvalidOperationException</code> que lanzaría <code>Pop()</code> en un stack vacío."
+    },
+    {
+      "id": "ed_ex_014",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa para agregar el ítem `nuevoItem` al inicio de la lista enlazada de inventario (posición prioritaria):",
+      "codeTemplate": "LinkedList<Item> inventario = new LinkedList<Item>();\nLinkedListNode<Item> nodo = inventario.__________(nuevoItem);",
+      "expectedAnswer": "AddFirst",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para agregar al inicio de la LinkedList...",
+      "hints": [
+        "El método de LinkedList<T> para insertar al inicio tiene 'First' en su nombre.",
+        "Es el opuesto de AddLast().",
+        "Add + First = ?"
+      ],
+      "explanation": "<strong>AddFirst(value)</strong> inserta un nodo al inicio (<em>head</em>) de la <strong>LinkedList&lt;T&gt;</strong> en <strong>O(1)</strong>. Devuelve el <code>LinkedListNode&lt;T&gt;</code> creado, útil para referencias futuras a ese nodo. Útil para dar prioridad a ciertos ítems en el inventario."
+    },
+    {
+      "id": "ed_ex_015",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe las 3 líneas para: (1) crear un Stack<string> llamado `menuNav`, (2) hacer Push de `\"MainMenu\"`, (3) hacer Push de `\"PauseMenu\"`:",
+      "codeTemplate": null,
+      "expectedAnswer": "Stack<string> menuNav = new Stack<string>();\nmenuNav.Push(\"MainMenu\");\nmenuNav.Push(\"PauseMenu\");",
+      "alternateAnswers": [
+        "Stack<string> menuNav = new Stack<string>(); menuNav.Push(\"MainMenu\"); menuNav.Push(\"PauseMenu\");"
+      ],
+      "placeholder": "Escribe las 3 líneas del Stack de navegación...",
+      "hints": [
+        "Línea 1: declara el Stack con new Stack<string>().",
+        "Línea 2: Push del primer menú.",
+        "Línea 3: Push del segundo menú — quedará en el tope."
+      ],
+      "explanation": "El <strong>Stack</strong> de navegación: después de estos tres pasos, el tope es <code>\"PauseMenu\"</code>. Al presionar 'Atrás', <code>Pop()</code> elimina <code>\"PauseMenu\"</code> y el tope pasa a <code>\"MainMenu\"</code>, regresando al menú principal."
+    },
+    {
+      "id": "ed_ex_016",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el método completo `void SpawnSiguiente(Queue<string> oleada)` que, si la cola no está vacía, hace Dequeue y llama a `SpawnEnemy(tipo)` con el resultado:",
+      "codeTemplate": null,
+      "expectedAnswer": "void SpawnSiguiente(Queue<string> oleada) { if (oleada.Count > 0) { string tipo = oleada.Dequeue(); SpawnEnemy(tipo); } }",
+      "alternateAnswers": [
+        "void SpawnSiguiente(Queue<string> oleada)\n{\n    if (oleada.Count > 0)\n    {\n        string tipo = oleada.Dequeue();\n        SpawnEnemy(tipo);\n    }\n}"
+      ],
+      "placeholder": "Escribe el método completo con guardia y Dequeue...",
+      "hints": [
+        "Verifica oleada.Count > 0 antes de Dequeue().",
+        "Dequeue() devuelve el string del tipo de enemigo.",
+        "Pasa ese string a SpawnEnemy()."
+      ],
+      "explanation": "La guardia <code>oleada.Count &gt; 0</code> evita <code>InvalidOperationException</code>. <code>Dequeue()</code> extrae el siguiente tipo de enemigo en orden <strong>FIFO</strong> y <code>SpawnEnemy(tipo)</code> lo crea en el mundo. Este patrón es el núcleo de los sistemas de oleadas en Unity."
+    },
+    {
+      "id": "ed_ex_017",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este sistema de undo/redo: el Pop del undoStack va al redoStack para poder rehacer:",
+      "codeTemplate": "public void Undo(Stack<GameAction> undoStack, Stack<GameAction> redoStack)\n{\n    if (undoStack.Count > 0)\n    {\n        GameAction accion = undoStack.__________(  );\n        accion.Revert();\n        redoStack.Push(accion);\n    }\n}",
+      "expectedAnswer": "Pop",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para extraer del undoStack...",
+      "hints": [
+        "Necesitas extraer la acción más reciente del undoStack.",
+        "El método que elimina y devuelve el tope del Stack.",
+        "Es el opuesto de Push()."
+      ],
+      "explanation": "<code>Pop()</code> extrae la acción más reciente del <strong>undoStack</strong>. Después de revertirla, se hace <code>redoStack.Push(accion)</code> para poder rehacerla con Ctrl+Y. Este patrón de dos stacks (undo + redo) es el estándar en editores profesionales."
+    },
+    {
+      "id": "ed_ex_018",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe las 4 declaraciones de stats básicos de un personaje: `hp` (float, 100), `nivel` (int, 1), `nombre` (string, \"Guerrero\"), `estaActivo` (bool, true):",
+      "codeTemplate": null,
+      "expectedAnswer": "float hp = 100f;\nint nivel = 1;\nstring nombre = \"Guerrero\";\nbool estaActivo = true;",
+      "alternateAnswers": [
+        "float hp = 100F;\nint nivel = 1;\nstring nombre = \"Guerrero\";\nbool estaActivo = true;"
+      ],
+      "placeholder": "Escribe las 4 declaraciones de variables...",
+      "hints": [
+        "float para HP (con la f al final), int para nivel entero.",
+        "string para texto con comillas dobles.",
+        "bool para estado verdadero/falso."
+      ],
+      "explanation": "Las cuatro variables: <code>float hp = 100f;</code> (sufijo <code>f</code> obligatorio), <code>int nivel = 1;</code> (entero), <code>string nombre = \"Guerrero\";</code> (reference type), <code>bool estaActivo = true;</code> (value type, solo true/false). Elegir el tipo correcto es fundamental para el rendimiento."
+    },
+    {
+      "id": "ed_ex_019",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un sistema de entidades en Unity tiene 5,000 enemigos activos. Cada frame, algunos enemigos mueren (se deben eliminar) y nuevos aparecen (se insertan). Las operaciones de eliminación son más frecuentes que el acceso por índice. ¿Qué estructura optimiza mejor este escenario?",
+      "options": [
+        "LinkedList<Enemy> — eliminación O(1) con referencia al nodo; ideal para inserciones/eliminaciones frecuentes.",
+        "List<Enemy> — acceso O(1) por índice; aunque Remove() sea O(n), es más simple de usar.",
+        "Enemy[] — array puro; la contiguidad en memoria maximiza el rendimiento del CPU cache.",
+        "Stack<Enemy> — LIFO procesa los enemigos más nuevos primero, reduciendo la carga.",
+        "Queue<Enemy> — FIFO procesa en orden de aparición, distribuyendo el trabajo equitativamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>LinkedList&lt;Enemy&gt;</strong> es óptima cuando las <em>inserciones y eliminaciones dominan</em>: si cada <code>Enemy</code> guarda su propio <code>LinkedListNode&lt;Enemy&gt;</code>, su eliminación es <strong>O(1)</strong> — solo actualiza punteros. Con 5,000 enemigos, <code>List.Remove()</code> podría desplazar hasta 5,000 elementos cada frame."
+    },
+    {
+      "id": "ed_ex_020",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál de estas afirmaciones sobre estructuras de datos en Unity es INCORRECTA?",
+      "options": [
+        "Stack<T>.Pop() y Queue<T>.Dequeue() en colecciones vacías lanzan IndexOutOfRangeException.",
+        "List<T> internamente usa un array que se redimensiona cuando se llena.",
+        "LinkedList<T> tiene acceso O(n) por índice porque los nodos no están contiguos en memoria.",
+        "El boxing ocurre cuando un value type (int, float) se convierte implícitamente a object.",
+        "Queue<T> sigue FIFO y Stack<T> sigue LIFO — son principios opuestos de ordenamiento."
+      ],
+      "correctIndex": 0,
+      "explanation": "La afirmación incorrecta es la primera: <strong>Pop()</strong> y <strong>Dequeue()</strong> en colecciones vacías lanzan <strong>InvalidOperationException</strong> (no <strong>IndexOutOfRangeException</strong>, que es para arrays). Las demás son correctas: <strong>List&lt;T&gt;</strong> usa array interno, <strong>LinkedList&lt;T&gt;</strong> tiene acceso O(n), el <strong>boxing</strong> convierte value types a object, y FIFO/LIFO son principios opuestos."
+    }
+  ]
+}

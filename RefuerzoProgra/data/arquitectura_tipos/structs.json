@@ -1,0 +1,365 @@
+{
+  "id": "structs",
+  "title": "Structs vs Clases",
+  "icon": "📦",
+  "color": "#3949AB",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "Value Type vs Reference Type",
+        "type": "definition",
+        "content": "En C#, un <strong>struct</strong> es un <strong>value type</strong>: se almacena en el stack y se copia completo al asignarse. Una <strong>class</strong> es un <strong>reference type</strong>: se almacena en el heap y al asignarse solo se copia la referencia. Ejemplo: <code>Vector3 a = new Vector3(1,0,0); Vector3 b = a; b.x = 5;</code> — aquí <code>a.x</code> sigue siendo 1 porque <code>b</code> es una copia independiente. Con una clase, <code>b</code> y <code>a</code> apuntarían al mismo objeto y la modificación afectaría a ambos."
+      },
+      {
+        "id": "doc-2",
+        "title": "Cuándo usar struct en Unity",
+        "type": "code",
+        "content": "// ✅ Struct ideal: resultado de hit detection (pequeño, copiado por valor, temporal)\npublic struct HitResult\n{\n    public bool didHit;\n    public float distance;\n    public Vector3 point;\n    public Vector3 normal;\n}\n\n// ✅ Unity usa struct para Vector2, Vector3, Color, Quaternion — son pequeños y se copian con frecuencia\n// Vector3 a = transform.position; // copia por valor — intencional\n\n// ❌ Struct inapropiado: entidad con identidad propia y estado mutable complejo\npublic struct Enemy   // MAL: los structs no soportan herencia, no pueden ser null,\n{                     // y copiar un Enemy grande en cada asignación penaliza la performance\n    public string name;\n    public float health;\n    public float mana;\n    public List<Item> inventory; // referencia dentro de struct — confuso\n    public AIStateMachine ai;   // estado complejo — usa clase\n}\n\n// ✅ Regla práctica: struct si cumple los 3 criterios:\n// 1. Pequeño (≤ 16 bytes es ideal)\n// 2. Inmutable o copiado intencionalmente\n// 3. No necesita herencia ni null"
+      },
+      {
+        "id": "doc-3",
+        "title": "GC, Boxing y Por Qué Unity Usa Structs",
+        "type": "analogy",
+        "content": "El <strong>GC</strong> (Garbage Collector) de Unity puede causar micro-stutters cuando limpia objetos del heap. Los <strong>structs</strong> evitan presión al <strong>GC</strong> porque viven en el stack y se limpian automáticamente al salir del scope. Sin embargo, hay una trampa: el <strong>boxing</strong>. Si asignas un struct a una variable de tipo <code>object</code> o a una interfaz, C# lo envuelve en una caja heap (<strong>boxing</strong>), creando exactamente la allocación que querías evitar. Por eso Unity usa <code>Vector3</code> como <strong>struct</strong>: se crea y destruye millones de veces por frame (en física, animación, IA) sin presionar al <strong>GC</strong>."
+      },
+      {
+        "id": "doc-4",
+        "title": "Limitaciones de los Structs en Unity",
+        "type": "note",
+        "content": "Los <strong>structs</strong> tienen restricciones importantes: (1) <strong>No soportan herencia</strong> — no puedes escribir <code>struct B : A</code>; (2) <strong>No pueden ser null</strong> — siempre tienen un valor por defecto con todos los campos en cero/false; (3) Pueden tener interfaces, pero implementarlas causa <strong>boxing</strong>; (4) En Unity, los <strong>structs</strong> no pueden ser <code>[SerializeField]</code> a menos que tengan el atributo <code>[System.Serializable]</code>; (5) Los structs grandes (más de ~16-32 bytes) pueden ser contraproducentes porque copiarlos es más costoso que una referencia."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Structs",
+        "type": "list",
+        "items": [
+          "Los structs son value types: se copian por valor, no por referencia.",
+          "Viven en el stack — no presionan al GC como las clases (heap).",
+          "No soportan herencia entre structs ni pueden ser null.",
+          "El boxing ocurre al asignar un struct a object o una interfaz: crea heap allocation.",
+          "Úsalos para datos pequeños, inmutables y sin identidad: Vector2, Color, HitResult.",
+          "Unity internamente usa structs para Vector3, Quaternion, Color y RaycastHit."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "str_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es la diferencia fundamental entre un **struct** y una clase en C# respecto a cómo se almacenan en memoria?",
+      "options": [
+        "El struct es un value type que se almacena en el stack; la clase es un reference type que se almacena en el heap.",
+        "El struct se almacena en el heap y la clase en el stack, por eso las clases son más rápidas.",
+        "Ambos se almacenan en el heap; la única diferencia es que el struct no tiene métodos.",
+        "El struct usa memoria estática y la clase usa memoria dinámica del pool de Unity.",
+        "No hay diferencia de almacenamiento; solo difieren en que el struct no tiene constructor."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>struct</strong> es un <strong>value type</strong> y vive en el <strong>stack</strong> (o dentro del objeto contenedor si es campo). Una <strong>class</strong> es un <strong>reference type</strong>: el objeto vive en el <strong>heap</strong> y la variable guarda una referencia. Esta diferencia impacta directamente en el <strong>GC</strong>."
+    },
+    {
+      "id": "str_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Por qué Unity implementa `Vector3` como un **struct** en lugar de una clase?",
+      "options": [
+        "Porque Vector3 es pequeño y se crea/copia millones de veces por frame sin presionar al GC.",
+        "Porque los structs permiten herencia y Vector3 hereda de Vector2.",
+        "Porque los structs en Unity se serializan automáticamente en el Inspector.",
+        "Porque una clase para Vector3 no podría usar operadores como + ni *.",
+        "Porque los structs ocupan exactamente 12 bytes y eso es requerido por la GPU."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Vector3</code> se usa millones de veces por frame en física, animaciones e IA. Como <strong>struct</strong>, cada instancia vive en el <strong>stack</strong> y no genera trabajo para el <strong>GC</strong>. Si fuera una clase, cada <code>transform.position</code> crearía una allocación en el heap y eventualmente causaría micro-stutters."
+    },
+    {
+      "id": "str_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Dado el código: `Vector3 a = new Vector3(1, 0, 0); Vector3 b = a; b.x = 9;` ¿Cuánto vale `a.x` después?",
+      "options": [
+        "1, porque Vector3 es un struct (value type) y b es una copia independiente.",
+        "9, porque b y a apuntan al mismo Vector3 en memoria.",
+        "0, porque asignar b a a reinicia el valor original.",
+        "Error de compilación: los structs no soportan asignación directa.",
+        "Depende: si están en el mismo método vale 1, si están en métodos distintos vale 9."
+      ],
+      "correctIndex": 0,
+      "explanation": "Como <code>Vector3</code> es un <strong>struct</strong> (<strong>value type</strong>), <code>b = a</code> crea una copia completa e independiente. Modificar <code>b.x</code> no afecta a <code>a</code>. Si fuera una clase, ambas variables apuntarían al mismo objeto y <code>a.x</code> también sería 9."
+    },
+    {
+      "id": "str_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "En un FPS con hit detection ejecutándose cada frame, ¿struct o clase para el resultado del Raycast? ¿Por qué?",
+      "options": [
+        "Struct, porque se crea y descarta cada frame sin generar allocaciones en el heap que presionen al GC.",
+        "Clase, porque los structs no pueden contener Vector3 para la posición del impacto.",
+        "Clase, porque el resultado del Raycast necesita herencia de RaycastResult.",
+        "Struct, pero solo si el juego corre a menos de 60 FPS para reducir overhead.",
+        "Clase, porque los structs no son compatibles con Physics.Raycast de Unity."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un resultado de hit (<code>HitResult</code>) es pequeño, temporal y se usa solo en ese frame. Como <strong>struct</strong>, vive en el stack: no hay allocación en el heap ni trabajo para el <strong>GC</strong>. Unity ya aplica esto: <code>RaycastHit</code> es un <strong>struct</strong>."
+    },
+    {
+      "id": "str_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué es el **boxing** en C# y por qué penaliza el rendimiento al usarlo con structs?",
+      "options": [
+        "Boxing ocurre cuando un struct se asigna a object o una interfaz, creando una allocación en el heap que el GC debe limpiar.",
+        "Boxing es el proceso de serializar un struct a JSON, que es lento por la reflexión.",
+        "Boxing convierte un struct en una clase mediante herencia implícita, gastando más memoria.",
+        "Boxing es cuando Unity copia un struct al pasarlo como parámetro a un método virtual.",
+        "Boxing ocurre cuando un struct tiene más de 16 bytes y debe partirse en múltiples registros del CPU."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>boxing</strong> envuelve un <strong>struct</strong> (valor del stack) en un objeto del heap al asignarlo a <code>object</code> o una interfaz. Esto crea exactamente la allocación de heap que los structs debían evitar, generando trabajo adicional para el <strong>GC</strong>."
+    },
+    {
+      "id": "str_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál de estas características es una limitación de los **structs** que los hace inapropiados para representar enemigos en un RPG?",
+      "options": [
+        "Los structs no soportan herencia, no pueden ser null y copiarlos es costoso si tienen muchos campos.",
+        "Los structs no pueden tener métodos, solo campos de datos primitivos.",
+        "Los structs no se pueden usar con List<T> ni con arrays en Unity.",
+        "Los structs no son compatibles con el sistema de serialización de Unity.",
+        "Los structs siempre son públicos y no se puede restringir su acceso."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un enemigo RPG necesita herencia (Enemy → Boss), puede ser <code>null</code> (enemigo inexistente) y tiene muchos campos (stats, AI, loot). Los <strong>structs</strong> no soportan herencia entre structs, no pueden ser <code>null</code> y copiar un struct grande por asignación sería costoso."
+    },
+    {
+      "id": "str_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un sistema de stats de RPG usa `interface IDamageable`. Si defines `struct EnemyStats : IDamageable`, ¿qué problema de rendimiento puede ocurrir?",
+      "options": [
+        "Boxing: al asignar EnemyStats a IDamageable se crea una allocación en el heap, anulando la ventaja del struct.",
+        "Stack overflow: los structs con interfaces consumen demasiado stack por recursión implícita.",
+        "GC thrashing: Unity regenera el struct en cada frame al detectar la interfaz.",
+        "Null reference: implementar una interfaz hace que el struct pueda ser null.",
+        "Deadlock: las interfaces en structs no pueden llamarse desde threads secundarios."
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando asignas <code>EnemyStats</code> (struct) a una variable de tipo <code>IDamageable</code> (interfaz), C# hace <strong>boxing</strong>: crea un objeto wrapper en el heap. Esto ocurre también al pasar el struct como parámetro de tipo <code>IDamageable</code>. El beneficio de evitar el <strong>GC</strong> desaparece."
+    },
+    {
+      "id": "str_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿En qué escenario de Unity el uso de **structs** en lugar de clases tiene el mayor impacto positivo en rendimiento?",
+      "options": [
+        "En un sistema de partículas o física que genera y descarta miles de datos pequeños por frame (posiciones, velocidades, resultados de colisión).",
+        "En la carga inicial de escena, porque los structs parsean JSON más rápido que las clases.",
+        "En la UI de Unity, porque los structs permiten que los Canvas se actualicen más rápido.",
+        "En el sistema de audio, porque los structs eliminan la latencia de los AudioSource.",
+        "En el networking, porque los structs se serializan automáticamente sin necesitar NetCode."
+      ],
+      "correctIndex": 0,
+      "explanation": "El mayor impacto es en sistemas de alta frecuencia: física, partículas, hit detection. Si cada colisión o partícula crea un objeto clase en el heap, el <strong>GC</strong> debe limpiarlos periódicamente causando micro-stutters. Con <strong>structs</strong>, los datos temporales de cada frame viven en el stack y se limpian automáticamente."
+    },
+    {
+      "id": "str_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "question": "¿Cómo se llama el proceso en C# donde un struct es envuelto automáticamente en un objeto del heap al asignarse a una variable de tipo `object` o una interfaz?",
+      "target": "boxing",
+      "acceptedAnswers": ["boxing", "box", "boxing/unboxing", "boxing y unboxing"],
+      "hints": [
+        "Es una palabra en inglés que describe meter algo dentro de una 'caja' (box).",
+        "Ocurre cuando un valor del stack necesita convertirse a un tipo del heap.",
+        "La operación inversa se llama unboxing."
+      ],
+      "explanation": "El <strong>boxing</strong> convierte un <strong>value type</strong> (struct) en una referencia del heap envolviéndolo en un objeto. El proceso inverso se llama <strong>unboxing</strong>. Ambos generan allocaciones que el <strong>GC</strong> debe gestionar."
+    },
+    {
+      "id": "str_id_002",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código:",
+      "code": "public struct StatSnapshot\n{\n    public int attack;\n    public int defense;\n    public float speed;\n}",
+      "question": "¿Esta definición es de un struct o de una clase? Responde solo el tipo.",
+      "target": "struct",
+      "acceptedAnswers": ["struct", "estructura", "value type", "struct (value type)"],
+      "hints": [
+        "Observa la palabra clave que aparece después de public.",
+        "En C#, para definir una estructura de valor se usa una palabra diferente a class.",
+        "La palabra clave es 'struct'."
+      ],
+      "explanation": "La palabra clave <strong><code>struct</code></strong> indica que es un <strong>value type</strong>. <code>StatSnapshot</code> es un struct pequeño (3 campos, ~12 bytes) apropiado para capturar el estado de stats en un momento dado sin generar allocaciones en el heap."
+    },
+    {
+      "id": "str_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "question": "¿Qué nombre recibe el componente automático de C# que libera objetos del heap que ya no tienen referencias, y cuya presión puede causar micro-stutters en Unity?",
+      "target": "Garbage Collector",
+      "acceptedAnswers": ["Garbage Collector", "GC", "garbage collector", "recolector de basura"],
+      "hints": [
+        "Su sigla es GC y en español se traduce como 'recolector de basura'.",
+        "Es el sistema que limpia automáticamente los objetos del heap que ya no se usan.",
+        "Los structs ayudan a reducir la presión sobre este sistema."
+      ],
+      "explanation": "El <strong>Garbage Collector</strong> (<strong>GC</strong>) libera automáticamente la memoria del heap ocupada por objetos sin referencias. En Unity, si se generan muchas allocaciones en el heap por frame, el GC hace pausas periódicas que se manifiestan como micro-stutters visibles en juegos de acción."
+    },
+    {
+      "id": "str_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "public struct HitResult\n{\n    public bool didHit;\n    public float distance;\n    public Vector3 point;\n}\n\n// En un método:\nHitResult a = new HitResult { didHit = true, distance = 5f };\nHitResult b = a;\nb.didHit = false;",
+      "question": "Después de la última línea, ¿cuánto vale `a.didHit`?",
+      "target": "true",
+      "acceptedAnswers": ["true", "verdadero", "True"],
+      "hints": [
+        "HitResult es un struct, que es un value type.",
+        "Al hacer b = a, ¿se copia el valor o se comparte la referencia?",
+        "Los value types se copian por valor: b es completamente independiente de a."
+      ],
+      "explanation": "<code>a.didHit</code> sigue siendo <code><strong>true</strong></code>. Como <code>HitResult</code> es un <strong>struct</strong> (<strong>value type</strong>), <code>b = a</code> crea una copia completa e independiente. Cambiar <code>b.didHit</code> no afecta a <code>a</code>."
+    },
+    {
+      "id": "str_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "question": "¿Por qué un struct en C# no puede valer `null` (a diferencia de una clase)?",
+      "target": "es un value type",
+      "acceptedAnswers": ["es un value type", "value type", "no es un reference type", "es un tipo de valor", "los value types no pueden ser null", "siempre tiene un valor"],
+      "hints": [
+        "null representa la ausencia de referencia a un objeto.",
+        "Los structs no son objetos en el heap: son valores en el stack.",
+        "Solo los reference types (clases) pueden apuntar a 'ningún objeto' (null)."
+      ],
+      "explanation": "Un <strong>struct</strong> es un <strong>value type</strong>: siempre contiene un valor concreto (todos sus campos inicializados a cero por defecto). <code>null</code> significa 'no hay referencia a objeto' — un concepto que solo aplica a <strong>reference types</strong> (clases)."
+    },
+    {
+      "id": "str_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Considera este código:",
+      "code": "public struct EnemyData { public string name; public int hp; }\n\n// Fragmento de código:\nobject boxed = new EnemyData { name = \"Orc\", hp = 100 }; // Línea A\nEnemyData unboxed = (EnemyData)boxed;                    // Línea B",
+      "question": "¿Cómo se llama la operación de la Línea A (struct → object) y de la Línea B (object → struct)?",
+      "target": "boxing y unboxing",
+      "acceptedAnswers": ["boxing y unboxing", "boxing / unboxing", "boxing e unboxing", "Línea A: boxing, Línea B: unboxing"],
+      "hints": [
+        "La operación de meter un valor en una 'caja' del heap se llama...",
+        "La operación inversa de sacar el valor de la caja se llama con el prefijo 'un-'.",
+        "Ambas operaciones son costosas porque involucran allocaciones en el heap."
+      ],
+      "explanation": "La Línea A es <strong>boxing</strong>: el struct <code>EnemyData</code> se envuelve en un objeto del heap. La Línea B es <strong>unboxing</strong>: el valor se extrae de vuelta a un struct. Ambas operaciones tienen costo de rendimiento (allocación, GC) y deben evitarse en código de alto rendimiento."
+    },
+    {
+      "id": "str_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la palabra clave para declarar `HitResult` como un **struct** en lugar de una clase:",
+      "codeTemplate": "public __________ HitResult\n{\n    public bool didHit;\n    public float distance;\n    public Vector3 point;\n}",
+      "expectedAnswer": "struct",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave correcta...",
+      "hints": [
+        "No es 'class'. Los value types en C# usan una palabra clave diferente.",
+        "La palabra clave es la misma que se usa en C y C++ para estructuras de datos.",
+        "En inglés, 'estructura' se dice 'struct'."
+      ],
+      "explanation": "La palabra clave <strong><code>struct</code></strong> declara un <strong>value type</strong>. A diferencia de <code>class</code>, las instancias de struct viven en el stack, se copian por valor y no generan allocaciones en el heap."
+    },
+    {
+      "id": "str_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el struct `StatSnapshot` agregando el atributo necesario para que Unity pueda serializarlo en el Inspector:",
+      "codeTemplate": "[__________]\npublic struct StatSnapshot\n{\n    public int attack;\n    public int defense;\n}",
+      "expectedAnswer": "System.Serializable",
+      "alternateAnswers": ["Serializable"],
+      "placeholder": "Escribe el atributo de serialización...",
+      "hints": [
+        "Unity solo serializa structs si tienen un atributo específico de C#.",
+        "El atributo indica que la clase/struct puede ser serializado.",
+        "Se escribe entre corchetes y su nombre completo incluye el namespace System."
+      ],
+      "explanation": "El atributo <strong><code>[System.Serializable]</code></strong> (o <code>[Serializable]</code> con <code>using System;</code>) le indica a Unity que este struct puede ser mostrado en el Inspector y guardado en escenas. Sin él, los campos del struct no aparecen serializados."
+    },
+    {
+      "id": "str_cw_003",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la declaración completa del struct `HitData` con tres campos: `bool didHit`, `float distance` y `Vector3 normal`.",
+      "codeTemplate": null,
+      "expectedAnswer": "public struct HitData { public bool didHit; public float distance; public Vector3 normal; }",
+      "alternateAnswers": [
+        "public struct HitData\n{\n    public bool didHit;\n    public float distance;\n    public Vector3 normal;\n}"
+      ],
+      "placeholder": "Escribe el struct completo...",
+      "hints": [
+        "Usa la palabra clave struct (no class) después de public.",
+        "Declara los tres campos dentro de las llaves con sus tipos correctos.",
+        "Vector3 es el tipo de Unity para vectores de 3 componentes."
+      ],
+      "explanation": "<code>HitData</code> es un <strong>struct</strong> ideal para hit detection: pequeño, temporal, copiado por valor. Los tres campos (<code>bool</code>, <code>float</code>, <code>Vector3</code>) suman aproximadamente 16 bytes, un tamaño eficiente para un struct."
+    },
+    {
+      "id": "str_cw_004",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código para evitar boxing al pasar el struct a un método genérico con restricción de tipo:",
+      "codeTemplate": "// Con restricción: evita boxing\npublic void Process<T>(T data) where T : __________\n{\n    // Trabaja con data sin boxing\n}",
+      "expectedAnswer": "struct",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la restricción de tipo genérico...",
+      "hints": [
+        "Para restringir un genérico a solo aceptar value types (structs), se usa una restricción 'where T : ...'",
+        "La restricción que garantiza que T es un value type usa la misma palabra clave que la declaración de struct.",
+        "where T : struct garantiza que T es un value type y evita boxing."
+      ],
+      "explanation": "<code>where T : struct</code> restringe el genérico a <strong>value types</strong>. Esto garantiza que el compilador pueda optimizar el acceso sin <strong>boxing</strong>. Si usaras <code>where T : class</code> obligarías a <strong>reference types</strong>; sin restricción, el compilador puede hacer boxing al pasar structs."
+    },
+    {
+      "id": "str_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una función `PerformRaycast` que usa `Physics.Raycast`, recibe un `Ray` y retorna un `HitResult` struct con `didHit` (bool) y `distance` (float). Asume que HitResult ya está definido.",
+      "codeTemplate": null,
+      "expectedAnswer": "HitResult PerformRaycast(Ray ray) { RaycastHit info; bool hit = Physics.Raycast(ray, out info, 100f); return new HitResult { didHit = hit, distance = hit ? info.distance : 0f }; }",
+      "alternateAnswers": [
+        "public HitResult PerformRaycast(Ray ray)\n{\n    RaycastHit info;\n    bool hit = Physics.Raycast(ray, out info, 100f);\n    return new HitResult { didHit = hit, distance = hit ? info.distance : 0f };\n}"
+      ],
+      "placeholder": "Escribe la función completa...",
+      "hints": [
+        "Physics.Raycast retorna bool y recibe (Ray, out RaycastHit, float maxDistance).",
+        "Crea el HitResult struct con inicializador: new HitResult { didHit = ..., distance = ... }.",
+        "Para distance usa un operador ternario: hit ? info.distance : 0f"
+      ],
+      "explanation": "La función retorna un <strong>struct</strong> <code>HitResult</code> por valor. El <code>RaycastHit</code> de Unity también es un struct. Retornar structs pequeños por valor es eficiente y no genera allocaciones en el heap, ideal para código de hit detection que corre cada frame."
+    },
+    {
+      "id": "str_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Identifica y corrige el boxing en este código reemplazando el tipo de la lista por uno que evite boxing al almacenar structs `Vector3`:",
+      "codeTemplate": "// ❌ Causa boxing por almacenar structs en List<object>\nList<object> positions = new List<object>();\npositions.Add(new Vector3(1, 2, 3)); // boxing aquí\n\n// ✅ Corrección: usa el tipo concreto para evitar boxing\nList<__________> positions = new List<__________>();\npositions.Add(new Vector3(1, 2, 3)); // sin boxing",
+      "expectedAnswer": "Vector3",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el tipo concreto para evitar boxing...",
+      "hints": [
+        "El boxing ocurre porque List<object> trata todo como reference type.",
+        "Para almacenar Vector3 sin boxing, la lista debe ser tipada con el tipo exacto del struct.",
+        "Si el struct es Vector3, la lista debe ser List<Vector3>."
+      ],
+      "explanation": "<code>List&lt;Vector3&gt;</code> almacena los structs directamente sin <strong>boxing</strong>. La versión <code>List&lt;object&gt;</code> hace <strong>boxing</strong> en cada <code>Add()</code> porque convierte el <strong>value type</strong> en un objeto del heap. Los generics con tipo concreto evitan este costo."
+    }
+  ]
+}

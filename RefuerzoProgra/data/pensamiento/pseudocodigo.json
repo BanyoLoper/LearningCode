@@ -1,0 +1,372 @@
+{
+  "id": "pseudocodigo",
+  "title": "Pseudocódigo",
+  "icon": "📝",
+  "color": "#607D8B",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es el Pseudocódigo?",
+        "type": "definition",
+        "content": "El <strong>pseudocódigo</strong> es una forma de describir un algoritmo usando lenguaje natural estructurado, antes de escribirlo en un lenguaje de programación real. No tiene una sintaxis oficial, pero sigue convenciones que imitan las estructuras de control de la programación: <strong>IF/ELSE</strong>, <strong>WHILE</strong>, <strong>FOR</strong>, <strong>RETURN</strong>. Es una herramienta de diseño: te permite pensar la lógica del programa sin preocuparte por puntos y coma, tipos de datos o errores de compilación."
+      },
+      {
+        "id": "doc-2",
+        "title": "Estructuras Básicas en Pseudocódigo",
+        "type": "code",
+        "content": "// Estructura IF/ELSE\nSI vida <= 0 ENTONCES\n    MostrarPantallaDerrota()\nSI NO\n    ContinuarJuego()\nFIN SI\n\n// Estructura WHILE\nMIENTRAS enemigosVivos > 0 HACER\n    AtacarEnemigo()\n    ActualizarContador()\nFIN MIENTRAS\n\n// Estructura FOR\nPARA i DESDE 0 HASTA inventario.Length - 1 HACER\n    MostrarItem(inventario[i])\nFIN PARA\n\n// Estructura RETURN\nFUNCION ObtenerDano(nivel)\n    RETORNAR nivel * 10 + 5\nFIN FUNCION"
+      },
+      {
+        "id": "doc-3",
+        "title": "Traducción Pseudocódigo → C#",
+        "type": "code",
+        "content": "// PSEUDOCÓDIGO:\n// SI jugador.vida <= 0 ENTONCES\n//     jugador.Estado = \"Muerto\"\n//     MostrarGameOver()\n// FIN SI\n\n// CÓDIGO C#:\nif (jugador.vida <= 0)\n{\n    jugador.Estado = \"Muerto\";\n    MostrarGameOver();\n}\n\n// PSEUDOCÓDIGO:\n// MIENTRAS enemigo.estaVivo Y distancia < 5 HACER\n//     enemigo.MoverHaciaJugador()\n//     SI enRango ENTONCES enemigo.Atacar() FIN SI\n// FIN MIENTRAS\n\n// CÓDIGO C#:\nwhile (enemigo.estaVivo && distancia < 5)\n{\n    enemigo.MoverHaciaJugador();\n    if (enRango) enemigo.Atacar();\n}"
+      },
+      {
+        "id": "doc-4",
+        "title": "Pseudocódigo en el Contexto de Videojuegos",
+        "type": "analogy",
+        "content": "Antes de programar la IA de un enemigo en Unity, conviene escribir el pseudocódigo: <em>\"SI el jugador está cerca, atacar; SI no, patrullar; SI vida baja, huir\"</em>. Esto define la lógica sin atarse a la sintaxis de C#. Cuando el pseudocódigo está claro, traducirlo a código es mecánico. Los diseñadores de juegos también usan pseudocódigo para comunicar reglas sin necesitar conocer programación."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave del Pseudocódigo",
+        "type": "list",
+        "items": [
+          "No es un lenguaje de programación: no se compila ni ejecuta.",
+          "Usa palabras en lenguaje natural: SI, MIENTRAS, PARA, RETORNAR.",
+          "Debe ser suficientemente claro para que cualquier programador lo entienda.",
+          "Cada estructura de control tiene un cierre: FIN SI, FIN MIENTRAS, FIN PARA.",
+          "La indentación comunica la jerarquía y anidamiento.",
+          "Se escribe antes de codificar para planear la lógica del algoritmo."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "ps_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál es el propósito principal del pseudocódigo en el desarrollo de software?",
+      "options": [
+        "Describir la lógica de un algoritmo en lenguaje natural antes de escribir código real.",
+        "Ejecutarse directamente en Unity para probar el comportamiento de un juego.",
+        "Reemplazar los diagramas de flujo en todos los proyectos profesionales.",
+        "Generar código C# automáticamente a partir de instrucciones en español.",
+        "Documentar el código ya escrito para que otros programadores lo entiendan."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>pseudocódigo</strong> es una herramienta de diseño que permite expresar la lógica de un algoritmo usando lenguaje natural estructurado, <em>antes</em> de implementarlo en un lenguaje real. No se ejecuta ni compila; sirve para planear."
+    },
+    {
+      "id": "ps_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Cuál de estas líneas de pseudocódigo representa correctamente una estructura condicional para verificar si un jugador está muerto?",
+      "options": [
+        "SI jugador.vida <= 0 ENTONCES MostrarGameOver() FIN SI",
+        "MIENTRAS jugador.vida <= 0 HACER MostrarGameOver() FIN MIENTRAS",
+        "PARA cada vida EN jugador HACER MostrarGameOver() FIN PARA",
+        "FUNCION vida <= 0 RETORNAR MostrarGameOver() FIN FUNCION",
+        "INICIO vida <= 0 EJECUTAR MostrarGameOver() FIN"
+      ],
+      "correctIndex": 0,
+      "explanation": "La estructura <strong>SI...ENTONCES...FIN SI</strong> corresponde al <strong>IF</strong> condicional. Las otras opciones usan estructuras incorrectas: MIENTRAS es un bucle, PARA es un iterador, y las demás no son estructuras de pseudocódigo válidas."
+    },
+    {
+      "id": "ps_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué estructura de pseudocódigo equivale al bucle `while` de C#?",
+      "options": [
+        "MIENTRAS condición HACER ... FIN MIENTRAS",
+        "SI condición ENTONCES ... FIN SI",
+        "PARA i DESDE 0 HASTA n HACER ... FIN PARA",
+        "REPETIR ... HASTA condición",
+        "FUNCION condición RETORNAR ... FIN FUNCION"
+      ],
+      "correctIndex": 0,
+      "explanation": "La estructura <strong>MIENTRAS...HACER...FIN MIENTRAS</strong> es la traducción directa del bucle <strong>while</strong> de C#. Evalúa la condición antes de cada iteración y repite el bloque mientras sea verdadera."
+    },
+    {
+      "id": "ps_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Lee este pseudocódigo de IA enemiga:\n```\nSI distancia < 3 ENTONCES\n    Atacar()\nSI NO SI distancia < 10 ENTONCES\n    Perseguir()\nSI NO\n    Patrullar()\nFIN SI\n```\n¿Qué hace el enemigo si la distancia al jugador es 7?",
+      "options": [
+        "Persigue al jugador, porque 7 no es menor que 3 pero sí menor que 10.",
+        "Ataca al jugador, porque 7 es menor que 10.",
+        "Patrulla, porque 7 es mayor que 3.",
+        "Hace las tres acciones en orden: Atacar, Perseguir y Patrullar.",
+        "No hace nada, porque ninguna condición se cumple exactamente."
+      ],
+      "correctIndex": 0,
+      "explanation": "Con distancia = 7: la primera condición (<code>7 < 3</code>) es falsa, así que se evalúa la segunda (<code>7 < 10</code>), que es <strong>verdadera</strong>. Por lo tanto el enemigo ejecuta <strong>Perseguir()</strong>. La estructura SI NO SI encadena condiciones excluyentes."
+    },
+    {
+      "id": "ps_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el código C# equivalente a este pseudocódigo?\n```\nPARA i DESDE 0 HASTA enemigos.Length - 1 HACER\n    enemigos[i].TakeDamage(10)\nFIN PARA\n```",
+      "options": [
+        "for (int i = 0; i < enemigos.Length; i++) { enemigos[i].TakeDamage(10); }",
+        "while (i < enemigos.Length) { enemigos[i].TakeDamage(10); i++; }",
+        "foreach (int i in enemigos) { i.TakeDamage(10); }",
+        "for (int i = 1; i <= enemigos.Length; i++) { enemigos[i].TakeDamage(10); }",
+        "do { enemigos[i].TakeDamage(10); } while (i < enemigos.Length);"
+      ],
+      "correctIndex": 0,
+      "explanation": "\"PARA i DESDE 0 HASTA n-1\" se traduce como <strong><code>for (int i = 0; i &lt; n; i++)</code></strong>. La condición <code>i &lt; enemigos.Length</code> hace que el último índice sea <code>Length - 1</code>, igual que en el pseudocódigo."
+    },
+    {
+      "id": "ps_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el pseudocódigo correcto para una función que calcula el daño de un arma sumando el daño base más el nivel del jugador multiplicado por 5?",
+      "options": [
+        "FUNCION CalcularDano(danoBase, nivel)\n    RETORNAR danoBase + nivel * 5\nFIN FUNCION",
+        "SI danoBase + nivel * 5 ENTONCES\n    RETORNAR dano\nFIN SI",
+        "MIENTRAS danoBase > 0 HACER\n    dano = dano + nivel * 5\nFIN MIENTRAS",
+        "PARA cada nivel HACER\n    RETORNAR danoBase + 5\nFIN PARA",
+        "INICIO CalcularDano\n    dano = danoBase\n    dano += nivel\nFIN INICIO"
+      ],
+      "correctIndex": 0,
+      "explanation": "Una función en pseudocódigo se escribe con <strong>FUNCION...RETORNAR...FIN FUNCION</strong>. Los parámetros van entre paréntesis y el cálculo <code>danoBase + nivel * 5</code> se expresa directamente en la línea RETORNAR."
+    },
+    {
+      "id": "ps_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Lee este pseudocódigo:\n```\ncontador = 0\nMIENTRAS contador < 3 HACER\n    contador = contador + 1\n    SI contador == 2 ENTONCES\n        SALIR\n    FIN SI\nFIN MIENTRAS\n```\n¿Cuál es el valor final de `contador`?",
+      "options": [
+        "2",
+        "3",
+        "0",
+        "1",
+        "El bucle es infinito y no termina."
+      ],
+      "correctIndex": 0,
+      "explanation": "Iteración 1: contador=1, no es 2, continúa. Iteración 2: contador=2, la condición <code>contador == 2</code> es verdadera, se ejecuta SALIR (equivalente a <strong>break</strong>). El bucle termina con <strong>contador = 2</strong>."
+    },
+    {
+      "id": "ps_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál pseudocódigo representa correctamente un sistema de inventario que busca si existe un ítem específico?",
+      "options": [
+        "FUNCION BuscarItem(inventario, itemBuscado)\n    PARA i DESDE 0 HASTA inventario.Length - 1 HACER\n        SI inventario[i] == itemBuscado ENTONCES\n            RETORNAR verdadero\n        FIN SI\n    FIN PARA\n    RETORNAR falso\nFIN FUNCION",
+        "MIENTRAS inventario no vacío HACER\n    RETORNAR inventario[0]\nFIN MIENTRAS",
+        "SI itemBuscado en inventario ENTONCES\n    inventario.Agregar(itemBuscado)\nFIN SI",
+        "PARA cada itemBuscado HACER\n    SI inventario == itemBuscado ENTONCES\n        RETORNAR inventario\n    FIN SI\nFIN PARA",
+        "FUNCION BuscarItem()\n    inventario = itemBuscado\n    RETORNAR verdadero\nFIN FUNCION"
+      ],
+      "correctIndex": 0,
+      "explanation": "La búsqueda lineal en un arreglo requiere: iterar con <strong>PARA</strong> por cada índice, comparar cada elemento con el buscado usando <strong>SI</strong>, retornar <strong>verdadero</strong> si se encuentra, y <strong>falso</strong> si el bucle termina sin encontrarlo. Este es el patrón clásico de búsqueda."
+    },
+    {
+      "id": "ps_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Lee este pseudocódigo:",
+      "code": "SI jugador.monedas >= 100 ENTONCES\n    jugador.ComprarEspada()\nFIN SI",
+      "question": "¿Qué estructura de control de C# representa este pseudocódigo?",
+      "target": "if",
+      "acceptedAnswers": ["if", "IF", "condicional", "estructura condicional", "if/else"],
+      "hints": [
+        "La estructura SI...ENTONCES en pseudocódigo equivale a una estructura de control en C#.",
+        "Solo se ejecuta el bloque si la condición es verdadera.",
+        "En inglés, 'si' se traduce como una palabra de dos letras."
+      ],
+      "explanation": "La estructura <strong>SI...ENTONCES...FIN SI</strong> en pseudocódigo equivale al <strong>if</strong> en C#. Evalúa una condición booleana y ejecuta el bloque de código solo si es verdadera."
+    },
+    {
+      "id": "ps_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este pseudocódigo de patrulla:",
+      "code": "MIENTRAS enemigo.estaVivo HACER\n    puntoActual = ObtenerSiguientePunto()\n    enemigo.MoverHacia(puntoActual)\nFIN MIENTRAS",
+      "question": "¿Cuántas veces se ejecuta el bloque interior si `enemigo.estaVivo` siempre es `true`?",
+      "target": "infinitas",
+      "acceptedAnswers": ["infinitas", "infinito", "infinitas veces", "sin fin", "bucle infinito", "forever"],
+      "hints": [
+        "La condición MIENTRAS se evalúa antes de cada iteración.",
+        "Si la condición nunca cambia a falso, ¿qué sucede con el bucle?",
+        "Un bucle que nunca termina se llama bucle _____."
+      ],
+      "explanation": "Si <code>enemigo.estaVivo</code> nunca cambia a <code>false</code>, la condición del <strong>MIENTRAS</strong> siempre es verdadera y el bucle se repite <strong>infinitas veces</strong> (bucle infinito). En un juego real, algo dentro del bucle debe eventualmente hacer que la condición sea falsa."
+    },
+    {
+      "id": "ps_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Lee este pseudocódigo y su traducción a C#:",
+      "code": "// PSEUDOCÓDIGO:\n// PARA i DESDE 0 HASTA 4 HACER\n//     Spawner.CrearEnemigo(i)\n// FIN PARA\n\n// CÓDIGO C#:\nfor (int i = 0; i < _____; i++)\n{\n    Spawner.CrearEnemigo(i);\n}",
+      "question": "¿Qué número debe ir en el espacio en blanco para que el código C# sea equivalente al pseudocódigo?",
+      "target": "5",
+      "acceptedAnswers": ["5"],
+      "hints": [
+        "El pseudocódigo dice 'HASTA 4', lo que significa que i toma los valores 0, 1, 2, 3 y 4.",
+        "Cuenta cuántas iteraciones hay: 0, 1, 2, 3, 4 son 5 valores.",
+        "En C#, la condición es i < n, donde n es el número total de iteraciones."
+      ],
+      "explanation": "\"DESDE 0 HASTA 4\" genera los valores 0, 1, 2, 3, 4 — en total <strong>5 iteraciones</strong>. En C#, <code>for (int i = 0; i &lt; 5; i++)</code> produce exactamente esos mismos valores. La condición es <code>i &lt; 5</code> (no <code>i &lt;= 4</code> también funciona, pero <code>i &lt; 5</code> es la convención estándar)."
+    },
+    {
+      "id": "ps_id_004",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este pseudocódigo de sistema de puntuación:",
+      "code": "FUNCION ObtenerRango(puntos)\n    SI puntos >= 1000 ENTONCES\n        RETORNAR \"S\"\n    SI NO SI puntos >= 500 ENTONCES\n        RETORNAR \"A\"\n    SI NO\n        RETORNAR \"B\"\n    FIN SI\nFIN FUNCION",
+      "question": "¿Qué valor retorna la función si `puntos` vale `750`?",
+      "target": "A",
+      "acceptedAnswers": ["A", "\"A\"", "'A'"],
+      "hints": [
+        "Evalúa la primera condición: ¿750 >= 1000?",
+        "Si la primera es falsa, evalúa la segunda: ¿750 >= 500?",
+        "Cuando una condición es verdadera, se retorna ese valor y no se evalúan las demás."
+      ],
+      "explanation": "Con puntos = 750: la condición <code>750 &gt;= 1000</code> es falsa, se pasa a la segunda: <code>750 &gt;= 500</code> es <strong>verdadera</strong>. La función retorna <strong>\"A\"</strong>. Las condiciones SI NO SI se evalúan en orden y solo se ejecuta la primera verdadera."
+    },
+    {
+      "id": "ps_id_005",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Lee este pseudocódigo de búsqueda del enemigo más cercano:",
+      "code": "FUNCION EnemigoCercano(enemigos, posJugador)\n    minDist = infinito\n    cercano = nulo\n    PARA i DESDE 0 HASTA enemigos.Length - 1 HACER\n        dist = Distancia(enemigos[i].pos, posJugador)\n        SI dist < minDist ENTONCES\n            minDist = dist\n            cercano = enemigos[i]\n        FIN SI\n    FIN PARA\n    RETORNAR cercano\nFIN FUNCION",
+      "question": "¿Cuál es el nombre del algoritmo que describe este pseudocódigo?",
+      "target": "búsqueda del mínimo",
+      "acceptedAnswers": ["búsqueda del mínimo", "busqueda del minimo", "mínimo lineal", "minimum search", "linear search minimum", "encontrar el mínimo"],
+      "hints": [
+        "El algoritmo recorre todos los elementos comparando cada uno con el mejor encontrado hasta ahora.",
+        "Mantiene una variable que guarda el valor más pequeño visto hasta el momento.",
+        "El objetivo es encontrar el elemento con el valor más _____ de toda la colección."
+      ],
+      "explanation": "Este es el algoritmo de <strong>búsqueda del mínimo</strong> (o mínimo lineal). Inicializa <code>minDist = infinito</code> y <code>cercano = nulo</code>, luego recorre todos los enemigos actualizando el mínimo cuando encuentra uno más cercano. Al terminar, <code>cercano</code> apunta al enemigo más próximo al jugador."
+    },
+    {
+      "id": "ps_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este pseudocódigo:",
+      "code": "suma = 0\nPARA i DESDE 0 HASTA puntos.Length - 1 HACER\n    suma = suma + puntos[i]\nFIN PARA\npromedio = suma / puntos.Length",
+      "question": "¿Qué calcula este pseudocódigo con los valores del arreglo `puntos`?",
+      "target": "promedio",
+      "acceptedAnswers": ["promedio", "la media", "el promedio", "media aritmética", "average"],
+      "hints": [
+        "Primero acumula todos los valores en una variable llamada 'suma'.",
+        "Al final divide entre la cantidad de elementos.",
+        "¿Qué operación matemática implica sumar todos los valores y dividir entre cuántos son?"
+      ],
+      "explanation": "El pseudocódigo calcula el <strong>promedio</strong> (media aritmética) del arreglo. Primero acumula la suma de todos los elementos con un FOR, luego divide entre <code>puntos.Length</code> (la cantidad de elementos). Es el algoritmo estándar para calcular el promedio de una colección."
+    },
+    {
+      "id": "ps_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el pseudocódigo para que el personaje salte solo si está en el suelo:",
+      "codeTemplate": "SI jugador.estaEnSuelo __________ presionaronSalto ENTONCES\n    jugador.Saltar()\nFIN SI",
+      "expectedAnswer": "Y",
+      "alternateAnswers": ["AND", "&&", "y", "and"],
+      "placeholder": "Escribe el operador lógico...",
+      "hints": [
+        "Se necesitan AMBAS condiciones verdaderas al mismo tiempo.",
+        "¿Cuál es el operador lógico que requiere que las dos condiciones sean ciertas?",
+        "En pseudocódigo se escribe como una palabra en español."
+      ],
+      "explanation": "El operador <strong>Y</strong> (equivalente a <code>&&</code> en C#) requiere que <strong>ambas condiciones</strong> sean verdaderas. Solo si el jugador está en el suelo Y también presionaron saltar, se ejecuta el salto."
+    },
+    {
+      "id": "ps_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa el pseudocódigo de un bucle que cuenta del 1 al 5 para generar 5 enemigos:",
+      "codeTemplate": "PARA i DESDE 1 HASTA __________ HACER\n    Spawner.CrearEnemigo(i)\nFIN PARA",
+      "expectedAnswer": "5",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el valor final del rango...",
+      "hints": [
+        "El bucle debe ejecutarse 5 veces (para i = 1, 2, 3, 4 y 5).",
+        "Empieza en 1, ¿hasta qué número debe llegar para generar 5 enemigos?",
+        "DESDE 1 HASTA N genera N iteraciones cuando empieza en 1."
+      ],
+      "explanation": "\"PARA i DESDE 1 HASTA <strong>5</strong>\" genera los valores 1, 2, 3, 4 y 5, ejecutando el cuerpo 5 veces. Cada iteración crea un enemigo con el número correspondiente."
+    },
+    {
+      "id": "ps_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Traduce este pseudocódigo a C# completando el código:",
+      "codeTemplate": "// PSEUDOCÓDIGO:\n// SI jugador.vida < 20 ENTONCES\n//     jugador.UsarPocion()\n// FIN SI\n\n// C#:\n__________ (jugador.vida < 20)\n{\n    jugador.UsarPocion();\n}",
+      "expectedAnswer": "if",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la palabra clave de C#...",
+      "hints": [
+        "SI en pseudocódigo se traduce a una palabra clave de C# de dos letras.",
+        "Es la estructura condicional básica de todos los lenguajes derivados de C.",
+        "Empieza con la letra 'i'."
+      ],
+      "explanation": "La estructura <strong>SI...ENTONCES</strong> del pseudocódigo se traduce directamente a <strong><code>if</code></strong> en C#. La condición va entre paréntesis y el bloque de código entre llaves."
+    },
+    {
+      "id": "ps_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el pseudocódigo completo para un sistema de salud que aplica daño a un jugador: si la vida resultante es menor o igual a 0, llama a Morir(); si no, actualiza la vida.",
+      "codeTemplate": null,
+      "expectedAnswer": "FUNCION AplicarDano(jugador, dano)\n    jugador.vida = jugador.vida - dano\n    SI jugador.vida <= 0 ENTONCES\n        jugador.Morir()\n    SI NO\n        ActualizarUI(jugador.vida)\n    FIN SI\nFIN FUNCION",
+      "alternateAnswers": [
+        "SI jugador.vida - dano <= 0 ENTONCES\n    jugador.Morir()\nSI NO\n    jugador.vida = jugador.vida - dano\nFIN SI",
+        "jugador.vida = jugador.vida - dano\nSI jugador.vida <= 0 ENTONCES\n    jugador.Morir()\nFIN SI"
+      ],
+      "placeholder": "Escribe el pseudocódigo completo...",
+      "hints": [
+        "Primero resta el daño de la vida actual del jugador.",
+        "Luego usa una estructura SI para verificar si la vida llegó a 0 o menos.",
+        "Si la vida es <= 0, llama a Morir(); si no, puedes actualizar la UI o simplemente no hacer nada más."
+      ],
+      "explanation": "El pseudocódigo correcto primero calcula la nueva vida, luego verifica con <strong>SI</strong> si es &lt;= 0 para llamar a <code>Morir()</code>. Usar <strong>FUNCION...FIN FUNCION</strong> encapsula la lógica correctamente. El <strong>SI NO</strong> maneja el caso donde el jugador sigue vivo."
+    },
+    {
+      "id": "ps_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la traducción de pseudocódigo a C#:\n```\nMIENTRAS jugador.estaVivo Y nivel < 10 HACER\n    nivel = nivel + 1\nFIN MIENTRAS\n```",
+      "codeTemplate": "while (jugador.estaVivo __________ nivel < 10)\n{\n    nivel++;\n}",
+      "expectedAnswer": "&&",
+      "alternateAnswers": ["&&", "and", "AND"],
+      "placeholder": "Escribe el operador lógico de C#...",
+      "hints": [
+        "El pseudocódigo usa 'Y' para combinar dos condiciones.",
+        "En C#, el operador 'Y lógico' se escribe con dos símbolos iguales.",
+        "Es el doble del símbolo que representa 'ampersand' en inglés (&)."
+      ],
+      "explanation": "El operador <strong>Y</strong> del pseudocódigo se traduce a <strong><code>&&</code></strong> en C#. Ambas condiciones deben ser verdaderas para que el bucle continúe: el jugador debe estar vivo Y el nivel debe ser menor que 10."
+    },
+    {
+      "id": "ps_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe el pseudocódigo para la IA de un enemigo guardián que: (1) si detecta al jugador a menos de 5 unidades, lo ataca; (2) si detecta al jugador entre 5 y 15 unidades, lo persigue; (3) si no detecta al jugador, regresa a su posición inicial.",
+      "codeTemplate": null,
+      "expectedAnswer": "SI distancia < 5 ENTONCES\n    enemigo.Atacar(jugador)\nSI NO SI distancia < 15 ENTONCES\n    enemigo.Perseguir(jugador)\nSI NO\n    enemigo.RegresarAInicio()\nFIN SI",
+      "alternateAnswers": [
+        "SI distancia < 5 ENTONCES\n    Atacar()\nSI NO\n    SI distancia <= 15 ENTONCES\n        Perseguir()\n    SI NO\n        Regresar()\n    FIN SI\nFIN SI"
+      ],
+      "placeholder": "Escribe el pseudocódigo con la estructura SI NO SI...",
+      "hints": [
+        "Necesitas una cadena de condiciones: SI... SI NO SI... SI NO.",
+        "La primera condición verifica distancia < 5 para atacar.",
+        "La segunda condición verifica si está entre 5 y 15 (ya sabemos que no es < 5, solo checa < 15)."
+      ],
+      "explanation": "La cadena <strong>SI / SI NO SI / SI NO</strong> (equivalente a <code>if / else if / else</code>) evalúa condiciones en orden. Como ya sabemos que la distancia NO es menor que 5 cuando llegamos a la segunda condición, solo necesitamos verificar <code>distancia &lt; 15</code> para el rango 5-15. La última rama cubre todo lo demás (distancia &gt;= 15)."
+    }
+  ]
+}

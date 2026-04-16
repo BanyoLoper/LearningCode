@@ -1,0 +1,390 @@
+{
+  "id": "vectores",
+  "title": "Vectores y Posiciones",
+  "icon": "📐",
+  "color": "#00BCD4",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Vector?",
+        "type": "definition",
+        "content": "Un <strong>vector</strong> en Unity es una estructura que representa una cantidad con <strong>magnitud y dirección</strong>. <strong>Vector2</strong> tiene dos componentes (x, y) y se usa para juegos 2D o interfaces. <strong>Vector3</strong> tiene tres componentes (x, y, z) y es el estándar en juegos 3D. Por ejemplo, <code>Vector3 pos = new Vector3(1f, 0f, 5f);</code> representa una posición en el espacio 3D. Los vectores también pueden representar velocidad, fuerza, dirección y cualquier cantidad vectorial."
+      },
+      {
+        "id": "doc-2",
+        "title": "Magnitud y Normalización",
+        "type": "code",
+        "content": "// Calcular la magnitud (longitud) de un vector\nVector3 vel = new Vector3(3f, 0f, 4f);\nfloat mag = vel.magnitude; // sqrt(3²+0²+4²) = 5.0\n\n// Normalizar: obtener el vector con misma dirección pero longitud 1\nVector3 dir = vel.normalized; // (0.6, 0, 0.8)\n\n// Calcular dirección de A hacia B\nVector3 a = transform.position;\nVector3 b = target.position;\nVector3 direccion = (b - a).normalized;\n\n// Calcular distancia entre dos puntos\nfloat distancia = Vector3.Distance(a, b);\n// Equivalente a: (b - a).magnitude"
+      },
+      {
+        "id": "doc-3",
+        "title": "Dot Product y Cross Product",
+        "type": "code",
+        "content": "// DOT PRODUCT: devuelve un escalar\n// Positivo = misma dirección, 0 = perpendicular, Negativo = dirección opuesta\nfloat dot = Vector3.Dot(dirA, dirB);\n// Si ambos son normalizados: dot = cos(ángulo)\n// dot > 0 → el enemigo está delante\n// dot < 0 → el enemigo está detrás\n// dot ≈ 0 → el enemigo está al costado\n\n// CROSS PRODUCT: devuelve un vector perpendicular\nVector3 cross = Vector3.Cross(forward, right);\n// En Unity: Vector3.Cross(Vector3.forward, Vector3.right) = Vector3.down\n// Vector3.Cross(Vector3.right, Vector3.forward) = Vector3.up\n// Útil para calcular normales de superficies"
+      },
+      {
+        "id": "doc-4",
+        "title": "Vectores Constantes de Unity",
+        "type": "note",
+        "content": "Unity provee vectores constantes muy útiles: <strong>Vector3.zero</strong> = (0,0,0), <strong>Vector3.one</strong> = (1,1,1), <strong>Vector3.up</strong> = (0,1,0), <strong>Vector3.down</strong> = (0,-1,0), <strong>Vector3.forward</strong> = (0,0,1), <strong>Vector3.back</strong> = (0,0,-1), <strong>Vector3.right</strong> = (1,0,0), <strong>Vector3.left</strong> = (-1,0,0). Estos son vectores <em>normalizados</em> de longitud 1. Usarlos en lugar de escribir <code>new Vector3(0,1,0)</code> hace el código más legible y menos propenso a errores."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Vectores",
+        "type": "list",
+        "items": [
+          "Vector2 es para 2D (x, y); Vector3 es para 3D (x, y, z).",
+          "magnitude devuelve la longitud del vector (siempre positiva).",
+          "normalized devuelve un vector con la misma dirección pero longitud 1.",
+          "Para calcular la dirección de A a B: (B - A).normalized",
+          "Dot product positivo = misma dirección; negativo = opuesta; cero = perpendicular.",
+          "Cross product devuelve un vector perpendicular a los dos vectores dados.",
+          "Usar sqrMagnitude en lugar de magnitude para comparaciones (evita la raíz cuadrada)."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "vec_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué propiedad de un **Vector3** devuelve su longitud (la distancia desde el origen hasta la punta del vector)?",
+      "options": [
+        "magnitude",
+        "length",
+        "size",
+        "distance",
+        "normal"
+      ],
+      "correctIndex": 0,
+      "explanation": "La propiedad <strong>magnitude</strong> calcula la longitud euclidiana del vector usando la fórmula <code>sqrt(x²+y²+z²)</code>. Por ejemplo, <code>new Vector3(3,0,4).magnitude</code> devuelve <code>5.0</code>. Para comparaciones de distancia, usa <code>sqrMagnitude</code> para evitar la costosa raíz cuadrada."
+    },
+    {
+      "id": "vec_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué devuelve la propiedad **normalized** de un vector?",
+      "options": [
+        "Un vector con la misma dirección pero con longitud exactamente 1.",
+        "Un vector con la misma longitud pero apuntando al eje Y.",
+        "El valor absoluto de cada componente del vector.",
+        "Un vector con todos sus componentes divididos por 100.",
+        "Un Vector2 equivalente al Vector3 original."
+      ],
+      "correctIndex": 0,
+      "explanation": "La propiedad <strong>normalized</strong> devuelve una copia del vector escalada para que su <strong>magnitude</strong> sea exactamente 1, conservando la misma dirección. Por ejemplo, <code>new Vector3(3,0,4).normalized</code> devuelve aproximadamente <code>(0.6, 0, 0.8)</code>. Los vectores normalizados se usan para representar puras direcciones."
+    },
+    {
+      "id": "vec_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "Si tienes la posición del jugador en `posA` y la del enemigo en `posB`, ¿cuál expresión calcula el vector de dirección normalizado que apunta de A hacia B?",
+      "options": [
+        "(posB - posA).normalized",
+        "(posA - posB).normalized",
+        "Vector3.Distance(posA, posB)",
+        "posA.normalized + posB.normalized",
+        "(posA + posB) / 2"
+      ],
+      "correctIndex": 0,
+      "explanation": "Para obtener la dirección de A hacia B, se resta el punto origen al punto destino: <strong>(posB - posA)</strong>. Luego se <strong>normaliza</strong> para obtener solo la dirección (longitud 1), independiente de la distancia. Si se invierte (posA - posB), el vector apunta en la dirección contraria."
+    },
+    {
+      "id": "vec_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Qué tipo de resultado devuelve `Vector3.Dot(vectorA, vectorB)`?",
+      "options": [
+        "Un escalar (float) que indica la similitud de dirección entre los dos vectores.",
+        "Un Vector3 perpendicular a los dos vectores dados.",
+        "Un Vector2 con la proyección de A sobre B.",
+        "Un bool que indica si los vectores son paralelos.",
+        "Un Vector3 que es la suma de los dos vectores."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>dot product</strong> (producto punto) devuelve un <em>escalar</em>. Si ambos vectores están normalizados, el resultado es el coseno del ángulo entre ellos: <code>1</code> = misma dirección, <code>0</code> = perpendiculares, <code>-1</code> = dirección opuesta. Se usa frecuentemente para saber si un enemigo está frente al jugador."
+    },
+    {
+      "id": "vec_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Un enemigo está mirando hacia `Vector3.forward`. El jugador está en una dirección representada por el vector `dirAJugador` (normalizado). Si `Vector3.Dot(Vector3.forward, dirAJugador)` devuelve `-0.9`, ¿dónde está el jugador relativo al enemigo?",
+      "options": [
+        "Prácticamente detrás del enemigo, casi en dirección opuesta.",
+        "Directamente frente al enemigo.",
+        "Al costado izquierdo del enemigo.",
+        "A 90 grados del enemigo, perpendicular.",
+        "Exactamente en la misma posición que el enemigo."
+      ],
+      "correctIndex": 0,
+      "explanation": "Cuando el <strong>dot product</strong> es negativo (cerca de <code>-1</code>), los vectores apuntan en direcciones casi opuestas. Un valor de <code>-0.9</code> significa que el jugador está casi directamente <strong>detrás</strong> del enemigo. Si fuera <code>0.9</code>, estaría al frente; si fuera <code>0</code>, estaría perpendicular."
+    },
+    {
+      "id": "vec_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es el resultado de `Vector3.Cross(Vector3.right, Vector3.forward)` en Unity?",
+      "options": [
+        "Vector3.up  (0, 1, 0)",
+        "Vector3.down  (0, -1, 0)",
+        "Vector3.right  (1, 0, 0)",
+        "Vector3.zero  (0, 0, 0)",
+        "Vector3.forward  (0, 0, 1)"
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>cross product</strong> de <code>right (1,0,0)</code> y <code>forward (0,0,1)</code> da <code>Vector3.up (0,1,0)</code>. Esto sigue la regla de la mano derecha. En Unity, el <strong>cross product</strong> se usa para encontrar el vector perpendicular a una superficie (normal) o para determinar la orientación de un plano."
+    },
+    {
+      "id": "vec_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia entre `Vector3.Distance(a, b)` y `(b - a).magnitude`?",
+      "options": [
+        "Son equivalentes; ambos calculan la distancia euclidiana entre a y b.",
+        "Distance usa coordenadas absolutas; magnitude usa relativas.",
+        "Distance solo funciona con Vector2; magnitude con Vector3.",
+        "Distance devuelve un Vector3; magnitude devuelve un float.",
+        "Distance es más preciso porque no usa resta de vectores."
+      ],
+      "correctIndex": 0,
+      "explanation": "<code>Vector3.Distance(a, b)</code> es equivalente a <code>(b - a).magnitude</code>: ambos calculan <code>sqrt((bx-ax)²+(by-ay)²+(bz-az)²)</code>. <code>Distance</code> es más legible; la versión manual es útil cuando ya tienes el vector diferencia calculado. Para comparar distancias sin necesitar el valor exacto, usa <code>(b-a).sqrMagnitude</code> (evita la raíz cuadrada)."
+    },
+    {
+      "id": "vec_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "Un proyectil tiene `Vector3 velocity = new Vector3(0f, 3f, 4f)`. ¿Cuál es su **magnitude** (rapidez)?",
+      "options": [
+        "5.0",
+        "7.0",
+        "3.5",
+        "12.0",
+        "4.0"
+      ],
+      "correctIndex": 0,
+      "explanation": "La <strong>magnitude</strong> se calcula como <code>sqrt(x²+y²+z²) = sqrt(0²+3²+4²) = sqrt(0+9+16) = sqrt(25) = <strong>5.0</strong></code>. Este es el teorema de Pitágoras extendido a 3D. Reconocer ternas pitagóricas (3,4,5 o 5,12,13) es útil para verificar cálculos vectoriales rápidamente."
+    },
+    {
+      "id": "vec_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza este código de Unity:",
+      "code": "Vector3 dir = (enemy.position - player.position).normalized;\nDebug.Log(dir.magnitude);",
+      "question": "¿Qué valor imprime `dir.magnitude`?",
+      "target": "1",
+      "acceptedAnswers": ["1", "1.0", "uno", "1f"],
+      "hints": [
+        "El vector fue procesado con la propiedad normalized antes de asignarse.",
+        "¿Qué hace normalized con la longitud del vector?",
+        "Un vector normalizado siempre tiene longitud..."
+      ],
+      "explanation": "Al aplicar <strong>normalized</strong>, el vector resultante siempre tiene <strong>magnitude = 1</strong>, sin importar la longitud original. Por eso <code>dir.magnitude</code> imprime <code>1</code>. Un vector de longitud 1 se llama vector unitario y representa pura dirección."
+    },
+    {
+      "id": "vec_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código:",
+      "code": "Vector3 a = new Vector3(0f, 0f, 0f);\nVector3 b = new Vector3(0f, 0f, 5f);\nfloat dist = Vector3.Distance(a, b);\nDebug.Log(dist);",
+      "question": "¿Qué valor imprime `dist`?",
+      "target": "5",
+      "acceptedAnswers": ["5", "5.0", "5f"],
+      "hints": [
+        "Calcula la diferencia entre los puntos: (0,0,5) - (0,0,0) = (0,0,5).",
+        "Ahora calcula la magnitud de ese vector diferencia.",
+        "sqrt(0² + 0² + 5²) = ?"
+      ],
+      "explanation": "<code>Vector3.Distance</code> calcula <code>sqrt((0-0)²+(0-0)²+(5-0)²) = sqrt(25) = <strong>5</strong></code>. Los puntos solo difieren en el eje Z, así que la distancia es simplemente la diferencia en Z."
+    },
+    {
+      "id": "vec_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este código de un enemy AI:",
+      "code": "Vector3 toPlayer = (player.position - transform.position).normalized;\nfloat dot = Vector3.Dot(transform.forward, toPlayer);\nif (dot > 0.5f)\n    Debug.Log(\"Jugador detectable\");",
+      "question": "¿Qué indica que el valor del **dot product** sea mayor a 0.5 en este contexto?",
+      "target": "el jugador está en el campo de visión frontal del enemigo",
+      "acceptedAnswers": [
+        "el jugador está en el campo de visión frontal del enemigo",
+        "el jugador está al frente",
+        "el jugador está adelante del enemigo",
+        "el jugador está dentro del campo de visión",
+        "el jugador está en el cono de visión"
+      ],
+      "hints": [
+        "Dot product > 0 significa que los vectores apuntan en dirección similar.",
+        "0.5 equivale a cos(60°), así que el ángulo entre los vectores es menor a 60°.",
+        "transform.forward es la dirección a la que mira el enemigo."
+      ],
+      "explanation": "Si el <strong>dot product</strong> de dos vectores normalizados supera <code>0.5</code>, el ángulo entre ellos es menor a 60°. Como se compara la dirección al frente del enemigo (<code>transform.forward</code>) con la dirección al jugador, un resultado > 0.5 significa que <strong>el jugador está dentro del campo de visión frontal</strong> (dentro de un cono de 60°)."
+    },
+    {
+      "id": "vec_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código:",
+      "code": "Vector3 velocity = new Vector3(6f, 0f, 8f);\nVector3 direction = velocity.normalized;\nDebug.Log(velocity.magnitude);\nDebug.Log(direction.magnitude);",
+      "question": "¿Qué dos valores imprime el código, en orden?",
+      "target": "10 y 1",
+      "acceptedAnswers": ["10 y 1", "10, 1", "10 y 1.0", "10.0 y 1", "primero 10 y luego 1"],
+      "hints": [
+        "Calcula la magnitude de velocity: sqrt(6²+0²+8²).",
+        "6²=36, 8²=64, 36+64=100, sqrt(100)=?",
+        "Un vector normalizado siempre tiene magnitude 1."
+      ],
+      "explanation": "<code>velocity.magnitude = sqrt(36+0+64) = sqrt(100) = <strong>10</strong></code>. Al normalizar, <code>direction</code> es <code>(0.6, 0, 0.8)</code> con <code>magnitude = <strong>1</strong></code>. El par (6,8) en el plano XZ forma un triángulo 3-4-5 escalado por 2."
+    },
+    {
+      "id": "vec_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este fragmento de código de movimiento de nave espacial:",
+      "code": "void MoveTowardsTarget()\n{\n    Vector3 dir = (target.position - transform.position).normalized;\n    transform.position += dir * speed * Time.deltaTime;\n}",
+      "question": "¿Por qué se normaliza `dir` antes de multiplicar por `speed`?",
+      "target": "para que la velocidad no dependa de la distancia al objetivo",
+      "acceptedAnswers": [
+        "para que la velocidad no dependa de la distancia al objetivo",
+        "para separar la dirección de la magnitud",
+        "para mantener velocidad constante",
+        "porque si no la nave se mueve más rápido cuando está lejos",
+        "para que speed controle completamente la velocidad"
+      ],
+      "hints": [
+        "Sin normalizar, dir tendría la magnitud de la distancia al objetivo.",
+        "¿Qué pasaría con la velocidad si el objetivo estuviera muy lejos?",
+        "Normalizar separa la dirección de la magnitud para que speed sea el único factor de velocidad."
+      ],
+      "explanation": "Sin <strong>normalized</strong>, el vector <code>(target.position - transform.position)</code> tiene una magnitud igual a la distancia al objetivo. Esto haría que la nave se moviera más rápido cuanto más lejos estuviera. Al normalizar, la dirección tiene longitud 1 y <strong>speed</strong> controla exclusivamente la rapidez."
+    },
+    {
+      "id": "vec_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Analiza este código:",
+      "code": "Vector3 surfaceNormal = Vector3.Cross(\n    pointB - pointA,\n    pointC - pointA\n).normalized;",
+      "question": "¿Para qué se usa el **cross product** en este contexto?",
+      "target": "calcular el vector normal perpendicular a una superficie definida por tres puntos",
+      "acceptedAnswers": [
+        "calcular el vector normal perpendicular a una superficie definida por tres puntos",
+        "calcular la normal de la superficie",
+        "obtener el vector perpendicular al plano",
+        "calcular la normal del triángulo",
+        "encontrar la dirección perpendicular al plano formado por tres puntos"
+      ],
+      "hints": [
+        "Tres puntos definen un plano o triángulo.",
+        "El cross product siempre devuelve un vector perpendicular a los dos vectores de entrada.",
+        "¿Cómo se llama el vector que es perpendicular a una superficie?"
+      ],
+      "explanation": "Con tres puntos se calculan dos vectores en el plano (aristas del triángulo). El <strong>cross product</strong> de esos dos vectores produce un vector <strong>perpendicular al plano</strong>, llamado <em>normal</em>. Las normales de superficie son esenciales para iluminación, detección de colisiones y física en Unity."
+    },
+    {
+      "id": "vec_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la expresión para calcular el vector dirección normalizado desde la posición del jugador (`playerPos`) hacia la posición del enemigo (`enemyPos`):",
+      "codeTemplate": "Vector3 dir = (__________ - playerPos).__________;",
+      "expectedAnswer": "enemyPos, normalized",
+      "alternateAnswers": ["enemyPos).normalized"],
+      "placeholder": "Completa los dos blancos...",
+      "hints": [
+        "La dirección de A hacia B se calcula restando: destino - origen.",
+        "El origen es el jugador; el destino es el enemigo.",
+        "Después de restar, aplica la propiedad que hace longitud = 1."
+      ],
+      "explanation": "Para apuntar de <code>playerPos</code> a <code>enemyPos</code>: primero se resta origen al destino <code>(enemyPos - playerPos)</code>, luego se <strong>normaliza</strong> con <code>.normalized</code> para obtener solo la dirección con longitud 1."
+    },
+    {
+      "id": "vec_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para calcular la distancia entre la posición del jugador y la del enemigo usando el método estático de Vector3:",
+      "codeTemplate": "float dist = Vector3.__________(player.position, enemy.position);",
+      "expectedAnswer": "Distance",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método...",
+      "hints": [
+        "Es un método estático de la clase Vector3.",
+        "Recibe dos posiciones y devuelve un float.",
+        "Su nombre en inglés describe lo que calcula."
+      ],
+      "explanation": "<code>Vector3.Distance(a, b)</code> calcula la distancia euclidiana entre dos puntos, equivalente a <code>(b-a).magnitude</code>. Es un método estático que recibe dos <strong>Vector3</strong> y devuelve un <code>float</code>."
+    },
+    {
+      "id": "vec_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa el código para verificar si el jugador está frente al enemigo usando **dot product**. El resultado debe ser `true` si el jugador está en el semicírculo frontal:",
+      "codeTemplate": "Vector3 toPlayer = (player.position - transform.position).normalized;\nbool isInFront = Vector3.__________(transform.forward, toPlayer) > 0f;",
+      "expectedAnswer": "Dot",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el nombre del método estático...",
+      "hints": [
+        "Es el producto punto o producto escalar.",
+        "Su nombre en inglés es el término matemático para este producto.",
+        "Devuelve un escalar positivo si los vectores apuntan en la misma dirección."
+      ],
+      "explanation": "<code>Vector3.Dot(a, b)</code> calcula el <strong>dot product</strong>. Si el resultado es > 0, los vectores apuntan en la misma dirección semicircular. Aquí compara la dirección frontal del enemigo con la dirección al jugador — si es positivo, el jugador está frente al enemigo."
+    },
+    {
+      "id": "vec_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe la línea que calcula la normal de una superficie usando **cross product** con los vectores `tangent` y `bitangent`, y guarda el resultado normalizado en `Vector3 normal`:",
+      "codeTemplate": null,
+      "expectedAnswer": "Vector3 normal = Vector3.Cross(tangent, bitangent).normalized;",
+      "alternateAnswers": [
+        "Vector3 normal = Vector3.Cross(bitangent, tangent).normalized;"
+      ],
+      "placeholder": "Escribe la línea completa...",
+      "hints": [
+        "Usa el método estático Vector3.Cross que recibe dos vectores.",
+        "El resultado del Cross debe normalizarse.",
+        "Formato: Vector3 nombre = Vector3.Cross(v1, v2).normalized;"
+      ],
+      "explanation": "<code>Vector3.Cross(tangent, bitangent).normalized</code> calcula el <strong>cross product</strong> y lo normaliza. El orden importa: <code>Cross(a,b)</code> y <code>Cross(b,a)</code> dan vectores opuestos. Para normals de superficie, la convención determina cuál cara es la 'exterior'."
+    },
+    {
+      "id": "vec_cw_005",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Un proyectil tiene `velocity = new Vector3(0f, 0f, 10f)`. Completa la línea que obtiene solo la dirección de movimiento (sin importar la rapidez):",
+      "codeTemplate": "Vector3 direction = velocity.__________;",
+      "expectedAnswer": "normalized",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad que normaliza...",
+      "hints": [
+        "Queremos un vector con la misma dirección pero longitud 1.",
+        "Es una propiedad (no un método), sin paréntesis.",
+        "Se llama igual que la operación matemática de dividir por la magnitud."
+      ],
+      "explanation": "La propiedad <strong>normalized</strong> devuelve un vector con la misma dirección pero <strong>magnitude = 1</strong>. <code>new Vector3(0,0,10).normalized</code> devuelve <code>(0,0,1)</code> = <code>Vector3.forward</code>. Se usa para separar dirección de rapidez."
+    },
+    {
+      "id": "vec_cw_006",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe una función completa `bool IsEnemyBehind(Transform enemy, Transform player)` que devuelva `true` si el enemigo está detrás del jugador (usando **dot product** entre `player.forward` y la dirección al enemigo):",
+      "codeTemplate": null,
+      "expectedAnswer": "bool IsEnemyBehind(Transform enemy, Transform player)\n{\n    Vector3 toEnemy = (enemy.position - player.position).normalized;\n    return Vector3.Dot(player.forward, toEnemy) < 0f;\n}",
+      "alternateAnswers": [
+        "bool IsEnemyBehind(Transform enemy, Transform player) { Vector3 toEnemy = (enemy.position - player.position).normalized; return Vector3.Dot(player.forward, toEnemy) < 0f; }"
+      ],
+      "placeholder": "Escribe la función completa...",
+      "hints": [
+        "Calcula el vector normalizado de la posición del jugador hacia el enemigo.",
+        "Usa Vector3.Dot con player.forward y ese vector dirección.",
+        "Si el dot product es negativo, el enemigo está en el semicírculo trasero."
+      ],
+      "explanation": "La función calcula la dirección del jugador al enemigo, luego compara con <code>player.forward</code> usando <strong>Dot</strong>. Un resultado negativo significa que el vector al enemigo apunta en dirección contraria al frente del jugador, es decir, el enemigo está <strong>detrás</strong>."
+    }
+  ]
+}

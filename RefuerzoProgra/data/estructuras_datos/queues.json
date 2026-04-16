@@ -1,0 +1,371 @@
+{
+  "id": "queues",
+  "title": "Queues (Colas)",
+  "icon": "🚶",
+  "color": "#1A237E",
+  "documentation": {
+    "sections": [
+      {
+        "id": "doc-1",
+        "title": "¿Qué es un Queue? Principio FIFO",
+        "type": "definition",
+        "content": "Un <strong>Queue</strong> (cola) es una estructura de datos que sigue el principio <strong>FIFO</strong> — <em>First In, First Out</em> (Primero en entrar, primero en salir). Imagina la fila de un banco: el primero en llegar es el primero en ser atendido. En C#, la clase <code>Queue&lt;T&gt;</code> está en <code>System.Collections.Generic</code>. Sus operaciones fundamentales son: <strong>Enqueue</strong> (agrega al final de la cola), <strong>Dequeue</strong> (elimina y devuelve el elemento al frente de la cola) y <strong>Peek</strong> (lee el frente sin eliminar). Todas son <strong>O(1)</strong>."
+      },
+      {
+        "id": "doc-2",
+        "title": "Queue<T> en C#: Enqueue, Dequeue, Peek",
+        "type": "code",
+        "content": "using System.Collections.Generic;\n\n// Cola de turno de enemigos en un juego por turnos\nQueue<string> turnos = new Queue<string>();\n\n// Enqueue — agrega al FINAL de la cola\nturnos.Enqueue(\"Goblin\");    // Cola: [Goblin]\nturnos.Enqueue(\"Orco\");      // Cola: [Goblin, Orco]\nturnos.Enqueue(\"Dragón\");    // Cola: [Goblin, Orco, Dragón]\n\n// Peek — lee el FRENTE sin eliminar\nstring siguiente = turnos.Peek(); // \"Goblin\"\nDebug.Log(turnos.Count);          // 3\n\n// Dequeue — elimina y devuelve el FRENTE\nstring turnoActual = turnos.Dequeue(); // devuelve \"Goblin\"\nDebug.Log(turnos.Count);               // 2 — [Orco, Dragón]\n\n// Verificar antes de Dequeue\nif (turnos.Count > 0)\n{\n    string proximo = turnos.Dequeue(); // \"Orco\"\n}"
+      },
+      {
+        "id": "doc-3",
+        "title": "Casos de Uso en Unity: Turnos, Spawning, Eventos",
+        "type": "analogy",
+        "content": "El <strong>Queue</strong> es ideal para cualquier escenario donde el <em>orden de llegada importa</em>. En un <strong>juego por turnos</strong>: los enemigos hacen <strong>Enqueue</strong> al inicio de la ronda y se procesan con <strong>Dequeue</strong> en orden justo. En <strong>spawning de oleadas</strong>: los tipos de enemigos a generar se ponen en cola y se van creando en orden. En <strong>cola de mensajes de UI</strong>: las notificaciones se muestran en el orden en que ocurrieron. En <strong>sistemas de pathfinding</strong> (como BFS): los nodos a explorar se agregan al Queue para procesarlos en orden de distancia. La diferencia clave con el <strong>Stack</strong>: el <strong>Stack</strong> procesa al revés (LIFO), el <strong>Queue</strong> mantiene el orden original (FIFO)."
+      },
+      {
+        "id": "doc-4",
+        "title": "Errores Comunes y Diferencias con Stack",
+        "type": "note",
+        "content": "Al igual que <strong>Stack</strong>, llamar <strong>Dequeue()</strong> o <strong>Peek()</strong> en un <strong>Queue</strong> vacío lanza <code>InvalidOperationException</code>. Siempre verifica <code>queue.Count &gt; 0</code>. La confusión más común es mezclar los nombres de los métodos: en <strong>Queue</strong> se usa <strong>Enqueue()</strong> y <strong>Dequeue()</strong>; en <strong>Stack</strong> se usa <strong>Push()</strong> y <strong>Pop()</strong>. Otro error es confundir qué extremo procesa cada estructura: <strong>Queue</strong> procesa el frente (el más antiguo), <strong>Stack</strong> procesa el tope (el más nuevo)."
+      },
+      {
+        "id": "doc-5",
+        "title": "Puntos Clave de Queue",
+        "type": "list",
+        "items": [
+          "FIFO: First In, First Out — el primero en entrar es el primero en salir.",
+          "Enqueue() agrega al final de la cola — O(1).",
+          "Dequeue() elimina y devuelve el frente — O(1). Lanza excepción si está vacío.",
+          "Peek() lee el frente sin eliminar — O(1). Lanza excepción si está vacío.",
+          "Ideal para: cola de turnos, spawning ordenado, mensajes de UI, BFS.",
+          "Diferencia con Stack: Queue mantiene el orden original; Stack lo invierte."
+        ]
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "qu_mc_001",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué principio de ordenamiento sigue un **Queue** (cola)?",
+      "options": [
+        "FIFO — First In, First Out: el primero en entrar es el primero en salir.",
+        "LIFO — Last In, First Out: el último en entrar es el primero en salir.",
+        "FILO — First In, Last Out: el primero en entrar es el último en salir.",
+        "Aleatorio — los elementos salen en orden no determinístico.",
+        "Prioridad — los elementos de mayor valor salen primero."
+      ],
+      "correctIndex": 0,
+      "explanation": "Un <strong>Queue</strong> sigue el principio <strong>FIFO</strong>: el primer elemento que entra con <strong>Enqueue</strong> es el primero que sale con <strong>Dequeue</strong>. Piensa en la fila del banco o la cola de una tienda: el primero que llega es el primero en ser atendido."
+    },
+    {
+      "id": "qu_mc_002",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "¿Qué operación de Queue agrega un nuevo elemento al FINAL de la cola?",
+      "options": [
+        "Enqueue()",
+        "Dequeue()",
+        "Push()",
+        "Add()",
+        "Insert()"
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Enqueue(item)</strong> agrega un elemento al <em>final</em> de la cola. <strong>Dequeue()</strong> elimina y devuelve el elemento del <em>frente</em>. No confundas con <strong>Push()</strong> (de Stack&lt;T&gt;) ni <strong>Add()</strong> (de List&lt;T&gt;)."
+    },
+    {
+      "id": "qu_mc_003",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "question": "En un juego por turnos, los enemigos se agregan a un Queue en orden: Goblin, Orco, Dragón. ¿Quién ataca primero cuando se llama `Dequeue()`?",
+      "options": [
+        "Goblin — fue el primero en entrar a la cola (FIFO).",
+        "Dragón — fue el último en entrar y tiene más prioridad.",
+        "Orco — está en el medio y es el promedio.",
+        "Aleatorio — Queue baraja los elementos.",
+        "Ninguno — Dequeue() solo lee sin procesar."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>FIFO</strong>: el Goblin fue el primero en entrar con <strong>Enqueue()</strong>, por lo tanto es el primero en salir con <strong>Dequeue()</strong>. El orden de ataques sería: Goblin → Orco → Dragón. Esto garantiza un sistema de turnos <em>justo</em> basado en orden de llegada."
+    },
+    {
+      "id": "qu_mc_004",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "¿Cuál es la diferencia clave entre `Queue<T>.Peek()` y `Queue<T>.Dequeue()`?",
+      "options": [
+        "Peek() lee el frente sin eliminarlo; Dequeue() lo elimina y lo devuelve.",
+        "Peek() elimina el frente; Dequeue() solo lo lee sin eliminar.",
+        "Peek() trabaja con el final de la cola; Dequeue() trabaja con el frente.",
+        "Peek() devuelve el elemento más grande; Dequeue() devuelve el primero.",
+        "No hay diferencia; ambos hacen exactamente lo mismo."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Peek()</strong> te permite ver el siguiente elemento sin sacarlo de la cola (el <code>Count</code> no cambia). <strong>Dequeue()</strong> extrae el elemento del frente: lo elimina de la cola y lo devuelve (el <code>Count</code> disminuye en 1). Ambos lanzan excepción si la cola está vacía."
+    },
+    {
+      "id": "qu_mc_005",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Quieres implementar un sistema de notificaciones en la UI de tu juego donde las notificaciones se muestran en el orden exacto en que ocurrieron. ¿Qué estructura es la correcta?",
+      "options": [
+        "Queue<string> — FIFO garantiza que la primera notificación generada es la primera en mostrarse.",
+        "Stack<string> — LIFO muestra la última notificación primero, que es más urgente.",
+        "List<string> — permite acceder a cualquier notificación por índice.",
+        "Array de strings — es más eficiente en memoria para notificaciones fijas.",
+        "Dictionary<int, string> — mapea el tiempo al texto de la notificación."
+      ],
+      "correctIndex": 0,
+      "explanation": "<strong>Queue&lt;string&gt;</strong> es la elección correcta: las notificaciones se agregan con <strong>Enqueue()</strong> y se muestran con <strong>Dequeue()</strong> en el mismo orden en que ocurrieron. Un <strong>Stack</strong> mostraría la más reciente primero, lo que podría no ser el comportamiento deseado para un registro de eventos."
+    },
+    {
+      "id": "qu_mc_006",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "question": "Después de estas operaciones en un Queue:\n```\nQueue<int> cola = new Queue<int>();\ncola.Enqueue(10);\ncola.Enqueue(20);\ncola.Enqueue(30);\ncola.Dequeue();\n```\n¿Cuántos elementos quedan y cuál es el nuevo frente?",
+      "options": [
+        "2 elementos; frente es 20.",
+        "2 elementos; frente es 30.",
+        "3 elementos; frente es 10.",
+        "1 elemento; frente es 30.",
+        "0 elementos; la cola está vacía."
+      ],
+      "correctIndex": 0,
+      "explanation": "Se agregaron 3 elementos: [10, 20, 30] con 10 al frente. <code>Dequeue()</code> elimina el frente (10). La cola queda [20, 30] con <strong>2 elementos</strong> y el nuevo frente es <strong>20</strong>. Siguiendo el principio <strong>FIFO</strong>, el siguiente <code>Dequeue()</code> devolvería 20."
+    },
+    {
+      "id": "qu_mc_007",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Cuál de estos escenarios de Unity es un buen caso de uso para Queue pero NO para Stack?",
+      "options": [
+        "Spawning de enemigos en oleadas donde los primeros tipos definidos deben aparecer primero.",
+        "Sistema de undo/redo donde la última acción debe deshacerse primero.",
+        "Historial de navegación de pantallas donde 'Atrás' vuelve a la anterior.",
+        "Pila de estados de un NPC que se revierten en orden inverso.",
+        "Registro de los últimos 5 inputs del jugador para detectar combos."
+      ],
+      "correctIndex": 0,
+      "explanation": "El <strong>spawning en oleadas con orden específico</strong> es FIFO: los tipos de enemigos se definen en orden y deben aparecer en ese mismo orden. Un <strong>Stack</strong> los generaría al revés. Los otros casos (undo, navegación, estados de NPC, inputs de combos) son LIFO y funcionan mejor con <strong>Stack</strong>."
+    },
+    {
+      "id": "qu_mc_008",
+      "type": "multiple_choice",
+      "difficulty": 3,
+      "question": "¿Qué excepción lanza `Queue<T>.Dequeue()` cuando la cola está vacía?",
+      "options": [
+        "InvalidOperationException",
+        "IndexOutOfRangeException",
+        "NullReferenceException",
+        "QueueEmptyException",
+        "ArgumentOutOfRangeException"
+      ],
+      "correctIndex": 0,
+      "explanation": "Al igual que <code>Stack.Pop()</code>, <code>Queue.Dequeue()</code> en una cola vacía lanza <strong>InvalidOperationException</strong> con el mensaje <em>\"Queue empty\"</em>. Siempre verifica <code>queue.Count &gt; 0</code> o usa <code>TryDequeue(out T result)</code> para acceso seguro."
+    },
+    {
+      "id": "qu_id_001",
+      "type": "identification",
+      "difficulty": 1,
+      "preamble": "Analiza estas operaciones en un Queue de turno de enemigos:",
+      "code": "Queue<string> turnos = new Queue<string>();\nturnos.Enqueue(\"Esqueleto\");\nturnos.Enqueue(\"Vampiro\");\nturnos.Enqueue(\"Zombi\");\nstring primero = turnos.Dequeue();",
+      "question": "¿Qué valor tiene `primero` después de `Dequeue()`?",
+      "target": "Esqueleto",
+      "acceptedAnswers": ["Esqueleto", "\"Esqueleto\""],
+      "hints": [
+        "FIFO: el primero en entrar es el primero en salir.",
+        "El primer Enqueue() fue Esqueleto.",
+        "Dequeue() extrae el elemento del frente de la cola."
+      ],
+      "explanation": "Siguiendo el principio <strong>FIFO</strong>, <code>Dequeue()</code> devuelve el elemento que lleva más tiempo en la cola. El primer <code>Enqueue()</code> fue <strong>\"Esqueleto\"</strong>, por lo tanto es el primero en salir. La cola queda con [Vampiro, Zombi]."
+    },
+    {
+      "id": "qu_id_002",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de spawning por oleadas:",
+      "code": "Queue<string> oleada = new Queue<string>();\noleada.Enqueue(\"Goblin\");\noleada.Enqueue(\"Goblin\");\noleada.Enqueue(\"Orco\");\n\noleada.Dequeue();\noleada.Dequeue();\nstring siguiente = oleada.Peek();",
+      "question": "¿Qué tipo de enemigo es `siguiente` (el próximo en aparecer)?",
+      "target": "Orco",
+      "acceptedAnswers": ["Orco", "\"Orco\""],
+      "hints": [
+        "Dos Dequeue() eliminan los dos primeros elementos.",
+        "Los dos primeros eran Goblin.",
+        "Peek() lee el nuevo frente sin eliminarlo."
+      ],
+      "explanation": "Después de dos <code>Dequeue()</code>, los dos Goblins son eliminados. El <strong>Queue</strong> queda con solo [Orco]. <code>Peek()</code> devuelve <strong>\"Orco\"</strong> sin eliminarlo, así que el próximo <code>Dequeue()</code> también retornaría \"Orco\"."
+    },
+    {
+      "id": "qu_id_003",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Observa este código de un sistema de mensajes de UI:",
+      "code": "Queue<string> mensajes = new Queue<string>();\n// La cola está vacía\nstring msg = mensajes.Dequeue(); // ¿Qué ocurre?",
+      "question": "¿Qué tipo de excepción se lanza al llamar Dequeue() en una Queue vacía?",
+      "target": "InvalidOperationException",
+      "acceptedAnswers": ["InvalidOperationException", "invalid operation", "InvalidOperation"],
+      "hints": [
+        "No hay elementos en la cola.",
+        "La misma excepción que lanza Pop() en un Stack vacío.",
+        "La operación es inválida porque la cola no tiene elementos que extraer."
+      ],
+      "explanation": "<code>Dequeue()</code> en una cola vacía lanza <strong>InvalidOperationException</strong>. La solución es verificar <code>mensajes.Count &gt; 0</code> antes de llamar <code>Dequeue()</code>, o usar el método seguro <code>TryDequeue(out string msg)</code> que devuelve <code>false</code> si la cola está vacía."
+    },
+    {
+      "id": "qu_id_004",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Sigue el estado del Queue paso a paso:",
+      "code": "Queue<int> cola = new Queue<int>();\ncola.Enqueue(5);\ncola.Enqueue(10);\ncola.Enqueue(15);\ncola.Dequeue();\ncola.Enqueue(20);\nint frente = cola.Peek();",
+      "question": "¿Qué valor tiene `frente` al final?",
+      "target": "10",
+      "acceptedAnswers": ["10", "diez"],
+      "hints": [
+        "Enqueue(5), Enqueue(10), Enqueue(15) → cola: [5, 10, 15]",
+        "Dequeue() elimina el frente (5) → cola: [10, 15]",
+        "Enqueue(20) agrega al final → cola: [10, 15, 20]. ¿Cuál es el frente?"
+      ],
+      "explanation": "Paso a paso: [5,10,15] → Dequeue() quita 5 → [10,15] → Enqueue(20) → [10,15,20]. El frente es <strong>10</strong>. <code>Peek()</code> confirma el frente sin eliminarlo. El próximo <code>Dequeue()</code> devolvería 10."
+    },
+    {
+      "id": "qu_id_005",
+      "type": "identification",
+      "difficulty": 2,
+      "preamble": "Analiza este sistema de combate por turnos:",
+      "code": "public class TurnManager : MonoBehaviour\n{\n    private Queue<Character> turnQueue = new Queue<Character>();\n\n    public void IniciarRonda(List<Character> personajes)\n    {\n        foreach (Character c in personajes)\n            turnQueue.Enqueue(c);\n    }\n\n    public Character SiguienteEnAtacar()\n    {\n        return turnQueue.Dequeue();\n    }\n}",
+      "question": "¿Qué principio garantiza que los personajes ataquen en el mismo orden en que fueron registrados en la ronda?",
+      "target": "FIFO",
+      "acceptedAnswers": ["FIFO", "First In First Out", "first in first out", "fifo"],
+      "hints": [
+        "El Queue procesa los elementos en el orden en que llegaron.",
+        "Las siglas en inglés son F-I-F-O.",
+        "Primero en entrar, primero en salir."
+      ],
+      "explanation": "El principio <strong>FIFO</strong> (First In, First Out) garantiza el orden de ataque. El primer personaje en hacer <strong>Enqueue</strong> (el primero en la lista) será el primero en atacar con <strong>Dequeue()</strong>. Este sistema es <em>justo</em> y predecible, ideal para juegos por turnos como RPGs."
+    },
+    {
+      "id": "qu_id_006",
+      "type": "identification",
+      "difficulty": 3,
+      "preamble": "Compara estas dos estructuras:",
+      "code": "// Estructura A\nStack<string> pila = new Stack<string>();\npila.Push(\"A\"); pila.Push(\"B\"); pila.Push(\"C\");\nwhile (pila.Count > 0) Debug.Log(pila.Pop());\n\n// Estructura B\nQueue<string> cola = new Queue<string>();\ncola.Enqueue(\"A\"); cola.Enqueue(\"B\"); cola.Enqueue(\"C\");\nwhile (cola.Count > 0) Debug.Log(cola.Dequeue());",
+      "question": "La Estructura A imprime C, B, A. ¿En qué orden imprime la Estructura B?",
+      "target": "A, B, C",
+      "acceptedAnswers": ["A, B, C", "A B C", "A→B→C", "ABC"],
+      "hints": [
+        "Queue sigue FIFO: el primero en entrar es el primero en salir.",
+        "El primer Enqueue fue A.",
+        "El orden de salida del Queue es el mismo que el de entrada."
+      ],
+      "explanation": "La <strong>Estructura B</strong> imprime <strong>A, B, C</strong> — el mismo orden de entrada. Esto es <strong>FIFO</strong>. La Estructura A (Stack) imprimió C, B, A porque es <strong>LIFO</strong> (orden inverso). Esta es la diferencia fundamental: <strong>Queue</strong> preserva el orden; <strong>Stack</strong> lo invierte."
+    },
+    {
+      "id": "qu_cw_001",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para agregar el enemigo `nuevoEnemigo` al FINAL de la cola de turnos:",
+      "codeTemplate": "Queue<Enemy> colaTurnos = new Queue<Enemy>();\ncolaTurnos.__________(nuevoEnemigo);",
+      "expectedAnswer": "Enqueue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para agregar a la cola...",
+      "hints": [
+        "El método para agregar al final de un Queue contiene la palabra 'queue'.",
+        "Es el equivalente de Push() en Stack, pero para Queue.",
+        "En inglés, 'poner en cola' es 'en-queue'."
+      ],
+      "explanation": "<strong>Enqueue(item)</strong> agrega el elemento al <em>final</em> de la cola. Es la operación de inserción del <strong>Queue</strong>, equivalente al <strong>Push()</strong> del Stack. El elemento esperará en la cola hasta que todos los que llegaron antes sean procesados con <strong>Dequeue()</strong>."
+    },
+    {
+      "id": "qu_cw_002",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 1,
+      "instruction": "Completa la línea para procesar (extraer y obtener) el siguiente enemigo del frente de la cola de turnos:",
+      "codeTemplate": "Enemy turnoActual = colaTurnos.__________(  );",
+      "expectedAnswer": "Dequeue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para extraer del frente...",
+      "hints": [
+        "El método que elimina y devuelve el frente del Queue.",
+        "Empieza con 'De-' seguido de 'queue'.",
+        "Es el equivalente de Pop() en Stack, pero para Queue."
+      ],
+      "explanation": "<strong>Dequeue()</strong> elimina el elemento del <em>frente</em> de la cola y lo devuelve. Es la operación de extracción del <strong>Queue</strong>. El elemento procesado abandona la cola, y el siguiente en el frente estará disponible para el próximo <strong>Dequeue()</strong>."
+    },
+    {
+      "id": "qu_cw_003",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 2,
+      "instruction": "Completa la guardia para evitar InvalidOperationException al procesar la cola de mensajes de UI:",
+      "codeTemplate": "if (colaMensajes.__________ > 0)\n{\n    string mensaje = colaMensajes.Dequeue();\n    mostrarNotificacion(mensaje);\n}",
+      "expectedAnswer": "Count",
+      "alternateAnswers": [],
+      "placeholder": "Escribe la propiedad que indica cuántos elementos hay...",
+      "hints": [
+        "Necesitas verificar que la cola no esté vacía antes de Dequeue().",
+        "La propiedad de número de elementos en Queue se llama igual que en List<T>.",
+        "Empieza con C mayúscula."
+      ],
+      "explanation": "<code>Count</code> devuelve el número de elementos actuales en el <strong>Queue</strong>. La guardia <code>colaMensajes.Count &gt; 0</code> previene la <code>InvalidOperationException</code>. Alternativamente, usa <code>TryDequeue(out string msg)</code> que devuelve <code>bool</code> sin lanzar excepción."
+    },
+    {
+      "id": "qu_cw_004",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 2,
+      "instruction": "Escribe el código completo para crear un Queue<string> llamado `spawQueue`, agregar los enemigos \"Goblin\", \"Orco\" y \"Troll\", y luego hacer Dequeue() para spawnar el primero:",
+      "codeTemplate": null,
+      "expectedAnswer": "Queue<string> spawQueue = new Queue<string>();\nspawQueue.Enqueue(\"Goblin\");\nspawQueue.Enqueue(\"Orco\");\nspawQueue.Enqueue(\"Troll\");\nstring primerSpawn = spawQueue.Dequeue();",
+      "alternateAnswers": [
+        "Queue<string> spawQueue = new Queue<string>();\nspawQueue.Enqueue(\"Goblin\");\nspawQueue.Enqueue(\"Orco\");\nspawQueue.Enqueue(\"Troll\");\nspawQueue.Dequeue();"
+      ],
+      "placeholder": "Escribe el código completo del Queue de spawning...",
+      "hints": [
+        "Declara el Queue con new Queue<string>().",
+        "Tres llamadas a Enqueue() para los tres enemigos en orden.",
+        "Dequeue() extrae al primero: el Goblin."
+      ],
+      "explanation": "El <strong>Queue</strong> de spawning: los tres enemigos se agregan en orden con <strong>Enqueue()</strong>. El primer <strong>Dequeue()</strong> extrae <code>\"Goblin\"</code> (el primero en entrar). La cola queda [Orco, Troll] para las siguientes oleadas."
+    },
+    {
+      "id": "qu_cw_005",
+      "type": "code_writing",
+      "subtype": "write",
+      "difficulty": 3,
+      "instruction": "Escribe un método completo `void ProcesarMensajes(Queue<string> cola)` que procese TODOS los mensajes de la cola usando un while, imprimiendo cada uno con `Debug.Log()` y asegurándose de no lanzar excepción si la cola está vacía:",
+      "codeTemplate": null,
+      "expectedAnswer": "void ProcesarMensajes(Queue<string> cola) { while (cola.Count > 0) { Debug.Log(cola.Dequeue()); } }",
+      "alternateAnswers": [
+        "void ProcesarMensajes(Queue<string> cola)\n{\n    while (cola.Count > 0)\n    {\n        Debug.Log(cola.Dequeue());\n    }\n}"
+      ],
+      "placeholder": "Escribe el método completo con while y guardia...",
+      "hints": [
+        "El while debe continuar mientras la cola tenga elementos.",
+        "La condición es Count > 0.",
+        "Dentro del while, Dequeue() para sacar y Debug.Log() para imprimir."
+      ],
+      "explanation": "El patrón <code>while (cola.Count &gt; 0) { cola.Dequeue(); }</code> vacía la cola procesando cada elemento en orden <strong>FIFO</strong>. La condición <code>Count &gt; 0</code> evita la excepción en cola vacía. Al final del while, <code>cola.Count == 0</code>."
+    },
+    {
+      "id": "qu_cw_006",
+      "type": "code_writing",
+      "subtype": "complete",
+      "difficulty": 3,
+      "instruction": "Completa este sistema de turnos que, después de que un personaje actúa, lo vuelve a poner al final de la cola para la siguiente ronda (cola circular):",
+      "codeTemplate": "public void EjecutarTurno(Queue<Character> turnos)\n{\n    if (turnos.Count > 0)\n    {\n        Character activo = turnos.__________(  );\n        activo.EjecutarAccion();\n        turnos.Enqueue(activo); // vuelve al final\n    }\n}",
+      "expectedAnswer": "Dequeue",
+      "alternateAnswers": [],
+      "placeholder": "Escribe el método para extraer al personaje activo...",
+      "hints": [
+        "Necesitas extraer al personaje del frente para que actúe.",
+        "El método que elimina y devuelve el frente del Queue es...",
+        "Después de actuar, se vuelve a añadir con Enqueue()."
+      ],
+      "explanation": "<code>Dequeue()</code> extrae al personaje del frente para que actúe. Luego <code>Enqueue(activo)</code> lo devuelve al final de la cola. Este patrón crea una <strong>cola circular</strong> — ideal para sistemas de turnos donde todos los personajes rotan indefinidamente. Es más eficiente que reiniciar la cola cada ronda."
+    }
+  ]
+}
