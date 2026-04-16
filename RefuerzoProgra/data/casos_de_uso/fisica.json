@@ -1,0 +1,485 @@
+{
+  "category": "fisica",
+  "title": "Física y Movimiento",
+  "icon": "⚽",
+  "color": "#FF9800",
+  "cases": [
+    {
+      "id": "fis_001",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["fisica", "physics-manual"],
+      "title": "Mover al jugador con transform.position += en un platformer",
+      "context": "Estás desarrollando un platformer 2D y moviste al personaje modificando **transform.position** directamente desde `Update`. Todo parecía funcionar hasta que añadiste paredes delgadas: a velocidades altas el jugador las **atraviesa** (tunneling) porque el motor de físicas nunca sabe que estuvo en medio. Además, implementar gravedad y fricciones requiere calcularlas manualmente, duplicando lógica que Unity ya tiene resuelta en **Rigidbody2D**.",
+      "scenario": "Identifica por qué mover al jugador con transform.position es problemático y reescríbelo usando el motor de físicas:",
+      "starterCode": "// PlayerMovement.cs\nusing UnityEngine;\n\npublic class PlayerMovement : MonoBehaviour\n{\n    [SerializeField] private float speed = 5f;\n    [SerializeField] private float gravity = -9.8f;\n\n    private Vector2 _velocity;\n\n    private void Update()\n    {\n        float h = Input.GetAxis(\"Horizontal\");\n\n        // Problema 1: modifica la posición directamente, sin pasar por el motor de físicas\n        _velocity.x = h * speed;\n\n        // Problema 2: gravedad manual — duplica lo que Rigidbody2D ya hace\n        _velocity.y += gravity * Time.deltaTime;\n\n        // Problema 3: tunneling a alta velocidad o FPS bajo\n        transform.position += (Vector3)(_velocity * Time.deltaTime);\n    }\n}",
+      "prompt": "Reescribe `PlayerMovement` usando `Rigidbody2D` para que las colisiones las gestione el motor de físicas de Unity, eliminando el riesgo de tunneling y la gravedad manual.",
+      "criteria": [
+        {
+          "id": "no_direct_position",
+          "label": "No asigna `transform.position` directamente para mover al personaje",
+          "check": "antiPattern",
+          "pattern": "transform\\.position\\s*[+]?=\\s*[^;]*velocity|transform\\.position\\s*[+]?=\\s*[^;]*speed",
+          "points": 4
+        },
+        {
+          "id": "uses_rigidbody2d",
+          "label": "Usa `Rigidbody2D` para el movimiento (`rb.velocity`, `MovePosition` o `AddForce`)",
+          "check": "keyword",
+          "pattern": "Rigidbody2D|rb\\.velocity|rb\\.MovePosition|rb\\.AddForce",
+          "points": 4
+        },
+        {
+          "id": "uses_fixedupdate",
+          "label": "La lógica de físicas se ejecuta en `FixedUpdate`, no en `Update`",
+          "check": "keyword",
+          "pattern": "FixedUpdate",
+          "points": 3
+        },
+        {
+          "id": "no_manual_gravity",
+          "label": "No hay gravedad calculada manualmente en código",
+          "check": "antiPattern",
+          "pattern": "gravity\\s*\\*\\s*Time\\.deltaTime|_velocity\\.y\\s*\\+=",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// PlayerMovement.cs — movimiento delegado al motor de físicas con Rigidbody2D\nusing UnityEngine;\n\n[RequireComponent(typeof(Rigidbody2D))]\npublic class PlayerMovement : MonoBehaviour\n{\n    [SerializeField] private float speed = 5f;\n\n    private Rigidbody2D _rb;\n\n    private void Awake()\n    {\n        _rb = GetComponent<Rigidbody2D>();\n        // La gravedad la gestiona Unity — gravityScale en el Inspector\n    }\n\n    // FixedUpdate garantiza sincronía con el motor de físicas\n    private void FixedUpdate()\n    {\n        float h = Input.GetAxisRaw(\"Horizontal\");\n\n        // Conserva la velocidad vertical (gravedad de Rigidbody2D) y solo cambia X\n        _rb.linearVelocity = new Vector2(h * speed, _rb.linearVelocity.y);\n    }\n}",
+      "alternatives": [
+        "Usar `Rigidbody2D.MovePosition` si se necesita movimiento kinematic con colisiones exactas",
+        "Usar `CharacterController` (3D) que maneja colisiones y pendientes sin Rigidbody",
+        "Activar `Collision Detection: Continuous` en el Rigidbody2D para proyectiles o personajes muy rápidos",
+        "Usar el paquete `Physics2D.Simulate` para movimiento determinista en juegos con replay"
+      ],
+      "feedback": {
+        "high": "Excelente. Delegaste el movimiento a **Rigidbody2D** en `FixedUpdate`, conservando la velocidad vertical para que la gravedad nativa de Unity funcione correctamente. El motor detecta colisiones en broadphase, eliminando el **tunneling** por completo.",
+        "mid": "Buen avance. Usas `Rigidbody2D`, pero si aún mueves al personaje en `Update` con `MovePosition`, considera que `FixedUpdate` corre a tasa fija (50 Hz por defecto) y sincroniza correctamente con el simulador de físicas, evitando jitter visual.",
+        "low": "El problema de `transform.position +=` es que Unity no sabe que el objeto se movió hasta el siguiente frame: si la velocidad es suficientemente alta, el objeto cruza un collider sin que haya intersección en ningún frame. Con **Rigidbody2D** en `FixedUpdate`, Unity calcula la trayectoria entera entre frames y detecta la colisión aunque sea instantánea."
+      }
+    },
+    {
+      "id": "fis_002",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["fisica", "update-polling"],
+      "title": "Double jump que se puede ejecutar infinitas veces",
+      "context": "Tu platformer tiene salto doble, pero los testers reportan que pueden saltar **6 o 7 veces seguidas** en el aire. El flag `isGrounded` se setea con `OnCollisionStay`, que tiene un delay de hasta 2 frames al aterrizar, lo que abre una ventana en la que el jugador puede volver a saltar antes de que el motor registre el contacto. Sin un **contador de saltos restantes** cualquier validación basada únicamente en `isGrounded` puede ser evadida.",
+      "scenario": "Identifica por qué el double jump es infinito y corrígelo con un ground check robusto más un contador de saltos:",
+      "starterCode": "// PlayerJump.cs\nusing UnityEngine;\n\npublic class PlayerJump : MonoBehaviour\n{\n    [SerializeField] private float jumpForce = 8f;\n    private Rigidbody2D _rb;\n    private bool _isGrounded;\n\n    private void Awake() => _rb = GetComponent<Rigidbody2D>();\n\n    private void Update()\n    {\n        // Problema: OnCollisionStay tiene delay — isGrounded puede estar\n        // desactualizado justo al pulsar Jump, permitiendo saltos extra\n        if (Input.GetButtonDown(\"Jump\") && _isGrounded)\n        {\n            _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);\n        }\n    }\n\n    // Problema: se actualiza con retardo y falla en bordes de plataforma\n    private void OnCollisionStay2D(Collision2D col) => _isGrounded = true;\n    private void OnCollisionExit2D(Collision2D col) => _isGrounded = false;\n}",
+      "prompt": "Reescribe el sistema de salto con un `Raycast` o `OverlapCircle` para ground check preciso y un contador de saltos para limitar el double jump.",
+      "criteria": [
+        {
+          "id": "no_collision_stay",
+          "label": "No usa `OnCollisionStay` para determinar si el jugador está en el suelo",
+          "check": "antiPattern",
+          "pattern": "OnCollisionStay",
+          "points": 3
+        },
+        {
+          "id": "uses_raycast_or_overlap",
+          "label": "Usa `Physics2D.Raycast`, `Physics2D.OverlapCircle` u `OverlapBox` para el ground check",
+          "check": "keyword",
+          "pattern": "Physics2D\\.Raycast|Physics2D\\.OverlapCircle|Physics2D\\.OverlapBox|OverlapCircle|OverlapBox",
+          "points": 4
+        },
+        {
+          "id": "jump_counter",
+          "label": "Implementa un contador o límite de saltos restantes (e.g. `_jumpsLeft`, `_jumpCount`)",
+          "check": "keyword",
+          "pattern": "_jumpsLeft|_jumpCount|jumpsLeft|jumpCount|_extraJumps|extraJumps",
+          "points": 4
+        },
+        {
+          "id": "resets_on_ground",
+          "label": "El contador de saltos se resetea al tocar el suelo",
+          "check": "keyword",
+          "pattern": "_jumpsLeft\\s*=\\s*[0-9]|jumpCount\\s*=\\s*0|_jumpCount\\s*=\\s*0|extraJumps\\s*=",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// PlayerJump.cs — ground check con Raycast + contador de saltos\nusing UnityEngine;\n\n[RequireComponent(typeof(Rigidbody2D))]\npublic class PlayerJump : MonoBehaviour\n{\n    [SerializeField] private float jumpForce   = 8f;\n    [SerializeField] private int  maxJumps     = 2;      // 1 = solo suelo, 2 = double jump\n    [SerializeField] private LayerMask groundLayer;\n    [SerializeField] private Transform groundCheck;      // Transform vacío en los pies del personaje\n    [SerializeField] private float checkRadius = 0.1f;\n\n    private Rigidbody2D _rb;\n    private int _jumpsLeft;\n\n    private void Awake()\n    {\n        _rb = GetComponent<Rigidbody2D>();\n        _jumpsLeft = maxJumps;\n    }\n\n    private void Update()\n    {\n        // Ground check puntual cada frame — sin delay, sin jitter\n        bool isGrounded = Physics2D.OverlapCircle(\n            groundCheck.position, checkRadius, groundLayer);\n\n        if (isGrounded)\n            _jumpsLeft = maxJumps; // resetear al tocar suelo\n\n        if (Input.GetButtonDown(\"Jump\") && _jumpsLeft > 0)\n        {\n            // Resetea la velocidad vertical antes del impulso para saltos consistentes\n            _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 0f);\n            _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);\n            _jumpsLeft--;\n        }\n    }\n}",
+      "alternatives": [
+        "Usar `Physics2D.Raycast` hacia abajo con distancia fija en lugar de `OverlapCircle` para más control sobre la dirección",
+        "Usar `Physics2D.OverlapBox` si el personaje tiene pies rectangulares para evitar falsas detecciones en bordes",
+        "Suscribirse a `Rigidbody2D.velocity.y < 0` para detectar caída libre y deshabilitar el double jump al caer",
+        "Usar Coyote Time: mantener `_jumpsLeft` disponible ~0.1s después de salir de una plataforma para tolerancia visual"
+      ],
+      "feedback": {
+        "high": "Perfecto. Usas **Physics2D.OverlapCircle** para un ground check sin delay y resets el contador de saltos al aterrizar. Con `_jumpsLeft--` el double jump es exactamente 2 saltos, sin ventanas de explotación por timing.",
+        "mid": "Buen enfoque. Tienes el contador de saltos, pero si sigues usando `OnCollisionStay` para el ground check, hay un delay de 1-2 frames que permite saltos extra justo al despegar. Cambia a `Physics2D.OverlapCircle` en `Update` para detección inmediata.",
+        "low": "El problema raíz es que `OnCollisionStay` no notifica el frame exacto en que el jugador despega — hay un delay. Esto abre una ventana donde `_isGrounded` sigue siendo `true` aunque el jugador ya está en el aire. Con **Physics2D.OverlapCircle** el check es instantáneo cada frame, y el contador garantiza que solo puedas saltar `maxJumps` veces sin importar el timing."
+      }
+    },
+    {
+      "id": "fis_003",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["fisica", "update-polling"],
+      "title": "Ground check con OnCollisionStay: jitter y comportamientos inesperados",
+      "context": "Tu `JumpController` usa **OnCollisionStay** para marcar `isGrounded = true` y **OnCollisionExit** para marcarlo `false`. En bordes de plataformas el flag oscila entre `true` y `false` en frames consecutivos causando **jitter visual** y animaciones incorrectas. En rampas el contacto con el suelo se reporta intermitentemente porque el ángulo de la superficie hace que el solver de físicas registre colisiones en un frame sí y en el siguiente no.",
+      "scenario": "Reemplaza el sistema de ground check basado en callbacks de colisión por uno basado en Raycast o OverlapCircle:",
+      "starterCode": "// JumpController.cs\nusing UnityEngine;\n\npublic class JumpController : MonoBehaviour\n{\n    [SerializeField] private float jumpForce = 7f;\n    private Rigidbody2D _rb;\n    private bool _isGrounded;\n\n    private void Awake() => _rb = GetComponent<Rigidbody2D>();\n\n    private void Update()\n    {\n        if (Input.GetButtonDown(\"Jump\") && _isGrounded)\n            _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);\n    }\n\n    // Problema 1: OnCollisionStay no se llama el frame exacto del aterrizaje\n    private void OnCollisionStay2D(Collision2D col)\n    {\n        _isGrounded = true;\n    }\n\n    // Problema 2: oscila en bordes — un frame true, el siguiente false\n    private void OnCollisionExit2D(Collision2D col)\n    {\n        _isGrounded = false;\n    }\n}",
+      "prompt": "Reemplaza el ground check por `Physics2D.Raycast` o `Physics2D.OverlapCircle` evaluado cada frame para eliminar el jitter y el comportamiento incorrecto en rampas.",
+      "criteria": [
+        {
+          "id": "no_collision_callbacks",
+          "label": "No usa `OnCollisionStay2D` ni `OnCollisionExit2D` para el ground check",
+          "check": "antiPattern",
+          "pattern": "OnCollisionStay2D|OnCollisionExit2D",
+          "points": 4
+        },
+        {
+          "id": "uses_raycast_or_overlap",
+          "label": "Evalúa el suelo con `Physics2D.Raycast`, `OverlapCircle` u `OverlapBox` en `Update` o `FixedUpdate`",
+          "check": "keyword",
+          "pattern": "Physics2D\\.Raycast|Physics2D\\.OverlapCircle|Physics2D\\.OverlapBox",
+          "points": 4
+        },
+        {
+          "id": "uses_layer_mask",
+          "label": "Filtra por `LayerMask` para que solo el suelo cuente como ground",
+          "check": "keyword",
+          "pattern": "LayerMask|groundLayer|_groundLayer",
+          "points": 3
+        },
+        {
+          "id": "ground_check_point",
+          "label": "Usa un punto o transform en los pies del personaje para el origen del check",
+          "check": "keyword",
+          "pattern": "groundCheck|_groundCheck|feetPoint|_feet",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// JumpController.cs — ground check con OverlapCircle, sin jitter ni falla en slopes\nusing UnityEngine;\n\n[RequireComponent(typeof(Rigidbody2D))]\npublic class JumpController : MonoBehaviour\n{\n    [SerializeField] private float jumpForce     = 7f;\n    [SerializeField] private Transform groundCheck;   // Transform en los pies del sprite\n    [SerializeField] private float checkRadius   = 0.08f;\n    [SerializeField] private LayerMask groundLayer;\n\n    private Rigidbody2D _rb;\n\n    private void Awake() => _rb = GetComponent<Rigidbody2D>();\n\n    private void Update()\n    {\n        // Evaluación determinista cada frame — sin delay, sin oscilaciones\n        bool isGrounded = Physics2D.OverlapCircle(\n            groundCheck.position, checkRadius, groundLayer);\n\n        if (Input.GetButtonDown(\"Jump\") && isGrounded)\n        {\n            _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 0f);\n            _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);\n        }\n    }\n\n    // Dibuja el círculo de ground check en el editor para facilitar la calibración\n    private void OnDrawGizmosSelected()\n    {\n        if (groundCheck == null) return;\n        Gizmos.color = Color.green;\n        Gizmos.DrawWireSphere(groundCheck.position, checkRadius);\n    }\n}",
+      "alternatives": [
+        "Usar `Physics2D.Raycast` con dirección `Vector2.down` y distancia fija para más precisión en pendientes pronunciadas",
+        "Usar tres raycasts (centro, izquierda, derecha de los pies) para evitar falsos negativos en bordes de plataformas",
+        "Usar `Physics2D.OverlapBox` si el personaje tiene hitbox rectangular para mayor fidelidad con la geometría del sprite",
+        "Combinar el OverlapCircle con `Rigidbody2D.velocity.y < 0.1f` para evitar que cuente como grounded al inicio del salto"
+      ],
+      "feedback": {
+        "high": "Excelente implementación. El **Physics2D.OverlapCircle** evaluado cada frame da un resultado binario y estable: o hay suelo o no lo hay, sin depender del ciclo de eventos del solver. El **LayerMask** garantiza que solo el terreno cuente, y el Gizmo facilita calibrar el radio en el Editor.",
+        "mid": "Buen progreso. Eliminaste `OnCollisionStay2D`, pero si tu Raycast apunta desde el centro del personaje tendrás falsos negativos al estar parado en el borde de una plataforma. Coloca el origen del check en un Transform en los **pies del sprite**, no en el centro.",
+        "low": "El jitter ocurre porque **OnCollisionStay** y **OnCollisionExit** dependen del solver de físicas, que puede resolver el contacto de forma inconsistente en bordes o slopes. `Physics2D.OverlapCircle` es determinista: pregunta directamente al mundo de físicas si hay geometría en ese punto ahora mismo, sin esperar a ningún callback."
+      }
+    },
+    {
+      "id": "fis_004",
+      "difficulty": 2,
+      "genre": "Tower Defense",
+      "tags": ["fisica", "hardcoding", "physics-manual"],
+      "title": "Tiro parabólico con valores mágicos hardcodeados",
+      "context": "Tu `Projectile.cs` lanza proyectiles con una velocidad inicial hardcodeada (`2.3f, 4.7f, 0`) que encontraste por prueba y error para alcanzar un target a una distancia fija. El diseño funciona en ese escenario específico, pero en cuanto el enemigo está a distinta distancia o se cambia la escala del mapa el proyectil cae lejos del objetivo. Los **valores mágicos** no tienen relación visible con ninguna fórmula cinemática, haciendo imposible mantener el código.",
+      "scenario": "Reemplaza los valores mágicos por el cálculo cinemático correcto de velocidad inicial para tiro parabólico:",
+      "starterCode": "// Projectile.cs\nusing UnityEngine;\n\npublic class Projectile : MonoBehaviour\n{\n    private Rigidbody2D _rb;\n\n    private void Awake() => _rb = GetComponent<Rigidbody2D>();\n\n    // Problema: velocidad hardcodeada encontrada por trial-and-error\n    // Solo funciona si el target está exactamente a la distancia para la que se calibró\n    public void Launch(Vector3 targetPosition)\n    {\n        // Valores mágicos — si el target se mueve, el proyectil falla\n        Vector2 velocity = new Vector2(2.3f, 4.7f);\n        _rb.linearVelocity = velocity;\n    }\n}",
+      "prompt": "Reescribe `Launch` calculando la velocidad inicial con la fórmula cinemática de tiro parabólico usando el ángulo de lanzamiento y la distancia al target.",
+      "criteria": [
+        {
+          "id": "no_magic_numbers",
+          "label": "No usa velocidades iniciales hardcodeadas como `2.3f` o `4.7f`",
+          "check": "antiPattern",
+          "pattern": "new Vector[23]\\(\\s*[0-9]+\\.[0-9]+f\\s*,\\s*[0-9]+\\.[0-9]+f",
+          "points": 4
+        },
+        {
+          "id": "uses_angle",
+          "label": "Calcula la velocidad usando un ángulo de lanzamiento configurable (`launchAngle`, `angle`)",
+          "check": "keyword",
+          "pattern": "launchAngle|_launchAngle|angle|Mathf\\.Tan|Mathf\\.Cos|Mathf\\.Sin",
+          "points": 4
+        },
+        {
+          "id": "uses_distance",
+          "label": "Calcula la distancia horizontal al target para determinar la velocidad",
+          "check": "keyword",
+          "pattern": "Vector[23]\\.Distance|distance|_distance|\\.x\\s*-\\s*transform\\.position\\.x",
+          "points": 3
+        },
+        {
+          "id": "configurable_angle",
+          "label": "El ángulo de lanzamiento es un campo serializado o configurable, no un literal",
+          "check": "keyword",
+          "pattern": "\\[SerializeField\\]|SerializeField",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Projectile.cs — velocidad inicial calculada con cinemática de tiro parabólico\nusing UnityEngine;\n\n[RequireComponent(typeof(Rigidbody2D))]\npublic class Projectile : MonoBehaviour\n{\n    // Ángulo de lanzamiento configurable desde el Inspector (en grados)\n    [SerializeField] private float launchAngle = 45f;\n\n    private Rigidbody2D _rb;\n\n    private void Awake() => _rb = GetComponent<Rigidbody2D>();\n\n    // Fórmula: dado ángulo θ y distancia horizontal d,\n    // v₀ = sqrt(d * g / sin(2θ))\n    // Derivado de: d = v₀² * sin(2θ) / g\n    public void Launch(Vector3 targetPosition)\n    {\n        float g     = Mathf.Abs(Physics2D.gravity.y);\n        float dx    = targetPosition.x - transform.position.x;\n        float dy    = targetPosition.y - transform.position.y;\n        float theta = launchAngle * Mathf.Deg2Rad;\n\n        // Velocidad inicial para alcanzar (dx, dy) con ángulo theta\n        // Basado en ecuaciones de movimiento uniforme + caída libre\n        float vx = dx / (Mathf.Sqrt(2f * (dx * Mathf.Tan(theta) - dy) / g));\n        float vy = vx * Mathf.Tan(theta);\n\n        // Preserva la dirección correcta en X\n        if (dx < 0f) vx = -Mathf.Abs(vx);\n\n        _rb.linearVelocity = new Vector2(vx, vy);\n    }\n}",
+      "alternatives": [
+        "Para 3D usar la ecuación `v₀ = d / (cos(θ) * t)` despejando `t` de la ecuación de caída libre en Y",
+        "Usar `AnimationCurve` para definir la trayectoria deseada y mover el proyectil por `Lerp` sobre la curva",
+        "Usar `Rigidbody.AddForce` en lugar de asignar velocidad directamente, añadiendo el impulso como `ForceMode.VelocityChange`",
+        "Precalcular la trayectoria con `Physics.Simulate` para mostrar un arco predictivo al jugador antes de lanzar"
+      ],
+      "feedback": {
+        "high": "Implementación correcta. Derivaste la velocidad inicial con la fórmula cinemática `v₀² = d*g / sin(2θ)`, lo que garantiza que el proyectil alcance cualquier target independientemente de la distancia. El ángulo es configurable desde el Inspector, eliminando todos los **valores mágicos**.",
+        "mid": "Buen avance. Usas la distancia al target, pero si calculas `vx` y `vy` por separado sin derivarlos de la misma fórmula cinemática pueden no ser consistentes entre sí. Verifica que tu cálculo deriva de `d = v₀² * sin(2θ) / g` para garantizar que la parábola llegue exactamente al target.",
+        "low": "Los valores `2.3f, 4.7f` son el resultado de prueba y error para una única distancia. La **cinemática de tiro parabólico** describe con precisión cómo calcular la velocidad inicial para cualquier distancia: `v₀ = sqrt(d * g / sin(2θ))`. Con esta fórmula el proyectil siempre llega al target, sin importar dónde esté."
+      }
+    },
+    {
+      "id": "fis_005",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["fisica", "update-polling"],
+      "title": "Cámara que sigue al jugador con asignación directa en LateUpdate",
+      "context": "Tu `CameraFollow.cs` copia la posición del jugador directamente a `transform.position` cada `LateUpdate`. El resultado es una cámara rígida que **no suaviza** los cambios de velocidad: cuando el personaje frena bruscamente la cámara para instantáneamente, sin inercia visual. Tampoco tiene **dead zone** (la cámara se mueve aunque el jugador esté quieto en el centro) ni límites de mundo, lo que puede exponer áreas fuera del nivel.",
+      "scenario": "Reemplaza la asignación directa por un seguimiento suave con SmoothDamp y límites de mundo configurables:",
+      "starterCode": "// CameraFollow.cs\nusing UnityEngine;\n\npublic class CameraFollow : MonoBehaviour\n{\n    [SerializeField] private Transform target;\n\n    private void LateUpdate()\n    {\n        if (target == null) return;\n\n        // Problema 1: asignación directa — movimiento instantáneo, sin suavizado\n        // Problema 2: sin dead zone — la cámara se mueve aunque el jugador esté quieto en el centro\n        // Problema 3: sin límites — la cámara puede mostrar áreas fuera del nivel\n        transform.position = new Vector3(\n            target.position.x,\n            target.position.y,\n            -10f\n        );\n    }\n}",
+      "prompt": "Reescribe `CameraFollow` usando `Vector3.SmoothDamp` para suavizado, una dead zone configurable y clamp de límites de mundo.",
+      "criteria": [
+        {
+          "id": "no_direct_assign",
+          "label": "No asigna `transform.position` directamente a la posición del target",
+          "check": "antiPattern",
+          "pattern": "transform\\.position\\s*=\\s*new Vector3\\(\\s*target\\.position",
+          "points": 4
+        },
+        {
+          "id": "uses_smoothdamp",
+          "label": "Usa `Vector3.SmoothDamp` o `Vector2.SmoothDamp` para el movimiento suave",
+          "check": "keyword",
+          "pattern": "SmoothDamp",
+          "points": 4
+        },
+        {
+          "id": "velocity_reference",
+          "label": "Mantiene una variable de velocidad de referencia requerida por `SmoothDamp`",
+          "check": "keyword",
+          "pattern": "_velocity|_camVelocity|_smoothVelocity|ref.*velocity",
+          "points": 3
+        },
+        {
+          "id": "uses_clamp",
+          "label": "Limita la posición de la cámara con `Mathf.Clamp` o bounds configurables",
+          "check": "keyword",
+          "pattern": "Mathf\\.Clamp|minX|maxX|minY|maxY|_bounds|bounds",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// CameraFollow.cs — seguimiento suave con SmoothDamp + dead zone + clamp de mundo\nusing UnityEngine;\n\npublic class CameraFollow : MonoBehaviour\n{\n    [SerializeField] private Transform target;\n    [SerializeField] private float smoothTime  = 0.2f;  // tiempo de suavizado\n    [SerializeField] private Vector2 offset    = Vector2.zero;\n    [SerializeField] private Vector2 deadZone  = new Vector2(0.5f, 0.3f);\n\n    [Header(\"Límites del mundo\")]\n    [SerializeField] private float minX = -50f;\n    [SerializeField] private float maxX =  50f;\n    [SerializeField] private float minY = -20f;\n    [SerializeField] private float maxY =  20f;\n\n    private Vector3 _velocity = Vector3.zero;\n\n    private void LateUpdate()\n    {\n        if (target == null) return;\n\n        Vector3 desired = new Vector3(\n            target.position.x + offset.x,\n            target.position.y + offset.y,\n            -10f\n        );\n\n        // Dead zone: solo moverse si el target sale del área central\n        Vector3 delta = desired - transform.position;\n        if (Mathf.Abs(delta.x) < deadZone.x) desired.x = transform.position.x;\n        if (Mathf.Abs(delta.y) < deadZone.y) desired.y = transform.position.y;\n\n        // Suavizado con inercia — elimina el movimiento brusco\n        Vector3 smoothed = Vector3.SmoothDamp(\n            transform.position, desired, ref _velocity, smoothTime);\n\n        // Clamp de límites de mundo\n        smoothed.x = Mathf.Clamp(smoothed.x, minX, maxX);\n        smoothed.y = Mathf.Clamp(smoothed.y, minY, maxY);\n\n        transform.position = smoothed;\n    }\n}",
+      "alternatives": [
+        "Usar `Vector3.Lerp` con factor `smoothSpeed * Time.deltaTime` para un seguimiento más simple pero sin límite de velocidad máxima",
+        "Usar Cinemachine (paquete oficial de Unity) que incluye dead zone, damping, lookahead y confiner de bounds incorporados",
+        "Suscribirse a un evento `Player.OnPositionChanged` en lugar de polling en LateUpdate para actualizar solo cuando el jugador se mueve",
+        "Usar `Camera.main.WorldToViewportPoint` para calcular si el jugador salió de la dead zone en coordenadas de viewport"
+      ],
+      "feedback": {
+        "high": "Implementación completa. **Vector3.SmoothDamp** da la inercia visual correcta, la dead zone evita el temblor cuando el jugador está quieto, y el **Mathf.Clamp** previene que la cámara muestre áreas fuera del nivel. El `_velocity` de referencia es clave para que SmoothDamp calcule la desaceleración.",
+        "mid": "Buen progreso. Tienes el SmoothDamp, pero sin **dead zone** la cámara sigue cualquier microajuste de posición del jugador, causando un temblor sutil. Añade una zona central donde el jugador puede moverse sin que la cámara reaccione.",
+        "low": "La asignación directa `transform.position = target.position` hace que la cámara replique exactamente el movimiento del jugador, incluyendo aceleraciones y frenadas bruscas. **Vector3.SmoothDamp** interpola con inercia: la cámara acelera hacia el target y desacelera al acercarse, dando la sensación de peso visual que se espera en un platformer."
+      }
+    },
+    {
+      "id": "fis_006",
+      "difficulty": 2,
+      "genre": "Dungeon Crawler",
+      "tags": ["fisica", "physics-manual"],
+      "title": "Enemigo que atraviesa paredes usando Transform.Translate",
+      "context": "Tu `EnemyMovement.cs` mueve al enemigo con **Transform.Translate** directamente, ignorando el motor de físicas. A velocidades bajas y framerate estable parecía funcionar, pero en dispositivos lentos (o cuando el enemigo recibe un `speed` alto) el paso por frame supera el grosor de los muros y el enemigo los **atraviesa**. El problema escala con el número de enemigos en pantalla porque cada uno puede saltarse paredes independientemente.",
+      "scenario": "Reemplaza Transform.Translate por movimiento basado en Rigidbody o NavMeshAgent para respetar colisiones:",
+      "starterCode": "// EnemyMovement.cs\nusing UnityEngine;\n\npublic class EnemyMovement : MonoBehaviour\n{\n    [SerializeField] private float speed = 3f;\n    [SerializeField] private Transform player;\n\n    // Problema: Translate no pasa por el motor de físicas.\n    // A alta velocidad o FPS bajo el enemigo atraviesa colisionadores.\n    private void Update()\n    {\n        if (player == null) return;\n\n        Vector3 direction = (player.position - transform.position).normalized;\n        transform.Translate(direction * speed * Time.deltaTime);\n    }\n}",
+      "prompt": "Reescribe `EnemyMovement` usando `Rigidbody.MovePosition` en `FixedUpdate` o `NavMeshAgent` para que el enemigo no atraviese paredes.",
+      "criteria": [
+        {
+          "id": "no_translate",
+          "label": "No usa `Transform.Translate` para el movimiento del enemigo",
+          "check": "antiPattern",
+          "pattern": "transform\\.Translate",
+          "points": 4
+        },
+        {
+          "id": "uses_rigidbody_or_navmesh",
+          "label": "Usa `Rigidbody.MovePosition`, `rb.velocity` en `FixedUpdate`, o `NavMeshAgent`",
+          "check": "keyword",
+          "pattern": "Rigidbody|MovePosition|NavMeshAgent|rb\\.velocity|_agent",
+          "points": 4
+        },
+        {
+          "id": "uses_fixedupdate_or_agent",
+          "label": "El movimiento ocurre en `FixedUpdate` o es delegado al `NavMeshAgent`",
+          "check": "keyword",
+          "pattern": "FixedUpdate|NavMeshAgent|_agent\\.SetDestination",
+          "points": 3
+        },
+        {
+          "id": "layer_or_collision",
+          "label": "Considera colisiones con layer mask o configura el Rigidbody para no pasar por paredes",
+          "check": "keyword",
+          "pattern": "LayerMask|isKinematic|CollisionDetection|Continuous|MovePosition",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// EnemyMovement.cs — dos alternativas: Rigidbody (A) o NavMeshAgent (B)\n\n// === ALTERNATIVA A: Rigidbody kinematic con MovePosition ===\nusing UnityEngine;\n\n[RequireComponent(typeof(Rigidbody))]\npublic class EnemyMovement : MonoBehaviour\n{\n    [SerializeField] private float speed = 3f;\n    [SerializeField] private Transform player;\n\n    private Rigidbody _rb;\n\n    private void Awake()\n    {\n        _rb = GetComponent<Rigidbody>();\n        _rb.isKinematic = true; // kinematic: Unity respeta colisiones pero no aplica física\n    }\n\n    // FixedUpdate garantiza que el movimiento va sincronizado con el solver de físicas\n    private void FixedUpdate()\n    {\n        if (player == null) return;\n\n        Vector3 direction = (player.position - transform.position).normalized;\n        Vector3 newPos    = _rb.position + direction * speed * Time.fixedDeltaTime;\n        // MovePosition respeta colisiones: el Rigidbody no atraviesa colisionadores\n        _rb.MovePosition(newPos);\n    }\n}\n\n// === ALTERNATIVA B: NavMeshAgent (recomendado para dungeon crawlers) ===\n// using UnityEngine;\n// using UnityEngine.AI;\n//\n// [RequireComponent(typeof(NavMeshAgent))]\n// public class EnemyMovement : MonoBehaviour\n// {\n//     [SerializeField] private Transform player;\n//     private NavMeshAgent _agent;\n//\n//     private void Awake() => _agent = GetComponent<NavMeshAgent>();\n//\n//     private void Update()\n//     {\n//         if (player != null)\n//             _agent.SetDestination(player.position); // pathfinding automático, respeta geometría\n//     }\n// }",
+      "alternatives": [
+        "Usar `NavMeshAgent.SetDestination` para pathfinding completo que rodea obstáculos en lugar de atravesarlos",
+        "Usar `Rigidbody.velocity` en lugar de `MovePosition` si el enemigo necesita interactuar con fuerzas físicas (empujes, explosiones)",
+        "Activar `Collision Detection: Continuous` en el Rigidbody para enemigos muy rápidos que siguen traversando con kinematic",
+        "Usar `Physics.Raycast` en la dirección de movimiento antes de moverse para detectar paredes y detener al enemigo"
+      ],
+      "feedback": {
+        "high": "Implementación correcta. **Rigidbody.MovePosition** en `FixedUpdate` garantiza que el motor de físicas evalúe colisiones antes de aplicar el movimiento: el enemigo no puede cruzar un colisionador porque Unity calcula la intersección primero. Para dungeons con geometría compleja, `NavMeshAgent` es la opción más robusta.",
+        "mid": "Buen avance. Eliminaste `Transform.Translate`, pero si usas `rb.velocity` asegúrate de hacerlo en `FixedUpdate`, no en `Update`: en `Update` el deltaTime varía y puede causar que el enemigo se mueva distancias inconsistentes entre frames.",
+        "low": "**Transform.Translate** no consulta al motor de físicas: simplemente mueve el Transform. Si la distancia en un frame es mayor que el grosor del muro, el objeto lo cruza sin que haya colisión registrada. **Rigidbody.MovePosition** en `FixedUpdate` deja que Unity calcule intersecciones antes de aplicar el desplazamiento."
+      }
+    },
+    {
+      "id": "fis_007",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["fisica", "bucles-anidados", "physics-manual"],
+      "title": "Pathfinding manual O(n²): buscar el nodo más cercano en todos los waypoints",
+      "context": "Tu `WaypointPatrol.cs` busca **cada frame** el waypoint más cercano recorriendo una lista de 20-50 nodos con un `foreach`. Con un único enemigo el impacto es tolerable, pero en salas con 15 enemigos en patrulla el Profiler muestra que el sistema de pathfinding manual ocupa más del **30% del CPU** frame a frame. Además el algoritmo no respeta obstáculos: el enemigo intenta ir en línea recta al waypoint, atravesando muros si la geometría lo permite.",
+      "scenario": "Reemplaza el pathfinding manual de waypoints por NavMeshAgent o waypoints con índice secuencial:",
+      "starterCode": "// WaypointPatrol.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class WaypointPatrol : MonoBehaviour\n{\n    [SerializeField] private List<Transform> _waypoints;\n    [SerializeField] private float speed = 2f;\n    [SerializeField] private float reachThreshold = 0.3f;\n\n    // Problema: O(n) cada frame por enemigo → O(n × enemigos) en total\n    // Con 15 enemigos y 40 waypoints: 600 cálculos de distancia por frame\n    private void Update()\n    {\n        if (_waypoints == null || _waypoints.Count == 0) return;\n\n        // Buscar el waypoint más cercano — innecesario si se usa índice secuencial\n        Transform nearest = null;\n        float minDist     = float.MaxValue;\n\n        foreach (Transform wp in _waypoints)\n        {\n            float d = Vector3.Distance(transform.position, wp.position);\n            if (d < minDist) { minDist = d; nearest = wp; }\n        }\n\n        // Moverse hacia el waypoint más cercano con Translate (no respeta colisiones)\n        if (nearest != null)\n        {\n            Vector3 dir = (nearest.position - transform.position).normalized;\n            transform.Translate(dir * speed * Time.deltaTime);\n        }\n    }\n}",
+      "prompt": "Reescribe el sistema de patrulla usando `NavMeshAgent` con waypoints secuenciales, eliminando la búsqueda del nodo más cercano cada frame.",
+      "criteria": [
+        {
+          "id": "no_foreach_distance",
+          "label": "No recorre la lista completa de waypoints buscando el más cercano cada frame",
+          "check": "antiPattern",
+          "pattern": "foreach[\\s\\S]{0,300}Vector3\\.Distance|Vector3\\.Distance[\\s\\S]{0,300}foreach",
+          "points": 4
+        },
+        {
+          "id": "sequential_index",
+          "label": "Usa un índice secuencial (`_currentWaypoint`, `_index`) en lugar de búsqueda por distancia",
+          "check": "keyword",
+          "pattern": "_currentWaypoint|_waypointIndex|_index|currentIndex|waypointIndex",
+          "points": 4
+        },
+        {
+          "id": "no_translate",
+          "label": "No usa `Transform.Translate` para el movimiento (usa NavMeshAgent o Rigidbody)",
+          "check": "antiPattern",
+          "pattern": "transform\\.Translate",
+          "points": 3
+        },
+        {
+          "id": "uses_navmesh_or_rigidbody",
+          "label": "Usa `NavMeshAgent.SetDestination` o `Rigidbody.MovePosition` para respetar la geometría",
+          "check": "keyword",
+          "pattern": "NavMeshAgent|SetDestination|_agent|MovePosition",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// WaypointPatrol.cs — patrulla secuencial con NavMeshAgent, sin búsqueda O(n) por frame\nusing System.Collections.Generic;\nusing UnityEngine;\nusing UnityEngine.AI;\n\n[RequireComponent(typeof(NavMeshAgent))]\npublic class WaypointPatrol : MonoBehaviour\n{\n    [SerializeField] private List<Transform> _waypoints;\n\n    private NavMeshAgent _agent;\n    private int _waypointIndex;\n\n    private void Awake()\n    {\n        _agent = GetComponent<NavMeshAgent>();\n        _waypointIndex = 0;\n    }\n\n    private void Start()\n    {\n        if (_waypoints != null && _waypoints.Count > 0)\n            GoToNext();\n    }\n\n    // Update ahora es O(1): solo comprueba si llegó al destino actual\n    private void Update()\n    {\n        if (_waypoints == null || _waypoints.Count == 0) return;\n\n        // HasPath y remainingDistance son O(1) — sin iteración\n        if (!_agent.pathPending && _agent.remainingDistance < 0.3f)\n            GoToNext();\n    }\n\n    private void GoToNext()\n    {\n        // Índice secuencial — costo O(1), sin búsqueda por distancia\n        _agent.SetDestination(_waypoints[_waypointIndex].position);\n        _waypointIndex = (_waypointIndex + 1) % _waypoints.Count;\n    }\n}",
+      "alternatives": [
+        "Pre-ordenar los waypoints por cercanía al spawn una sola vez en `Awake` si el orden de patrulla importa, y usar índice secuencial desde ahí",
+        "Usar `InvokeRepeating` cada 0.5s para actualizar el destino en lugar de verificar en cada frame",
+        "Implementar el patrón State Machine (Patrol/Chase/Attack) con `NavMeshAgent` para comportamientos más complejos",
+        "Usar `Animator` con un parámetro de velocidad ligado al `NavMeshAgent.velocity.magnitude` para animar el enemigo"
+      ],
+      "feedback": {
+        "high": "Excelente. Con el índice secuencial la búsqueda es **O(1)** por frame por enemigo: solo comprueba si `remainingDistance < threshold` y avanza al siguiente waypoint. `NavMeshAgent` calcula el path en el NavMesh automáticamente, respetando la geometría del dungeon.",
+        "mid": "Buen avance. Tienes el índice secuencial, pero si sigues usando `Transform.Translate` el enemigo no respetará muros. `NavMeshAgent.SetDestination` delega el pathfinding al motor: el agente rodea obstáculos automáticamente y nunca atraviesa geometría con collider en el NavMesh.",
+        "low": "Con 15 enemigos y 40 waypoints, tu código ejecuta **600 `Vector3.Distance` por frame × 60 FPS = 36 000 raíces cuadradas por segundo** solo para pathfinding. La solución no es optimizar la búsqueda — es eliminarla: con un índice secuencial el enemigo simplemente va al siguiente waypoint en la lista, **O(1)** siempre."
+      }
+    },
+    {
+      "id": "fis_008",
+      "difficulty": 3,
+      "genre": "Dungeon Crawler",
+      "tags": ["fisica", "physics-manual"],
+      "title": "Activar Rigidbody en TODOS los huesos del ragdoll al morir",
+      "context": "Cuando un personaje muere, `CharacterDeath.cs` activa los **Rigidbodies de los 30+ huesos** del ragdoll simultáneamente y asigna velocidades aleatorias a cada uno. El resultado es una **explosión visual no controlada** (el cuerpo sale volando de forma antinatural) y un pico de CPU/GPU en ese frame: activar 30 Rigidbodies en un solo frame es una operación pesada para el solver de físicas. En salas con múltiples enemigos muriendo al mismo tiempo el juego se congela visiblemente.",
+      "scenario": "Reemplaza la activación masiva de Rigidbodies por un ragdoll controlado que solo activa el hueso raíz con un impulso dirigido:",
+      "starterCode": "// CharacterDeath.cs\nusing System.Linq;\nusing UnityEngine;\n\npublic class CharacterDeath : MonoBehaviour\n{\n    private Animator _animator;\n\n    private void Awake() => _animator = GetComponent<Animator>();\n\n    // Problema 1: activa 30+ Rigidbodies simultáneamente — pico de CPU en ese frame\n    // Problema 2: velocidades aleatorias en cada hueso — explosión antinatural\n    public void Die(Vector3 hitDirection)\n    {\n        _animator.enabled = false;\n\n        GetComponentsInChildren<Rigidbody>()\n            .ToList()\n            .ForEach(rb =>\n            {\n                rb.isKinematic = false;\n                // Velocidad aleatoria en cada hueso — resultado: explosión de partes\n                rb.linearVelocity = Random.insideUnitSphere * 5f;\n            });\n    }\n}",
+      "prompt": "Reescribe `Die` activando solo el Rigidbody raíz con un impulso calculado desde la dirección del golpe. Los huesos hijos deben seguir por joints físicos.",
+      "criteria": [
+        {
+          "id": "no_all_rigidbodies",
+          "label": "No activa todos los Rigidbodies con `GetComponentsInChildren` + `ForEach`",
+          "check": "antiPattern",
+          "pattern": "GetComponentsInChildren[\\s\\S]{0,200}ForEach[\\s\\S]{0,200}isKinematic",
+          "points": 4
+        },
+        {
+          "id": "root_rigidbody_only",
+          "label": "Activa solo el Rigidbody raíz o un subconjunto controlado de huesos",
+          "check": "keyword",
+          "pattern": "_rootRb|rootRigidbody|GetComponent<Rigidbody>\\(\\)|_hipRb|hipRigidbody",
+          "points": 4
+        },
+        {
+          "id": "directed_impulse",
+          "label": "Aplica un impulso dirigido basado en la dirección del golpe (`hitDirection`), no velocidades aleatorias",
+          "check": "keyword",
+          "pattern": "hitDirection|AddForce|AddImpulse|ForceMode\\.Impulse",
+          "points": 3
+        },
+        {
+          "id": "no_random_velocity",
+          "label": "No asigna `Random.insideUnitSphere` como velocidad de los huesos",
+          "check": "antiPattern",
+          "pattern": "Random\\.insideUnitSphere|Random\\.onUnitSphere",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// CharacterDeath.cs — ragdoll controlado: solo hueso raíz + impulso dirigido\nusing UnityEngine;\n\npublic class CharacterDeath : MonoBehaviour\n{\n    [SerializeField] private Rigidbody _rootRb;        // Asignar el hueso raíz (Hips) en el Inspector\n    [SerializeField] private float impulseMagnitude = 6f;\n    [SerializeField] private float upwardBias       = 2f; // componente vertical del impulso\n\n    private Animator _animator;\n\n    private void Awake()\n    {\n        _animator = GetComponent<Animator>();\n\n        // Los huesos hijos ya tienen Rigidbody + ConfigurableJoint configurados en prefab\n        // Empezamos con todos kinematic — el Animator los controla\n        SetKinematic(true);\n    }\n\n    public void Die(Vector3 hitDirection)\n    {\n        _animator.enabled = false; // desactivar antes de liberar física\n\n        // Solo el Rigidbody raíz se activa: los hijos lo siguen por joints\n        SetKinematic(false);\n\n        // Impulso dirigido desde la dirección del golpe — no aleatorio\n        Vector3 impulse = hitDirection.normalized * impulseMagnitude\n                        + Vector3.up * upwardBias;\n        _rootRb.AddForce(impulse, ForceMode.Impulse);\n    }\n\n    // Utilidad para activar/desactivar todos los Rigidbodies (llamada solo en Awake y Die)\n    private void SetKinematic(bool value)\n    {\n        foreach (Rigidbody rb in GetComponentsInChildren<Rigidbody>())\n            rb.isKinematic = value;\n    }\n}",
+      "alternatives": [
+        "Pre-cachear la lista de Rigidbodies en `Awake` con `GetComponentsInChildren<Rigidbody>()` para no generarla en el momento de la muerte",
+        "Usar `ConfigurableJoint.slerpDrive` en los joints para que la caída siga una pose de muerte animada en lugar de ser libre",
+        "Reutilizar el mismo ragdoll en un pool con `SetActive(false)` en lugar de destruirlo y crear uno nuevo cada vez",
+        "Añadir un `InvokeRepeating` que desactiva el ragdoll tras 5s y devuelve el personaje al pool para liberar el solver de físicas"
+      ],
+      "feedback": {
+        "high": "Implementación profesional. Solo activas el **Rigidbody raíz** con un impulso calculado desde `hitDirection`: los huesos hijos siguen por `ConfigurableJoint`, generando una caída natural sin activar 30 Rigidbodies simultáneamente. El `upwardBias` da el aspecto visual de ser lanzado por el impacto.",
+        "mid": "Buen avance. Aplicaste el impulso dirigido, pero si sigues activando todos los Rigidbodies con `GetComponentsInChildren`, el solver de físicas tiene que procesar 30 cuerpos desde cero en el mismo frame. Activa solo el **hueso raíz**: los joints propagan el movimiento a los hijos automáticamente.",
+        "low": "Activar 30 Rigidbodies simultáneamente obliga al solver de físicas de Unity a inicializar 30 cuerpos rígidos, calcular sus joints y resolver sus contactos todo en un mismo frame. Activar solo el **Rigidbody raíz** (generalmente `Hips`) reduce el trabajo del solver a 1 cuerpo: los hijos reaccionan por `CharacterJoint` o `ConfigurableJoint` de forma natural."
+      }
+    },
+    {
+      "id": "fis_009",
+      "difficulty": 3,
+      "genre": "Shooter",
+      "tags": ["fisica", "physics-manual"],
+      "title": "LayerMask no configurada: proyectiles colisionan con todo",
+      "context": "Tu `Bullet.cs` usa `OnTriggerEnter` sin filtrar por layer: el proyectil llama `TryGetComponent<IDamageable>()` en **cualquier collider** que toca, incluyendo decoración, el propio jugador, el suelo y muros. Sin una **Layer Collision Matrix** configurada, Unity genera pares de colisión para cada combinación de layers, aumentando el trabajo del broadphase innecesariamente. En escenas con muchos colliders decorativos el sistema de físicas evalúa cientos de pares que nunca deberían interactuar.",
+      "scenario": "Configura la Layer Collision Matrix para que los proyectiles solo colisionen con enemigos, y añade un layer check en OnTriggerEnter:",
+      "starterCode": "// Bullet.cs\nusing UnityEngine;\n\npublic class Bullet : MonoBehaviour\n{\n    [SerializeField] private float damage = 25f;\n\n    // Problema 1: sin layer check — colisiona con decoración, suelo, jugador\n    // Problema 2: TryGetComponent en CUALQUIER cosa que toque (costo innecesario)\n    // Problema 3: sin Layer Collision Matrix el broadphase genera todos los pares\n    private void OnTriggerEnter(Collider other)\n    {\n        if (other.TryGetComponent<IDamageable>(out var target))\n        {\n            target.TakeDamage(damage);\n        }\n\n        // El proyectil se destruye al tocar cualquier cosa, incluso decoración\n        Destroy(gameObject);\n    }\n}",
+      "prompt": "Configura un layer `\"Projectile\"` que solo interactúa con `\"Enemy\"` en la Layer Collision Matrix y añade la validación de layer en `OnTriggerEnter`.",
+      "criteria": [
+        {
+          "id": "layer_check",
+          "label": "Verifica el layer del collider antes de llamar `TryGetComponent` o aplicar daño",
+          "check": "keyword",
+          "pattern": "other\\.gameObject\\.layer|LayerMask\\.NameToLayer|CompareTag|_enemyLayer|enemyLayer",
+          "points": 4
+        },
+        {
+          "id": "layer_mask_defined",
+          "label": "Define un `LayerMask` serializado para filtrar qué capas reciben daño",
+          "check": "keyword",
+          "pattern": "LayerMask|_hitLayer|hitLayer|_targetLayer|targetLayer",
+          "points": 4
+        },
+        {
+          "id": "no_destroy_on_deco",
+          "label": "El proyectil no se destruye al tocar decoración — solo al golpear targets válidos o el entorno configurado",
+          "check": "antiPattern",
+          "pattern": "Destroy\\(gameObject\\)[\\s\\S]{0,50}\\}[\\s\\S]{0,10}\\}",
+          "points": 3
+        },
+        {
+          "id": "return_to_pool",
+          "label": "Devuelve el proyectil a un pool (`SetActive(false)`) en lugar de llamar `Destroy`",
+          "check": "keyword",
+          "pattern": "SetActive\\(false\\)|ReturnToPool|_pool|gameObject\\.SetActive",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Bullet.cs — layer check + pool, configurado con Layer Collision Matrix\n// PASO 1 (en Unity Editor):\n//   Edit > Project Settings > Physics > Layer Collision Matrix\n//   Crea layer \"Projectile\" y layer \"Enemy\"\n//   Desmarca TODAS las interacciones de \"Projectile\" excepto con \"Enemy\"\n//   → El broadphase descarta todos los demás pares en fase temprana\n//\n// PASO 2: asigna el layer \"Projectile\" al GameObject de la bala\n\nusing UnityEngine;\n\npublic class Bullet : MonoBehaviour\n{\n    [SerializeField] private float damage = 25f;\n    // Solo el layer \"Enemy\" debe estar en esta mask\n    [SerializeField] private LayerMask _targetLayer;\n\n    // Referencia al pool para devolver en lugar de Destroy\n    private BulletPool _pool;\n\n    public void Init(BulletPool pool)\n    {\n        _pool = pool;\n    }\n\n    // Gracias a la Layer Collision Matrix, Unity NUNCA llama este método\n    // si el otro objeto no está en el layer \"Enemy\" — costo cero en broadphase\n    private void OnTriggerEnter(Collider other)\n    {\n        // Doble check en código: garantía extra si la matrix no está configurada\n        if ((_targetLayer.value & (1 << other.gameObject.layer)) == 0)\n            return; // no es un target válido — ignorar sin hacer nada\n\n        if (other.TryGetComponent<IDamageable>(out var target))\n            target.TakeDamage(damage);\n\n        // Devolver al pool en lugar de Destroy — sin GC, sin hitches\n        ReturnToPool();\n    }\n\n    private void ReturnToPool()\n    {\n        gameObject.SetActive(false);\n        _pool?.Return(this);\n    }\n}",
+      "alternatives": [
+        "Usar `ContactFilter2D.SetLayerMask` con `Physics2D.OverlapCollider` para control granular de colisiones en 2D",
+        "Usar `CompareTag(\"Enemy\")` como fallback rápido si configurar layers es impráctico en el proyecto actual",
+        "Usar `Physics.IgnoreCollision` o `Physics.IgnoreLayerCollision` por código si la Layer Collision Matrix debe cambiar en runtime",
+        "Usar `Rigidbody.excludeLayers` (Unity 2022+) para configurar exclusiones por instancia sin afectar la matrix global"
+      ],
+      "feedback": {
+        "high": "Implementación completa. Combinaste la **Layer Collision Matrix** (el broadphase descarta pares irrelevantes antes de narrowphase) con el check de LayerMask en código (garantía extra) y pool para evitar GC. Con esta configuración Unity no genera ningún par de colisión entre `Projectile` y `Decoration`, `Ground` o `Player`.",
+        "mid": "Buen avance. Tienes el LayerMask check en `OnTriggerEnter`, pero si no configuraste la **Layer Collision Matrix** en Project Settings, Unity aún genera y evalúa los pares en broadphase — solo los descartas en narrowphase. El mayor beneficio viene de que el motor ni siquiera llegue a llamar `OnTriggerEnter` para pares irrelevantes.",
+        "low": "Sin **Layer Collision Matrix**, Unity genera un par de colisión potencial entre cada proyectil y cada objeto en la escena — incluyendo decoración, suelo y el propio jugador. Con 100 proyectiles y 200 colliders decorativos eso son 20 000 pares evaluados por el broadphase cada frame. Configurar `Projectile` para que solo interactúe con `Enemy` reduce ese número a 100 × (número de enemigos)."
+      }
+    }
+  ]
+}

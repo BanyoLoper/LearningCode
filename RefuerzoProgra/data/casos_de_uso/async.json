@@ -1,0 +1,431 @@
+{
+  "category": "async",
+  "title": "Corrutinas y Async",
+  "icon": "⏱️",
+  "color": "#00BCD4",
+  "cases": [
+    {
+      "id": "asy_001",
+      "difficulty": 2,
+      "genre": "Puzzle",
+      "tags": ["async", "update-polling"],
+      "title": "Temporizador de cuenta regresiva con deltaTime en Update",
+      "context": "Estás desarrollando un juego de **puzzle** tipo Tetris Attack. Antes de mostrar la solución al jugador, una cuenta regresiva debe bajar de 30 a 0 segundos disparando eventos en momentos específicos: a los 20 s aparece una pista, a los 10 s suena una alarma y al llegar a 0 se revela la solución. El programador actual decrementa un `float` en `Update` y usa una cadena de `if` para comparar el valor en cada fotograma.",
+      "scenario": "Identifica por qué esta arquitectura escala mal con el tiempo y reescríbela usando una corrutina:",
+      "starterCode": "// PuzzleTimer.cs\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class PuzzleTimer : MonoBehaviour\n{\n    [SerializeField] private Text timerLabel;\n    [SerializeField] private Text hintLabel;\n    [SerializeField] private AudioSource alarmSound;\n    [SerializeField] private GameObject solutionPanel;\n\n    private float timeRemaining = 30f;\n    private bool hintShown = false;\n    private bool alarmPlayed = false;\n    private bool solutionShown = false;\n    private bool timerActive = true;\n\n    private void Update()\n    {\n        if (!timerActive) return;\n\n        timeRemaining -= Time.deltaTime;\n        timerLabel.text = Mathf.CeilToInt(timeRemaining).ToString();\n\n        if (timeRemaining <= 20f && !hintShown)\n        {\n            hintLabel.gameObject.SetActive(true);\n            hintShown = true;\n        }\n\n        if (timeRemaining <= 10f && !alarmPlayed)\n        {\n            alarmSound.Play();\n            alarmPlayed = true;\n        }\n\n        if (timeRemaining <= 0f && !solutionShown)\n        {\n            solutionPanel.SetActive(true);\n            solutionShown = true;\n            timerActive = false;\n        }\n    }\n\n    public void ResetTimer()\n    {\n        timeRemaining = 30f;\n        hintShown = false;\n        alarmPlayed = false;\n        solutionShown = false;\n        timerActive = true;\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina el decremento de float con deltaTime en Update",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,800}Time\\.deltaTime",
+          "points": 4
+        },
+        {
+          "label": "Usa WaitForSeconds para pausar la corrutina",
+          "check": "keyword",
+          "pattern": "WaitForSeconds",
+          "points": 3
+        },
+        {
+          "label": "Inicia la secuencia con StartCoroutine",
+          "check": "keyword",
+          "pattern": "StartCoroutine",
+          "points": 3
+        },
+        {
+          "label": "Elimina las múltiples variables float de temporizador y los bool de estado",
+          "check": "antiPattern",
+          "pattern": "private bool hintShown|private bool alarmPlayed|private bool solutionShown",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// PuzzleTimer.cs — Corrutina con WaitForSeconds\nusing System.Collections;\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class PuzzleTimer : MonoBehaviour\n{\n    [SerializeField] private Text timerLabel;\n    [SerializeField] private Text hintLabel;\n    [SerializeField] private AudioSource alarmSound;\n    [SerializeField] private GameObject solutionPanel;\n\n    private Coroutine _timerCoroutine;\n\n    private void Start()\n    {\n        StartCountdown();\n    }\n\n    public void StartCountdown()\n    {\n        if (_timerCoroutine != null)\n            StopCoroutine(_timerCoroutine);\n\n        hintLabel.gameObject.SetActive(false);\n        solutionPanel.SetActive(false);\n        _timerCoroutine = StartCoroutine(CountdownRoutine(30));\n    }\n\n    private IEnumerator CountdownRoutine(int totalSeconds)\n    {\n        int remaining = totalSeconds;\n\n        while (remaining > 0)\n        {\n            timerLabel.text = remaining.ToString();\n\n            // Espera exactamente 1 segundo sin ocupar Update\n            yield return new WaitForSeconds(1f);\n            remaining--;\n\n            if (remaining == 20)\n                hintLabel.gameObject.SetActive(true);\n\n            if (remaining == 10)\n                alarmSound.Play();\n        }\n\n        timerLabel.text = \"0\";\n        solutionPanel.SetActive(true);\n    }\n\n    private void OnDisable()\n    {\n        if (_timerCoroutine != null)\n            StopCoroutine(_timerCoroutine);\n    }\n}",
+      "alternatives": [
+        "Usar **`WaitUntil`** combinado con un `int` de segundos para disparar eventos a tiempos específicos sin bucle manual.",
+        "Extraer cada evento (pista, alarma, solución) como una corrutina independiente iniciada con **`StartCoroutine`** en paralelo desde `Start`.",
+        "Usar **`async/await Task.Delay`** con `UniTask` si el proyecto ya tiene esa dependencia, para un flujo de código más lineal."
+      ],
+      "feedback": {
+        "high": "Excelente trabajo. La corrutina con **WaitForSeconds** elimina completamente el polling en `Update` y hace que la secuencia de eventos sea legible de arriba a abajo, como un script de teatro.",
+        "mid": "Buen intento. Usaste **StartCoroutine** pero siguen existiendo algunos `bool` de control o el `deltaTime` en `Update`. Revisa si toda la lógica temporal puede vivir dentro de la corrutina.",
+        "low": "La cadena de `if` en `Update` con **deltaTime** es costosa y difícil de mantener. Cada condición se evalúa 60 veces por segundo aunque ya haya disparado. Aprende a usar **WaitForSeconds** para pausar la ejecución sin consumir frames."
+      }
+    },
+    {
+      "id": "asy_002",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["async", "update-polling", "god-class"],
+      "title": "Animación de subida de nivel con bool flags en Update",
+      "context": "Tu **RPG** muestra una secuencia de animaciones cuando el jugador sube de nivel: primero un resplandor dorado (0.8 s), luego el personaje escala al 120 % (0.5 s), después explotan partículas (1 s) y finalmente aparece el popup de UI con las nuevas estadísticas. El programador actual controla el orden de estos pasos con **bool flags** en `Update`, lo que genera un estado interno difícil de depurar.",
+      "scenario": "Identifica el problema de usar bool flags para secuenciar animaciones y reescribe la lógica como una corrutina:",
+      "starterCode": "// LevelUpAnimator.cs\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class LevelUpAnimator : MonoBehaviour\n{\n    [SerializeField] private SpriteRenderer characterSprite;\n    [SerializeField] private ParticleSystem levelParticles;\n    [SerializeField] private GameObject statsPopup;\n\n    private bool isGlowing = false;\n    private bool isScaling = false;\n    private bool isPlayingParticles = false;\n    private bool isShowingUI = false;\n    private float stateTimer = 0f;\n\n    private void Update()\n    {\n        if (!isGlowing && !isScaling && !isPlayingParticles && !isShowingUI)\n            return;\n\n        stateTimer -= Time.deltaTime;\n\n        if (isGlowing && stateTimer <= 0f)\n        {\n            characterSprite.color = Color.white;\n            isGlowing = false;\n            isScaling = true;\n            stateTimer = 0.5f;\n        }\n        else if (isScaling && stateTimer <= 0f)\n        {\n            characterSprite.transform.localScale = Vector3.one;\n            isScaling = false;\n            isPlayingParticles = true;\n            levelParticles.Play();\n            stateTimer = 1f;\n        }\n        else if (isPlayingParticles && stateTimer <= 0f)\n        {\n            isPlayingParticles = false;\n            isShowingUI = true;\n            statsPopup.SetActive(true);\n            stateTimer = 0f;\n            isShowingUI = false;\n        }\n    }\n\n    public void TriggerLevelUp()\n    {\n        isGlowing = true;\n        stateTimer = 0.8f;\n        characterSprite.color = Color.yellow;\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina los bool flags de estado de secuencia (isGlowing, isScaling, etc.)",
+          "check": "antiPattern",
+          "pattern": "private bool isGlowing|private bool isScaling|private bool isPlayingParticles",
+          "points": 4
+        },
+        {
+          "label": "Define al menos una corrutina con IEnumerator",
+          "check": "keyword",
+          "pattern": "IEnumerator",
+          "points": 3
+        },
+        {
+          "label": "Usa yield return para pausar entre pasos de la secuencia",
+          "check": "keyword",
+          "pattern": "yield return",
+          "points": 3
+        },
+        {
+          "label": "Elimina la máquina de estados en Update (cadena de if/else con stateTimer)",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,800}stateTimer",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// LevelUpAnimator.cs — Corrutina secuencial\nusing System.Collections;\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class LevelUpAnimator : MonoBehaviour\n{\n    [SerializeField] private SpriteRenderer characterSprite;\n    [SerializeField] private ParticleSystem levelParticles;\n    [SerializeField] private GameObject statsPopup;\n\n    public void TriggerLevelUp()\n    {\n        StartCoroutine(LevelUpSequence());\n    }\n\n    private IEnumerator LevelUpSequence()\n    {\n        // Paso 1: Resplandor dorado\n        characterSprite.color = Color.yellow;\n        yield return new WaitForSeconds(0.8f);\n\n        // Paso 2: Escalar personaje\n        characterSprite.color = Color.white;\n        yield return ScaleTo(characterSprite.transform, Vector3.one * 1.2f, 0.3f);\n        yield return ScaleTo(characterSprite.transform, Vector3.one, 0.2f);\n\n        // Paso 3: Partículas\n        levelParticles.Play();\n        yield return new WaitForSeconds(1f);\n\n        // Paso 4: Mostrar UI\n        statsPopup.SetActive(true);\n    }\n\n    private IEnumerator ScaleTo(Transform target, Vector3 endScale, float duration)\n    {\n        Vector3 startScale = target.localScale;\n        float elapsed = 0f;\n\n        while (elapsed < duration)\n        {\n            elapsed += Time.deltaTime;\n            target.localScale = Vector3.Lerp(startScale, endScale, elapsed / duration);\n            yield return null;\n        }\n\n        target.localScale = endScale;\n    }\n\n    private void OnDisable()\n    {\n        StopAllCoroutines();\n        characterSprite.color = Color.white;\n        characterSprite.transform.localScale = Vector3.one;\n    }\n}",
+      "alternatives": [
+        "Usar **DOTween** (`DOColor`, `DOScale`) encadenado con `.OnComplete()` para la misma secuencia con una sintaxis más compacta.",
+        "Crear un **AnimationClip** de Unity con curvas para controlar color, escala y activación del popup en el **Animator**, evitando código C# para la temporización.",
+        "Usar **`async/await`** con `UniTask.Delay` si el proyecto ya usa UniTask, que permite un flujo aún más lineal sin los wrappers de IEnumerator."
+      ],
+      "feedback": {
+        "high": "Perfecto. La corrutina con **yield return** convierte la secuencia en código legible de arriba a abajo, igual a como la describirías en prosa. Sin flags, sin timer manual.",
+        "mid": "Usaste **IEnumerator** pero algunos bool flags siguen presentes, o la lógica sigue en Update. Intenta mover toda la secuencia dentro de la corrutina para que se auto-contenga.",
+        "low": "Los **bool flags** en Update crean una máquina de estados implícita que es difícil de depurar. Cada flag se evalúa 60 veces por segundo aunque no haga nada. Aprende a usar **IEnumerator** para que el código espere sin consumir frames."
+      }
+    },
+    {
+      "id": "asy_003",
+      "difficulty": 2,
+      "genre": "Cualquiera",
+      "tags": ["async", "gc-pressure"],
+      "title": "Carga de escena síncrona que congela el juego",
+      "context": "Tu juego tiene una pantalla de carga entre niveles, pero los jugadores reportan que el juego **se congela completamente durante 3 segundos** antes de que aparezca la nueva escena. La barra de progreso nunca se mueve y el **ícono de carga** queda estático. El problema es que la escena se carga de forma **síncrona** en el hilo principal, bloqueando todo el render.",
+      "scenario": "Identifica por qué SceneManager.LoadScene congela el juego y reescríbelo para cargar de forma asíncrona con barra de progreso:",
+      "starterCode": "// SceneLoader.cs\nusing UnityEngine;\nusing UnityEngine.SceneManagement;\nusing UnityEngine.UI;\n\npublic class SceneLoader : MonoBehaviour\n{\n    [SerializeField] private Slider progressBar;\n    [SerializeField] private Text loadingLabel;\n\n    private void Start()\n    {\n        LoadNextScene();\n    }\n\n    private void LoadNextScene()\n    {\n        // Esto bloquea el hilo principal hasta que la escena carga\n        SceneManager.LoadScene(\"Level_02\");\n\n        // Este código nunca se ejecuta porque la línea anterior\n        // transiciona inmediatamente sin dar feedback\n        progressBar.value = 1f;\n        loadingLabel.text = \"¡Listo!\";\n    }\n\n    // Intento fallido de mostrar progreso\n    private void Update()\n    {\n        if (progressBar.value < 0.9f)\n            progressBar.value += Time.deltaTime * 0.5f;\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina la carga síncrona con SceneManager.LoadScene",
+          "check": "antiPattern",
+          "pattern": "SceneManager\\.LoadScene\\s*\\(",
+          "points": 4
+        },
+        {
+          "label": "Usa LoadSceneAsync para cargar en segundo plano",
+          "check": "keyword",
+          "pattern": "LoadSceneAsync",
+          "points": 4
+        },
+        {
+          "label": "Controla la activación con allowSceneActivation",
+          "check": "keyword",
+          "pattern": "allowSceneActivation",
+          "points": 3
+        },
+        {
+          "label": "Muestra progreso real con progress, slider o value",
+          "check": "keyword",
+          "pattern": "progress|slider|value",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// SceneLoader.cs — Carga asíncrona con barra de progreso real\nusing System.Collections;\nusing UnityEngine;\nusing UnityEngine.SceneManagement;\nusing UnityEngine.UI;\n\npublic class SceneLoader : MonoBehaviour\n{\n    [SerializeField] private Slider progressBar;\n    [SerializeField] private Text loadingLabel;\n    [SerializeField] private string nextScene = \"Level_02\";\n\n    private void Start()\n    {\n        StartCoroutine(LoadSceneAsync(nextScene));\n    }\n\n    private IEnumerator LoadSceneAsync(string sceneName)\n    {\n        loadingLabel.text = \"Cargando...\";\n        progressBar.value = 0f;\n\n        // Inicia la carga en segundo plano sin activar la escena todavía\n        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);\n        operation.allowSceneActivation = false;\n\n        while (!operation.isDone)\n        {\n            // progress va de 0.0 a 0.9 mientras carga; 0.9 significa listo\n            float realProgress = Mathf.Clamp01(operation.progress / 0.9f);\n            progressBar.value = realProgress;\n            loadingLabel.text = $\"Cargando... {Mathf.RoundToInt(realProgress * 100f)}%\";\n\n            // Cuando llega al 90 %, la escena está lista en memoria\n            if (operation.progress >= 0.9f)\n            {\n                progressBar.value = 1f;\n                loadingLabel.text = \"¡Listo! Presiona cualquier tecla\";\n\n                // Espera input del jugador antes de activar\n                yield return new WaitUntil(() => Input.anyKeyDown);\n                operation.allowSceneActivation = true;\n            }\n\n            yield return null;\n        }\n    }\n}",
+      "alternatives": [
+        "Usar **`async/await`** con `UniTask` (`await SceneManager.LoadSceneAsync(...)`) para el mismo comportamiento sin corrutinas.",
+        "Precalentar assets pesados con **Addressables** antes de la transición, reduciendo el tiempo de carga de la escena principal.",
+        "Añadir una **pantalla de carga animada** (spinner, partículas) en la escena de loading para mejorar la percepción de velocidad, independiente del progreso real."
+      ],
+      "feedback": {
+        "high": "Excelente. **LoadSceneAsync** con `allowSceneActivation = false` es el patrón estándar de Unity para pantallas de carga con progreso real y control total sobre cuándo activar la nueva escena.",
+        "mid": "Usaste **LoadSceneAsync** pero no aprovechaste `allowSceneActivation` para mostrar el estado final antes de cambiar. El progreso se muestra pero la transición es abrupta.",
+        "low": "**SceneManager.LoadScene** bloquea el hilo principal porque Unity serializa toda la nueva escena antes de continuar. Aprende a usar **LoadSceneAsync** para cargar en segundo plano mientras el juego sigue renderizando."
+      }
+    },
+    {
+      "id": "asy_004",
+      "difficulty": 2,
+      "genre": "Cualquiera",
+      "tags": ["async", "update-polling"],
+      "title": "Fade de UI con CanvasGroup y bool flags en Update",
+      "context": "Tienes un panel de UI (menú de pausa, pantalla de game over) que debe **aparecer y desaparecer con un fundido suave** de 0.5 segundos. El programador actual usa `CanvasGroup.alpha` con `Time.deltaTime` en `Update` y un **bool** para saber si se está haciendo fade-in o fade-out. Cuando hay múltiples paneles que necesitan fundirse al mismo tiempo, los flags se mezclan y el comportamiento es impredecible.",
+      "scenario": "Identifica el problema de controlar el fade con bools en Update y reescríbelo como una corrutina reutilizable:",
+      "starterCode": "// UIFader.cs\nusing UnityEngine;\n\npublic class UIFader : MonoBehaviour\n{\n    [SerializeField] private CanvasGroup canvasGroup;\n    [SerializeField] private float fadeDuration = 0.5f;\n\n    private bool isFading = false;\n    private bool fadingIn = false;\n    private float fadeTimer = 0f;\n\n    private void Update()\n    {\n        if (!isFading) return;\n\n        fadeTimer += Time.deltaTime;\n        float t = fadeTimer / fadeDuration;\n\n        if (fadingIn)\n            canvasGroup.alpha = Mathf.Lerp(0f, 1f, t);\n        else\n            canvasGroup.alpha = Mathf.Lerp(1f, 0f, t);\n\n        if (fadeTimer >= fadeDuration)\n        {\n            isFading = false;\n            fadeTimer = 0f;\n            if (!fadingIn)\n                gameObject.SetActive(false);\n        }\n    }\n\n    public void FadeIn()\n    {\n        if (isFading) return; // Bug: ignora peticiones mientras fading\n        gameObject.SetActive(true);\n        canvasGroup.alpha = 0f;\n        fadingIn = true;\n        isFading = true;\n        fadeTimer = 0f;\n    }\n\n    public void FadeOut()\n    {\n        if (isFading) return; // Bug: ignora peticiones mientras fading\n        fadingIn = false;\n        isFading = true;\n        fadeTimer = 0f;\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina el bool isFading y el control manual en Update",
+          "check": "antiPattern",
+          "pattern": "private bool isFading",
+          "points": 4
+        },
+        {
+          "label": "Define la corrutina con IEnumerator",
+          "check": "keyword",
+          "pattern": "IEnumerator",
+          "points": 3
+        },
+        {
+          "label": "Manipula CanvasGroup.alpha dentro de la corrutina",
+          "check": "keyword",
+          "pattern": "CanvasGroup",
+          "points": 3
+        },
+        {
+          "label": "Usa un bucle while o for para animar el alpha durante la duración",
+          "check": "keyword",
+          "pattern": "while|for.*duration",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// UIFader.cs — Corrutina reutilizable de fade\nusing System.Collections;\nusing UnityEngine;\n\npublic class UIFader : MonoBehaviour\n{\n    [SerializeField] private CanvasGroup canvasGroup;\n    [SerializeField] private float fadeDuration = 0.5f;\n\n    private Coroutine _currentFade;\n\n    public void FadeIn()\n    {\n        gameObject.SetActive(true);\n        if (_currentFade != null) StopCoroutine(_currentFade);\n        _currentFade = StartCoroutine(Fade(canvasGroup.alpha, 1f, fadeDuration));\n    }\n\n    public void FadeOut()\n    {\n        if (_currentFade != null) StopCoroutine(_currentFade);\n        _currentFade = StartCoroutine(FadeAndHide());\n    }\n\n    private IEnumerator FadeAndHide()\n    {\n        yield return Fade(canvasGroup.alpha, 0f, fadeDuration);\n        gameObject.SetActive(false);\n    }\n\n    // Corrutina genérica: anima alpha de 'from' a 'to' en 'duration' segundos\n    private IEnumerator Fade(float from, float to, float duration)\n    {\n        float elapsed = 0f;\n        canvasGroup.alpha = from;\n\n        while (elapsed < duration)\n        {\n            elapsed += Time.deltaTime;\n            canvasGroup.alpha = Mathf.Lerp(from, to, elapsed / duration);\n            yield return null;\n        }\n\n        canvasGroup.alpha = to;\n    }\n\n    private void OnDisable()\n    {\n        if (_currentFade != null)\n            StopCoroutine(_currentFade);\n    }\n}",
+      "alternatives": [
+        "Usar **DOTween** (`canvasGroup.DOFade(1f, 0.5f)`) para la misma animación en una sola línea, con callbacks `OnComplete` fáciles de encadenar.",
+        "Crear un método **`public IEnumerator Fade(float from, float to, float duration)`** que otros scripts puedan `yield return` para esperar a que el fade termine antes de continuar.",
+        "Usar **`async/await`** con `UniTask` y `UniTask.Delay` para expresar el fade como código secuencial sin el overhead de IEnumerator."
+      ],
+      "feedback": {
+        "high": "Muy bien. La corrutina **`Fade(from, to, duration)`** es reutilizable para cualquier valor de alpha y puede ser cancelada limpiamente con `StopCoroutine`, algo imposible con el enfoque de Update.",
+        "mid": "Usaste **IEnumerator** pero el bool `isFading` sigue presente, o no manejas el caso de interrumpir un fade en progreso. Revisa cómo detener la corrutina anterior antes de iniciar una nueva.",
+        "low": "El bool `isFading` en `Update` provoca el bug clásico de ignorar peticiones durante la animación. Con una **corrutina**, puedes cancelar el fade en cualquier momento y empezar uno nuevo sin flags."
+      }
+    },
+    {
+      "id": "asy_005",
+      "difficulty": 2,
+      "genre": "RPG / Aventura",
+      "tags": ["async", "update-polling"],
+      "title": "Efecto de máquina de escribir con InvokeRepeating y counter global",
+      "context": "Tu sistema de diálogo muestra el texto de los personajes **carácter por carácter** para dar el efecto de máquina de escribir. El programador actual usa `InvokeRepeating` con un índice de carácter estático. Cuando el diálogo se interrumpe y se reinicia, el índice queda desfasado y el texto comienza desde el carácter equivocado. Además, `InvokeRepeating` no puede recibir parámetros, lo que hace imposible variar la velocidad por personaje.",
+      "scenario": "Identifica los problemas de usar InvokeRepeating para el efecto typewriter y reescríbelo como una corrutina parametrizable:",
+      "starterCode": "// DialogueTypewriter.cs\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class DialogueTypewriter : MonoBehaviour\n{\n    [SerializeField] private Text dialogueText;\n    [SerializeField] private float charDelay = 0.05f;\n\n    private string fullText = \"\";\n    private int charIndex = 0;\n\n    public void ShowDialogue(string text)\n    {\n        fullText = text;\n        charIndex = 0;\n        dialogueText.text = \"\";\n\n        // InvokeRepeating no puede recibir el texto como parámetro\n        // Si se llama de nuevo antes de terminar, el charIndex se desincroniza\n        CancelInvoke(\"ShowNextChar\");\n        InvokeRepeating(\"ShowNextChar\", 0f, charDelay);\n    }\n\n    private void ShowNextChar()\n    {\n        if (charIndex < fullText.Length)\n        {\n            dialogueText.text += fullText[charIndex];\n            charIndex++;\n        }\n        else\n        {\n            CancelInvoke(\"ShowNextChar\");\n        }\n    }\n\n    // Bug: si el jugador presiona Skip, el charIndex queda\n    // en un valor arbitrario para el siguiente diálogo\n    public void Skip()\n    {\n        CancelInvoke(\"ShowNextChar\");\n        dialogueText.text = fullText;\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina InvokeRepeating y CancelInvoke del flujo principal",
+          "check": "antiPattern",
+          "pattern": "InvokeRepeating",
+          "points": 4
+        },
+        {
+          "label": "Usa WaitForSeconds dentro de la corrutina para el delay por carácter",
+          "check": "keyword",
+          "pattern": "WaitForSeconds",
+          "points": 3
+        },
+        {
+          "label": "Define la corrutina typewriter con IEnumerator",
+          "check": "keyword",
+          "pattern": "IEnumerator",
+          "points": 3
+        },
+        {
+          "label": "Itera sobre los caracteres del string con foreach, for, Length o chars",
+          "check": "keyword",
+          "pattern": "foreach|for.*[Ll]ength|chars|ToCharArray",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// DialogueTypewriter.cs — Corrutina typewriter parametrizable\nusing System.Collections;\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class DialogueTypewriter : MonoBehaviour\n{\n    [SerializeField] private Text dialogueText;\n    [SerializeField] private float defaultCharDelay = 0.05f;\n\n    private Coroutine _typingCoroutine;\n    private string _currentFullText = \"\";\n\n    public void ShowDialogue(string text, float charDelay = -1f)\n    {\n        _currentFullText = text;\n        float delay = charDelay < 0f ? defaultCharDelay : charDelay;\n\n        if (_typingCoroutine != null)\n            StopCoroutine(_typingCoroutine);\n\n        _typingCoroutine = StartCoroutine(TypeText(text, delay));\n    }\n\n    private IEnumerator TypeText(string text, float charDelay)\n    {\n        dialogueText.text = \"\";\n\n        foreach (char c in text)\n        {\n            dialogueText.text += c;\n            yield return new WaitForSeconds(charDelay);\n        }\n\n        _typingCoroutine = null;\n    }\n\n    public void Skip()\n    {\n        if (_typingCoroutine != null)\n        {\n            StopCoroutine(_typingCoroutine);\n            _typingCoroutine = null;\n        }\n        dialogueText.text = _currentFullText;\n    }\n\n    private void OnDisable()\n    {\n        if (_typingCoroutine != null)\n            StopCoroutine(_typingCoroutine);\n    }\n}",
+      "alternatives": [
+        "Usar **`WaitForSecondsRealtime`** en lugar de `WaitForSeconds` para que el efecto no se pause si `Time.timeScale` es 0 durante el menú de pausa.",
+        "Añadir soporte para **etiquetas de velocidad** en el texto (p. ej. `<speed=0.1>`) que la corrutina parsee y ajuste el delay dinámicamente.",
+        "Combinar con un **AudioSource** que reproduce un sonido de tecla en cada carácter, disparado dentro del `foreach` de la corrutina."
+      ],
+      "feedback": {
+        "high": "Muy bien. La corrutina **`TypeText`** recibe el texto como parámetro (algo imposible con InvokeRepeating), puede detenerse limpiamente y la lógica de Skip es trivial con `StopCoroutine`.",
+        "mid": "Eliminaste **InvokeRepeating** pero el índice de carácter sigue siendo un campo de la clase en lugar de una variable local de la corrutina. Esto puede causar condiciones de carrera si se llama `ShowDialogue` dos veces rápido.",
+        "low": "**InvokeRepeating** no puede recibir parámetros y su cancelación es propensa a bugs cuando el estado del objeto cambia. Las **corrutinas** encapsulan todo el estado localmente y se pueden detener de forma precisa."
+      }
+    },
+    {
+      "id": "asy_006",
+      "difficulty": 3,
+      "genre": "Tower Defense",
+      "tags": ["async", "update-polling", "god-class"],
+      "title": "Spawner de oleadas con switch gigante en Update",
+      "context": "Tu **Tower Defense** tiene un spawner de oleadas con tres formaciones: en V, en línea y en círculo. Cada formación tiene su propia duración, velocidad de spawn y lógica de posicionamiento. El programador actual usa un `enum WaveState` y un switch en `Update` para controlar qué formación está activa y su progreso, resultando en un método `Update` de más de 80 líneas con lógica mezclada.",
+      "scenario": "Refactoriza el WaveSpawner eliminando el estado en Update. Usa una corrutina por formación orquestada desde una corrutina principal:",
+      "starterCode": "// WaveSpawner.cs\nusing UnityEngine;\n\npublic class WaveSpawner : MonoBehaviour\n{\n    public enum WaveState { Idle, VFormation, Line, Circle }\n\n    [SerializeField] private GameObject enemyPrefab;\n    [SerializeField] private Transform spawnOrigin;\n\n    private WaveState currentState = WaveState.Idle;\n    private float spawnTimer = 0f;\n    private int spawnedCount = 0;\n    private int totalToSpawn = 0;\n\n    private void Update()\n    {\n        spawnTimer -= Time.deltaTime;\n        if (spawnTimer > 0f) return;\n\n        switch (currentState)\n        {\n            case WaveState.VFormation:\n                if (spawnedCount < totalToSpawn)\n                {\n                    Vector3 pos = GetVPosition(spawnedCount);\n                    Instantiate(enemyPrefab, pos, Quaternion.identity);\n                    spawnedCount++;\n                    spawnTimer = 0.3f;\n                }\n                else { currentState = WaveState.Idle; }\n                break;\n\n            case WaveState.Line:\n                if (spawnedCount < totalToSpawn)\n                {\n                    Vector3 pos = GetLinePosition(spawnedCount);\n                    Instantiate(enemyPrefab, pos, Quaternion.identity);\n                    spawnedCount++;\n                    spawnTimer = 0.2f;\n                }\n                else { currentState = WaveState.Idle; }\n                break;\n\n            case WaveState.Circle:\n                if (spawnedCount < totalToSpawn)\n                {\n                    Vector3 pos = GetCirclePosition(spawnedCount, totalToSpawn);\n                    Instantiate(enemyPrefab, pos, Quaternion.identity);\n                    spawnedCount++;\n                    spawnTimer = 0.15f;\n                }\n                else { currentState = WaveState.Idle; }\n                break;\n        }\n    }\n\n    private Vector3 GetVPosition(int index) =>\n        spawnOrigin.position + new Vector3(index % 2 == 0 ? index : -index, 0f, index * 0.5f);\n\n    private Vector3 GetLinePosition(int index) =>\n        spawnOrigin.position + new Vector3(index * 1.5f - totalToSpawn * 0.75f, 0f, 0f);\n\n    private Vector3 GetCirclePosition(int index, int total)\n    {\n        float angle = index * Mathf.PI * 2f / total;\n        return spawnOrigin.position + new Vector3(Mathf.Cos(angle) * 5f, 0f, Mathf.Sin(angle) * 5f);\n    }\n\n    public void StartVFormation(int count) { totalToSpawn = count; spawnedCount = 0; currentState = WaveState.VFormation; }\n    public void StartLine(int count) { totalToSpawn = count; spawnedCount = 0; currentState = WaveState.Line; }\n    public void StartCircle(int count) { totalToSpawn = count; spawnedCount = 0; currentState = WaveState.Circle; }\n}",
+      "criteria": [
+        {
+          "label": "Elimina el enum WaveState y el switch de estado en Update",
+          "check": "antiPattern",
+          "pattern": "WaveState|currentState",
+          "points": 4
+        },
+        {
+          "label": "Define una IEnumerator separada por formación (V, línea o círculo)",
+          "check": "keyword",
+          "pattern": "IEnumerator.*[Ff]ormation|IEnumerator.*[Ll]ine|IEnumerator.*[Cc]ircle|IEnumerator.*[Vv]",
+          "points": 4
+        },
+        {
+          "label": "Orquesta las formaciones con yield return StartCoroutine anidado",
+          "check": "keyword",
+          "pattern": "yield return StartCoroutine",
+          "points": 3
+        },
+        {
+          "label": "Elimina el método Update con la cadena de cases de formación",
+          "check": "antiPattern",
+          "pattern": "case.*Formation|case.*Line|case.*Circle|case WaveState",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// WaveSpawner.cs — Corrutinas por formación\nusing System.Collections;\nusing UnityEngine;\n\npublic class WaveSpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject enemyPrefab;\n    [SerializeField] private Transform spawnOrigin;\n\n    // Orquestador principal: define el orden de las oleadas\n    public void StartWave()\n    {\n        StartCoroutine(SpawnWave());\n    }\n\n    private IEnumerator SpawnWave()\n    {\n        yield return StartCoroutine(SpawnVFormation(6, 0.3f));\n        yield return new WaitForSeconds(2f);\n        yield return StartCoroutine(SpawnLine(8, 0.2f));\n        yield return new WaitForSeconds(2f);\n        yield return StartCoroutine(SpawnCircle(10, 0.15f));\n    }\n\n    private IEnumerator SpawnVFormation(int count, float interval)\n    {\n        for (int i = 0; i < count; i++)\n        {\n            Vector3 pos = spawnOrigin.position +\n                new Vector3(i % 2 == 0 ? i : -i, 0f, i * 0.5f);\n            Instantiate(enemyPrefab, pos, Quaternion.identity);\n            yield return new WaitForSeconds(interval);\n        }\n    }\n\n    private IEnumerator SpawnLine(int count, float interval)\n    {\n        for (int i = 0; i < count; i++)\n        {\n            Vector3 pos = spawnOrigin.position +\n                new Vector3(i * 1.5f - count * 0.75f, 0f, 0f);\n            Instantiate(enemyPrefab, pos, Quaternion.identity);\n            yield return new WaitForSeconds(interval);\n        }\n    }\n\n    private IEnumerator SpawnCircle(int count, float interval)\n    {\n        for (int i = 0; i < count; i++)\n        {\n            float angle = i * Mathf.PI * 2f / count;\n            Vector3 pos = spawnOrigin.position +\n                new Vector3(Mathf.Cos(angle) * 5f, 0f, Mathf.Sin(angle) * 5f);\n            Instantiate(enemyPrefab, pos, Quaternion.identity);\n            yield return new WaitForSeconds(interval);\n        }\n    }\n\n    private void OnDisable()\n    {\n        StopAllCoroutines();\n    }\n}",
+      "alternatives": [
+        "Usar el patrón **Command** con una `Queue<IEnumerator>` para encolar formaciones arbitrarias en tiempo de ejecución sin modificar `SpawnWave`.",
+        "Cargar la configuración de oleadas desde un **ScriptableObject** con listas de formaciones, para que el diseñador de niveles pueda crear oleadas sin tocar código.",
+        "Usar **`WaitUntil`** para esperar a que todos los enemigos de una formación mueran antes de lanzar la siguiente, en lugar de esperar un tiempo fijo."
+      ],
+      "feedback": {
+        "high": "Excelente diseño. Cada corrutina de formación es **independiente y testeable** por separado. La corrutina orquestadora `SpawnWave` lee como una especificación del nivel: es obvio el orden en que ocurre todo.",
+        "mid": "Eliminaste el switch pero la lógica de las formaciones aún está mezclada en una sola corrutina grande. Separa cada formación en su propio **IEnumerator** para que sean reutilizables.",
+        "low": "El switch con enum en Update es una **máquina de estados manual** que se vuelve imposible de mantener con más formaciones. Las corrutinas separadas por formación permiten añadir nuevos patrones sin tocar el código existente."
+      }
+    },
+    {
+      "id": "asy_007",
+      "difficulty": 3,
+      "genre": "Cualquiera",
+      "tags": ["async", "referencia-directa"],
+      "title": "Guardado en API REST con la clase WWW obsoleta",
+      "context": "Tu juego guarda el progreso del jugador en un servidor REST. El programador usó la **clase `WWW` obsoleta** (o una llamada web bloqueante), lo que congela el juego de **1 a 2 segundos** en conexiones lentas. En dispositivos móviles con red inestable, el hilo principal queda bloqueado y el OS puede matar el proceso por no responder.",
+      "scenario": "Reemplaza la llamada WWW bloqueante por async/await con UnityWebRequest para guardar sin interrumpir el gameplay:",
+      "starterCode": "// ProgressSaver.cs\nusing System.Collections;\nusing UnityEngine;\n\n[System.Serializable]\npublic class SaveData\n{\n    public string playerId;\n    public int level;\n    public int score;\n}\n\npublic class ProgressSaver : MonoBehaviour\n{\n    private const string SaveUrl = \"https://api.mygame.com/save\";\n\n    // Método bloqueante: congela el hilo principal\n    public void SaveProgress(SaveData data)\n    {\n        string json = JsonUtility.ToJson(data);\n        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);\n\n        // WWW es obsoleto desde Unity 2018 y bloquea el hilo\n        WWW www = new WWW(SaveUrl);\n        while (!www.isDone) { } // Bucle de espera activa — congela el juego\n\n        if (string.IsNullOrEmpty(www.error))\n            Debug.Log(\"Guardado exitoso\");\n        else\n            Debug.LogError(\"Error al guardar: \" + www.error);\n    }\n\n    private void OnApplicationPause(bool paused)\n    {\n        if (paused)\n            SaveProgress(new SaveData { playerId = \"p1\", level = 1, score = 100 });\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina el uso de la clase WWW obsoleta",
+          "check": "antiPattern",
+          "pattern": "\\bnew WWW\\b",
+          "points": 4
+        },
+        {
+          "label": "Usa UnityWebRequest para la petición HTTP",
+          "check": "keyword",
+          "pattern": "UnityWebRequest",
+          "points": 4
+        },
+        {
+          "label": "Declara el método como async Task o devuelve Task",
+          "check": "keyword",
+          "pattern": "async.*Task|Task.*async",
+          "points": 3
+        },
+        {
+          "label": "Usa await para esperar la respuesta sin bloquear",
+          "check": "keyword",
+          "pattern": "\\bawait\\b",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// ProgressSaver.cs — async/await con UnityWebRequest\nusing System.Text;\nusing System.Threading.Tasks;\nusing UnityEngine;\nusing UnityEngine.Networking;\n\n[System.Serializable]\npublic class SaveData\n{\n    public string playerId;\n    public int level;\n    public int score;\n}\n\npublic class ProgressSaver : MonoBehaviour\n{\n    private const string SaveUrl = \"https://api.mygame.com/save\";\n\n    // async Task: no bloquea el hilo principal\n    public async Task SaveProgress(SaveData data)\n    {\n        string json = JsonUtility.ToJson(data);\n        byte[] bodyRaw = Encoding.UTF8.GetBytes(json);\n\n        using UnityWebRequest request = new UnityWebRequest(SaveUrl, \"POST\");\n        request.uploadHandler = new UploadHandlerRaw(bodyRaw);\n        request.downloadHandler = new DownloadHandlerBuffer();\n        request.SetRequestHeader(\"Content-Type\", \"application/json\");\n\n        // Envía la petición y espera sin bloquear el hilo principal\n        await request.SendWebRequest();\n\n        if (request.result == UnityWebRequest.Result.Success)\n            Debug.Log(\"Guardado exitoso: \" + request.downloadHandler.text);\n        else\n            Debug.LogError(\"Error al guardar: \" + request.error);\n    }\n\n    private async void OnApplicationPause(bool paused)\n    {\n        if (paused)\n            await SaveProgress(new SaveData { playerId = \"p1\", level = 1, score = 100 });\n    }\n}",
+      "alternatives": [
+        "Usar **UniTask** (`await request.SendWebRequest().ToUniTask()`) para integración más limpia con el ciclo de vida de Unity y soporte de `CancellationToken`.",
+        "Implementar una **cola de guardados** con `Queue<SaveData>` procesada por una corrutina para evitar múltiples peticiones simultáneas en conexión lenta.",
+        "Usar **Firebase SDK** o **PlayFab** que ya manejan internamente la asincronía, reintentos y caché offline."
+      ],
+      "feedback": {
+        "high": "Perfecto. **`async Task`** con `UnityWebRequest` es el patrón moderno recomendado por Unity. El `using` garantiza que el request se libere aunque ocurra una excepción.",
+        "mid": "Usaste **UnityWebRequest** pero dentro de una corrutina con `yield return` en lugar de `async/await`. Funciona, pero `async/await` permite manejar excepciones con `try/catch` de forma más natural.",
+        "low": "La clase **WWW** está obsoleta desde Unity 2018 y el bucle `while (!www.isDone)` es una espera activa que bloquea el hilo principal. Usa **`async/await`** con `UnityWebRequest` para enviar peticiones en segundo plano."
+      }
+    },
+    {
+      "id": "asy_008",
+      "difficulty": 3,
+      "genre": "Open World / RPG",
+      "tags": ["async", "gc-pressure"],
+      "title": "Carga de assets de zona con Resources.Load síncrono",
+      "context": "Tu **open world** carga los assets de la siguiente zona cuando el jugador entra en un trigger. La implementación actual usa `Resources.Load<>` de forma síncrona, causando una **parada de 500 ms** perceptible cada vez que el jugador cruza la frontera de una zona. En builds para consola, este spike aparece en el **GPU Profiler** como un frame completamente rojo.",
+      "scenario": "Reemplaza los Resources.Load síncronos por Addressables.LoadAssetAsync para cargar en segundo plano:",
+      "starterCode": "// ZoneLoader.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class ZoneLoader : MonoBehaviour\n{\n    [SerializeField] private string[] assetPaths;\n\n    private List<GameObject> loadedAssets = new List<GameObject>();\n\n    private void OnTriggerEnter(Collider other)\n    {\n        if (!other.CompareTag(\"Player\")) return;\n\n        // Carga síncrona: bloquea el hilo principal hasta que\n        // todos los assets estén en memoria\n        foreach (string path in assetPaths)\n        {\n            GameObject asset = Resources.Load<GameObject>(path);\n            if (asset != null)\n            {\n                GameObject instance = Instantiate(asset,\n                    transform.position, Quaternion.identity);\n                loadedAssets.Add(instance);\n            }\n        }\n\n        Debug.Log($\"Zona cargada: {loadedAssets.Count} assets instanciados\");\n    }\n\n    private void OnTriggerExit(Collider other)\n    {\n        if (!other.CompareTag(\"Player\")) return;\n\n        // No libera memoria: los assets quedan en RAM indefinidamente\n        foreach (var asset in loadedAssets)\n            Destroy(asset);\n\n        loadedAssets.Clear();\n        // Resources.UnloadUnusedAssets() tampoco se llama\n    }\n}",
+      "criteria": [
+        {
+          "label": "Elimina las llamadas síncronas a Resources.Load",
+          "check": "antiPattern",
+          "pattern": "Resources\\.Load",
+          "points": 4
+        },
+        {
+          "label": "Usa Addressables o LoadAssetAsync para carga asíncrona",
+          "check": "keyword",
+          "pattern": "Addressables|LoadAssetAsync",
+          "points": 4
+        },
+        {
+          "label": "La carga ocurre en una corrutina, async o callback Completed",
+          "check": "keyword",
+          "pattern": "async|IEnumerator|Completed",
+          "points": 3
+        },
+        {
+          "label": "Libera los handles de Addressables en OnDestroy o al salir de la zona",
+          "check": "keyword",
+          "pattern": "ReleaseAsset|Release|OnDestroy",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// ZoneLoader.cs — Addressables asíncrono con liberación de handles\nusing System.Collections.Generic;\nusing UnityEngine;\nusing UnityEngine.AddressableAssets;\nusing UnityEngine.ResourceManagement.AsyncOperations;\n\npublic class ZoneLoader : MonoBehaviour\n{\n    [SerializeField] private List<AssetReference> zoneAssets;\n\n    private readonly List<AsyncOperationHandle<GameObject>> _handles =\n        new List<AsyncOperationHandle<GameObject>>();\n    private readonly List<GameObject> _instances =\n        new List<GameObject>();\n\n    private void OnTriggerEnter(Collider other)\n    {\n        if (!other.CompareTag(\"Player\")) return;\n        LoadZoneAsync();\n    }\n\n    private async void LoadZoneAsync()\n    {\n        foreach (var assetRef in zoneAssets)\n        {\n            // Carga en segundo plano — no bloquea el hilo principal\n            AsyncOperationHandle<GameObject> handle =\n                Addressables.LoadAssetAsync<GameObject>(assetRef);\n\n            await handle.Task;\n\n            if (handle.Status == AsyncOperationStatus.Succeeded)\n            {\n                GameObject instance = Instantiate(\n                    handle.Result, transform.position, Quaternion.identity);\n                _instances.Add(instance);\n                _handles.Add(handle);\n            }\n            else\n            {\n                Debug.LogError($\"Error cargando asset: {assetRef}\");\n                Addressables.Release(handle);\n            }\n        }\n\n        Debug.Log($\"Zona lista: {_instances.Count} assets cargados\");\n    }\n\n    private void OnTriggerExit(Collider other)\n    {\n        if (!other.CompareTag(\"Player\")) return;\n        UnloadZone();\n    }\n\n    private void UnloadZone()\n    {\n        foreach (var instance in _instances)\n            Destroy(instance);\n        _instances.Clear();\n\n        // Libera la memoria de los assets descargados\n        foreach (var handle in _handles)\n            Addressables.Release(handle);\n        _handles.Clear();\n    }\n\n    private void OnDestroy()\n    {\n        UnloadZone();\n    }\n}",
+      "alternatives": [
+        "Usar **`Addressables.LoadAssetsAsync`** (plural) con una lista de claves para cargar todos los assets de la zona en paralelo en una sola operación.",
+        "Precalentar la zona siguiente con **`Addressables.DownloadDependenciesAsync`** cuando el jugador esté a cierta distancia, para que al cruzar el trigger ya estén en caché.",
+        "Implementar un **sistema de LOD de zonas** con `AsyncOperationHandle.Completed` callbacks para instanciar assets en orden de prioridad (primero los visibles)."
+      ],
+      "feedback": {
+        "high": "Excelente. **Addressables** con `await handle.Task` da control total: sabes cuándo terminó la carga, puedes reaccionar a errores y los handles garantizan que la memoria se libere correctamente con `Release`.",
+        "mid": "Usaste **Addressables** pero no guardas los handles o no llamas a `Addressables.Release` al salir de la zona. Esto produce una **fuga de memoria** que acumula assets no usados en RAM.",
+        "low": "**Resources.Load** es síncrono: bloquea el hilo principal hasta cargar el asset completo. Para open worlds con assets grandes, esto produce picos de frame inaceptables. Aprende a usar **Addressables** para carga asíncrona y gestión de memoria correcta."
+      }
+    },
+    {
+      "id": "asy_009",
+      "difficulty": 3,
+      "genre": "Cualquiera",
+      "tags": ["async", "memory-leak"],
+      "title": "Corrutina de patrulla que sobrevive a la destrucción del objeto",
+      "context": "Tu enemigo ejecuta una corrutina de **patrulla** que mueve al personaje entre waypoints indefinidamente. Cuando el enemigo es destruido a mitad de la corrutina (por ejemplo, al morir o al cargar otra escena), la corrutina sigue ejecutando un frame más e intenta acceder a componentes del objeto destruido, lanzando **`NullReferenceException`** en la consola. En builds con muchos enemigos, estas corrutinas huérfanas acumulan errores y pueden causar comportamientos imprevistos.",
+      "scenario": "Identifica por qué la corrutina puede ejecutarse tras la destrucción y agrega el ciclo de vida correcto para cancelarla:",
+      "starterCode": "// EnemyPatrol.cs\nusing System.Collections;\nusing UnityEngine;\n\npublic class EnemyPatrol : MonoBehaviour\n{\n    [SerializeField] private Transform[] waypoints;\n    [SerializeField] private float moveSpeed = 3f;\n    [SerializeField] private float waitTime = 1f;\n\n    private int currentWaypoint = 0;\n\n    private void Start()\n    {\n        // La corrutina inicia pero nunca se cancela explícitamente\n        StartCoroutine(Patrol());\n    }\n\n    private IEnumerator Patrol()\n    {\n        while (true)\n        {\n            Transform target = waypoints[currentWaypoint];\n\n            // Si el objeto es destruido aquí, transform lanza NullReferenceException\n            while (Vector3.Distance(transform.position, target.position) > 0.1f)\n            {\n                transform.position = Vector3.MoveTowards(\n                    transform.position,\n                    target.position,\n                    moveSpeed * Time.deltaTime\n                );\n                yield return null;\n            }\n\n            currentWaypoint = (currentWaypoint + 1) % waypoints.Length;\n            // Pausa entre waypoints — si el objeto se destruye aquí,\n            // Unity intentará continuar en el siguiente frame\n            yield return new WaitForSeconds(waitTime);\n        }\n    }\n\n    // No hay OnDisable ni OnDestroy — la corrutina no se cancela nunca\n}",
+      "criteria": [
+        {
+          "label": "Cancela la corrutina en OnDisable o OnDestroy para evitar accesos tras destrucción",
+          "check": "keyword",
+          "pattern": "OnDisable|OnDestroy",
+          "points": 4
+        },
+        {
+          "label": "Usa StopAllCoroutines o StopCoroutine para detener la patrulla",
+          "check": "keyword",
+          "pattern": "StopAllCoroutines|StopCoroutine",
+          "points": 4
+        },
+        {
+          "label": "Evita que la corrutina continúe sin verificar el estado del objeto",
+          "check": "antiPattern",
+          "pattern": "while\\s*\\(\\s*true\\s*\\)[\\s\\S]{0,400}yield return[\\s\\S]{0,50}\\}\\s*\\}\\s*$",
+          "points": 3
+        },
+        {
+          "label": "Implementa ciclo de vida correcto con OnDisable, OnDestroy, StopCoroutine o StopAllCoroutines",
+          "check": "keyword",
+          "pattern": "OnDisable|OnDestroy|StopCoroutine|StopAllCoroutines",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// EnemyPatrol.cs — Ciclo de vida correcto con CancellationToken\nusing System.Collections;\nusing System.Threading;\nusing UnityEngine;\n\npublic class EnemyPatrol : MonoBehaviour\n{\n    [SerializeField] private Transform[] waypoints;\n    [SerializeField] private float moveSpeed = 3f;\n    [SerializeField] private float waitTime = 1f;\n\n    private int _currentWaypoint = 0;\n    private Coroutine _patrolCoroutine;\n    private CancellationTokenSource _cts;\n\n    private void OnEnable()\n    {\n        _cts = new CancellationTokenSource();\n        _patrolCoroutine = StartCoroutine(Patrol());\n    }\n\n    private void OnDisable()\n    {\n        // Cancela el token para detener loops async si los hay\n        _cts?.Cancel();\n        _cts?.Dispose();\n        _cts = null;\n\n        // Detiene la corrutina de Unity antes de que el objeto se desactive\n        if (_patrolCoroutine != null)\n        {\n            StopCoroutine(_patrolCoroutine);\n            _patrolCoroutine = null;\n        }\n    }\n\n    private void OnDestroy()\n    {\n        // OnDisable siempre se llama antes de OnDestroy en Unity,\n        // pero lo duplicamos por claridad y robustez\n        StopAllCoroutines();\n    }\n\n    private IEnumerator Patrol()\n    {\n        while (this != null && enabled)\n        {\n            if (waypoints == null || waypoints.Length == 0)\n                yield break;\n\n            Transform target = waypoints[_currentWaypoint];\n\n            while (target != null &&\n                   Vector3.Distance(transform.position, target.position) > 0.1f)\n            {\n                transform.position = Vector3.MoveTowards(\n                    transform.position,\n                    target.position,\n                    moveSpeed * Time.deltaTime\n                );\n                yield return null;\n            }\n\n            _currentWaypoint = (_currentWaypoint + 1) % waypoints.Length;\n            yield return new WaitForSeconds(waitTime);\n        }\n    }\n}",
+      "alternatives": [
+        "Usar **`UniTask`** con `CancellationToken` vinculado al `destroyCancellationToken` del MonoBehaviour, que Unity cancela automáticamente al destruir el objeto.",
+        "Usar el patrón de **null-check al inicio del loop**: `while (this != null && gameObject.activeInHierarchy)` como guardia adicional.",
+        "Mover la lógica de patrulla a un **sistema ECS** (Entities) que no tiene el problema de objetos destruidos a mitad de frame, ya que las entidades se eliminan de forma segura entre sistemas."
+      ],
+      "feedback": {
+        "high": "Excelente manejo del ciclo de vida. Usando **`OnDisable`** con `StopCoroutine` te aseguras de que la corrutina se detenga antes de que Unity destruya los componentes, eliminando el `NullReferenceException` por completo.",
+        "mid": "Agregaste **`OnDestroy`** con `StopAllCoroutines`, que es correcto, pero `OnDestroy` puede llamarse tarde en el ciclo. Prefiere **`OnDisable`** porque se llama antes de la destrucción real de los componentes.",
+        "low": "Las corrutinas de Unity **no se detienen automáticamente** cuando el objeto es destruido si el destroy ocurre a mitad de frame. Siempre implementa **`OnDisable`** o **`OnDestroy`** con `StopCoroutine` para limpiar corrutinas activas."
+      }
+    }
+  ]
+}

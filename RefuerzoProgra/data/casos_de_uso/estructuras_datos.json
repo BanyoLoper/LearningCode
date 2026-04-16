@@ -1,0 +1,485 @@
+{
+  "category": "estructuras-datos",
+  "title": "Estructuras de Datos Aplicadas",
+  "icon": "📊",
+  "color": "#3F51B5",
+  "cases": [
+    {
+      "id": "est_001",
+      "difficulty": 2,
+      "genre": "Cualquiera",
+      "tags": ["estructuras-datos", "wrong-structure", "bucles-anidados"],
+      "title": "Highscores: ordenar con loop manual de burbuja",
+      "context": "Tu `LeaderboardManager` guarda las puntuaciones en una `List<int>` y las ordena con un **bubble sort manual** de dos `for` anidados cada vez que se registra un nuevo score. Con 10 jugadores no hay problema, pero cuando el leaderboard crece a 200 entradas el sort tarda **O(n²) = 40 000 comparaciones** por cada score nuevo. En torneos con actualizaciones frecuentes el UI del leaderboard congela el frame hasta 8 ms.",
+      "scenario": "Identifica el problema de complejidad en el ordenamiento y reemplázalo con la estructura más adecuada:",
+      "starterCode": "// LeaderboardManager.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class LeaderboardManager : MonoBehaviour\n{\n    private List<int> _scores = new List<int>();\n\n    public void AddScore(int newScore)\n    {\n        _scores.Add(newScore);\n        // Bubble sort manual — O(n²)\n        for (int i = 0; i < _scores.Count - 1; i++)\n        {\n            for (int j = 0; j < _scores.Count - 1 - i; j++)\n            {\n                if (_scores[j] < _scores[j + 1])\n                {\n                    int temp    = _scores[j];\n                    _scores[j]  = _scores[j + 1];\n                    _scores[j + 1] = temp;\n                }\n            }\n        }\n    }\n\n    public List<int> GetTopScores(int count)\n    {\n        return _scores.GetRange(0, Mathf.Min(count, _scores.Count));\n    }\n}",
+      "prompt": "Reemplaza el bubble sort manual por una solución que mantenga los scores ordenados con menor complejidad. Puedes cambiar la estructura de datos subyacente.",
+      "criteria": [
+        {
+          "id": "no_nested_loop",
+          "label": "Elimina el doble `for` de bubble sort (no hay bucle anidado para ordenar)",
+          "check": "antiPattern",
+          "pattern": "(?:for |foreach )[\\s\\S]{0,400}(?:for |foreach )",
+          "points": 4
+        },
+        {
+          "id": "uses_sort_or_sorted",
+          "label": "Usa `List.Sort()`, `SortedList` o `SortedSet` en lugar de ordenamiento manual",
+          "check": "keyword",
+          "pattern": "\\.Sort\\(|SortedList|SortedSet",
+          "points": 4
+        },
+        {
+          "id": "maintains_order_on_insert",
+          "label": "El orden se mantiene automáticamente al insertar, sin re-ordenar toda la lista",
+          "check": "keyword",
+          "pattern": "SortedList|SortedSet|SortedDictionary|\\.Sort\\(",
+          "points": 3
+        },
+        {
+          "id": "no_bubble_swap",
+          "label": "No hay intercambio manual de elementos con variable `temp`",
+          "check": "antiPattern",
+          "pattern": "int temp[\\s\\S]{0,100}\\[j\\]|temp[\\s\\S]{0,100}\\[j \\+ 1\\]",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// LeaderboardManager.cs — SortedList mantiene el orden automáticamente\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class LeaderboardManager : MonoBehaviour\n{\n    // Clave: score (negativo para orden descendente), Valor: nombre o ID\n    // SortedList inserta en O(log n) y siempre queda ordenado\n    private SortedList<int, string> _scores = new SortedList<int, string>();\n    private int _uniqueKey = 0; // desempate si dos scores son iguales\n\n    public void AddScore(int newScore, string playerName)\n    {\n        // Se usa clave negativa para que el mayor score quede primero\n        // El uniqueKey evita colisión de claves duplicadas\n        int key = -newScore * 10000 - _uniqueKey++;\n        _scores[key] = playerName;\n    }\n\n    public IList<KeyValuePair<int, string>> GetTopScores(int count)\n    {\n        var result = new List<KeyValuePair<int, string>>();\n        int taken  = 0;\n        foreach (var pair in _scores)\n        {\n            if (taken >= count) break;\n            // Revertir clave negativa para mostrar el score real\n            result.Add(new KeyValuePair<int, string>(-pair.Key / 10000, pair.Value));\n            taken++;\n        }\n        return result;\n    }\n\n    // Alternativa simple si solo guardas enteros sin nombre:\n    // private List<int> _scores = new List<int>();\n    // AddScore: _scores.Add(score); _scores.Sort(); _scores.Reverse();\n    // Sort() de .NET usa Introsort — O(n log n) — mucho mejor que O(n²)\n}",
+      "alternatives": [
+        "Usar `List<int>.Sort()` que implementa Introsort con O(n log n) en promedio — basta si no necesitas inserción en tiempo real",
+        "Usar `SortedSet<(int score, int id)>` con tupla para manejar empates y obtener iteración ordenada gratis",
+        "Llamar `List.Insert(BinarySearch(score), score)` para inserción binaria O(log n) sin re-ordenar todo",
+        "Guardar solo los top-N scores con una cola de prioridad (min-heap) para no crecer sin límite"
+      ],
+      "feedback": {
+        "high": "Excelente decisión. Al usar `SortedList` o `List.Sort()` (Introsort) eliminaste el **O(n²)** del bubble sort. Con 200 scores, `Sort()` hace ~1 530 comparaciones vs 40 000 del bubble sort — una reducción de **26×**.",
+        "mid": "Buen avance. Eliminaste el doble loop, pero verifica que no estés llamando `Sort()` en cada frame de Update: si `AddScore` se llama solo cuando ocurre un evento (fin de partida), Sort() una vez es perfectamente válido. El problema era el O(n²) del bubble sort, no el Sort en sí.",
+        "low": "El bubble sort anidado hace O(n²) comparaciones: con 200 scores son 40 000 intercambios por cada nuevo score. La biblioteca estándar de C# tiene `List<T>.Sort()` que usa Introsort con O(n log n) — ya está implementado y es más rápido. Aún mejor: `SortedList<K,V>` mantiene el orden automáticamente en cada inserción con O(log n)."
+      }
+    },
+    {
+      "id": "est_002",
+      "difficulty": 2,
+      "genre": "Puzzle",
+      "tags": ["estructuras-datos", "wrong-structure", "bucles-anidados"],
+      "title": "TileMap: buscar tile por posición con List<Tile> y foreach",
+      "context": "Tu `TileManager` almacena todos los tiles del mapa en una `List<Tile>`. El método `GetTileAt(Vector2Int pos)` recorre la lista completa con `foreach` cada vez que se necesita un tile. Con **500 tiles activos** y la lógica de juego haciendo **10–20 lookups por frame** (adyacencia, pathfinding, interacciones), el Profiler muestra 5 000–10 000 comparaciones por frame solo para recuperar tiles.",
+      "scenario": "El lookup por posición es el cuello de botella. Cambia la estructura de datos para que el acceso sea O(1):",
+      "starterCode": "// TileManager.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class TileManager : MonoBehaviour\n{\n    private List<Tile> _tiles = new List<Tile>();\n\n    public void RegisterTile(Tile tile)\n    {\n        _tiles.Add(tile);\n    }\n\n    // O(n) — recorre TODA la lista en cada lookup\n    public Tile GetTileAt(Vector2Int pos)\n    {\n        foreach (Tile tile in _tiles)\n        {\n            if (tile.GridPosition == pos)\n                return tile;\n        }\n        return null;\n    }\n\n    public void UnregisterTile(Tile tile)\n    {\n        _tiles.Remove(tile);\n    }\n}",
+      "prompt": "Reemplaza la `List<Tile>` por una estructura que permita buscar un tile por `Vector2Int` en tiempo O(1).",
+      "criteria": [
+        {
+          "id": "uses_dictionary",
+          "label": "Usa `Dictionary<Vector2Int, Tile>` para el almacenamiento de tiles",
+          "check": "keyword",
+          "pattern": "Dictionary<Vector2Int",
+          "points": 5
+        },
+        {
+          "id": "no_foreach_lookup",
+          "label": "El método de búsqueda ya no usa `foreach` para encontrar un tile",
+          "check": "antiPattern",
+          "pattern": "GetTileAt[\\s\\S]{0,300}foreach",
+          "points": 4
+        },
+        {
+          "id": "uses_trygetvalue",
+          "label": "Usa `TryGetValue` o indexador directo del Dictionary para el lookup",
+          "check": "keyword",
+          "pattern": "TryGetValue|_tiles\\[pos\\]|_tileMap\\[",
+          "points": 3
+        },
+        {
+          "id": "correct_register",
+          "label": "El registro de tiles usa la posición como clave del Dictionary",
+          "check": "keyword",
+          "pattern": "_tiles\\[tile\\.GridPosition\\]|_tileMap\\[tile|\\[pos\\] = tile",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// TileManager.cs — Dictionary para lookup O(1) por posición\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class TileManager : MonoBehaviour\n{\n    // La posición ES la clave — acceso directo sin iterar\n    private Dictionary<Vector2Int, Tile> _tiles = new Dictionary<Vector2Int, Tile>();\n\n    public void RegisterTile(Tile tile)\n    {\n        _tiles[tile.GridPosition] = tile;\n    }\n\n    // O(1) — hash de Vector2Int → directo a la ranura de memoria\n    public Tile GetTileAt(Vector2Int pos)\n    {\n        _tiles.TryGetValue(pos, out Tile tile);\n        return tile; // null si no existe\n    }\n\n    public bool HasTileAt(Vector2Int pos) => _tiles.ContainsKey(pos);\n\n    public void UnregisterTile(Tile tile)\n    {\n        _tiles.Remove(tile.GridPosition);\n    }\n\n    // Bonus: iterar todos los tiles sigue siendo O(n)\n    public IEnumerable<Tile> GetAllTiles() => _tiles.Values;\n}",
+      "alternatives": [
+        "Usar un array bidimensional `Tile[,]` si el mapa tiene dimensiones fijas — acceso O(1) con mínimo overhead de memoria",
+        "Usar `Tile[]` con índice calculado `pos.x + pos.y * mapWidth` para un array plano sin overhead de hash",
+        "Usar `Grid` de Unity junto con `Tilemap` del Tilemap component que internamente usa HashMap por chunk",
+        "Combinar `Dictionary<Vector2Int, Tile>` con un `HashSet<Vector2Int>` para verificaciones rápidas de existencia"
+      ],
+      "feedback": {
+        "high": "Perfecto. El `Dictionary<Vector2Int, Tile>` hace el lookup en O(1) al calcular el hash de `Vector2Int`. Con 20 lookups por frame eliminaste **10 000 comparaciones** (500 tiles × 20 lookups) y las reemplazaste por **20 operaciones de hash**.",
+        "mid": "Bien encaminado. Usas Dictionary, pero si inicializas el diccionario sin capacidad estimada, va a rehashing varias veces al crecer. Usa `new Dictionary<Vector2Int, Tile>(capacidadEstimada)` en Awake con el número aproximado de tiles para evitar alocaciones innecesarias.",
+        "low": "Con una `List<Tile>`, cada `GetTileAt` recorre hasta 500 elementos. Si la lógica de juego hace 20 lookups por frame, son 10 000 comparaciones × 60 FPS = 600 000 comparaciones por segundo. Un `Dictionary<Vector2Int, Tile>` reduce eso a 20 operaciones de hash por frame — la posición se convierte directamente en índice."
+      }
+    },
+    {
+      "id": "est_003",
+      "difficulty": 2,
+      "genre": "Puzzle",
+      "tags": ["estructuras-datos", "wrong-structure"],
+      "title": "Historial de movimientos del jugador con List, acceso al último es O(n)",
+      "context": "Tu sistema de deshacer (`UndoSystem`) guarda los movimientos del jugador en una `List<PlayerAction>`. Para deshacer, accede al último elemento con `_history[_history.Count - 1]` y luego llama `RemoveAt(_history.Count - 1)`. Con **1 000 movimientos acumulados**, cada `RemoveAt` desplaza internamente todos los elementos del array subyacente — operación **O(n)**. En puzzles complejos donde el jugador deshace muchos pasos seguidos, el lag es perceptible.",
+      "scenario": "Reemplaza la List<PlayerAction> con la estructura semánticamente correcta para una pila LIFO:",
+      "starterCode": "// UndoSystem.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class UndoSystem : MonoBehaviour\n{\n    private List<PlayerAction> _history = new List<PlayerAction>();\n\n    public void RecordAction(PlayerAction action)\n    {\n        _history.Add(action);\n    }\n\n    // O(n) — RemoveAt desplaza todos los elementos siguientes\n    public PlayerAction Undo()\n    {\n        if (_history.Count == 0) return null;\n\n        int lastIndex   = _history.Count - 1;\n        PlayerAction action = _history[lastIndex];\n        _history.RemoveAt(lastIndex); // desplaza n elementos\n        return action;\n    }\n\n    public PlayerAction PeekLastAction()\n    {\n        if (_history.Count == 0) return null;\n        return _history[_history.Count - 1];\n    }\n\n    public bool HasHistory => _history.Count > 0;\n}",
+      "prompt": "Cambia `List<PlayerAction>` por la estructura de datos que implementa semánticamente una pila LIFO con operaciones O(1) para push, pop y peek.",
+      "criteria": [
+        {
+          "id": "uses_stack",
+          "label": "Usa `Stack<PlayerAction>` como estructura principal",
+          "check": "keyword",
+          "pattern": "Stack<PlayerAction>",
+          "points": 5
+        },
+        {
+          "id": "uses_push_pop",
+          "label": "Usa `Push` para agregar y `Pop` para deshacer",
+          "check": "keyword",
+          "pattern": "\\.Push\\(|\\.Pop\\(",
+          "points": 4
+        },
+        {
+          "id": "uses_peek",
+          "label": "Usa `Peek` para ver el último elemento sin eliminarlo",
+          "check": "keyword",
+          "pattern": "\\.Peek\\(",
+          "points": 3
+        },
+        {
+          "id": "no_removeat",
+          "label": "Ya no usa `RemoveAt` ni acceso por índice `[Count - 1]`",
+          "check": "antiPattern",
+          "pattern": "RemoveAt|Count - 1|Count-1",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// UndoSystem.cs — Stack<T> para semántica LIFO con operaciones O(1)\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class UndoSystem : MonoBehaviour\n{\n    // Stack<T>: Push, Pop y Peek son todos O(1)\n    // Semánticamente correcto: ES una pila de deshacer\n    private Stack<PlayerAction> _history = new Stack<PlayerAction>();\n\n    public void RecordAction(PlayerAction action)\n    {\n        _history.Push(action); // O(1)\n    }\n\n    // O(1) — no hay desplazamiento de elementos\n    public PlayerAction Undo()\n    {\n        if (_history.Count == 0) return null;\n        return _history.Pop(); // elimina y devuelve el tope en O(1)\n    }\n\n    // O(1) — solo lee el tope sin modificar la pila\n    public PlayerAction PeekLastAction()\n    {\n        if (_history.Count == 0) return null;\n        return _history.Peek();\n    }\n\n    public bool HasHistory => _history.Count > 0;\n\n    public void ClearHistory() => _history.Clear();\n}",
+      "alternatives": [
+        "Usar `LinkedList<PlayerAction>` con `AddLast`/`RemoveLast` — también O(1) pero con overhead de nodos por punteros",
+        "Limitar el historial a N pasos con un buffer circular (`Queue` + tamaño máximo) para controlar el uso de memoria",
+        "Serializar el `Stack<PlayerAction>` en JSON para persistir el historial entre sesiones de juego",
+        "Combinar dos `Stack<PlayerAction>` (undo + redo) para implementar deshacer y rehacer completos"
+      ],
+      "feedback": {
+        "high": "Excelente. `Stack<PlayerAction>` es exactamente la estructura correcta para un sistema de deshacer: **Push, Pop y Peek son O(1)** sin desplazamientos. El código además comunica la intención — una pila de historial — mejor que una List genérica.",
+        "mid": "Buen cambio. Usas Stack, pero verifica que `Peek` retorne null de forma segura cuando la pila está vacía: llama siempre `_history.Count > 0` antes de `Peek()` o `Pop()`, ya que Stack lanza `InvalidOperationException` si está vacía.",
+        "low": "El problema de `List<T>.RemoveAt(lastIndex)` es que aunque accedes al último elemento en O(1), `RemoveAt` desplaza internamente los elementos del array subyacente: **O(n)**. Con 1 000 acciones, cada deshacer mueve 1 000 referencias. `Stack<T>` mantiene un puntero al tope y Pop simplemente decrementa ese puntero — siempre O(1)."
+      }
+    },
+    {
+      "id": "est_004",
+      "difficulty": 2,
+      "genre": "Estrategia",
+      "tags": ["estructuras-datos", "wrong-structure"],
+      "title": "Cola de turnos de IA con List + RemoveAt(0)",
+      "context": "Tu `TurnManager` de un juego de estrategia por turnos almacena las unidades en una `List<Unit>`. `GetNextUnit()` devuelve `_turnQueue[0]` y llama `RemoveAt(0)` para quitar la primera unidad. Con **40 unidades en combate**, cada `RemoveAt(0)` desplaza los 39 elementos restantes en memoria — **O(n) por turno**. En batallas largas con cientos de turnos, la CPU acumula tiempo de CPU innecesario en el turno de cada unidad.",
+      "scenario": "La semántica FIFO y la ineficiencia de RemoveAt(0) señalan exactamente qué estructura usar. Reemplázala:",
+      "starterCode": "// TurnManager.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class TurnManager : MonoBehaviour\n{\n    private List<Unit> _turnQueue = new List<Unit>();\n\n    public void EnqueueUnit(Unit unit)\n    {\n        _turnQueue.Add(unit); // agrega al final\n    }\n\n    // O(n) — RemoveAt(0) desplaza TODOS los elementos a la izquierda\n    public Unit GetNextUnit()\n    {\n        if (_turnQueue.Count == 0) return null;\n\n        Unit next = _turnQueue[0];\n        _turnQueue.RemoveAt(0); // 40 unidades = 39 desplazamientos\n        return next;\n    }\n\n    public int RemainingUnits => _turnQueue.Count;\n\n    public void RemoveUnit(Unit unit)\n    {\n        _turnQueue.Remove(unit);\n    }\n}",
+      "prompt": "Reemplaza `List<Unit>` con la estructura de cola FIFO que hace `Enqueue` y `Dequeue` en O(1) sin desplazamiento de elementos.",
+      "criteria": [
+        {
+          "id": "uses_queue",
+          "label": "Usa `Queue<Unit>` como estructura principal",
+          "check": "keyword",
+          "pattern": "Queue<Unit>",
+          "points": 5
+        },
+        {
+          "id": "uses_enqueue_dequeue",
+          "label": "Usa `Enqueue` para agregar unidades y `Dequeue` para obtener la siguiente",
+          "check": "keyword",
+          "pattern": "\\.Enqueue\\(|\\.Dequeue\\(",
+          "points": 4
+        },
+        {
+          "id": "no_removeat_zero",
+          "label": "Ya no usa `RemoveAt(0)` ni acceso por índice `[0]`",
+          "check": "antiPattern",
+          "pattern": "RemoveAt\\(0\\)|_turnQueue\\[0\\]",
+          "points": 3
+        },
+        {
+          "id": "uses_peek_or_trydequeue",
+          "label": "Usa `Peek` o `TryDequeue` para acceso seguro sin lanzar excepciones",
+          "check": "keyword",
+          "pattern": "\\.Peek\\(|\\.TryDequeue\\(",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// TurnManager.cs — Queue<T> para cola FIFO con Enqueue/Dequeue O(1)\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class TurnManager : MonoBehaviour\n{\n    // Queue<T> usa un buffer circular internamente:\n    // Enqueue y Dequeue son O(1) sin desplazamiento de memoria\n    private Queue<Unit> _turnQueue = new Queue<Unit>();\n\n    public void EnqueueUnit(Unit unit)\n    {\n        _turnQueue.Enqueue(unit); // O(1) — agrega al final del buffer\n    }\n\n    // O(1) — solo avanza el puntero de inicio del buffer circular\n    public Unit GetNextUnit()\n    {\n        if (_turnQueue.Count == 0) return null;\n        return _turnQueue.Dequeue();\n    }\n\n    // Ver quién es el siguiente sin sacarlo de la cola\n    public Unit PeekNextUnit()\n    {\n        if (_turnQueue.Count == 0) return null;\n        return _turnQueue.Peek(); // O(1)\n    }\n\n    // Para re-encolar la unidad al final del turno (turno cíclico)\n    public void RequeueUnit(Unit unit)\n    {\n        _turnQueue.Enqueue(unit);\n    }\n\n    public int RemainingUnits => _turnQueue.Count;\n}",
+      "alternatives": [
+        "Usar `LinkedList<Unit>` con `AddLast`/`RemoveFirst` — O(1) para ambos, pero con overhead de allocación por nodo",
+        "Para turnos con prioridad variable, usar `SortedSet<Unit>` con `IComparer` por velocidad/iniciativa",
+        "Reconstruir la cola al inicio de cada ronda (round-robin) en lugar de re-encolar unidades individuales",
+        "Usar `Queue<Unit>` con una lista paralela de unidades eliminadas para soportar `RemoveUnit` sin costo adicional"
+      ],
+      "feedback": {
+        "high": "Implementación correcta. `Queue<Unit>` usa un buffer circular internamente: `Enqueue` agrega al puntero trasero y `Dequeue` avanza el puntero delantero — **ambos O(1)** sin ningún desplazamiento de memoria. Con 40 unidades en combate, eliminaste 39 desplazamientos por turno.",
+        "mid": "Buen cambio estructural. Usas Queue pero si necesitas eliminar una unidad que muere en medio de la cola (`RemoveUnit`), Queue no lo soporta directamente. Una solución pragmática: marcar la unidad como inactiva (`IsAlive = false`) y descartarla al hacer `Dequeue` si no está viva.",
+        "low": "La señal estaba en la API: agregar al final + quitar del principio es exactamente la definición de **FIFO (First In, First Out)**. `List.RemoveAt(0)` desplaza todos los elementos porque la List usa un array contiguo. `Queue<T>` usa un buffer circular donde quitar del frente solo mueve un puntero — sin tocar ningún otro elemento."
+      }
+    },
+    {
+      "id": "est_005",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["estructuras-datos", "wrong-structure"],
+      "title": "Verificar si el jugador tiene un ítem con List.Contains O(n)",
+      "context": "Tu `QuestChecker` verifica cada vez que el jugador interactúa si cumple los requisitos de los objetivos activos. Llama `inventory.items.Contains(requiredItem)` por cada objetivo activo. Con un inventario de **100 ítems** y **10 objetivos activos**, cada verificación recorre la lista completa: **1 000 comparaciones por interacción**. En mazmorras con muchos triggers de misión, el costo se acumula.",
+      "scenario": "El patrón de uso es claro: solo necesitas saber si un ítem está o no está. Cambia la estructura para que Contains sea O(1):",
+      "starterCode": "// QuestChecker.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class QuestChecker : MonoBehaviour\n{\n    [SerializeField] private Inventory inventory;\n    [SerializeField] private List<QuestObjective> activeObjectives;\n\n    // Se llama al interactuar con un NPC, abrir un cofre, etc.\n    public bool CheckAllObjectives()\n    {\n        foreach (QuestObjective objective in activeObjectives)\n        {\n            // List.Contains es O(n) — recorre hasta 100 ítems por objetivo\n            if (!inventory.items.Contains(objective.requiredItemId))\n                return false;\n        }\n        return true;\n    }\n}\n\n// Inventory.cs (referencia)\npublic class Inventory : MonoBehaviour\n{\n    public List<string> items = new List<string>(); // O(n) Contains\n\n    public void AddItem(string itemId)\n    {\n        items.Add(itemId);\n    }\n\n    public void RemoveItem(string itemId)\n    {\n        items.Remove(itemId);\n    }\n}",
+      "prompt": "Agrega al `Inventory` una estructura que permita verificar la existencia de un ítem en O(1), manteniendo la List para otras operaciones que la requieran.",
+      "criteria": [
+        {
+          "id": "uses_hashset",
+          "label": "Usa `HashSet<string>` para las verificaciones de existencia",
+          "check": "keyword",
+          "pattern": "HashSet<string>",
+          "points": 5
+        },
+        {
+          "id": "hashset_contains",
+          "label": "Las verificaciones de objetivos usan `HashSet.Contains` en lugar de `List.Contains`",
+          "check": "keyword",
+          "pattern": "_itemIds\\.Contains|_itemSet\\.Contains|itemIds\\.Contains|itemSet\\.Contains",
+          "points": 4
+        },
+        {
+          "id": "synchronized_structures",
+          "label": "El HashSet se mantiene sincronizado con la lista al agregar y quitar ítems",
+          "check": "keyword",
+          "pattern": "\\.Add\\([\\s\\S]{0,50}\\);\n[\\s\\S]{0,100}\\.Add\\(|\\.Remove\\([\\s\\S]{0,50}\\);\n[\\s\\S]{0,100}\\.Remove\\(",
+          "points": 3
+        },
+        {
+          "id": "no_list_contains",
+          "label": "Ya no se usa `List.Contains` para verificar objetivos de misión",
+          "check": "antiPattern",
+          "pattern": "items\\.Contains\\(",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Inventory.cs — HashSet para Contains O(1), List para orden e iteración\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class Inventory : MonoBehaviour\n{\n    // List para preservar orden de adquisición e iteración UI\n    public List<string> items    = new List<string>();\n    // HashSet para verificaciones de existencia O(1)\n    private HashSet<string> _itemIds = new HashSet<string>();\n\n    public void AddItem(string itemId)\n    {\n        if (_itemIds.Add(itemId)) // Add devuelve false si ya existe\n            items.Add(itemId);\n    }\n\n    public void RemoveItem(string itemId)\n    {\n        if (_itemIds.Remove(itemId))\n            items.Remove(itemId);\n    }\n\n    // O(1) — hash del string → lookup directo\n    public bool HasItem(string itemId) => _itemIds.Contains(itemId);\n}\n\n// QuestChecker.cs — usa HasItem que internamente consulta el HashSet\npublic class QuestChecker : MonoBehaviour\n{\n    [SerializeField] private Inventory inventory;\n    [SerializeField] private List<QuestObjective> activeObjectives;\n\n    public bool CheckAllObjectives()\n    {\n        foreach (QuestObjective objective in activeObjectives)\n        {\n            if (!inventory.HasItem(objective.requiredItemId)) // O(1)\n                return false;\n        }\n        return true; // 10 objetivos = 10 hash lookups, no 1000 comparaciones\n    }\n}",
+      "alternatives": [
+        "Usar solo `HashSet<string>` si no necesitas orden de adquisición — más simple y usa menos memoria",
+        "Usar `Dictionary<string, ItemData>` si además de verificar existencia necesitas acceder a los datos del ítem",
+        "Precalcular un `HashSet<string>` de ítems requeridos y hacer intersección con el inventario una sola vez al activar la misión",
+        "Usar eventos `OnItemAdded`/`OnItemRemoved` en el Inventory para que los objetivos se auto-verifiquen reactivamente"
+      ],
+      "feedback": {
+        "high": "Solución profesional. Al mantener `List<string>` para UI y `HashSet<string>` para búsquedas, tienes O(1) en Contains sin perder la funcionalidad de iteración ordenada. La sincronización en `AddItem`/`RemoveItem` garantiza consistencia entre ambas estructuras.",
+        "mid": "Buen uso del HashSet. Verifica que lo mantengas sincronizado con la lista: si solo agregas al HashSet pero no a la List (o viceversa), el inventario quedará inconsistente. El método `HasItem` es la API pública correcta para encapsular la implementación.",
+        "low": "Con `List<string>.Contains`, cada verificación recorre hasta 100 ítems secuencialmente comparando strings. `HashSet<string>` calcula el hash del string y va directo a la posición en memoria — **O(1)** sin importar cuántos ítems tenga el inventario. Para 10 objetivos × 100 ítems se pasa de 1 000 comparaciones a 10 operaciones de hash."
+      }
+    },
+    {
+      "id": "est_006",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["estructuras-datos", "wrong-structure"],
+      "title": "Grafo de nodos de diálogo con List lineal de nodos",
+      "context": "Tu `DialogueSystem` almacena todos los nodos de diálogo en una `List<DialogueNode>`. Cada nodo referencia al siguiente por `int nextNodeId` y a las opciones por `int[] choiceNodeIds`. Navegar entre nodos requiere un `foreach` para buscar por ID — **O(n) por cada transición**. Un árbol de **50 nodos** con 5 niveles de profundidad y ramas de elección puede hacer docenas de búsquedas durante una conversación.",
+      "scenario": "El grafo de diálogo se navega por ID. Cambia la estructura para que el lookup por ID sea O(1):",
+      "starterCode": "// DialogueSystem.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class DialogueSystem : MonoBehaviour\n{\n    private List<DialogueNode> _nodes = new List<DialogueNode>();\n    private DialogueNode       _currentNode;\n\n    public void LoadDialogue(List<DialogueNode> nodes)\n    {\n        _nodes = nodes;\n        _currentNode = _nodes.Count > 0 ? _nodes[0] : null;\n    }\n\n    // O(n) — busca el nodo siguiente recorriendo toda la lista\n    public DialogueNode GetNodeById(int id)\n    {\n        foreach (DialogueNode node in _nodes)\n        {\n            if (node.Id == id)\n                return node;\n        }\n        return null;\n    }\n\n    public void AdvanceToNext()\n    {\n        if (_currentNode == null) return;\n        _currentNode = GetNodeById(_currentNode.NextNodeId); // O(n)\n    }\n\n    public void SelectChoice(int choiceIndex)\n    {\n        if (_currentNode == null) return;\n        int targetId = _currentNode.ChoiceNodeIds[choiceIndex];\n        _currentNode = GetNodeById(targetId); // O(n)\n    }\n}",
+      "prompt": "Reemplaza `List<DialogueNode>` por una estructura que permita navegar entre nodos por ID en O(1), sin cambiar la lógica de avance y elección de opciones.",
+      "criteria": [
+        {
+          "id": "uses_dictionary_nodes",
+          "label": "Usa `Dictionary<int, DialogueNode>` para almacenar y acceder a los nodos",
+          "check": "keyword",
+          "pattern": "Dictionary<int, DialogueNode>",
+          "points": 5
+        },
+        {
+          "id": "no_foreach_lookup",
+          "label": "Ya no usa `foreach` para buscar un nodo por ID",
+          "check": "antiPattern",
+          "pattern": "GetNodeById[\\s\\S]{0,200}foreach|foreach[\\s\\S]{0,200}node\\.Id == id",
+          "points": 4
+        },
+        {
+          "id": "direct_id_access",
+          "label": "Accede directamente al nodo por ID con el indexador del Dictionary o TryGetValue",
+          "check": "keyword",
+          "pattern": "_nodes\\[|_nodeMap\\[|TryGetValue",
+          "points": 3
+        },
+        {
+          "id": "loads_from_list",
+          "label": "Convierte la lista de nodos en Dictionary al cargar el diálogo",
+          "check": "keyword",
+          "pattern": "foreach[\\s\\S]{0,200}\\.Add\\(node\\.Id|ToDictionary\\(",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// DialogueSystem.cs — Dictionary<int, DialogueNode> para lookup O(1) por ID\nusing System.Collections.Generic;\nusing System.Linq;\nusing UnityEngine;\n\npublic class DialogueSystem : MonoBehaviour\n{\n    // El ID del nodo ES la clave: acceso directo sin buscar\n    private Dictionary<int, DialogueNode> _nodeMap;\n    private DialogueNode _currentNode;\n\n    public void LoadDialogue(List<DialogueNode> nodes)\n    {\n        // Construir el mapa una sola vez al cargar — O(n) solo aquí\n        _nodeMap = nodes.ToDictionary(node => node.Id);\n        // Alternativamente sin LINQ:\n        // _nodeMap = new Dictionary<int, DialogueNode>(nodes.Count);\n        // foreach (var node in nodes) _nodeMap[node.Id] = node;\n\n        _currentNode = nodes.Count > 0 ? nodes[0] : null;\n    }\n\n    // O(1) — hash del ID → directo al nodo en memoria\n    public DialogueNode GetNodeById(int id)\n    {\n        _nodeMap.TryGetValue(id, out DialogueNode node);\n        return node;\n    }\n\n    public void AdvanceToNext()\n    {\n        if (_currentNode?.NextNodeId == null) return;\n        _currentNode = GetNodeById(_currentNode.NextNodeId); // O(1)\n    }\n\n    public void SelectChoice(int choiceIndex)\n    {\n        if (_currentNode == null ||\n            choiceIndex >= _currentNode.ChoiceNodeIds.Length) return;\n\n        int targetId = _currentNode.ChoiceNodeIds[choiceIndex];\n        _currentNode = GetNodeById(targetId); // O(1)\n    }\n\n    public DialogueNode CurrentNode => _currentNode;\n}",
+      "alternatives": [
+        "Usar directamente referencias de objeto (`DialogueNode nextNode`) en lugar de IDs enteros — elimina el lookup completamente",
+        "Serializar el diálogo en `ScriptableObject` con referencias directas resueltas en el Inspector de Unity",
+        "Usar un grafo orientado con `Dictionary<int, List<int>>` para edges si se necesita backtracking o rutas múltiples",
+        "Construir el `Dictionary` desde un archivo JSON al iniciar la escena con `JsonUtility.FromJson`"
+      ],
+      "feedback": {
+        "high": "Excelente diseño. Al construir el `Dictionary<int, DialogueNode>` una sola vez en `LoadDialogue`, cada navegación posterior es O(1). El costo de construcción O(n) se paga una vez y la ganancia se obtiene en cada transición del grafo.",
+        "mid": "Buen uso del Dictionary. Considera usar referencias directas (`DialogueNode nextNode`) en lugar de IDs enteros si el diálogo no se carga desde un archivo externo — eliminarías el lookup completamente y el código sería más limpio.",
+        "low": "Buscar un nodo por ID en una `List<DialogueNode>` es O(n): en el peor caso revisa los 50 nodos. Con un árbol de 5 niveles de profundidad y múltiples elecciones, una conversación puede hacer 20–30 búsquedas. `Dictionary<int, DialogueNode>` mapea el ID directamente a la referencia del nodo en O(1) — sin importar cuántos nodos tenga el diálogo."
+      }
+    },
+    {
+      "id": "est_007",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["estructuras-datos", "wrong-structure"],
+      "title": "Skill tree como List plana: verificar prerequisitos con foreach anidado",
+      "context": "Tu `SkillTree` guarda todas las habilidades en una `List<Skill>`. Para verificar si una habilidad puede desbloquearse, busca con `foreach` sus prerequisitos en la lista y, para cada prerequisito, busca si ya está en la lista de habilidades aprendidas. Este **O(n²)** ocurre cada vez que el jugador abre el menú de habilidades o intenta desbloquear una. Con **60 habilidades en el árbol**, la verificación escala a miles de comparaciones.",
+      "scenario": "Identifica los dos foreach anidados y reemplaza ambas estructuras con las apropiadas para búsqueda O(1):",
+      "starterCode": "// SkillTree.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class SkillTree : MonoBehaviour\n{\n    private List<Skill> _skills        = new List<Skill>();\n    private List<Skill> _learnedSkills = new List<Skill>();\n\n    // O(n²) — para cada prerequisito busca en la lista de aprendidas\n    public bool CanUnlock(string skillId)\n    {\n        Skill target = null;\n        foreach (Skill s in _skills) // O(n): busca el skill por ID\n        {\n            if (s.Id == skillId) { target = s; break; }\n        }\n        if (target == null) return false;\n\n        foreach (string prereqId in target.PrerequisiteIds)\n        {\n            bool found = false;\n            foreach (Skill learned in _learnedSkills) // O(n): ¿está aprendida?\n            {\n                if (learned.Id == prereqId) { found = true; break; }\n            }\n            if (!found) return false;\n        }\n        return true;\n    }\n\n    public void LearnSkill(string skillId)\n    {\n        foreach (Skill s in _skills)\n        {\n            if (s.Id == skillId)\n            {\n                _learnedSkills.Add(s);\n                break;\n            }\n        }\n    }\n}",
+      "prompt": "Reemplaza `List<Skill>` por un `Dictionary<string, Skill>` y `List<Skill>` de aprendidas por un `HashSet<string>` para que todas las verificaciones sean O(1).",
+      "criteria": [
+        {
+          "id": "uses_dictionary_skills",
+          "label": "Usa `Dictionary<string, Skill>` para almacenar todas las habilidades del árbol",
+          "check": "keyword",
+          "pattern": "Dictionary<string, Skill>",
+          "points": 4
+        },
+        {
+          "id": "uses_hashset_learned",
+          "label": "Usa `HashSet<string>` para las habilidades aprendidas",
+          "check": "keyword",
+          "pattern": "HashSet<string>",
+          "points": 4
+        },
+        {
+          "id": "no_nested_foreach",
+          "label": "Ya no hay foreach anidado para verificar prerequisitos",
+          "check": "antiPattern",
+          "pattern": "foreach[\\s\\S]{0,400}foreach",
+          "points": 4
+        },
+        {
+          "id": "prereq_check_o1",
+          "label": "La verificación de prerequisitos usa Contains del HashSet o acceso directo al Dictionary",
+          "check": "keyword",
+          "pattern": "_learnedIds\\.Contains|_learned\\.Contains|_learnedSkills\\.Contains",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// SkillTree.cs — Dictionary + HashSet para verificaciones O(1)\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class SkillTree : MonoBehaviour\n{\n    // Lookup de habilidades por ID: O(1)\n    private Dictionary<string, Skill> _skills      = new Dictionary<string, Skill>();\n    // Verificar si aprendida: O(1)\n    private HashSet<string>           _learnedIds  = new HashSet<string>();\n\n    public void LoadSkills(IEnumerable<Skill> allSkills)\n    {\n        _skills.Clear();\n        foreach (Skill s in allSkills)\n            _skills[s.Id] = s;\n    }\n\n    // O(p) donde p = número de prerequisitos del skill — no n²\n    public bool CanUnlock(string skillId)\n    {\n        if (!_skills.TryGetValue(skillId, out Skill target)) // O(1)\n            return false;\n\n        if (_learnedIds.Contains(skillId)) // ya aprendida\n            return false;\n\n        foreach (string prereqId in target.PrerequisiteIds)\n        {\n            if (!_learnedIds.Contains(prereqId)) // O(1) por prerequisito\n                return false;\n        }\n        return true;\n    }\n\n    public void LearnSkill(string skillId)\n    {\n        if (_skills.ContainsKey(skillId)) // O(1)\n            _learnedIds.Add(skillId);     // O(1)\n    }\n\n    public bool IsLearned(string skillId) => _learnedIds.Contains(skillId); // O(1)\n\n    public Skill GetSkill(string skillId)\n    {\n        _skills.TryGetValue(skillId, out Skill s);\n        return s;\n    }\n}",
+      "alternatives": [
+        "Usar `Dictionary<string, bool>` en lugar de HashSet si necesitas guardar estado adicional por habilidad (aprendida, en progreso, bloqueada)",
+        "Pre-calcular qué habilidades se desbloquean al aprender una nueva (`Dictionary<string, List<string>> _unlocks`) para respuesta inmediata en UI",
+        "Modelar el árbol de habilidades como grafo de dependencias con topological sort para validar el árbol completo al cargarlo",
+        "Usar `ScriptableObject` por habilidad con referencias directas a prerequisitos — elimina los IDs string y los lookups"
+      ],
+      "feedback": {
+        "high": "Diseño correcto. Eliminaste el O(n²) reemplazando ambas listas por estructuras de acceso O(1). La complejidad de `CanUnlock` ahora es O(p) donde p es el número de prerequisitos del skill — que es típicamente 1-3, no n.",
+        "mid": "Buen progreso. Usas Dictionary para las habilidades, pero si `_learnedSkills` sigue siendo una `List`, la verificación `_learnedSkills.Contains(prereqId)` sigue siendo O(n). El HashSet es necesario para que la comprobación de prerequisitos sea verdaderamente O(1).",
+        "low": "Con 60 habilidades, `CanUnlock` en el código original hace: 1 búsqueda del skill en la lista (hasta 60 comparaciones) + por cada prerequisito 1 búsqueda en la lista de aprendidas (hasta 60 comparaciones). Con 5 prerequisitos: 60 + 5×60 = 360 comparaciones por verificación. Con `Dictionary` + `HashSet`: 1 hash lookup + 5 hash lookups = 6 operaciones."
+      }
+    },
+    {
+      "id": "est_008",
+      "difficulty": 3,
+      "genre": "Estrategia",
+      "tags": ["estructuras-datos", "bucles-anidados", "wrong-structure"],
+      "title": "Spatial partitioning: buscar enemigos cercanos con List global",
+      "context": "Tu `AOEDamage` recorre una `List<Enemy>` global de **100+ unidades** para encontrar cuáles están dentro del radio de explosión, calculando `Vector3.Distance` para cada una. Con **5 explosiones simultáneas**, el código hace **500 cálculos de distancia por frame** durante los frames de detonación. En batallas masivas de fin de campaña, el FPS cae drásticamente en los momentos de mayor acción — exactamente cuando más importa la fluidez.",
+      "scenario": "El problema no es el cálculo de distancia en sí, sino que se calcula contra TODOS los enemigos. Diseña una solución de spatial partitioning:",
+      "starterCode": "// AOEDamage.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class AOEDamage : MonoBehaviour\n{\n    // Lista global — todos los enemigos vivos en el mapa\n    public static List<Enemy> AllEnemies = new List<Enemy>();\n\n    [SerializeField] private float _radius  = 5f;\n    [SerializeField] private float _damage  = 50f;\n\n    // Se llama cuando explota — O(n) por explosión\n    public void Explode(Vector3 center)\n    {\n        foreach (Enemy enemy in AllEnemies) // recorre los 100+ enemigos\n        {\n            float dist = Vector3.Distance(center, enemy.transform.position);\n            if (dist <= _radius)\n            {\n                enemy.TakeDamage(_damage);\n            }\n        }\n    }\n}",
+      "prompt": "Implementa un `SpatialGrid` que divida el mapa en celdas. Las explosiones solo consultan las celdas que se superponen con el radio, evitando calcular distancia contra todos los enemigos.",
+      "criteria": [
+        {
+          "id": "uses_spatial_grid",
+          "label": "Implementa una estructura de grid (Dictionary de celdas o array 2D) para particionar el espacio",
+          "check": "keyword",
+          "pattern": "SpatialGrid|Dictionary<Vector2Int[\\s\\S]{0,20}List|_grid|cellSize",
+          "points": 5
+        },
+        {
+          "id": "query_nearby_cells",
+          "label": "La explosión solo consulta las celdas adyacentes al punto de impacto",
+          "check": "keyword",
+          "pattern": "GetNearbyCells|GetCell|cellX|cellY|cellPos",
+          "points": 4
+        },
+        {
+          "id": "enemies_register_to_grid",
+          "label": "Los enemigos se registran y desregistran del grid al moverse o morir",
+          "check": "keyword",
+          "pattern": "Register|Unregister|UpdateCell|AddToCell",
+          "points": 3
+        },
+        {
+          "id": "reduces_distance_checks",
+          "label": "Los cálculos de distancia se limitan a los enemigos de celdas relevantes, no a la lista global",
+          "check": "antiPattern",
+          "pattern": "Explode[\\s\\S]{0,300}AllEnemies",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// SpatialGrid.cs — grid de celdas para acceso O(1) a enemigos cercanos\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class SpatialGrid : MonoBehaviour\n{\n    public static SpatialGrid Instance;\n\n    [SerializeField] private float _cellSize = 10f;\n\n    // Cada celda del grid guarda los enemigos dentro de ella\n    private Dictionary<Vector2Int, HashSet<Enemy>> _grid\n        = new Dictionary<Vector2Int, HashSet<Enemy>>();\n\n    private void Awake() => Instance = this;\n\n    private Vector2Int WorldToCell(Vector3 worldPos)\n    {\n        return new Vector2Int(\n            Mathf.FloorToInt(worldPos.x / _cellSize),\n            Mathf.FloorToInt(worldPos.z / _cellSize)\n        );\n    }\n\n    public void RegisterEnemy(Enemy enemy)\n    {\n        Vector2Int cell = WorldToCell(enemy.transform.position);\n        if (!_grid.ContainsKey(cell))\n            _grid[cell] = new HashSet<Enemy>();\n        _grid[cell].Add(enemy);\n        enemy.CurrentCell = cell;\n    }\n\n    // Los enemigos llaman esto al moverse entre celdas\n    public void UpdateEnemyCell(Enemy enemy)\n    {\n        Vector2Int newCell = WorldToCell(enemy.transform.position);\n        if (newCell == enemy.CurrentCell) return; // no cambió de celda\n\n        if (_grid.TryGetValue(enemy.CurrentCell, out var oldSet))\n            oldSet.Remove(enemy);\n\n        RegisterEnemy(enemy);\n    }\n\n    public void UnregisterEnemy(Enemy enemy)\n    {\n        if (_grid.TryGetValue(enemy.CurrentCell, out var set))\n            set.Remove(enemy);\n    }\n\n    // Devuelve solo los enemigos en las celdas que se superponen con el radio\n    public List<Enemy> GetEnemiesInRadius(Vector3 center, float radius)\n    {\n        var result = new List<Enemy>();\n        int cellRadius = Mathf.CeilToInt(radius / _cellSize);\n        Vector2Int centerCell = WorldToCell(center);\n\n        for (int dx = -cellRadius; dx <= cellRadius; dx++)\n        {\n            for (int dz = -cellRadius; dz <= cellRadius; dz++)\n            {\n                var cellPos = new Vector2Int(centerCell.x + dx, centerCell.y + dz);\n                if (!_grid.TryGetValue(cellPos, out var enemies)) continue;\n\n                foreach (Enemy e in enemies)\n                {\n                    if (Vector3.Distance(center, e.transform.position) <= radius)\n                        result.Add(e);\n                }\n            }\n        }\n        return result;\n    }\n}\n\n// AOEDamage.cs — solo consulta las celdas relevantes\npublic class AOEDamage : MonoBehaviour\n{\n    [SerializeField] private float _radius = 5f;\n    [SerializeField] private float _damage = 50f;\n\n    public void Explode(Vector3 center)\n    {\n        // En lugar de 100+ enemigos, solo revisa los de celdas adyacentes\n        List<Enemy> nearby = SpatialGrid.Instance.GetEnemiesInRadius(center, _radius);\n        foreach (Enemy e in nearby)\n            e.TakeDamage(_damage);\n    }\n}",
+      "alternatives": [
+        "Usar `Physics.OverlapSphere` de Unity — el motor ya implementa broadphase espacial internamente, más simple de integrar",
+        "Usar un **Quadtree** para mapas con distribución muy irregular de unidades — mejor que grid en esos casos",
+        "Usar `Physics2D.OverlapCircleAll` si el juego es 2D — misma idea con la API 2D de Unity",
+        "Actualizar las celdas del grid solo cuando el enemigo se mueve más de `cellSize * 0.5f` para reducir el costo de `UpdateEnemyCell`"
+      ],
+      "feedback": {
+        "high": "Implementación sólida de spatial partitioning. Con celdas de 10 unidades y un radio de explosión de 5, solo consultas 4–9 celdas vs los 100+ enemigos globales. En el mejor caso la mayoría de celdas están vacías y el costo de distancia baja a 0–5 cálculos por explosión.",
+        "mid": "Buen enfoque con el grid. Verifica que `UpdateEnemyCell` se llame cuando los enemigos se mueven — si el grid no se actualiza, las celdas tendrán referencias desactualizadas y los resultados serán incorrectos. Considera actualizar la celda en el `Update` del enemigo solo cuando ha movido más de medio tamaño de celda.",
+        "low": "Con 100 enemigos y 5 explosiones simultáneas son 500 `Vector3.Distance` (raíces cuadradas) por frame. El spatial grid divide el mapa en celdas: una explosión de radio 5 con celdas de 10×10 solo necesita revisar las 4–9 celdas adyacentes. Si cada celda tiene en promedio 5 enemigos, el costo baja de 100 a **20–45 cálculos de distancia** — una reducción de 2–5×."
+      }
+    },
+    {
+      "id": "est_009",
+      "difficulty": 3,
+      "genre": "Estrategia",
+      "tags": ["estructuras-datos", "wrong-structure"],
+      "title": "Priority queue para IA: próxima acción más urgente con List desordenada",
+      "context": "Tu `AIScheduler` mantiene una `List<AIAction>` de acciones pendientes. Para obtener la acción de mayor prioridad usa LINQ `.OrderByDescending(a => a.priority).First()` — operación **O(n log n)** que ordena toda la lista cada consulta. Con **20 IAs consultando el scheduler cada frame**, el sistema ejecuta **20 sorts completos por frame**, con los problemas de allocación de LINQ encima.",
+      "scenario": "El acceso al máximo de prioridad es el patrón dominante. Usa una estructura que mantenga el máximo siempre accesible:",
+      "starterCode": "// AIScheduler.cs\nusing System.Collections.Generic;\nusing System.Linq;\nusing UnityEngine;\n\npublic class AIScheduler : MonoBehaviour\n{\n    public static AIScheduler Instance;\n    private List<AIAction> _pendingActions = new List<AIAction>();\n\n    private void Awake() => Instance = this;\n\n    public void ScheduleAction(AIAction action)\n    {\n        _pendingActions.Add(action);\n    }\n\n    // O(n log n) + allocación de LINQ — se llama 20 veces por frame\n    public AIAction GetHighestPriority()\n    {\n        if (_pendingActions.Count == 0) return null;\n\n        // OrderByDescending crea un IOrderedEnumerable — allocación en heap\n        return _pendingActions\n            .OrderByDescending(a => a.priority)\n            .First();\n    }\n\n    public void RemoveAction(AIAction action)\n    {\n        _pendingActions.Remove(action);\n    }\n}",
+      "prompt": "Reemplaza `List<AIAction>` con una estructura que mantenga el elemento de mayor prioridad siempre accesible en O(1) o O(log n) sin re-ordenar toda la lista.",
+      "criteria": [
+        {
+          "id": "uses_sortedset",
+          "label": "Usa `SortedSet<AIAction>` con un `IComparer<AIAction>` por prioridad",
+          "check": "keyword",
+          "pattern": "SortedSet<AIAction>|IComparer<AIAction>",
+          "points": 5
+        },
+        {
+          "id": "no_orderby",
+          "label": "Ya no usa `OrderByDescending` ni ningún sort LINQ en el hot path",
+          "check": "antiPattern",
+          "pattern": "OrderByDescending|OrderBy[\\s\\S]{0,100}priority",
+          "points": 4
+        },
+        {
+          "id": "max_access_o1",
+          "label": "El acceso al elemento de mayor prioridad es O(1) o O(log n) usando `Max`, `Min` o el primer elemento del SortedSet",
+          "check": "keyword",
+          "pattern": "\\.Max|_actions\\.Min|\\.First\\(\\)|SortedSet",
+          "points": 4
+        },
+        {
+          "id": "comparer_implemented",
+          "label": "Implementa un `IComparer` o `IComparable` para ordenar por prioridad correctamente",
+          "check": "keyword",
+          "pattern": "IComparer|CompareTo|Compare\\(",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// AIActionComparer.cs — ordena de mayor a menor prioridad\nusing System.Collections.Generic;\n\npublic class AIActionComparer : IComparer<AIAction>\n{\n    public int Compare(AIAction x, AIAction y)\n    {\n        // Orden descendente: mayor prioridad primero\n        int cmp = y.priority.CompareTo(x.priority);\n        if (cmp != 0) return cmp;\n        // Desempate por ID para que SortedSet no descarte duplicados de prioridad\n        return x.Id.CompareTo(y.Id);\n    }\n}\n\n// AIScheduler.cs — SortedSet mantiene el orden en cada inserción\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class AIScheduler : MonoBehaviour\n{\n    public static AIScheduler Instance;\n\n    // SortedSet usa un Red-Black Tree internamente:\n    // Insert: O(log n), acceso al máximo: O(log n) o O(1) con .Min\n    private SortedSet<AIAction> _actions\n        = new SortedSet<AIAction>(new AIActionComparer());\n\n    private void Awake() => Instance = this;\n\n    public void ScheduleAction(AIAction action)\n    {\n        _actions.Add(action); // O(log n) — inserta en posición correcta\n    }\n\n    // O(1) — el primer elemento del SortedSet es siempre el de mayor prioridad\n    public AIAction GetHighestPriority()\n    {\n        if (_actions.Count == 0) return null;\n        return _actions.Min; // Min según el Comparer = mayor prioridad real\n    }\n\n    public AIAction PopHighestPriority()\n    {\n        if (_actions.Count == 0) return null;\n        AIAction top = _actions.Min;\n        _actions.Remove(top); // O(log n)\n        return top;\n    }\n\n    public void RemoveAction(AIAction action)\n    {\n        _actions.Remove(action); // O(log n)\n    }\n}",
+      "alternatives": [
+        "Implementar un **min-heap** (priority queue) manual con array para inserción O(log n) y acceso al máximo O(1) — más eficiente que SortedSet en memoria",
+        "Usar `PriorityQueue<AIAction, int>` disponible desde .NET 6 / Unity 2022+ — API nativa sin implementar IComparer",
+        "Agrupar acciones por nivel de prioridad (alta/media/baja) con tres `Queue<AIAction>` — simple y sin overhead de comparación",
+        "Cachear el resultado de GetHighestPriority por frame y solo recalcular cuando se agrega o elimina una acción"
+      ],
+      "feedback": {
+        "high": "Excelente elección. `SortedSet<AIAction>` usa un árbol Red-Black internamente: inserción en **O(log n)** y acceso al máximo en **O(1)** con `.Min`. Eliminaste 20 sorts LINQ por frame y también el garbage que generaba `OrderByDescending` al crear `IOrderedEnumerable` en el heap cada llamada.",
+        "mid": "Buen enfoque. Usas SortedSet pero verifica el IComparer: si dos acciones tienen la misma prioridad y el Compare devuelve 0, SortedSet las trata como duplicados y descarta una. Necesitas desempate por ID u otro campo único para que coexistan acciones con igual prioridad.",
+        "low": "Llamar `OrderByDescending().First()` 20 veces por frame hace 20 sorts de O(n log n) + 20 allocaciones de `IOrderedEnumerable` en el heap (presión de GC). Un `SortedSet<AIAction>` con `IComparer` mantiene el orden en cada inserción — en cualquier momento `.Min` da el de mayor prioridad en O(1), sin re-ordenar nada."
+      }
+    }
+  ]
+}

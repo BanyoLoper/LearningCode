@@ -1,0 +1,538 @@
+{
+  "category": "arquitectura",
+  "title": "Arquitectura y SOLID",
+  "icon": "🏗️",
+  "color": "#5C6BC0",
+  "cases": [
+    {
+      "id": "arq_001",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["arquitectura", "god-class"],
+      "title": "PlayerController de 400 líneas: input, física, salud y puntuación en un MonoBehaviour",
+      "context": "Llevas 3 semanas desarrollando un platformer 2D y el `PlayerController.cs` ya tiene **400 líneas**. Hoy tu compañero quiere agregar un sistema de doble salto, pero cada vez que toca `FixedUpdate` rompe la lógica de `TakeDamage`. El **Profiler** no ayuda a aislar qué parte del script consume más porque todo está mezclado. Además, hacer pruebas de la puntuación requiere instanciar al jugador completo con física activa.",
+      "scenario": "Identifica las responsabilidades mezcladas y propón una separación en componentes:",
+      "starterCode": "// PlayerController.cs — todo en un solo MonoBehaviour\nusing UnityEngine;\n\npublic class PlayerController : MonoBehaviour\n{\n    [Header(\"Movement\")]\n    [SerializeField] private float moveSpeed = 8f;\n    [SerializeField] private float jumpForce = 12f;\n\n    [Header(\"Health\")]\n    [SerializeField] private int maxHealth = 100;\n    private int _currentHealth;\n\n    [Header(\"Score\")]\n    private int _score;\n    private Vector3 _checkpointPos;\n\n    private Rigidbody2D _rb;\n    private bool _isGrounded;\n\n    private void Awake()\n    {\n        _rb = GetComponent<Rigidbody2D>();\n        _currentHealth = maxHealth;\n    }\n\n    // Input + movimiento en Update\n    private void Update()\n    {\n        float h = Input.GetAxisRaw(\"Horizontal\");\n        _rb.linearVelocity = new Vector2(h * moveSpeed, _rb.linearVelocity.y);\n\n        if (Input.GetButtonDown(\"Jump\") && _isGrounded)\n            _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);\n\n        // Detección de suelo\n        _isGrounded = Physics2D.Raycast(\n            transform.position, Vector2.down, 0.1f);\n    }\n\n    // Física adicional en FixedUpdate\n    private void FixedUpdate()\n    {\n        // Limitar velocidad de caída\n        if (_rb.linearVelocity.y < -20f)\n            _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, -20f);\n    }\n\n    // ---- Salud ----\n    public void TakeDamage(int amount)\n    {\n        _currentHealth -= amount;\n        Debug.Log($\"HP restante: {_currentHealth}\");\n        if (_currentHealth <= 0) Die();\n    }\n\n    public void Heal(int amount)\n    {\n        _currentHealth = Mathf.Min(_currentHealth + amount, maxHealth);\n    }\n\n    private void Die()\n    {\n        Debug.Log(\"Player died\");\n        transform.position = _checkpointPos;\n        _currentHealth = maxHealth;\n    }\n\n    // ---- Puntuación ----\n    public void AddScore(int points)\n    {\n        _score += points;\n        // Actualiza la UI directamente desde aquí\n        FindObjectOfType<ScoreUI>().UpdateDisplay(_score);\n    }\n\n    // ---- Checkpoint ----\n    public void SaveCheckpoint(Vector3 position)\n    {\n        _checkpointPos = position;\n        Debug.Log($\"Checkpoint guardado en {position}\");\n    }\n}",
+      "prompt": "Separa `PlayerController` en componentes con responsabilidad única. Cada clase debe poder modificarse sin afectar a las demás.",
+      "criteria": [
+        {
+          "id": "no_god_class",
+          "label": "No hay una sola clase con Input, física, salud y puntuación mezcladas",
+          "check": "antiPattern",
+          "pattern": "GetAxisRaw[\\s\\S]{0,800}TakeDamage[\\s\\S]{0,400}AddScore",
+          "points": 4
+        },
+        {
+          "id": "separate_input",
+          "label": "Existe una clase dedicada al input (`PlayerInput` o similar)",
+          "check": "keyword",
+          "pattern": "PlayerInput|InputHandler|PlayerInputController",
+          "points": 3
+        },
+        {
+          "id": "separate_health",
+          "label": "Existe una clase dedicada a la salud (`PlayerHealth` o similar)",
+          "check": "keyword",
+          "pattern": "PlayerHealth|HealthComponent|HealthSystem",
+          "points": 3
+        },
+        {
+          "id": "uses_require_component",
+          "label": "Usa `[RequireComponent]` o eventos C# para comunicar componentes sin acoplamiento directo",
+          "check": "keyword",
+          "pattern": "RequireComponent|UnityEvent|Action|delegate",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// PlayerInput.cs — SOLO lectura de input\nusing UnityEngine;\nusing System;\n\npublic class PlayerInput : MonoBehaviour\n{\n    public event Action<float> OnMove;  // eje horizontal\n    public event Action       OnJump;\n\n    private void Update()\n    {\n        float h = Input.GetAxisRaw(\"Horizontal\");\n        OnMove?.Invoke(h);\n\n        if (Input.GetButtonDown(\"Jump\"))\n            OnJump?.Invoke();\n    }\n}\n\n// PlayerMovement.cs — SOLO física y movimiento\n[RequireComponent(typeof(Rigidbody2D), typeof(PlayerInput))]\npublic class PlayerMovement : MonoBehaviour\n{\n    [SerializeField] private float moveSpeed = 8f;\n    [SerializeField] private float jumpForce = 12f;\n\n    private Rigidbody2D _rb;\n    private PlayerInput _input;\n    private bool _isGrounded;\n\n    private void Awake()\n    {\n        _rb    = GetComponent<Rigidbody2D>();\n        _input = GetComponent<PlayerInput>();\n        _input.OnMove += HandleMove;\n        _input.OnJump += HandleJump;\n    }\n\n    private void HandleMove(float h) =>\n        _rb.linearVelocity = new Vector2(h * moveSpeed, _rb.linearVelocity.y);\n\n    private void HandleJump()\n    {\n        _isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);\n        if (_isGrounded)\n            _rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);\n    }\n\n    private void FixedUpdate()\n    {\n        if (_rb.linearVelocity.y < -20f)\n            _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, -20f);\n    }\n}\n\n// PlayerHealth.cs — SOLO salud y respawn\nusing System;\nusing UnityEngine;\n\npublic class PlayerHealth : MonoBehaviour\n{\n    [SerializeField] private int maxHealth = 100;\n    private int _currentHealth;\n    private Vector3 _checkpointPos;\n\n    public event Action<int, int> OnHealthChanged; // current, max\n\n    private void Awake() => _currentHealth = maxHealth;\n\n    public void TakeDamage(int amount)\n    {\n        _currentHealth = Mathf.Max(0, _currentHealth - amount);\n        OnHealthChanged?.Invoke(_currentHealth, maxHealth);\n        if (_currentHealth == 0) Respawn();\n    }\n\n    public void Heal(int amount)\n    {\n        _currentHealth = Mathf.Min(_currentHealth + amount, maxHealth);\n        OnHealthChanged?.Invoke(_currentHealth, maxHealth);\n    }\n\n    public void SaveCheckpoint(Vector3 pos) => _checkpointPos = pos;\n\n    private void Respawn()\n    {\n        transform.position = _checkpointPos;\n        _currentHealth = maxHealth;\n        OnHealthChanged?.Invoke(_currentHealth, maxHealth);\n    }\n}\n\n// ScoreSystem.cs — SOLO puntuación (no MonoBehaviour: testeable en editor)\nusing System;\n\npublic class ScoreSystem\n{\n    public int Score { get; private set; }\n    public event Action<int> OnScoreChanged;\n\n    public void Add(int points)\n    {\n        Score += points;\n        OnScoreChanged?.Invoke(Score);\n    }\n}",
+      "alternatives": [
+        "Usar **ScriptableObject** como canal de eventos (`EventChannelSO`) para comunicar componentes sin referencias directas",
+        "Aplicar el patrón **Mediator** con un `PlayerFacade` que conecte los componentes sin que se conozcan entre sí",
+        "Usar el **Input System** de Unity (nuevo) que ya separa la lectura de input de la respuesta a él",
+        "Convertir `ScoreSystem` y `PlayerHealth` a **POCO** (Plain Old C# Objects) para correr unit tests sin Unity Test Runner"
+      ],
+      "feedback": {
+        "high": "Excelente separación. Cada componente tiene una única razón para cambiar: `PlayerInput` si cambia el control, `PlayerMovement` si cambia la física, `PlayerHealth` si cambia el sistema de daño. Los eventos C# eliminan el **acoplamiento directo** entre componentes.",
+        "mid": "Buen avance. Separaste las clases, pero si `PlayerMovement` aún llama directamente a `PlayerHealth.TakeDamage`, sigues teniendo **acoplamiento**. Usa un evento (`OnDamageReceived`) para que `PlayerHealth` se suscriba sin que `PlayerMovement` la conozca.",
+        "low": "El problema de la **god class** es que cualquier cambio en un área (física, UI, puntuación) puede romper las demás porque comparten el mismo estado interno. Empieza identificando las responsabilidades: ¿qué razones tiene esta clase para cambiar? Cada razón es un componente separado."
+      }
+    },
+    {
+      "id": "arq_002",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["arquitectura", "god-class", "referencia-directa"],
+      "title": "Singleton GameManager con referencias a todos los sistemas",
+      "context": "Tu RPG tiene un `GameManager` que creció hasta convertirse en el **hub central** de todo el juego. Cada vez que un nuevo programador necesita acceder a cualquier sistema, simplemente escribe `GameManager.Instance.X` porque ahí está todo. Al intentar hacer pruebas unitarias del `InventoryManager`, Unity lanza `NullReferenceException` porque `GameManager.Instance` no existe en el **Test Runner**. Además, el **tiempo de compilación** de la escena aumenta porque cualquier cambio en `UIManager` invalida `GameManager`.",
+      "scenario": "Identifica el problema de acoplamiento y propón una arquitectura sin el Singleton acaparador:",
+      "starterCode": "// GameManager.cs — Singleton que conoce TODOS los sistemas\nusing UnityEngine;\n\npublic class GameManager : MonoBehaviour\n{\n    public static GameManager Instance { get; private set; }\n\n    // Referencias a TODOS los sistemas del juego\n    public UIManager        uiManager;\n    public AudioManager     audioManager;\n    public InventoryManager inventoryManager;\n    public EnemySpawner     enemySpawner;\n    public QuestManager     questManager;\n    public SaveSystem       saveSystem;\n    public CameraController cameraController;\n    public DialogueSystem   dialogueSystem;\n\n    private void Awake()\n    {\n        if (Instance != null) { Destroy(gameObject); return; }\n        Instance = this;\n        DontDestroyOnLoad(gameObject);\n    }\n}\n\n// --- Uso típico en cualquier script del proyecto ---\n\n// EnemyAI.cs\npublic class EnemyAI : MonoBehaviour\n{\n    private void Die()\n    {\n        GameManager.Instance.audioManager.PlaySFX(\"enemy_die\");\n        GameManager.Instance.uiManager.ShowKillFeed(name);\n        GameManager.Instance.inventoryManager.DropLoot(transform.position);\n        GameManager.Instance.questManager.NotifyKill(enemyType);\n    }\n}\n\n// PlayerController.cs\npublic class PlayerController : MonoBehaviour\n{\n    private void OnTriggerEnter(Collider other)\n    {\n        GameManager.Instance.dialogueSystem.StartDialogue(\"npc_intro\");\n        GameManager.Instance.cameraController.FocusOn(other.transform);\n    }\n}",
+      "prompt": "Elimina la dependencia de `GameManager.Instance` en las clases que lo consumen. Cada sistema debe recibir solo lo que necesita, no una referencia a todo el juego.",
+      "criteria": [
+        {
+          "id": "no_instance_chain",
+          "label": "Las clases no acceden a sistemas mediante `GameManager.Instance.X`",
+          "check": "antiPattern",
+          "pattern": "GameManager\\.Instance\\.[a-zA-Z]+\\.[a-zA-Z]+",
+          "points": 4
+        },
+        {
+          "id": "uses_injection",
+          "label": "Los sistemas se inyectan por `[SerializeField]` o constructor, no se buscan globalmente",
+          "check": "keyword",
+          "pattern": "SerializeField|\\[Inject\\]|constructor|private.*readonly",
+          "points": 3
+        },
+        {
+          "id": "uses_events_or_channels",
+          "label": "Usa eventos C#, UnityEvent o ScriptableObject channels para comunicar sistemas",
+          "check": "keyword",
+          "pattern": "UnityEvent|event Action|EventChannel|ScriptableObject|RaiseEvent",
+          "points": 3
+        },
+        {
+          "id": "no_god_reference",
+          "label": "GameManager ya no contiene referencias a todos los sistemas del proyecto",
+          "check": "antiPattern",
+          "pattern": "UIManager[\\s\\S]{0,100}AudioManager[\\s\\S]{0,100}InventoryManager",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// VoidEventChannelSO.cs — ScriptableObject como canal de eventos desacoplado\nusing UnityEngine;\nusing UnityEngine.Events;\n\n[CreateAssetMenu(menuName = \"Events/Void Event Channel\")]\npublic class VoidEventChannelSO : ScriptableObject\n{\n    public UnityAction OnEventRaised;\n    public void RaiseEvent() => OnEventRaised?.Invoke();\n}\n\n// EnemyDiedEventSO.cs — canal tipado para cuando un enemigo muere\n[CreateAssetMenu(menuName = \"Events/Enemy Died Channel\")]\npublic class EnemyDiedEventSO : ScriptableObject\n{\n    public UnityAction<string, Vector3> OnEventRaised;\n    public void RaiseEvent(string type, Vector3 pos) =>\n        OnEventRaised?.Invoke(type, pos);\n}\n\n// EnemyAI.cs — solo conoce el canal, no los sistemas concretos\npublic class EnemyAI : MonoBehaviour\n{\n    [SerializeField] private EnemyDiedEventSO enemyDiedChannel;\n    [SerializeField] private string enemyType;\n\n    private void Die()\n    {\n        // Levanta el evento — no sabe quién escucha\n        enemyDiedChannel.RaiseEvent(enemyType, transform.position);\n        gameObject.SetActive(false);\n    }\n}\n\n// AudioManager.cs — se suscribe al canal que le interesa\npublic class AudioManager : MonoBehaviour\n{\n    [SerializeField] private EnemyDiedEventSO enemyDiedChannel;\n\n    private void OnEnable()  => enemyDiedChannel.OnEventRaised += OnEnemyDied;\n    private void OnDisable() => enemyDiedChannel.OnEventRaised -= OnEnemyDied;\n\n    private void OnEnemyDied(string type, Vector3 pos) =>\n        PlaySFX(\"enemy_die\");\n\n    public void PlaySFX(string id) { /* reproduce sonido */ }\n}\n\n// InventoryManager.cs — también se suscribe al mismo canal\npublic class InventoryManager : MonoBehaviour\n{\n    [SerializeField] private EnemyDiedEventSO enemyDiedChannel;\n\n    private void OnEnable()  => enemyDiedChannel.OnEventRaised += OnEnemyDied;\n    private void OnDisable() => enemyDiedChannel.OnEventRaised -= OnEnemyDied;\n\n    private void OnEnemyDied(string type, Vector3 pos) =>\n        DropLoot(pos);\n\n    public void DropLoot(Vector3 pos) { /* genera loot */ }\n}\n\n// GameManager.cs — orquestador mínimo, ya no guarda referencias a todo\npublic class GameManager : MonoBehaviour\n{\n    // Solo gestiona el ciclo de vida de la sesión de juego\n    private void Start() => InitSession();\n    private void InitSession() { /* carga estado de guardado, etc. */ }\n}",
+      "alternatives": [
+        "Usar un framework de **inyección de dependencias** como Zenject/VContainer para resolver dependencias automáticamente",
+        "Aplicar el patrón **Service Locator** con interfaces (`IAudioService`) para desacoplar implementación del consumidor",
+        "Usar **ScriptableObject** como contenedor de datos compartidos (en lugar de referencias a MonoBehaviours)",
+        "Dividir el `GameManager` monolítico en subsistemas con sus propios **Singleton acotados** (`AudioManager.Instance`, `QuestManager.Instance`) para reducir el grafo de dependencias"
+      ],
+      "feedback": {
+        "high": "Excelente uso de **ScriptableObject event channels**. Ahora `EnemyAI` no conoce ni a `AudioManager` ni a `InventoryManager`: solo levanta un evento. Cualquier sistema puede suscribirse sin tocar `EnemyAI`. Esto permite testear cada sistema de forma aislada.",
+        "mid": "Buen paso. Separaste algunos sistemas, pero si aún hay scripts que hacen `GameManager.Instance.audioManager.Play(...)`, el acoplamiento persiste. Considera introducir un **event channel** como `ScriptableObject` para que los productores y consumidores no se conozcan.",
+        "low": "El problema no es el **Singleton** en sí, sino que actúa como repositorio global de todo. Cuando `EnemyAI` necesita audio, inventario y quests, está acoplada a 3 sistemas a la vez. La solución es invertir el control: `EnemyAI` levanta un evento y los sistemas interesados escuchan, sin que `EnemyAI` los conozca."
+      }
+    },
+    {
+      "id": "arq_003",
+      "difficulty": 2,
+      "genre": "Dungeon Crawler",
+      "tags": ["arquitectura", "deep-inheritance"],
+      "title": "Herencia Enemy→FlyingEnemy→FlyingBossEnemy→EliteFlyingBoss",
+      "context": "Tu dungeon crawler tiene un árbol de herencia de **4 niveles** para los enemigos. Al querer agregar un `GroundBoss` con la IA del jefe pero sin vuelo, no sabes de cuál nivel heredar: heredar de `FlyingBossEnemy` da vuelo no deseado, heredar de `Enemy` obliga a reimplementar todo. El lead te pide agregar 5 tipos nuevos para el **milestone del viernes** y cada uno rompe algo del nivel de herencia incorrecto.",
+      "scenario": "Analiza el árbol de herencia frágil y reemplázalo con composición de interfaces:",
+      "starterCode": "// Árbol de herencia de 4 niveles — cada nivel sobreescribe ~80% del padre\nusing UnityEngine;\n\npublic class Enemy : MonoBehaviour\n{\n    public int Health = 100;\n    public virtual void Move()    => Debug.Log(\"Camina\");\n    public virtual void Attack()  => Debug.Log(\"Golpea\");\n    public virtual void TakeDamage(int dmg) { Health -= dmg; }\n    public virtual void Die()     => Destroy(gameObject);\n    public virtual void UpdateAI() { }\n}\n\npublic class FlyingEnemy : Enemy\n{\n    public float FlightHeight = 5f;\n    // Sobreescribe Move completo — el padre ya no aplica\n    public override void Move()   => Debug.Log(\"Vuela a altura \" + FlightHeight);\n    // Sobreescribe Attack — proyectiles en lugar de melee\n    public override void Attack() => Debug.Log(\"Dispara desde el aire\");\n}\n\npublic class FlyingBossEnemy : FlyingEnemy\n{\n    public int Phase = 1;\n    // Sobreescribe UpdateAI — lógica de fases\n    public override void UpdateAI()\n    {\n        if (Health < 50 && Phase == 1) { Phase = 2; FlightHeight = 10f; }\n    }\n    // Sobreescribe TakeDamage — escudo en fase 2\n    public override void TakeDamage(int dmg)\n    {\n        if (Phase == 2) dmg /= 2;\n        base.TakeDamage(dmg);\n    }\n}\n\n// El jefe élite sobreescribe TODOS los métodos del abuelo\npublic class EliteFlyingBoss : FlyingBossEnemy\n{\n    public override void Move()    => Debug.Log(\"Teletransporta\");\n    public override void Attack()  => Debug.Log(\"Rayo AOE\");\n    public override void Die()     => Debug.Log(\"Explota y resurge\");\n    public override void UpdateAI() => base.UpdateAI(); // llama por costumbre, no por necesidad\n}",
+      "prompt": "Reemplaza la jerarquía de herencia con **composición de interfaces**. Un `GroundBoss` y un `FlyingBoss` deben poder compartir la misma IA sin heredar uno del otro.",
+      "criteria": [
+        {
+          "id": "uses_interfaces",
+          "label": "Define interfaces (`IDamageable`, `IMovable`, `IAI` u otras) en lugar de herencia",
+          "check": "keyword",
+          "pattern": "interface I[A-Z]|IDamageable|IMovable|IAI|IFlyable|IAttackable",
+          "points": 4
+        },
+        {
+          "id": "no_deep_inheritance",
+          "label": "No hay cadenas de herencia de más de 2 niveles (`A : B : C`)",
+          "check": "antiPattern",
+          "pattern": "class \\w+ : \\w+[\\s\\S]{0,200}class \\w+ : \\w+[\\s\\S]{0,200}class \\w+ : \\w+[\\s\\S]{0,200}class \\w+ : \\w+",
+          "points": 4
+        },
+        {
+          "id": "composition_over_inheritance",
+          "label": "Los comportamientos se inyectan como componentes o campos, no se heredan",
+          "check": "keyword",
+          "pattern": "SerializeField|GetComponent|\\[RequireComponent\\]|private.*I[A-Z]",
+          "points": 3
+        },
+        {
+          "id": "substitution_principle",
+          "label": "Es posible crear `GroundBoss` y `FlyingBoss` sin que uno herede del otro",
+          "check": "keyword",
+          "pattern": "GroundBoss|GroundEnemy|BossAI|BossController",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Interfaces — contratos pequeños y enfocados\npublic interface IDamageable\n{\n    int Health { get; }\n    void TakeDamage(int amount);\n    void Die();\n}\n\npublic interface IMovable\n{\n    void Move();\n}\n\npublic interface IAttackable\n{\n    void Attack();\n}\n\npublic interface IAI\n{\n    void UpdateAI();\n}\n\n// Implementaciones de comportamiento concretas (no MonoBehaviour)\npublic class GroundMovement : IMovable\n{\n    public void Move() => UnityEngine.Debug.Log(\"Camina por el suelo\");\n}\n\npublic class FlyingMovement : IMovable\n{\n    private readonly float _height;\n    public FlyingMovement(float height) => _height = height;\n    public void Move() => UnityEngine.Debug.Log($\"Vuela a altura {_height}\");\n}\n\npublic class TeleportMovement : IMovable\n{\n    public void Move() => UnityEngine.Debug.Log(\"Teletransporta\");\n}\n\npublic class BossAI : IAI\n{\n    private readonly IDamageable _owner;\n    public int Phase { get; private set; } = 1;\n\n    public BossAI(IDamageable owner) => _owner = owner;\n\n    public void UpdateAI()\n    {\n        if (_owner.Health < 50 && Phase == 1)\n        {\n            Phase = 2;\n            UnityEngine.Debug.Log(\"Boss entra en fase 2\");\n        }\n    }\n}\n\n// EnemyController.cs — MonoBehaviour genérico que compone comportamientos\nusing UnityEngine;\n\npublic class EnemyController : MonoBehaviour, IDamageable\n{\n    [SerializeField] private int maxHealth = 100;\n    public int Health { get; private set; }\n\n    // Comportamientos inyectados — pueden variar por prefab\n    private IMovable   _movement;\n    private IAttackable _attack;\n    private IAI        _ai;\n\n    // Un GroundBoss usa GroundMovement + BossAI\n    public void Configure(IMovable movement, IAttackable attack, IAI ai)\n    {\n        _movement = movement;\n        _attack   = attack;\n        _ai       = ai;\n        Health    = maxHealth;\n    }\n\n    private void Update()\n    {\n        _ai?.UpdateAI();\n        _movement?.Move();\n    }\n\n    public void TakeDamage(int amount)\n    {\n        Health = Mathf.Max(0, Health - amount);\n        if (Health == 0) Die();\n    }\n\n    public void Die() => Destroy(gameObject);\n}\n\n// EnemyFactory.cs — crea enemigos combinando comportamientos\npublic static class EnemyFactory\n{\n    public static EnemyController CreateFlyingBoss(EnemyController prefabInstance)\n    {\n        var ai = new BossAI(prefabInstance);\n        prefabInstance.Configure(\n            new FlyingMovement(10f),\n            null, // ataque por componente separado\n            ai\n        );\n        return prefabInstance;\n    }\n\n    // GroundBoss reutiliza BossAI sin herencia\n    public static EnemyController CreateGroundBoss(EnemyController prefabInstance)\n    {\n        var ai = new BossAI(prefabInstance);\n        prefabInstance.Configure(\n            new GroundMovement(),\n            null,\n            ai\n        );\n        return prefabInstance;\n    }\n}",
+      "alternatives": [
+        "Usar el **Component pattern** de Unity directamente: agregar `FlyComponent.cs`, `BossAIComponent.cs` como MonoBehaviours separados al mismo GameObject",
+        "Aplicar el patrón **Strategy** para intercambiar algoritmos de movimiento e IA en runtime sin herencia",
+        "Usar **ScriptableObject** como contenedor de datos de configuración del enemigo (stats, comportamiento base) para evitar herencia de datos",
+        "Implementar un **Entity-Component System** (ECS) con Unity DOTS para escenas con cientos de enemigos simultáneos"
+      ],
+      "feedback": {
+        "high": "Excelente aplicación del principio **Composición sobre Herencia**. Ahora `GroundBoss` y `FlyingBoss` comparten `BossAI` sin ninguna relación de herencia entre ellos. Agregar un nuevo tipo de enemigo es combinar comportamientos existentes, no elegir de qué nivel de árbol heredar.",
+        "mid": "Buen enfoque. Definiste interfaces, pero si tus clases concretas aún heredan unas de otras para reutilizar código, considera extraer ese código a una clase auxiliar que ambas usen por **composición** (campo privado), no por herencia.",
+        "low": "El problema de la herencia profunda es la **fragilidad**: cuando `EliteFlyingBoss` sobreescribe el 100% de los métodos de `Enemy`, la herencia no aporta nada excepto complejidad. Pregúntate: ¿qué comportamientos son realmente compartidos? Cada uno es una **interfaz**. Un enemigo es una combinación de comportamientos, no un nodo en un árbol."
+      }
+    },
+    {
+      "id": "arq_004",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["arquitectura", "god-class"],
+      "title": "MonoBehaviour con lógica de negocio del inventario incrustada",
+      "context": "El `InventoryMonoBehaviour.cs` de tu RPG mezcla lógica de negocio (buscar items, equipar, calcular peso) con presentación y persistencia. Al intentar correr **unit tests** del sistema de equipamiento en el Test Runner de Unity, el test falla porque `InventoryMonoBehaviour` requiere una escena activa, un Canvas y un `AudioSource`. Tu QA quiere automatizar la prueba de 30 reglas de negocio pero no puede hacerlo sin inicializar **medio motor de Unity**.",
+      "scenario": "Separa la lógica de negocio del MonoBehaviour para que pueda probarse sin Unity:",
+      "starterCode": "// InventoryMonoBehaviour.cs — lógica, UI y serialización en un MonoBehaviour\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class InventoryMonoBehaviour : MonoBehaviour\n{\n    [SerializeField] private int maxSlots = 20;\n    [SerializeField] private AudioClip pickupSound;\n    private AudioSource _audio;\n\n    // Datos mezclados con el MonoBehaviour\n    public List<ItemData> Items = new List<ItemData>();\n    private ItemData _equippedWeapon;\n    private ItemData _equippedArmor;\n\n    private void Awake() => _audio = GetComponent<AudioSource>();\n\n    // Lógica de negocio dentro del MonoBehaviour\n    public bool TryAddItem(ItemData item)\n    {\n        if (Items.Count >= maxSlots) return false;\n        if (Items.Contains(item)) return false;\n        Items.Add(item);\n        _audio.PlayOneShot(pickupSound); // UI/audio mezclado con negocio\n        return true;\n    }\n\n    public ItemData FindItemById(string id) =>\n        Items.Find(i => i.Id == id);\n\n    public bool Equip(string itemId)\n    {\n        ItemData item = FindItemById(itemId);\n        if (item == null || !item.IsEquippable) return false;\n        if (item.Slot == EquipSlot.Weapon)   _equippedWeapon = item;\n        if (item.Slot == EquipSlot.Armor)    _equippedArmor  = item;\n        FindObjectOfType<EquipmentUI>().Refresh(); // acoplamiento directo a UI\n        return true;\n    }\n\n    public void SaveToPlayerPrefs()\n    {\n        // Serialización hardcodeada en el MonoBehaviour\n        string json = JsonUtility.ToJson(new InventoryData(Items));\n        PlayerPrefs.SetString(\"inventory\", json);\n    }\n\n    public float GetTotalWeight() =>\n        Items.Sum(i => i.Weight);\n}",
+      "prompt": "Extrae la lógica de negocio del inventario a una clase **POCO** (Plain Old C# Object) que pueda probarse sin Unity. El `MonoBehaviour` debe ser solo una fachada.",
+      "criteria": [
+        {
+          "id": "poco_class",
+          "label": "Existe una clase de inventario que NO hereda de MonoBehaviour",
+          "check": "keyword",
+          "pattern": "public class Inventory[^M]|class InventoryModel|class InventoryData|class InventoryService",
+          "points": 4
+        },
+        {
+          "id": "no_unity_in_business",
+          "label": "La clase de lógica de negocio no usa `FindObjectOfType`, `AudioSource` ni `PlayerPrefs`",
+          "check": "antiPattern",
+          "pattern": "class Inventory[^M][\\s\\S]{0,800}FindObjectOfType|class Inventory[^M][\\s\\S]{0,800}AudioSource|class Inventory[^M][\\s\\S]{0,800}PlayerPrefs",
+          "points": 4
+        },
+        {
+          "id": "facade_monobehaviour",
+          "label": "El MonoBehaviour actúa como fachada que delega a la clase POCO",
+          "check": "keyword",
+          "pattern": "MonoBehaviour[\\s\\S]{0,600}Inventory\\s+_inventory|MonoBehaviour[\\s\\S]{0,600}new Inventory",
+          "points": 3
+        },
+        {
+          "id": "uses_events",
+          "label": "La clase POCO comunica cambios mediante eventos sin depender de UI",
+          "check": "keyword",
+          "pattern": "event Action|OnItemAdded|OnEquipChanged|OnInventoryChanged",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Inventory.cs — POCO puro, sin dependencias de Unity\nusing System;\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class Inventory\n{\n    private readonly int _maxSlots;\n    private readonly List<ItemData> _items = new List<ItemData>();\n\n    private ItemData _equippedWeapon;\n    private ItemData _equippedArmor;\n\n    // Eventos para notificar cambios — sin referencias a UI ni audio\n    public event Action<ItemData> OnItemAdded;\n    public event Action<ItemData> OnItemRemoved;\n    public event Action<ItemData, EquipSlot> OnEquipChanged;\n\n    public IReadOnlyList<ItemData> Items => _items.AsReadOnly();\n\n    public Inventory(int maxSlots) => _maxSlots = maxSlots;\n\n    public bool TryAddItem(ItemData item)\n    {\n        if (_items.Count >= _maxSlots) return false;\n        if (_items.Contains(item)) return false;\n        _items.Add(item);\n        OnItemAdded?.Invoke(item);\n        return true;\n    }\n\n    public ItemData FindById(string id) => _items.FirstOrDefault(i => i.Id == id);\n\n    public bool Equip(string itemId)\n    {\n        ItemData item = FindById(itemId);\n        if (item == null || !item.IsEquippable) return false;\n        if (item.Slot == EquipSlot.Weapon)  _equippedWeapon = item;\n        if (item.Slot == EquipSlot.Armor)   _equippedArmor  = item;\n        OnEquipChanged?.Invoke(item, item.Slot);\n        return true;\n    }\n\n    public float GetTotalWeight() => _items.Sum(i => i.Weight);\n}\n\n// InventoryController.cs — MonoBehaviour fachada que conecta con Unity\nusing UnityEngine;\n\npublic class InventoryController : MonoBehaviour\n{\n    [SerializeField] private int maxSlots = 20;\n    [SerializeField] private AudioClip pickupSound;\n    [SerializeField] private EquipmentUI equipmentUI;\n\n    private Inventory _inventory;\n    private AudioSource _audio;\n\n    private void Awake()\n    {\n        _audio     = GetComponent<AudioSource>();\n        _inventory = new Inventory(maxSlots);\n\n        // Suscribir efectos secundarios de Unity a los eventos del POCO\n        _inventory.OnItemAdded    += _ => _audio.PlayOneShot(pickupSound);\n        _inventory.OnEquipChanged += (_, __) => equipmentUI.Refresh();\n    }\n\n    public bool TryAddItem(ItemData item) => _inventory.TryAddItem(item);\n    public bool Equip(string id)          => _inventory.Equip(id);\n    public float GetTotalWeight()         => _inventory.GetTotalWeight();\n\n    public void Save()\n    {\n        // Serialización queda en el controller, no en la lógica de negocio\n        string json = JsonUtility.ToJson(new InventoryData(_inventory.Items));\n        PlayerPrefs.SetString(\"inventory\", json);\n    }\n}\n\n// Test unitario — corre sin Unity (NUnit puro)\n// InventoryTests.cs (carpeta Tests del proyecto)\npublic class InventoryTests\n{\n    [Test]\n    public void AddItem_WhenFull_ReturnsFalse()\n    {\n        var inv = new Inventory(2);\n        inv.TryAddItem(new ItemData { Id = \"sword\" });\n        inv.TryAddItem(new ItemData { Id = \"shield\" });\n        bool result = inv.TryAddItem(new ItemData { Id = \"potion\" });\n        Assert.IsFalse(result); // sin MonoBehaviour, sin escena\n    }\n}",
+      "alternatives": [
+        "Aplicar **Clean Architecture**: capa de dominio (`Inventory`) → capa de aplicación (`InventoryService`) → capa de infraestructura (`InventoryController`)",
+        "Usar **Repository Pattern** para abstraer la serialización: `IInventoryRepository` con implementaciones `PlayerPrefsRepository` y `JsonFileRepository`",
+        "Implementar **Command Pattern** para las operaciones del inventario, facilitando undo/redo de acciones del jugador",
+        "Usar **ScriptableObject** como modelo de datos persistente del inventario, accesible desde cualquier script sin MonoBehaviour"
+      ],
+      "feedback": {
+        "high": "Implementación limpia. El `Inventory` POCO puede probarse con NUnit puro sin instanciar Unity, sin escena, sin audio. El `InventoryController` actúa como adaptador entre la lógica de negocio y los sistemas de Unity, exactamente como el **Principio de Inversión de Dependencias** sugiere.",
+        "mid": "Buen enfoque. Separaste la clase, pero si `Inventory.cs` aún importa `UnityEngine` o usa `Debug.Log`, el test runner necesitará la DLL de Unity. Intenta que la clase de lógica de negocio no tenga ninguna `using UnityEngine` para que sea completamente portable.",
+        "low": "El problema es que mezclar lógica de negocio con `MonoBehaviour` hace la lógica **imposible de testear en aislamiento**. La regla es: todo lo que sea lógica pura (si cabe un item, cuánto pesa, cómo equipar) va en una clase C# normal. El `MonoBehaviour` solo maneja el ciclo de vida de Unity y conecta eventos con audio/UI."
+      }
+    },
+    {
+      "id": "arq_005",
+      "difficulty": 2,
+      "genre": "Estrategia",
+      "tags": ["arquitectura", "referencia-directa"],
+      "title": "5 clases que se conocen todas entre sí (dependencias circulares)",
+      "context": "Tu juego de estrategia tiene 5 sistemas que se referencian mutuamente: `Player` conoce a `GameManager` y `UIManager`; `GameManager` conoce a `Player`, `Enemy`, `UIManager` y `AudioManager`; `Enemy` conoce a `Player` y `AudioManager`; `UIManager` conoce a `Player` y `GameManager`; `AudioManager` conoce a `GameManager`. Al intentar **testear** `Enemy` en aislamiento, Unity exige instanciar los 5 sistemas. Al **cambiar la firma** de un método en `Player`, el compilador señala errores en 4 archivos distintos.",
+      "scenario": "Visualiza el grafo de dependencias y elimina las referencias circulares con un event bus:",
+      "starterCode": "// Grafo de dependencias — cada flecha es una referencia directa\n// Player ←→ GameManager ←→ UIManager\n//   ↕           ↕\n// Enemy ←→ AudioManager\n\n// Player.cs\npublic class Player : MonoBehaviour\n{\n    public GameManager gm;\n    public UIManager   ui;\n\n    public void TakeDamage(int dmg)\n    {\n        // Llama directamente a otros sistemas\n        gm.NotifyPlayerDamaged(this);\n        ui.ShowDamageNumber(transform.position, dmg);\n    }\n}\n\n// Enemy.cs\npublic class Enemy : MonoBehaviour\n{\n    public Player       player;\n    public AudioManager audio;\n\n    private void Update()\n    {\n        float dist = Vector3.Distance(\n            transform.position, player.transform.position);\n        if (dist < 2f)\n        {\n            player.TakeDamage(10);\n            audio.PlaySFX(\"attack\");\n        }\n    }\n}\n\n// GameManager.cs\npublic class GameManager : MonoBehaviour\n{\n    public Player       player;\n    public Enemy[]      enemies;\n    public UIManager    ui;\n    public AudioManager audio;\n\n    public void NotifyPlayerDamaged(Player p)\n    {\n        ui.FlashScreen();\n        audio.PlaySFX(\"hit\");\n    }\n}\n\n// UIManager.cs\npublic class UIManager : MonoBehaviour\n{\n    public Player      player;\n    public GameManager gm;\n    // ...\n}\n\n// AudioManager.cs\npublic class AudioManager : MonoBehaviour\n{\n    public GameManager gm;\n    // ...\n}",
+      "prompt": "Introduce un **event bus** o canal de eventos para romper las dependencias circulares. Ninguna clase debe importar referencias directas a clases que no le correspondan.",
+      "criteria": [
+        {
+          "id": "no_circular_refs",
+          "label": "No hay referencias directas mutuas entre `Player`-`GameManager`-`UIManager`-`Enemy`-`AudioManager`",
+          "check": "antiPattern",
+          "pattern": "public GameManager[\\s\\S]{0,400}public UIManager|public Player[\\s\\S]{0,400}public GameManager",
+          "points": 4
+        },
+        {
+          "id": "uses_event_bus",
+          "label": "Implementa un event bus o canal de eventos para comunicar sistemas",
+          "check": "keyword",
+          "pattern": "EventBus|GameEventBus|EventChannel|event Action|RaiseEvent|Subscribe|Publish",
+          "points": 4
+        },
+        {
+          "id": "producers_dont_know_consumers",
+          "label": "El productor (ej. `Player`) no importa al consumidor (ej. `UIManager` o `AudioManager`)",
+          "check": "antiPattern",
+          "pattern": "class Player[\\s\\S]{0,600}UIManager|class Player[\\s\\S]{0,600}AudioManager",
+          "points": 3
+        },
+        {
+          "id": "no_findObjectOfType",
+          "label": "No usa `FindObjectOfType` para obtener referencias entre sistemas",
+          "check": "antiPattern",
+          "pattern": "FindObjectOfType",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// GameEvents.cs — definición central de todos los eventos del juego\nusing System;\n\npublic static class GameEvents\n{\n    // Eventos tipados — productores los levantan, consumidores los escuchan\n    public static event Action<int, UnityEngine.Vector3> OnPlayerDamaged;\n    public static event Action<string>                   OnSFXRequested;\n    public static event Action                           OnScreenFlash;\n\n    public static void PlayerDamaged(int amount, UnityEngine.Vector3 pos)\n    {\n        OnPlayerDamaged?.Invoke(amount, pos);\n        OnScreenFlash?.Invoke();\n        OnSFXRequested?.Invoke(\"hit\");\n    }\n\n    public static void RequestSFX(string id) =>\n        OnSFXRequested?.Invoke(id);\n}\n\n// Player.cs — solo levanta eventos, no conoce a nadie\nusing UnityEngine;\n\npublic class Player : MonoBehaviour\n{\n    public void TakeDamage(int dmg)\n    {\n        // No referencia a UIManager ni a GameManager\n        GameEvents.PlayerDamaged(dmg, transform.position);\n    }\n}\n\n// Enemy.cs — solo levanta eventos para el audio, no conoce a AudioManager\npublic class Enemy : MonoBehaviour\n{\n    [SerializeField] private float attackRange = 2f;\n    [SerializeField] private int   attackDamage = 10;\n\n    // Referencia solo a la interfaz del jugador, no a toda su clase\n    [SerializeField] private Player _player;\n\n    private void Update()\n    {\n        float dist = Vector3.Distance(\n            transform.position, _player.transform.position);\n        if (dist < attackRange)\n        {\n            _player.TakeDamage(attackDamage);\n            GameEvents.RequestSFX(\"attack\"); // no conoce a AudioManager\n        }\n    }\n}\n\n// UIManager.cs — escucha eventos, no conoce a Player ni a GameManager\npublic class UIManager : MonoBehaviour\n{\n    private void OnEnable()\n    {\n        GameEvents.OnPlayerDamaged += ShowDamageNumber;\n        GameEvents.OnScreenFlash   += FlashScreen;\n    }\n\n    private void OnDisable()\n    {\n        GameEvents.OnPlayerDamaged -= ShowDamageNumber;\n        GameEvents.OnScreenFlash   -= FlashScreen;\n    }\n\n    private void ShowDamageNumber(int dmg, UnityEngine.Vector3 pos) =>\n        UnityEngine.Debug.Log($\"-{dmg} en {pos}\");\n\n    private void FlashScreen() =>\n        UnityEngine.Debug.Log(\"Flash!\");\n}\n\n// AudioManager.cs — escucha eventos, no conoce a GameManager\npublic class AudioManager : MonoBehaviour\n{\n    private void OnEnable()  => GameEvents.OnSFXRequested += PlaySFX;\n    private void OnDisable() => GameEvents.OnSFXRequested -= PlaySFX;\n    public void PlaySFX(string id) => UnityEngine.Debug.Log($\"SFX: {id}\");\n}",
+      "alternatives": [
+        "Usar **ScriptableObject event channels** (patrón de Ryan Hipple) para que los canales sean assets editables en el Inspector",
+        "Implementar **UniRx** o **R3** (Reactive Extensions para Unity) para flujos de eventos más complejos con filtrado y transformación",
+        "Aplicar **Mediator Pattern** con una clase `GameMediator` que recibe mensajes y los enruta, sin que los sistemas se conozcan",
+        "Usar el **Message Broker** de **VContainer** o **Zenject** para eventos tipados con inyección de dependencias"
+      ],
+      "feedback": {
+        "high": "Excelente ruptura del ciclo. Con `GameEvents` como intermediario, `Player` ya no conoce a `UIManager` ni a `AudioManager`. El grafo de dependencias cambió de una malla circular a una estrella: todos apuntan al bus, no entre sí. Cada sistema puede testearse instanciando solo ese sistema.",
+        "mid": "Buen avance. Redujiste las referencias circulares, pero si `Enemy` aún tiene un campo `public Player player`, considera si realmente necesita la referencia completa o solo la posición. Una interfaz `ITargetable` con solo `Transform` o `Vector3 Position` reduciría el acoplamiento.",
+        "low": "El problema de las dependencias circulares es que **no puedes cargar A sin B, ni B sin A**. La solución es introducir un intermediario que ninguno de los dos conozca. Un **event bus estático** o un **ScriptableObject canal** actúan como ese intermediario: `Player` levanta un evento, `UIManager` escucha, pero nunca se conocen."
+      }
+    },
+    {
+      "id": "arq_006",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["arquitectura", "hardcoding"],
+      "title": "Tipo de habilidad con cadena if/else if hardcodeada en 6 métodos",
+      "context": "El diseñador de tu RPG quiere agregar un hechizo de tipo **tierra** antes del **Alpha**. Abres `SpellCaster.cs` y encuentras que el tipo se verifica con `if/else if` en 6 métodos distintos: `Cast()`, `GetCost()`, `GetIcon()`, `GetDescription()`, `GetCooldown()` y `OnHit()`. Modificar 6 métodos para un solo hechizo nuevo genera **6 oportunidades de introducir bugs** y el code review tarda el doble porque los diffs son enormes.",
+      "scenario": "Elimina la cadena `if/else if` aplicando polimorfismo. Agregar un nuevo hechizo debe requerir crear un solo archivo:",
+      "starterCode": "// SpellCaster.cs — if/else if repetido en 6 métodos\nusing UnityEngine;\n\npublic class SpellCaster : MonoBehaviour\n{\n    private string _spellType = \"fire\";\n\n    public void Cast()\n    {\n        if      (_spellType == \"fire\")      Debug.Log(\"Lanza bola de fuego\");\n        else if (_spellType == \"ice\")       Debug.Log(\"Congela el área\");\n        else if (_spellType == \"lightning\") Debug.Log(\"Rayo en cadena\");\n        else if (_spellType == \"poison\")    Debug.Log(\"Nube tóxica\");\n    }\n\n    public int GetCost()\n    {\n        if      (_spellType == \"fire\")      return 30;\n        else if (_spellType == \"ice\")       return 25;\n        else if (_spellType == \"lightning\") return 40;\n        else if (_spellType == \"poison\")    return 20;\n        return 0;\n    }\n\n    public string GetIcon()\n    {\n        if      (_spellType == \"fire\")      return \"icon_fire\";\n        else if (_spellType == \"ice\")       return \"icon_ice\";\n        else if (_spellType == \"lightning\") return \"icon_lightning\";\n        else if (_spellType == \"poison\")    return \"icon_poison\";\n        return string.Empty;\n    }\n\n    public string GetDescription()\n    {\n        if      (_spellType == \"fire\")      return \"Daño en área, quema continua\";\n        else if (_spellType == \"ice\")       return \"Ralentiza y congela enemigos\";\n        else if (_spellType == \"lightning\") return \"Salta entre 3 enemigos\";\n        else if (_spellType == \"poison\")    return \"Veneno durante 5 segundos\";\n        return string.Empty;\n    }\n\n    public float GetCooldown()\n    {\n        if      (_spellType == \"fire\")      return 3f;\n        else if (_spellType == \"ice\")       return 4f;\n        else if (_spellType == \"lightning\") return 5f;\n        else if (_spellType == \"poison\")    return 2.5f;\n        return 1f;\n    }\n\n    public void OnHit(GameObject target)\n    {\n        if      (_spellType == \"fire\")      target.AddComponent<BurnEffect>();\n        else if (_spellType == \"ice\")       target.AddComponent<FreezeEffect>();\n        else if (_spellType == \"lightning\") target.AddComponent<StunEffect>();\n        else if (_spellType == \"poison\")    target.AddComponent<PoisonEffect>();\n    }\n}",
+      "prompt": "Aplica **polimorfismo** para que cada hechizo encapsule su propio comportamiento. Agregar `EarthSpell` no debe modificar ninguna clase existente.",
+      "criteria": [
+        {
+          "id": "no_if_chain",
+          "label": "No hay cadenas `if/else if` discriminando por tipo de hechizo",
+          "check": "antiPattern",
+          "pattern": "if[\\s\\S]{0,50}spellType|else if[\\s\\S]{0,50}spellType|if[\\s\\S]{0,50}\"fire\"[\\s\\S]{0,200}else if",
+          "points": 4
+        },
+        {
+          "id": "uses_polymorphism",
+          "label": "Usa clase base abstracta o interfaz para los hechizos",
+          "check": "keyword",
+          "pattern": "abstract class Spell|interface ISpell|abstract.*Cast|override.*Cast",
+          "points": 4
+        },
+        {
+          "id": "open_closed",
+          "label": "Agregar un hechizo nuevo no modifica clases existentes (solo agrega una nueva)",
+          "check": "keyword",
+          "pattern": "class.*Spell.*:[\\s]*Spell|class Fire|class Ice|class Lightning",
+          "points": 3
+        },
+        {
+          "id": "scriptable_or_data",
+          "label": "Los datos del hechizo (costo, cooldown, icono) son propiedades de la clase del hechizo",
+          "check": "keyword",
+          "pattern": "Cost|Cooldown|Icon|Description",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Spell.cs — clase base abstracta con todos los comportamientos\nusing UnityEngine;\n\npublic abstract class Spell\n{\n    public abstract string Name        { get; }\n    public abstract int    Cost        { get; }\n    public abstract float  Cooldown    { get; }\n    public abstract string Icon        { get; }\n    public abstract string Description { get; }\n\n    public abstract void Cast();\n    public abstract void OnHit(GameObject target);\n}\n\n// FireSpell.cs — todo el conocimiento del fuego en un solo lugar\npublic class FireSpell : Spell\n{\n    public override string Name        => \"Fuego\";\n    public override int    Cost        => 30;\n    public override float  Cooldown    => 3f;\n    public override string Icon        => \"icon_fire\";\n    public override string Description => \"Daño en área, quema continua\";\n\n    public override void Cast()              => Debug.Log(\"Lanza bola de fuego\");\n    public override void OnHit(GameObject t) => t.AddComponent<BurnEffect>();\n}\n\n// IceSpell.cs\npublic class IceSpell : Spell\n{\n    public override string Name        => \"Hielo\";\n    public override int    Cost        => 25;\n    public override float  Cooldown    => 4f;\n    public override string Icon        => \"icon_ice\";\n    public override string Description => \"Ralentiza y congela enemigos\";\n\n    public override void Cast()              => Debug.Log(\"Congela el área\");\n    public override void OnHit(GameObject t) => t.AddComponent<FreezeEffect>();\n}\n\n// LightningSpell.cs\npublic class LightningSpell : Spell\n{\n    public override string Name        => \"Rayo\";\n    public override int    Cost        => 40;\n    public override float  Cooldown    => 5f;\n    public override string Icon        => \"icon_lightning\";\n    public override string Description => \"Salta entre 3 enemigos\";\n\n    public override void Cast()              => Debug.Log(\"Rayo en cadena\");\n    public override void OnHit(GameObject t) => t.AddComponent<StunEffect>();\n}\n\n// EarthSpell.cs — nuevo hechizo: CERO modificaciones a clases existentes\npublic class EarthSpell : Spell\n{\n    public override string Name        => \"Tierra\";\n    public override int    Cost        => 35;\n    public override float  Cooldown    => 6f;\n    public override string Icon        => \"icon_earth\";\n    public override string Description => \"Invoca pilares de piedra\";\n\n    public override void Cast()              => Debug.Log(\"Pilares de piedra\");\n    public override void OnHit(GameObject t) => t.AddComponent<SlowEffect>();\n}\n\n// SpellCaster.cs — ya no sabe qué hechizo es: polimorfismo puro\npublic class SpellCaster : MonoBehaviour\n{\n    private Spell _currentSpell = new FireSpell();\n\n    public void SetSpell(Spell spell) => _currentSpell = spell;\n\n    public void Cast()         => _currentSpell.Cast();\n    public int GetCost()       => _currentSpell.Cost;\n    public string GetIcon()    => _currentSpell.Icon;\n    public float GetCooldown() => _currentSpell.Cooldown;\n    public void OnHit(GameObject target) => _currentSpell.OnHit(target);\n}",
+      "alternatives": [
+        "Usar **ScriptableObject** como clase base de hechizo para configurar datos desde el Inspector sin código",
+        "Aplicar el patrón **Command** donde cada hechizo es un comando ejecutable con `Undo()` para hechizos reversibles",
+        "Usar un **Dictionary<string, Spell>** como registro de hechizos para instanciarlos por nombre sin `if/else if`",
+        "Implementar el patrón **Decorator** para combinar efectos: `PoisonedFireSpell = new PoisonDecorator(new FireSpell())`"
+      ],
+      "feedback": {
+        "high": "Implementación del **Open/Closed Principle** en su forma más clara. `SpellCaster` está cerrado a modificaciones pero abierto a extensión: agregar `EarthSpell` no toca ninguna línea existente. Cada hechizo es una cápsula autónoma de datos y comportamiento.",
+        "mid": "Buen uso de polimorfismo. Eliminaste los `if/else if`, pero si `GetCost()` y `GetCooldown()` aún están en `SpellCaster` con valores hardcodeados por tipo, considera que esos datos también pertenecen a cada subclase de `Spell`. La clase base puede tener propiedades abstractas para esto.",
+        "low": "Cada `if/else if` que discrimina por tipo es una señal de que falta polimorfismo. La regla del **Open/Closed Principle**: una clase debe estar **cerrada** a modificaciones pero **abierta** a extensión. Con la clase base `Spell`, agregar un nuevo hechizo significa crear un archivo nuevo — sin tocar los 6 métodos existentes."
+      }
+    },
+    {
+      "id": "arq_007",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["arquitectura", "god-class"],
+      "title": "ItemData gestiona datos, UI y serialización (viola SRP)",
+      "context": "La clase `ItemData.cs` de tu RPG tiene **3 razones para cambiar**: el diseñador cambia el formato del tooltip, el backend cambia el esquema de serialización, y el programador de inventario cambia las reglas de comparación. La semana pasada el diseñador modificó el HTML del tooltip y **rompió 3 tests de serialización** porque todo está en la misma clase. El Tech Lead pidió en code review que separes las responsabilidades antes del **sprint review**.",
+      "scenario": "Separa `ItemData` en clases con responsabilidad única siguiendo SRP:",
+      "starterCode": "// ItemData.cs — datos, UI, serialización y comparación en una sola clase\nusing System;\nusing System.Collections.Generic;\nusing UnityEngine;\n\n[Serializable]\npublic class ItemData\n{\n    // --- Datos del item ---\n    public string Id;\n    public string Name;\n    public int    Damage;\n    public int    Defense;\n    public float  Weight;\n    public Rarity Rarity;\n    public bool   IsEquippable;\n    public EquipSlot Slot;\n\n    // --- Construcción de tooltip HTML (responsabilidad de UI) ---\n    public string BuildTooltip()\n    {\n        string color = Rarity == Rarity.Legendary ? \"#FFD700\" : \"#FFFFFF\";\n        return $\"<color={color}><b>{Name}</b></color>\\n\" +\n               $\"<size=12>Daño: {Damage} | Defensa: {Defense}</size>\\n\" +\n               $\"Peso: {Weight:F1} kg\\n\" +\n               $\"<i>{Rarity}</i>\";\n    }\n\n    // --- Serialización a JSON (responsabilidad de I/O) ---\n    public string ToJson() => JsonUtility.ToJson(this);\n\n    public static ItemData FromJson(string json) =>\n        JsonUtility.FromJson<ItemData>(json);\n\n    public Dictionary<string, object> ToDict() => new()\n    {\n        { \"id\",     Id     },\n        { \"name\",   Name   },\n        { \"damage\", Damage },\n        { \"weight\", Weight }\n    };\n\n    // --- Comparación para inventario (responsabilidad de lógica) ---\n    public bool IsBetterThan(ItemData other)\n    {\n        if (Slot != other.Slot) return false;\n        return (Damage + Defense) > (other.Damage + other.Defense);\n    }\n\n    public int ComparePower(ItemData other) =>\n        (Damage + Defense).CompareTo(other.Damage + other.Defense);\n}",
+      "prompt": "Divide `ItemData` en clases con una única razón para cambiar: datos puros, constructora de tooltip, serializadora y comparadora.",
+      "criteria": [
+        {
+          "id": "pure_data_class",
+          "label": "Existe una clase `ItemData` con solo propiedades de datos, sin métodos de UI ni serialización",
+          "check": "antiPattern",
+          "pattern": "class ItemData[\\s\\S]{0,600}BuildTooltip|class ItemData[\\s\\S]{0,600}ToJson|class ItemData[\\s\\S]{0,600}ToDict",
+          "points": 4
+        },
+        {
+          "id": "tooltip_builder",
+          "label": "Existe una clase separada para construir el tooltip (`ItemTooltipBuilder` o similar)",
+          "check": "keyword",
+          "pattern": "ItemTooltipBuilder|TooltipBuilder|ItemTooltip|BuildTooltip.*class|class.*Tooltip",
+          "points": 3
+        },
+        {
+          "id": "serializer_class",
+          "label": "Existe una clase separada para la serialización (`ItemSerializer` o similar)",
+          "check": "keyword",
+          "pattern": "ItemSerializer|ItemRepository|class.*Serializer|ToJson.*class|class.*ToJson",
+          "points": 3
+        },
+        {
+          "id": "comparer_class",
+          "label": "Existe una clase o `IComparer` separado para la comparación de items",
+          "check": "keyword",
+          "pattern": "ItemComparer|IComparer|CompareTo.*class|class.*Comparer",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// ItemData.cs — SOLO datos: una razón para cambiar\nusing System;\n\n[Serializable]\npublic class ItemData\n{\n    public string   Id;\n    public string   Name;\n    public int      Damage;\n    public int      Defense;\n    public float    Weight;\n    public Rarity   Rarity;\n    public bool     IsEquippable;\n    public EquipSlot Slot;\n}\n\n// ItemTooltipBuilder.cs — SOLO construcción de UI: cambia con el diseñador\npublic static class ItemTooltipBuilder\n{\n    public static string Build(ItemData item)\n    {\n        string color = item.Rarity == Rarity.Legendary ? \"#FFD700\" : \"#FFFFFF\";\n        return $\"<color={color}><b>{item.Name}</b></color>\\n\" +\n               $\"<size=12>Daño: {item.Damage} | Defensa: {item.Defense}</size>\\n\" +\n               $\"Peso: {item.Weight:F1} kg\\n\" +\n               $\"<i>{item.Rarity}</i>\";\n    }\n}\n\n// ItemSerializer.cs — SOLO serialización: cambia con el esquema de backend\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic static class ItemSerializer\n{\n    public static string   ToJson(ItemData item)         => JsonUtility.ToJson(item);\n    public static ItemData FromJson(string json)         => JsonUtility.FromJson<ItemData>(json);\n    public static Dictionary<string, object> ToDict(ItemData item) => new()\n    {\n        { \"id\",     item.Id     },\n        { \"name\",   item.Name   },\n        { \"damage\", item.Damage },\n        { \"weight\", item.Weight }\n    };\n}\n\n// ItemComparer.cs — SOLO lógica de comparación: cambia con las reglas de juego\nusing System.Collections.Generic;\n\npublic class ItemComparer : IComparer<ItemData>\n{\n    public static readonly ItemComparer ByPower = new ItemComparer();\n\n    public int Compare(ItemData a, ItemData b) =>\n        Power(a).CompareTo(Power(b));\n\n    public static bool IsBetterThan(ItemData a, ItemData b)\n    {\n        if (a.Slot != b.Slot) return false;\n        return Power(a) > Power(b);\n    }\n\n    private static int Power(ItemData i) => i.Damage + i.Defense;\n}\n\n// Uso en el código cliente — cada clase recibe solo lo que necesita\n// TooltipUI.cs\npublic class TooltipUI : MonoBehaviour\n{\n    public void ShowTooltip(ItemData item)\n    {\n        // Solo usa ItemTooltipBuilder, no sabe de serialización\n        string text = ItemTooltipBuilder.Build(item);\n        GetComponentInChildren<TMPro.TextMeshProUGUI>().text = text;\n    }\n}\n\n// SaveSystem.cs\npublic class SaveSystem\n{\n    public void SaveItem(ItemData item)\n    {\n        // Solo usa ItemSerializer, no sabe de UI\n        string json = ItemSerializer.ToJson(item);\n        UnityEngine.PlayerPrefs.SetString(item.Id, json);\n    }\n}",
+      "alternatives": [
+        "Usar el patrón **Builder** para `ItemTooltipBuilder` con encadenamiento fluente: `new ItemTooltipBuilder().WithName().WithStats().Build()`",
+        "Implementar **Extension Methods** (`ItemData.BuildTooltip()`) para mantener la API original sin violar SRP estructuralmente",
+        "Usar **AutoMapper** o un **Value Object** para la conversión entre `ItemData` y `ItemDTO` (Data Transfer Object del backend)",
+        "Aplicar **Flyweight Pattern** para compartir `ItemData` entre múltiples instancias del mismo tipo de item en el inventario"
+      ],
+      "feedback": {
+        "high": "Aplicación precisa del **Single Responsibility Principle**. Ahora cada clase tiene exactamente una razón para cambiar: el diseñador modifica `ItemTooltipBuilder` sin afectar los tests de `ItemSerializer`. El `ItemData` puro es un **Value Object** limpio que puede viajar entre capas sin dependencias.",
+        "mid": "Buen progreso. Separaste las responsabilidades, pero si `ItemSerializer` aún referencia `UnityEngine.JsonUtility`, considera abstraerlo con una interfaz `ISerializer<T>` para poder intercambiar la implementación (JSON, XML, Protobuf) sin cambiar el código que llama al serializador.",
+        "low": "El **Single Responsibility Principle** dice: una clase debe tener una sola razón para cambiar. `ItemData` tenía 3: el diseñador (tooltip), el backend (serialización) y las reglas de juego (comparación). Al separarlas, un cambio en el HTML del tooltip no puede romper los tests de serialización porque están en archivos distintos."
+      }
+    },
+    {
+      "id": "arq_008",
+      "difficulty": 3,
+      "genre": "Shooter",
+      "tags": ["arquitectura", "hardcoding"],
+      "title": "Sistema de armas donde agregar una nueva requiere modificar 4 archivos",
+      "context": "Tu shooter tiene el sistema de armas distribuido en 4 clases que todas hardcodean los tipos de arma. Al querer agregar la **pistola de plasma** del DLC, tienes que modificar `WeaponManager` (switch), `WeaponStats` (diccionario), `PlayerAnimator` (if por tipo) y `SoundController` (enum). El QA encontró que al agregar la escopeta el mes pasado **se rompió el switch** de `WeaponManager` porque faltó un `break`. El diseñador quiere iterar rápido con 8 armas nuevas en el próximo sprint.",
+      "scenario": "Aplica el **Open/Closed Principle** con ScriptableObject para que agregar un arma nueva sea crear un asset, no modificar código:",
+      "starterCode": "// WeaponManager.cs — switch hardcodeado\nusing UnityEngine;\n\npublic class WeaponManager : MonoBehaviour\n{\n    private string _currentWeapon = \"pistol\";\n\n    public void Shoot()\n    {\n        switch (_currentWeapon)\n        {\n            case \"pistol\":   ShootPistol();   break;\n            case \"shotgun\":  ShootShotgun();  break;\n            case \"rifle\":    ShootRifle();    break;\n            case \"rpg\":      ShootRPG();      break;\n            // Agregar plasma requiere modificar aquí\n        }\n    }\n\n    private void ShootPistol()  { /* lógica específica */ }\n    private void ShootShotgun() { /* lógica específica */ }\n    private void ShootRifle()   { /* lógica específica */ }\n    private void ShootRPG()     { /* lógica específica */ }\n}\n\n// WeaponStats.cs — diccionario hardcodeado\npublic class WeaponStats : MonoBehaviour\n{\n    private Dictionary<string, (int dmg, float rate, int ammo)> _stats = new()\n    {\n        { \"pistol\",  (25, 2f, 12) },\n        { \"shotgun\", (60, 0.8f, 6) },\n        { \"rifle\",   (35, 5f, 30) },\n        { \"rpg\",     (200, 0.3f, 1) }\n        // Agregar plasma requiere modificar aquí\n    };\n}\n\n// PlayerAnimator.cs — if hardcodeado por tipo\npublic class PlayerAnimator : MonoBehaviour\n{\n    public void PlayShootAnim(string weapon)\n    {\n        if      (weapon == \"pistol\")  GetComponent<Animator>().Play(\"shoot_pistol\");\n        else if (weapon == \"shotgun\") GetComponent<Animator>().Play(\"shoot_shotgun\");\n        else if (weapon == \"rifle\")   GetComponent<Animator>().Play(\"shoot_rifle\");\n        else if (weapon == \"rpg\")     GetComponent<Animator>().Play(\"shoot_rpg\");\n        // Agregar plasma requiere modificar aquí\n    }\n}\n\n// SoundController.cs — enum hardcodeado\npublic enum WeaponSoundId { Pistol, Shotgun, Rifle, RPG } // Modificar aquí\n\npublic class SoundController : MonoBehaviour\n{\n    public void PlayWeaponSound(WeaponSoundId id) { /* reproduce */ }\n}",
+      "prompt": "Rediseña el sistema de armas con **ScriptableObject** para que agregar la pistola de plasma sea crear un asset en el Inspector, sin tocar ninguna clase existente.",
+      "criteria": [
+        {
+          "id": "no_switch_weapon",
+          "label": "No hay `switch` ni `if/else if` discriminando por nombre o tipo de arma en tiempo de ejecución",
+          "check": "antiPattern",
+          "pattern": "switch[\\s\\S]{0,100}weapon|case \"pistol\"|case \"shotgun\"|if.*weapon.*==[\\s\\S]{0,50}else if.*weapon",
+          "points": 4
+        },
+        {
+          "id": "uses_scriptable_object",
+          "label": "Usa `ScriptableObject` para encapsular los datos y comportamiento de cada arma",
+          "check": "keyword",
+          "pattern": "ScriptableObject|CreateAssetMenu|WeaponConfig|WeaponData.*SO|\\[CreateAssetMenu\\]",
+          "points": 4
+        },
+        {
+          "id": "open_closed",
+          "label": "El sistema de disparo delega en el ScriptableObject del arma activa sin conocer el tipo concreto",
+          "check": "keyword",
+          "pattern": "_currentWeapon\\.Shoot|currentWeapon\\.Fire|weapon\\.Shoot|weapon\\.Fire|_weapon\\.Shoot",
+          "points": 3
+        },
+        {
+          "id": "no_hardcoded_enum",
+          "label": "No hay enum ni diccionario hardcodeado con los tipos de arma",
+          "check": "antiPattern",
+          "pattern": "enum WeaponSoundId|enum WeaponType[\\s\\S]{0,200}Pistol[\\s\\S]{0,100}Shotgun",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// WeaponConfigSO.cs — ScriptableObject que encapsula TODOS los datos de un arma\nusing UnityEngine;\n\n[CreateAssetMenu(fileName = \"NewWeapon\", menuName = \"Weapons/Weapon Config\")]\npublic class WeaponConfigSO : ScriptableObject\n{\n    [Header(\"Stats\")]\n    public int   Damage;\n    public float FireRate;\n    public int   MaxAmmo;\n\n    [Header(\"Presentación\")]\n    public string AnimationStateName; // ej. \"shoot_pistol\"\n    public AudioClip ShootSound;\n    public GameObject ProjectilePrefab;\n\n    // El comportamiento de disparo también vive aquí — polimorfismo via SO\n    public virtual void Shoot(Transform muzzle)\n    {\n        // Implementación base: dispara un proyectil del pool\n        Debug.Log($\"Disparando {name} desde {muzzle.name}\");\n    }\n}\n\n// PlasmaGunConfigSO.cs — NUEVO arma: solo un archivo nuevo, cero cambios existentes\n[CreateAssetMenu(fileName = \"PlasmaGun\", menuName = \"Weapons/Plasma Gun\")]\npublic class PlasmaGunConfigSO : WeaponConfigSO\n{\n    [Header(\"Plasma\")]\n    public float BeamDuration = 0.5f;\n\n    public override void Shoot(Transform muzzle)\n    {\n        Debug.Log($\"Rayo de plasma por {BeamDuration}s desde {muzzle.name}\");\n        // Lógica de beam única del plasma — sin tocar WeaponManager\n    }\n}\n\n// WeaponManager.cs — completamente genérico, nunca necesita modificarse\npublic class WeaponManager : MonoBehaviour\n{\n    [SerializeField] private WeaponConfigSO _currentWeapon;\n    [SerializeField] private Transform      _muzzle;\n\n    private float _cooldown;\n\n    private void Update()\n    {\n        _cooldown -= Time.deltaTime;\n        if (Input.GetButton(\"Fire1\") && _cooldown <= 0f)\n        {\n            _currentWeapon.Shoot(_muzzle);       // polimorfismo\n            PlayPresentation();\n            _cooldown = 1f / _currentWeapon.FireRate;\n        }\n    }\n\n    public void EquipWeapon(WeaponConfigSO weapon) => _currentWeapon = weapon;\n\n    private void PlayPresentation()\n    {\n        // PlayerAnimator y SoundController reciben el SO directamente\n        GetComponent<Animator>().Play(_currentWeapon.AnimationStateName);\n        GetComponent<AudioSource>().PlayOneShot(_currentWeapon.ShootSound);\n    }\n}\n\n// Para agregar la pistola de plasma:\n// 1. Crear PlasmaGunConfigSO.cs (solo si necesita lógica especial)\n// 2. Click derecho en Project > Weapons > Plasma Gun\n// 3. Configurar stats en el Inspector\n// 4. Arrastrar al campo _currentWeapon en el Inspector\n// CERO modificaciones a WeaponManager, PlayerAnimator o SoundController",
+      "alternatives": [
+        "Usar el patrón **Strategy** con interfaces `IWeaponBehavior` para intercambiar comportamiento sin `ScriptableObject`",
+        "Combinar **ScriptableObject** con **Addressables** para cargar armas de DLC en caliente sin recompilar",
+        "Aplicar el patrón **Decorator** para armas con modificadores: `SuppressedWeapon = new SuppressorDecorator(pistolConfig)`",
+        "Usar **Odin Inspector** o **Unity Attributes** para crear un wizard de creación de armas con validación en el Editor"
+      ],
+      "feedback": {
+        "high": "Excelente aplicación del **Open/Closed Principle**. `WeaponManager` nunca necesita modificarse: cualquier arma nueva es un `ScriptableObject` que el diseñador puede crear y configurar desde el Inspector. La pistola de plasma con lógica especial solo requiere una subclase de `WeaponConfigSO` y un asset.",
+        "mid": "Buen uso de ScriptableObject para los datos. Pero si `PlayerAnimator` aún tiene un `if` por tipo de arma, no estás completamente cerrado a modificaciones. La clave es que el SO contenga el nombre del estado de animación (`AnimationStateName`) y `PlayerAnimator` simplemente lo use sin saber qué arma es.",
+        "low": "El patrón se llama **Open/Closed**: abierto a extensión, cerrado a modificación. Cuando agregar un arma nueva requiere cambiar 4 archivos, la clase está **abierta a modificación** — exactamente lo contrario de lo que queremos. Con un `ScriptableObject` que contiene stats + animación + sonido, el `WeaponManager` solo dice `weapon.Shoot()` sin saber qué tipo de arma es."
+      }
+    },
+    {
+      "id": "arq_009",
+      "difficulty": 3,
+      "genre": "Platformer",
+      "tags": ["arquitectura", "god-class"],
+      "title": "ICharacter con 12 métodos obliga a implementar todo en clases que no los necesitan",
+      "context": "Tu interfaz `ICharacter` tiene **12 métodos** y todo objeto del juego que quiera ser un `Character` debe implementarlos todos. Las **rocas decorativas** que pueden recibir daño deben implementar `Talk()`, `Save()` y `Equip()` vacíos. Los **NPC comerciantes** que solo hablan deben implementar `Jump()`, `Attack()` y `UseAbility()` vacíos. El compilador no avisa de estos métodos vacíos y el code review de tu equipo encontró **3 bugs** causados por métodos que deberían lanzar `NotImplementedException` pero silenciosamente no hacen nada.",
+      "scenario": "Aplica el **Interface Segregation Principle** dividiendo `ICharacter` en interfaces pequeñas y enfocadas:",
+      "starterCode": "// ICharacter.cs — interfaz monolítica con 12 métodos\npublic interface ICharacter\n{\n    // Movimiento\n    void Move(UnityEngine.Vector3 direction);\n    void Jump();\n\n    // Combate\n    void Attack();\n    void TakeDamage(int amount);\n    void Heal(int amount);\n    void Die();\n\n    // Interacción\n    void Interact();\n    void PickUp(ItemData item);\n    void Equip(ItemData item);\n    void UseAbility(string abilityId);\n\n    // Diálogo\n    void Talk(string npcId);\n\n    // Persistencia\n    void Save();\n}\n\n// DecorativeRock.cs — debe implementar 12 métodos aunque solo necesita 2\npublic class DecorativeRock : MonoBehaviour, ICharacter\n{\n    public void TakeDamage(int amount) { /* útil: la roca puede romperse */ }\n    public void Die()                  { Destroy(gameObject); }\n\n    // Los 10 restantes: implementación vacía obligatoria\n    public void Move(Vector3 d) { }\n    public void Jump()          { }\n    public void Attack()        { }\n    public void Heal(int a)     { }\n    public void Interact()      { }\n    public void PickUp(ItemData i) { }\n    public void Equip(ItemData i)  { }\n    public void UseAbility(string id) { }\n    public void Talk(string id)    { }\n    public void Save()             { } // BUG: la roca no guarda estado pero no avisa\n}\n\n// MerchantNPC.cs — necesita Talk() y Interact(), implementa 10 métodos vacíos\npublic class MerchantNPC : MonoBehaviour, ICharacter\n{\n    public void Talk(string npcId)  { /* abre diálogo */ }\n    public void Interact()          { /* abre tienda */ }\n\n    public void Move(Vector3 d) { }\n    public void Jump()          { }\n    public void Attack()        { } // BUG silencioso: el merchant nunca debería atacar\n    public void TakeDamage(int a) { }\n    public void Heal(int a)     { }\n    public void Die()           { }\n    public void PickUp(ItemData i) { }\n    public void Equip(ItemData i)  { }\n    public void UseAbility(string id) { }\n    public void Save()          { }\n}",
+      "prompt": "Divide `ICharacter` en interfaces pequeñas siguiendo el **Interface Segregation Principle**. Cada clase debe implementar solo los contratos que realmente cumple.",
+      "criteria": [
+        {
+          "id": "no_fat_interface",
+          "label": "No existe una sola interfaz con más de 5 métodos combinando movimiento, combate, diálogo y persistencia",
+          "check": "antiPattern",
+          "pattern": "interface ICharacter[\\s\\S]{0,600}void Move[\\s\\S]{0,400}void Talk[\\s\\S]{0,200}void Save",
+          "points": 4
+        },
+        {
+          "id": "segregated_interfaces",
+          "label": "Existen interfaces pequeñas y enfocadas (`IDamageable`, `IMovable`, `IInteractable`, `IPersistable` u otras)",
+          "check": "keyword",
+          "pattern": "IDamageable|IMovable|IInteractable|IPersistable|ITalkable|IAttackable|interface I[A-Z][a-z]",
+          "points": 4
+        },
+        {
+          "id": "no_empty_implementations",
+          "label": "Las clases concretas ya no tienen implementaciones vacías de métodos que no les corresponden",
+          "check": "antiPattern",
+          "pattern": "public void (Move|Jump|Attack|Talk|Save|Equip)\\([^)]*\\)\\s*\\{\\s*\\}",
+          "points": 3
+        },
+        {
+          "id": "selective_implementation",
+          "label": "Las clases implementan solo las interfaces relevantes para su comportamiento",
+          "check": "keyword",
+          "pattern": "DecorativeRock.*IDamageable|MerchantNPC.*IInteractable|Rock.*IDamageable",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Interfaces segregadas — cada una con una responsabilidad\nusing UnityEngine;\n\n// Combate\npublic interface IDamageable\n{\n    void TakeDamage(int amount);\n    void Heal(int amount);\n    void Die();\n}\n\n// Movimiento\npublic interface IMovable\n{\n    void Move(Vector3 direction);\n    void Jump();\n}\n\n// Combate activo\npublic interface IAttackable\n{\n    void Attack();\n    void UseAbility(string abilityId);\n}\n\n// Interacción con el mundo\npublic interface IInteractable\n{\n    void Interact();\n    void PickUp(ItemData item);\n    void Equip(ItemData item);\n}\n\n// Diálogo\npublic interface ITalkable\n{\n    void Talk(string npcId);\n}\n\n// Persistencia\npublic interface IPersistable\n{\n    void Save();\n    void Load();\n}\n\n// DecorativeRock.cs — SOLO implementa IDamageable (2 métodos, no 12)\npublic class DecorativeRock : MonoBehaviour, IDamageable\n{\n    [SerializeField] private int maxHealth = 50;\n    private int _health;\n\n    private void Awake() => _health = maxHealth;\n\n    public void TakeDamage(int amount)\n    {\n        _health -= amount;\n        if (_health <= 0) Die();\n    }\n\n    public void Heal(int amount) => _health = Mathf.Min(_health + amount, maxHealth);\n\n    public void Die() => Destroy(gameObject);\n    // No hay métodos vacíos — si no está en la interfaz, no existe\n}\n\n// MerchantNPC.cs — SOLO implementa ITalkable e IInteractable\npublic class MerchantNPC : MonoBehaviour, ITalkable, IInteractable\n{\n    public void Talk(string npcId)  { Debug.Log($\"Hola, soy {name}\"); }\n    public void Interact()          { Debug.Log(\"Abre tienda\"); }\n    public void PickUp(ItemData item) { } // merchants pueden recoger items\n    public void Equip(ItemData item)  { } // y equipar wares de muestra\n    // Attack() no existe: el compilador garantiza que MerchantNPC nunca ataca\n}\n\n// PlayerCharacter.cs — implementa TODAS las interfaces porque el jugador las necesita\npublic class PlayerCharacter : MonoBehaviour,\n    IDamageable, IMovable, IAttackable, IInteractable, ITalkable, IPersistable\n{\n    public void TakeDamage(int a) { /* daño real */ }\n    public void Heal(int a)       { /* curación real */ }\n    public void Die()             { /* game over */ }\n    public void Move(Vector3 d)   { /* movimiento real */ }\n    public void Jump()            { /* salto real */ }\n    public void Attack()          { /* ataque real */ }\n    public void UseAbility(string id) { /* habilidad real */ }\n    public void Interact()            { /* interacción real */ }\n    public void PickUp(ItemData i)    { /* recoge item */ }\n    public void Equip(ItemData i)     { /* equipa item */ }\n    public void Talk(string id)       { /* inicia diálogo */ }\n    public void Save()                { /* guarda estado */ }\n    public void Load()                { /* carga estado */ }\n}\n\n// Sistema que trabaja con interfaces específicas — no ICharacter genérico\npublic class DamageSystem\n{\n    // Solo necesita IDamageable — funciona con rocks, NPCs, jugadores\n    public void ApplyDamage(IDamageable target, int damage) =>\n        target.TakeDamage(damage);\n}",
+      "alternatives": [
+        "Usar el **Component pattern** de Unity: en lugar de interfaces, agregar `DamageableComponent`, `MovableComponent` como MonoBehaviours al mismo GameObject",
+        "Aplicar **Duck Typing** con `TryGetComponent<IDamageable>()` para consultar capacidades en runtime sin castear a `ICharacter`",
+        "Usar **Marker Interfaces** vacías (`IDamageable` sin métodos) combinadas con extension methods para agregar comportamiento sin herencia",
+        "Implementar **Capability Queries** con un `Has<T>()` genérico en el GameObject para verificar capacidades sin referencias directas a interfaces"
+      ],
+      "feedback": {
+        "high": "Aplicación perfecta del **Interface Segregation Principle**. El compilador ahora es tu aliado: si `MerchantNPC` no implementa `IAttackable`, es **imposible** llamar `Attack()` en un merchant. Los bugs silenciosos de métodos vacíos desaparecen porque los métodos irrelevantes simplemente no existen.",
+        "mid": "Buen progreso. Separaste las interfaces, pero si `DecorativeRock` aún implementa `IInteractable` con `PickUp()` vacío, el problema persiste. La pregunta es: ¿puede una roca decorativa realmente hacer `PickUp`? Si la respuesta es no, no debe estar en su lista de interfaces.",
+        "low": "El problema de la interfaz monolítica es que **fuerza contratos imposibles de cumplir**. Una roca no puede `Talk()` ni `Save()` — pero si implementa `ICharacter`, el compilador no avisa cuando esos métodos están vacíos. Al dividir en `IDamageable`, `ITalkable`, `IPersistable`, la roca solo implementa `IDamageable` y el compilador garantiza que nunca puede hablar."
+      }
+    },
+    {
+      "id": "arq_010",
+      "difficulty": 3,
+      "genre": "Cualquiera",
+      "tags": ["arquitectura", "referencia-directa"],
+      "title": "AudioManager concreto referenciado en 15 scripts vs IAudioService",
+      "context": "Tu juego referencia `AudioManager.Instance.PlaySFX(...)` directamente en **15 clases distintas**. Al correr los **unit tests** en el Test Runner, cada test que involucra una clase con audio falla con `NullReferenceException` porque `AudioManager.Instance` es nulo sin escena activa. En builds para la **plataforma sin audio** (algunos dispositivos iOS con modo silencio estricto) el juego crashea. Tu Tech Lead quiere que el audio sea **intercambiable** para agregar soporte de FMOD sin tocar las 15 clases.",
+      "scenario": "Reemplaza la dependencia concreta de `AudioManager.Instance` con una interfaz `IAudioService`:",
+      "starterCode": "// AudioManager.cs — Singleton concreto referenciado en 15 scripts\nusing UnityEngine;\n\npublic class AudioManager : MonoBehaviour\n{\n    public static AudioManager Instance { get; private set; }\n\n    private void Awake()\n    {\n        if (Instance != null) { Destroy(gameObject); return; }\n        Instance = this;\n        DontDestroyOnLoad(gameObject);\n    }\n\n    public void PlaySFX(string id)     { Debug.Log($\"SFX: {id}\"); }\n    public void PlayMusic(string id)   { Debug.Log($\"Music: {id}\"); }\n    public void StopMusic()            { Debug.Log(\"Stop music\"); }\n    public void SetVolume(float volume){ Debug.Log($\"Volume: {volume}\"); }\n}\n\n// Uso directo en 15 clases distintas del proyecto:\n\n// PlayerController.cs\npublic class PlayerController : MonoBehaviour\n{\n    public void Jump()\n    {\n        AudioManager.Instance.PlaySFX(\"jump\"); // crash si no hay AudioManager\n        // ... lógica de salto\n    }\n}\n\n// EnemyAI.cs\npublic class EnemyAI : MonoBehaviour\n{\n    private void Die()\n    {\n        AudioManager.Instance.PlaySFX(\"enemy_die\"); // NullRef en tests\n    }\n}\n\n// UIManager.cs\npublic class UIManager : MonoBehaviour\n{\n    public void OpenMenu()\n    {\n        AudioManager.Instance.PlayMusic(\"menu_theme\"); // acoplado a implementación\n        AudioManager.Instance.SetVolume(0.5f);\n    }\n}",
+      "prompt": "Introduce la interfaz `IAudioService` y modifica las clases consumidoras para depender de la interfaz, no del `AudioManager` concreto. Incluye una implementación nula (`NullAudioService`) para tests.",
+      "criteria": [
+        {
+          "id": "interface_defined",
+          "label": "Existe la interfaz `IAudioService` con los métodos de audio",
+          "check": "keyword",
+          "pattern": "interface IAudioService|IAudioService",
+          "points": 4
+        },
+        {
+          "id": "no_instance_calls",
+          "label": "Las clases consumidoras no llaman a `AudioManager.Instance` directamente",
+          "check": "antiPattern",
+          "pattern": "AudioManager\\.Instance\\.",
+          "points": 4
+        },
+        {
+          "id": "null_object_pattern",
+          "label": "Existe una implementación nula (`NullAudioService`) para tests o plataformas sin audio",
+          "check": "keyword",
+          "pattern": "NullAudioService|NullAudio|DummyAudio|SilentAudio",
+          "points": 3
+        },
+        {
+          "id": "injection_method",
+          "label": "La dependencia se inyecta por `[SerializeField]`, constructor o `ServiceLocator`, no se busca globalmente",
+          "check": "keyword",
+          "pattern": "SerializeField.*IAudioService|private IAudioService|IAudioService _audio|ServiceLocator|Inject",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// IAudioService.cs — contrato que define qué puede hacer el servicio de audio\npublic interface IAudioService\n{\n    void PlaySFX(string id);\n    void PlayMusic(string id);\n    void StopMusic();\n    void SetVolume(float volume);\n}\n\n// AudioManager.cs — implementación concreta de Unity\nusing UnityEngine;\n\npublic class AudioManager : MonoBehaviour, IAudioService\n{\n    public void PlaySFX(string id)      => Debug.Log($\"SFX: {id}\");\n    public void PlayMusic(string id)    => Debug.Log($\"Music: {id}\");\n    public void StopMusic()             => Debug.Log(\"Stop music\");\n    public void SetVolume(float volume) => Debug.Log($\"Volume: {volume}\");\n    // Sin Singleton — se registra en el ServiceLocator desde el Inspector\n}\n\n// FMODAudioManager.cs — implementación alternativa para FMOD\n// Al cambiar de Unity Audio a FMOD, solo se cambia esta clase\npublic class FMODAudioManager : MonoBehaviour, IAudioService\n{\n    public void PlaySFX(string id)      { /* FMOD.Studio.EventReference */ }\n    public void PlayMusic(string id)    { /* FMOD bus */ }\n    public void StopMusic()             { /* FMOD stop */ }\n    public void SetVolume(float volume) { /* FMOD VCA */ }\n}\n\n// NullAudioService.cs — implementación silenciosa para tests y builds sin audio\npublic class NullAudioService : IAudioService\n{\n    public static readonly NullAudioService Instance = new();\n    public void PlaySFX(string id)      { } // no hace nada, no crashea\n    public void PlayMusic(string id)    { }\n    public void StopMusic()             { }\n    public void SetVolume(float volume) { }\n}\n\n// ServiceLocator.cs — registro global simple, sin Singleton por sistema\nusing UnityEngine;\n\npublic static class ServiceLocator\n{\n    private static IAudioService _audio = NullAudioService.Instance;\n\n    // Regresión segura: si no hay AudioManager, usa el Null Object\n    public static IAudioService Audio => _audio;\n\n    public static void RegisterAudio(IAudioService service) =>\n        _audio = service ?? NullAudioService.Instance;\n}\n\n// AudioServiceRegistrar.cs — MonoBehaviour que registra el servicio al iniciar\npublic class AudioServiceRegistrar : MonoBehaviour\n{\n    [SerializeField] private AudioManager audioManager;\n\n    private void Awake() => ServiceLocator.RegisterAudio(audioManager);\n}\n\n// PlayerController.cs — depende de IAudioService, nunca del concreto\npublic class PlayerController : MonoBehaviour\n{\n    // Inyección por SerializeField O via ServiceLocator\n    [SerializeField] private AudioManager _audioManager; // opcional\n    private IAudioService Audio => _audioManager ?? ServiceLocator.Audio;\n\n    public void Jump()\n    {\n        Audio.PlaySFX(\"jump\"); // funciona aunque no haya AudioManager en escena\n        // ... lógica de salto\n    }\n}\n\n// EnemyAI.cs — funciona en tests sin escena activa\npublic class EnemyAI : MonoBehaviour\n{\n    private IAudioService Audio => ServiceLocator.Audio;\n\n    private void Die() => Audio.PlaySFX(\"enemy_die\"); // NullAudioService en tests\n}\n\n// Test unitario — funciona sin AudioManager ni escena\n// EnemyAITests.cs\npublic class EnemyAITests\n{\n    [Test]\n    public void Die_PlaysDeathSound()\n    {\n        // NullAudioService es el default — no crashea\n        var go = new GameObject();\n        var enemy = go.AddComponent<EnemyAI>();\n        // enemy.Die() ya no lanza NullReferenceException\n        Assert.DoesNotThrow(() => go.SendMessage(\"Die\"));\n    }\n}",
+      "alternatives": [
+        "Usar un framework de **inyección de dependencias** como Zenject o VContainer para resolver `IAudioService` automáticamente en cada clase",
+        "Aplicar el patrón **Decorator** sobre `IAudioService` para agregar logging de audio en debug builds: `new LoggingAudioService(new AudioManager())`",
+        "Usar **ScriptableObject** como `AudioServiceSO` que contiene la referencia al servicio activo, accesible desde el Inspector sin Singleton",
+        "Implementar **ambient context** con `IAudioService AudioContext.Current` por thread para facilitar tests paralelos"
+      ],
+      "feedback": {
+        "high": "Implementación profesional. El **Null Object Pattern** con `NullAudioService` es la clave: los tests corren sin escena, los builds sin audio no crashean, y cambiar a FMOD es solo registrar una implementación diferente en `ServiceLocator`. Las 15 clases consumidoras no necesitan modificarse.",
+        "mid": "Buen enfoque. Definiste `IAudioService` y las clases ya no usan `AudioManager.Instance`, pero si no tienes un `NullAudioService`, los tests seguirán fallando con `NullReferenceException` cuando `ServiceLocator.Audio` sea nulo. El **Null Object Pattern** garantiza que siempre haya un servicio válido, aunque no haga nada.",
+        "low": "El problema es el **acoplamiento a la implementación concreta**: las 15 clases saben que existe un `AudioManager` específico. Al introducir `IAudioService`, las clases solo saben qué puede hacer el servicio de audio, no quién lo implementa. El `NullAudioService` resuelve el caso de tests y plataformas sin audio sin condiciones especiales en el código."
+      }
+    }
+  ]
+}

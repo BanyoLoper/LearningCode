@@ -1,0 +1,485 @@
+{
+  "category": "patrones",
+  "title": "Patrones de Diseño",
+  "icon": "🔄",
+  "color": "#9C27B0",
+  "cases": [
+    {
+      "id": "pat_001",
+      "difficulty": 2,
+      "genre": "Tower Defense",
+      "tags": ["patrones", "god-class"],
+      "title": "IA de enemigo con if/else if para estados Idle/Chase/Attack/Dead",
+      "context": "Tu tower defense tiene enemigos con comportamiento variable: patrullan, persiguen al jugador, atacan torres y mueren. Todo ese comportamiento vive en un único método `Update` de `EnemyAI.cs` con bloques **if/else if** encadenados. Agregar un nuevo estado —como \"stunned\" o \"retreating\"— exige modificar ese **Update central**, aumentando el riesgo de romper los estados existentes y haciendo el código imposible de testear de forma aislada.",
+      "scenario": "Identifica por qué este diseño se vuelve frágil con cada nuevo estado y refactorízalo:",
+      "starterCode": "// EnemyAI.cs\npublic class EnemyAI : MonoBehaviour\n{\n    public string state = \"idle\";\n    private Transform _player;\n    private float _attackCooldown;\n\n    private void Start()\n    {\n        _player = GameObject.FindWithTag(\"Player\").transform;\n    }\n\n    // Agregar un nuevo estado requiere modificar este metodo\n    private void Update()\n    {\n        if (state == \"idle\")\n        {\n            // Rotar lentamente buscando al jugador\n            transform.Rotate(0f, 30f * Time.deltaTime, 0f);\n            float dist = Vector3.Distance(transform.position, _player.position);\n            if (dist < 10f)\n                state = \"chasing\";\n            // Emitir particulas de patrulla\n            // Reproducir animacion idle\n            // Verificar si hay obstaculos cercanos\n            // Log de debug en editor\n        }\n        else if (state == \"chasing\")\n        {\n            // Moverse hacia el jugador\n            Vector3 dir = (_player.position - transform.position).normalized;\n            transform.position += dir * 4f * Time.deltaTime;\n            transform.LookAt(_player);\n            float dist = Vector3.Distance(transform.position, _player.position);\n            if (dist < 2f)\n                state = \"attacking\";\n            else if (dist > 15f)\n                state = \"idle\";\n            // Reproducir animacion de correr\n            // Ajustar velocidad por terreno\n            // Verificar colisiones laterales\n        }\n        else if (state == \"attacking\")\n        {\n            _attackCooldown -= Time.deltaTime;\n            transform.LookAt(_player);\n            if (_attackCooldown <= 0f)\n            {\n                // Infligir dano al jugador\n                _player.GetComponent<PlayerHealth>().TakeDamage(10);\n                _attackCooldown = 1.5f;\n            }\n            float dist = Vector3.Distance(transform.position, _player.position);\n            if (dist > 2.5f)\n                state = \"chasing\";\n            // Reproducir animacion de ataque\n            // Verificar si el objetivo esta vivo\n            // Aplicar efectos de sonido\n        }\n        else if (state == \"dead\")\n        {\n            // Reproducir animacion de muerte\n            // Soltar loot\n            // Iniciar countdown para destruir el objeto\n            // Notificar al WaveManager\n            // Detener todos los sistemas del enemigo\n        }\n    }\n}",
+      "prompt": "Reescribe `EnemyAI` usando el patrón **State Machine** para que cada estado sea una clase independiente y agregar un nuevo estado no requiera modificar el `Update` central.",
+      "criteria": [
+        {
+          "id": "no_string_state",
+          "label": "Elimina el uso de strings para representar estados (`state == \"idle\"`, etc.)",
+          "check": "antiPattern",
+          "pattern": "state\\s*==\\s*\"(?:idle|chasing|attacking|dead)\"",
+          "points": 3
+        },
+        {
+          "id": "uses_interface",
+          "label": "Define una interfaz o clase base `IEnemyState` con métodos `Enter`, `Update` o `Exit`",
+          "check": "keyword",
+          "pattern": "IEnemyState|interface.*State|abstract.*State",
+          "points": 4
+        },
+        {
+          "id": "state_classes",
+          "label": "Cada estado es una clase separada (`IdleState`, `ChaseState`, `AttackState`, `DeadState`)",
+          "check": "keyword",
+          "pattern": "IdleState|ChaseState|AttackState|DeadState",
+          "points": 4
+        },
+        {
+          "id": "no_else_chain",
+          "label": "El Update central ya no tiene cadena de `else if` para los estados",
+          "check": "antiPattern",
+          "pattern": "else if\\s*\\(state",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// IEnemyState.cs — contrato que todos los estados deben cumplir\npublic interface IEnemyState\n{\n    void Enter(EnemyAI ai);\n    void Update(EnemyAI ai);\n    void Exit(EnemyAI ai);\n}\n\n// IdleState.cs\npublic class IdleState : IEnemyState\n{\n    public void Enter(EnemyAI ai) { /* iniciar animacion idle */ }\n    public void Update(EnemyAI ai)\n    {\n        ai.transform.Rotate(0f, 30f * Time.deltaTime, 0f);\n        float dist = Vector3.Distance(ai.transform.position, ai.Player.position);\n        if (dist < 10f) ai.ChangeState(new ChaseState());\n    }\n    public void Exit(EnemyAI ai) { /* detener animacion idle */ }\n}\n\n// ChaseState.cs\npublic class ChaseState : IEnemyState\n{\n    public void Enter(EnemyAI ai) { /* iniciar animacion de correr */ }\n    public void Update(EnemyAI ai)\n    {\n        Vector3 dir = (ai.Player.position - ai.transform.position).normalized;\n        ai.transform.position += dir * 4f * Time.deltaTime;\n        ai.transform.LookAt(ai.Player);\n        float dist = Vector3.Distance(ai.transform.position, ai.Player.position);\n        if (dist < 2f)    ai.ChangeState(new AttackState());\n        else if (dist > 15f) ai.ChangeState(new IdleState());\n    }\n    public void Exit(EnemyAI ai) { }\n}\n\n// AttackState.cs\npublic class AttackState : IEnemyState\n{\n    private float _cooldown;\n    public void Enter(EnemyAI ai) { _cooldown = 0f; }\n    public void Update(EnemyAI ai)\n    {\n        ai.transform.LookAt(ai.Player);\n        _cooldown -= Time.deltaTime;\n        if (_cooldown <= 0f)\n        {\n            ai.Player.GetComponent<PlayerHealth>().TakeDamage(10);\n            _cooldown = 1.5f;\n        }\n        float dist = Vector3.Distance(ai.transform.position, ai.Player.position);\n        if (dist > 2.5f) ai.ChangeState(new ChaseState());\n    }\n    public void Exit(EnemyAI ai) { }\n}\n\n// DeadState.cs\npublic class DeadState : IEnemyState\n{\n    public void Enter(EnemyAI ai)\n    {\n        // Soltar loot, notificar WaveManager, iniciar destruccion\n    }\n    public void Update(EnemyAI ai) { } // estado terminal\n    public void Exit(EnemyAI ai)  { }\n}\n\n// EnemyAI.cs — ahora delgado: solo orquesta transiciones\nusing UnityEngine;\n\npublic class EnemyAI : MonoBehaviour\n{\n    public Transform Player { get; private set; }\n    private IEnemyState _currentState;\n\n    private void Start()\n    {\n        Player = GameObject.FindWithTag(\"Player\").transform;\n        ChangeState(new IdleState());\n    }\n\n    private void Update()\n    {\n        _currentState?.Update(this); // CERO if/else aqui\n    }\n\n    public void ChangeState(IEnemyState newState)\n    {\n        _currentState?.Exit(this);\n        _currentState = newState;\n        _currentState.Enter(this);\n    }\n}",
+      "alternatives": [
+        "Usar `Animator` de Unity como state machine visual si los estados ya tienen animaciones asociadas",
+        "Implementar un `StateMachine<T>` generico reutilizable para Player, NPC y enemigos",
+        "Usar enums en lugar de strings para los estados si no se desea el patrón completo (solución intermedia)",
+        "Agregar un `Dictionary<IEnemyState, List<Transition>>` para definir transiciones válidas y evitar transiciones ilegales"
+      ],
+      "feedback": {
+        "high": "Excelente refactor. Cada estado es ahora una clase con responsabilidad única, el `Update` central delega en `_currentState.Update(this)` y agregar un nuevo estado solo requiere crear una nueva clase. Esto cumple el **principio Open/Closed**: abierto a extensión, cerrado a modificación.",
+        "mid": "Buen avance. Separaste la lógica en clases, pero si el `Update` de `EnemyAI` todavía tiene algún `if` o `switch` para coordinar estados, el patrón no está completo. El método central debe ser una sola línea: `_currentState?.Update(this)`.",
+        "low": "El problema del **if/else if** encadenado es que viola el principio Open/Closed: cada nuevo estado requiere abrir y modificar la clase existente. Con el patrón **State Machine**, `EnemyAI` nunca cambia — solo se agregan nuevas clases que implementan `IEnemyState`."
+      }
+    },
+    {
+      "id": "pat_002",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["patrones", "referencia-directa"],
+      "title": "ScoreManager actualiza 5 UIs directamente al sumar puntos",
+      "context": "Tu RPG acumula puntos por derrotar enemigos y completar misiones. El `ScoreManager` tiene referencias directas a cinco componentes de UI: el marcador principal, el multiplicador, el panel de logros, la tabla de clasificación y el HUD de combo. Cada vez que cambia el puntaje, `ScoreManager` llama a `.UpdateScore()` en todos ellos. Si el diseñador quiere agregar un **sexto HUD** —por ejemplo, una barra de experiencia—, hay que modificar `ScoreManager` y recompilar aunque el sistema de puntuación en sí no haya cambiado.",
+      "scenario": "Identifica el acoplamiento y refactoriza para que ScoreManager no conozca directamente a ningún elemento de UI:",
+      "starterCode": "// ScoreManager.cs\nusing UnityEngine;\n\npublic class ScoreManager : MonoBehaviour\n{\n    public static ScoreManager Instance;\n\n    [SerializeField] private ScoreUI        scoreText;\n    [SerializeField] private MultiplierUI   multiplierText;\n    [SerializeField] private AchievementsUI achievementsPanel;\n    [SerializeField] private LeaderboardUI  leaderboardUI;\n    [SerializeField] private ComboHUD       comboHUD;\n\n    private int   _score;\n    private float _multiplier = 1f;\n\n    private void Awake() => Instance = this;\n\n    public void AddScore(int points)\n    {\n        int gained = Mathf.RoundToInt(points * _multiplier);\n        _score += gained;\n\n        // Notificar a cada UI de forma directa\n        // Agregar un nuevo HUD requiere modificar este metodo\n        scoreText.UpdateScore(_score);\n        multiplierText.UpdateMultiplier(_multiplier);\n        achievementsPanel.CheckAchievements(_score);\n        leaderboardUI.UpdateScore(_score);\n        comboHUD.RegisterHit(gained);\n    }\n\n    public void SetMultiplier(float m)\n    {\n        _multiplier = m;\n        multiplierText.UpdateMultiplier(_multiplier);\n        comboHUD.UpdateMultiplier(_multiplier);\n    }\n\n    public int GetScore() => _score;\n}",
+      "prompt": "Elimina las referencias directas de `ScoreManager` a los componentes de UI usando el patrón **Observer** con un evento C# `Action<int>`.",
+      "criteria": [
+        {
+          "id": "uses_event",
+          "label": "Define un evento C# (`event Action<int>` o `UnityEvent<int>`) en ScoreManager",
+          "check": "keyword",
+          "pattern": "event\\s+Action|UnityEvent|event\\s+System\\.Action",
+          "points": 4
+        },
+        {
+          "id": "no_direct_ui_refs",
+          "label": "ScoreManager ya no tiene `[SerializeField]` hacia componentes de UI concretos",
+          "check": "antiPattern",
+          "pattern": "SerializeField[\\s\\S]{0,80}(?:ScoreUI|MultiplierUI|AchievementsUI|LeaderboardUI|ComboHUD)",
+          "points": 4
+        },
+        {
+          "id": "subscribers_register",
+          "label": "Cada UI se suscribe al evento con `+=` en su propio `Start` o `OnEnable`",
+          "check": "keyword",
+          "pattern": "OnScoreChanged\\s*\\+=|OnMultiplierChanged\\s*\\+=",
+          "points": 3
+        },
+        {
+          "id": "unsubscribe_on_destroy",
+          "label": "Las UIs se desuscriben con `-=` en `OnDestroy` o `OnDisable` para evitar memory leaks",
+          "check": "keyword",
+          "pattern": "OnScoreChanged\\s*-=|OnMultiplierChanged\\s*-=|-=",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// ScoreManager.cs — solo publica datos, no conoce ninguna UI\nusing System;\nusing UnityEngine;\n\npublic class ScoreManager : MonoBehaviour\n{\n    public static ScoreManager Instance;\n\n    // Cualquier clase puede suscribirse; ScoreManager no las conoce\n    public event Action<int>   OnScoreChanged;\n    public event Action<float> OnMultiplierChanged;\n    public event Action<int>   OnPointsGained; // para combo HUD\n\n    private int   _score;\n    private float _multiplier = 1f;\n\n    private void Awake() => Instance = this;\n\n    public void AddScore(int points)\n    {\n        int gained = Mathf.RoundToInt(points * _multiplier);\n        _score += gained;\n\n        // Un solo disparo notifica a TODOS los suscriptores\n        OnScoreChanged?.Invoke(_score);\n        OnPointsGained?.Invoke(gained);\n    }\n\n    public void SetMultiplier(float m)\n    {\n        _multiplier = m;\n        OnMultiplierChanged?.Invoke(_multiplier);\n    }\n\n    public int GetScore() => _score;\n}\n\n// ScoreUI.cs — se suscribe a si misma, ScoreManager no la conoce\nusing TMPro;\nusing UnityEngine;\n\npublic class ScoreUI : MonoBehaviour\n{\n    [SerializeField] private TextMeshProUGUI _label;\n\n    private void OnEnable()\n    {\n        ScoreManager.Instance.OnScoreChanged += UpdateScore;\n    }\n\n    private void OnDisable()\n    {\n        ScoreManager.Instance.OnScoreChanged -= UpdateScore; // evitar leak\n    }\n\n    private void UpdateScore(int score)\n    {\n        _label.text = $\"Score: {score:N0}\";\n    }\n}\n\n// Cualquier HUD nuevo solo necesita suscribirse — ScoreManager no cambia\n// public class NewHUD : MonoBehaviour\n// {\n//     private void OnEnable()  => ScoreManager.Instance.OnScoreChanged += Refresh;\n//     private void OnDisable() => ScoreManager.Instance.OnScoreChanged -= Refresh;\n//     private void Refresh(int score) { ... }\n// }",
+      "alternatives": [
+        "Usar `UnityEvent<int>` serializable en el Inspector para conectar UIs sin código",
+        "Implementar un `MessageBus` global con `Dictionary<Type, List<Action>>` para eventos más desacoplados",
+        "Usar el patrón **Mediator** si los componentes de UI también necesitan comunicarse entre sí",
+        "Usar `ScriptableObject` con `OnScoreChanged` como canal de eventos reutilizable entre escenas"
+      ],
+      "feedback": {
+        "high": "Implementación limpia del patrón **Observer**. `ScoreManager` publica eventos sin saber quién escucha, cada UI gestiona su propia suscripción y desuscripción, y agregar un nuevo HUD es cuestión de crear una clase nueva sin tocar `ScoreManager`. También manejaste correctamente el riesgo de **memory leak** con `-=` en `OnDisable`.",
+        "mid": "Bien encaminado. Definiste el evento y alguna UI se suscribe, pero verifica que `ScoreManager` haya eliminado todas las referencias directas (`[SerializeField]`) a componentes de UI. Si aún llama `.UpdateScore()` en algún campo, el desacoplamiento está incompleto.",
+        "low": "El problema central es el **acoplamiento directo**: `ScoreManager` conoce el nombre, tipo y método de cada UI. Con un `event Action<int> OnScoreChanged`, `ScoreManager` dispara el evento una sola vez y cada UI decide qué hacer. Agregar una sexta UI es solo suscribirse — `ScoreManager` nunca cambia."
+      }
+    },
+    {
+      "id": "pat_003",
+      "difficulty": 2,
+      "genre": "Puzzle",
+      "tags": ["patrones", "god-class"],
+      "title": "Puzzle Undo: cada acción modifica el estado directamente sin historial",
+      "context": "Tu juego de puzzle tipo Sokoban permite mover piezas, rotarlas y eliminarlas del tablero. Cada acción se ejecuta de forma inmediata sobre el estado global en `PuzzleManager`. El diseñador de niveles pide que se implemente la función **Undo** para que el jugador pueda revertir sus últimas acciones, pero como el estado se modifica directamente no hay forma de reconstruir el estado anterior sin guardar una copia completa —lo cual es lento y consume mucha memoria en puzzles grandes.",
+      "scenario": "Agrega soporte de Undo sin guardar copias completas del tablero. Cada acción debe poder revertirse individualmente:",
+      "starterCode": "// PuzzleManager.cs\nusing UnityEngine;\nusing System.Collections.Generic;\n\npublic class PuzzleManager : MonoBehaviour\n{\n    private List<Piece> _board = new List<Piece>();\n\n    // Estas acciones modifican el estado directamente — no hay rollback\n    public void MovePiece(Piece piece, Vector2Int destination)\n    {\n        piece.Position = destination;\n        piece.UpdateVisual();\n    }\n\n    public void RotatePiece(Piece piece, int degrees)\n    {\n        piece.Rotation += degrees;\n        if (piece.Rotation >= 360) piece.Rotation -= 360;\n        piece.UpdateVisual();\n    }\n\n    public void RemovePiece(Piece piece)\n    {\n        _board.Remove(piece);\n        piece.gameObject.SetActive(false);\n    }\n\n    // No existe Undo — agregar uno requireria guardar\n    // copias completas del tablero en cada accion\n    public void Undo()\n    {\n        Debug.Log(\"Undo no implementado\");\n    }\n\n    public void CheckWinCondition()\n    {\n        // verificar si el puzzle esta resuelto\n    }\n}",
+      "prompt": "Implementa el patrón **Command** en `PuzzleManager` para que cada acción sea reversible y `Undo` restaure el estado anterior sin guardar copias completas del tablero.",
+      "criteria": [
+        {
+          "id": "uses_interface",
+          "label": "Define una interfaz `ICommand` con métodos `Execute()` y `Undo()`",
+          "check": "keyword",
+          "pattern": "ICommand|interface.*Command",
+          "points": 4
+        },
+        {
+          "id": "uses_stack",
+          "label": "Usa un `Stack<ICommand>` para guardar el historial de comandos",
+          "check": "keyword",
+          "pattern": "Stack<ICommand>|Stack<.*Command",
+          "points": 4
+        },
+        {
+          "id": "command_classes",
+          "label": "Existen clases concretas de comando (`MoveCommand`, `RotateCommand` o similares)",
+          "check": "keyword",
+          "pattern": "MoveCommand|RotateCommand|RemoveCommand|.*Command\\s*:",
+          "points": 3
+        },
+        {
+          "id": "undo_pops_stack",
+          "label": "El método `Undo()` hace `Pop()` del stack y llama `command.Undo()`",
+          "check": "keyword",
+          "pattern": "\\.Pop\\(\\)|_history\\.Pop|stack\\.Pop",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// ICommand.cs — contrato para todas las acciones reversibles\npublic interface ICommand\n{\n    void Execute();\n    void Undo();\n}\n\n// MoveCommand.cs\nusing UnityEngine;\n\npublic class MoveCommand : ICommand\n{\n    private readonly Piece     _piece;\n    private readonly Vector2Int _from;\n    private readonly Vector2Int _to;\n\n    public MoveCommand(Piece piece, Vector2Int destination)\n    {\n        _piece = piece;\n        _from  = piece.Position; // guardamos solo el dato anterior\n        _to    = destination;\n    }\n\n    public void Execute()\n    {\n        _piece.Position = _to;\n        _piece.UpdateVisual();\n    }\n\n    public void Undo()\n    {\n        _piece.Position = _from;\n        _piece.UpdateVisual();\n    }\n}\n\n// RotateCommand.cs\npublic class RotateCommand : ICommand\n{\n    private readonly Piece _piece;\n    private readonly int   _degrees;\n\n    public RotateCommand(Piece piece, int degrees)\n    {\n        _piece   = piece;\n        _degrees = degrees;\n    }\n\n    public void Execute()\n    {\n        _piece.Rotation = (_piece.Rotation + _degrees) % 360;\n        _piece.UpdateVisual();\n    }\n\n    public void Undo()\n    {\n        _piece.Rotation = (_piece.Rotation - _degrees + 360) % 360;\n        _piece.UpdateVisual();\n    }\n}\n\n// PuzzleManager.cs — orquesta comandos sin conocer su implementacion\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class PuzzleManager : MonoBehaviour\n{\n    private readonly List<Piece>    _board   = new List<Piece>();\n    private readonly Stack<ICommand> _history = new Stack<ICommand>();\n\n    private void ExecuteCommand(ICommand cmd)\n    {\n        cmd.Execute();\n        _history.Push(cmd);\n    }\n\n    public void MovePiece(Piece piece, Vector2Int destination)\n        => ExecuteCommand(new MoveCommand(piece, destination));\n\n    public void RotatePiece(Piece piece, int degrees)\n        => ExecuteCommand(new RotateCommand(piece, degrees));\n\n    // Undo real: O(1), sin copiar el tablero\n    public void Undo()\n    {\n        if (_history.Count == 0) return;\n        _history.Pop().Undo();\n    }\n\n    // Bonus: Redo con segundo stack\n    // private readonly Stack<ICommand> _redoStack = new Stack<ICommand>();\n}",
+      "alternatives": [
+        "Agregar un segundo `Stack<ICommand> _redoStack` para implementar Redo además de Undo",
+        "Serializar el stack de comandos a JSON para guardar el historial de partida entre sesiones",
+        "Limitar el stack a N comandos (`if (_history.Count > maxUndo) ...`) para controlar el uso de memoria",
+        "Usar **Memento pattern** si las acciones son demasiado complejas para invertir matemáticamente"
+      ],
+      "feedback": {
+        "high": "Implementación correcta del patrón **Command**. Cada acción encapsula su propio estado anterior (`_from`, `_degrees`), el `Stack<ICommand>` mantiene el historial en orden LIFO y el `Undo` es O(1) sin copiar el tablero. Separaste responsabilidades: `PuzzleManager` orquesta, cada `Command` sabe revertirse.",
+        "mid": "Buen progreso. Tienes la interfaz `ICommand` y el stack, pero asegúrate de que el constructor de cada comando guarde el estado **antes** de ejecutar la acción. Si guardas el estado después, `Undo` no tendrá los datos originales para restaurar.",
+        "low": "Guardar copias completas del tablero en cada acción escala mal: un tablero de 64 piezas con 50 movimientos requeriría 64 × 50 copias de objetos. El patrón **Command** es más eficiente: cada comando guarda solo el **delta** — la posición anterior de esa pieza, no todo el tablero."
+      }
+    },
+    {
+      "id": "pat_004",
+      "difficulty": 2,
+      "genre": "Shooter",
+      "tags": ["patrones", "hardcoding"],
+      "title": "ProjectileFactory con if/else para cada tipo de proyectil",
+      "context": "Tu shooter permite al jugador elegir entre tres tipos de proyectil: bala, cohete y láser. La `ProjectileFactory` usa una cadena de **if/else if** que compara strings para decidir qué prefab instanciar. El equipo quiere agregar una granada como cuarto tipo, pero eso implica abrir `ProjectileFactory` y añadir otro `else if`, violando el **principio Open/Closed**. Cada nueva arma repite el mismo ciclo: abrir la factory, tocarla, arriesgarse a romper los tipos existentes.",
+      "scenario": "Refactoriza `ProjectileFactory` para que agregar un nuevo tipo de proyectil no requiera modificar la clase factory:",
+      "starterCode": "// ProjectileFactory.cs\nusing UnityEngine;\n\npublic class ProjectileFactory : MonoBehaviour\n{\n    [SerializeField] private GameObject bulletPrefab;\n    [SerializeField] private GameObject rocketPrefab;\n    [SerializeField] private GameObject laserPrefab;\n    // Agregar una granada requiere: nuevo campo + nuevo else if\n\n    public GameObject Create(string type, Vector3 position, Quaternion rotation)\n    {\n        if (type == \"bullet\")\n        {\n            return Instantiate(bulletPrefab, position, rotation);\n        }\n        else if (type == \"rocket\")\n        {\n            return Instantiate(rocketPrefab, position, rotation);\n        }\n        else if (type == \"laser\")\n        {\n            return Instantiate(laserPrefab, position, rotation);\n        }\n        else\n        {\n            Debug.LogError($\"Tipo de proyectil desconocido: {type}\");\n            return null;\n        }\n    }\n\n    // Agregar \"grenade\" obliga a modificar esta clase\n    // El mismo patron se repite en WeaponUpgradeSystem y PickupSpawner\n}",
+      "prompt": "Reescribe `ProjectileFactory` usando un `Dictionary<string, GameObject>` o **ScriptableObjects** para que nuevos tipos se registren sin modificar la clase factory.",
+      "criteria": [
+        {
+          "id": "no_if_else_chain",
+          "label": "Elimina la cadena de `if/else if` para elegir el prefab",
+          "check": "antiPattern",
+          "pattern": "else if\\s*\\(type\\s*==|else if\\s*\\(\\s*type\\s*\\.Equals",
+          "points": 4
+        },
+        {
+          "id": "uses_dictionary",
+          "label": "Usa un `Dictionary<string, GameObject>` (o similar) para mapear tipo → prefab",
+          "check": "keyword",
+          "pattern": "Dictionary<string,\\s*GameObject>|Dictionary<string,\\s*Projectile|_prefabMap|_registry",
+          "points": 4
+        },
+        {
+          "id": "try_get_value",
+          "label": "Usa `TryGetValue` para buscar el prefab de forma segura",
+          "check": "keyword",
+          "pattern": "TryGetValue|ContainsKey",
+          "points": 3
+        },
+        {
+          "id": "open_for_extension",
+          "label": "Se puede registrar un nuevo tipo sin modificar la clase factory (método `Register` o carga desde datos)",
+          "check": "keyword",
+          "pattern": "Register|register|_prefabMap\\[|_registry\\[",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// ProjectileEntry.cs — ScriptableObject que describe un tipo de proyectil\nusing UnityEngine;\n\n[CreateAssetMenu(fileName = \"NewProjectile\", menuName = \"Game/Projectile\")]\npublic class ProjectileEntry : ScriptableObject\n{\n    public string         key;    // \"bullet\", \"rocket\", \"laser\", \"grenade\"\n    public GameObject     prefab;\n    public float          damage;\n    public float          speed;\n}\n\n// ProjectileFactory.cs — nunca se modifica al agregar nuevos tipos\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class ProjectileFactory : MonoBehaviour\n{\n    [SerializeField] private List<ProjectileEntry> _entries;\n\n    private Dictionary<string, ProjectileEntry> _registry;\n\n    private void Awake()\n    {\n        _registry = new Dictionary<string, ProjectileEntry>(_entries.Count);\n        foreach (var entry in _entries)\n            _registry[entry.key] = entry;\n    }\n\n    // Registrar un tipo en runtime (p. ej. DLC o mod)\n    public void Register(ProjectileEntry entry)\n    {\n        _registry[entry.key] = entry;\n    }\n\n    public GameObject Create(string type, Vector3 position, Quaternion rotation)\n    {\n        if (!_registry.TryGetValue(type, out var entry))\n        {\n            Debug.LogError($\"Tipo de proyectil no registrado: {type}\");\n            return null;\n        }\n\n        // Aqui se puede usar un pool en lugar de Instantiate\n        var obj = Instantiate(entry.prefab, position, rotation);\n        if (obj.TryGetComponent<Projectile>(out var proj))\n            proj.Init(entry.damage, entry.speed);\n        return obj;\n    }\n\n    // Agregar \"grenade\": crear ProjectileEntry en el Inspector, arrastrar a _entries.\n    // ProjectileFactory.cs no cambia.\n}",
+      "alternatives": [
+        "Usar `Resources.Load<GameObject>` con el nombre del tipo como ruta para eliminar la lista serializada",
+        "Usar `Addressables.LoadAssetAsync<GameObject>` para proyectiles como DLC cargados bajo demanda",
+        "Combinar con **Object Pool**: el diccionario mapea tipo → pool en lugar de tipo → prefab directamente",
+        "Usar polimorfismo con `IProjectileFactory` para que cada arma tenga su propia factory especializada"
+      ],
+      "feedback": {
+        "high": "Excelente aplicación del **principio Open/Closed**. Con `Dictionary<string, ProjectileEntry>` cargado desde ScriptableObjects, agregar una granada es crear un asset en el editor y arrastrarlo a la lista — la clase factory nunca cambia. El `TryGetValue` también maneja tipos desconocidos de forma elegante.",
+        "mid": "Buen trabajo al eliminar el `if/else if`. Si usaste el diccionario pero todavía inicializas las entradas con `_registry[\"bullet\"] = bulletPrefab` directamente en el código, considera cargarlas desde datos (ScriptableObject o lista serializada) para que el diseñador pueda agregar tipos sin recompilar.",
+        "low": "El problema del `if/else if` es que cada nuevo tipo requiere abrir y modificar la clase. Un `Dictionary<string, GameObject>` resuelve el lookup en **O(1)** y centraliza el registro. Con ScriptableObjects, agregar un tipo nuevo es solo crear un asset — el programador no necesita intervenir."
+      }
+    },
+    {
+      "id": "pat_005",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["patrones", "hardcoding"],
+      "title": "Sistema de buffs con switch: agregar buff nuevo rompe código",
+      "context": "Tu RPG tiene un sistema de buffs que fortalece, acelera o ralentiza al jugador. El `BuffSystem` usa un `switch` en el método `ApplyBuff` y otro `switch` idéntico en `RemoveBuff`. Cada vez que el diseñador pide un nuevo buff —invisibilidad, regeneración, escudo— el programador debe abrir `BuffSystem.cs` y repetir el mismo `switch` en tres métodos distintos: `ApplyBuff`, `RemoveBuff` y `GetBuffDescription`. Este patrón se conoce como **Shotgun Surgery**: un cambio lógico exige tocar múltiples puntos del código.",
+      "scenario": "Refactoriza el sistema de buffs para que agregar un nuevo buff sea una sola clase nueva sin modificar `BuffSystem`:",
+      "starterCode": "// BuffSystem.cs\nusing UnityEngine;\n\npublic class BuffSystem : MonoBehaviour\n{\n    private PlayerStats    _stats;\n    private MovementSystem _movement;\n\n    private void Awake()\n    {\n        _stats    = GetComponent<PlayerStats>();\n        _movement = GetComponent<MovementSystem>();\n    }\n\n    // Agregar \"invisibility\" requiere tocar los 3 switch\n    public void ApplyBuff(string type)\n    {\n        switch (type)\n        {\n            case \"strength\":\n                _stats.attackPower *= 2f;\n                break;\n            case \"speed\":\n                _movement.speed += 3f;\n                break;\n            case \"defense\":\n                _stats.armor += 10;\n                break;\n            default:\n                Debug.LogWarning($\"Buff desconocido: {type}\");\n                break;\n        }\n    }\n\n    public void RemoveBuff(string type)\n    {\n        switch (type)\n        {\n            case \"strength\":\n                _stats.attackPower /= 2f;\n                break;\n            case \"speed\":\n                _movement.speed -= 3f;\n                break;\n            case \"defense\":\n                _stats.armor -= 10;\n                break;\n        }\n    }\n\n    public string GetBuffDescription(string type)\n    {\n        switch (type)\n        {\n            case \"strength\": return \"Duplica el ataque\";\n            case \"speed\":    return \"Aumenta velocidad en 3\";\n            case \"defense\":  return \"Agrega 10 de armadura\";\n            default:         return \"Buff desconocido\";\n        }\n    }\n}",
+      "prompt": "Reemplaza los `switch` con una interfaz `IBuff` para que cada buff sea una clase independiente con su propio `Apply`, `Remove` y `Description`.",
+      "criteria": [
+        {
+          "id": "no_switch",
+          "label": "Elimina los `switch(type)` en los métodos de aplicar y remover buffs",
+          "check": "antiPattern",
+          "pattern": "switch\\s*\\(type\\)|switch\\s*\\(buffType\\)",
+          "points": 4
+        },
+        {
+          "id": "uses_interface",
+          "label": "Define una interfaz `IBuff` con métodos `Apply` y `Remove`",
+          "check": "keyword",
+          "pattern": "IBuff|interface.*Buff",
+          "points": 4
+        },
+        {
+          "id": "buff_classes",
+          "label": "Cada buff es una clase concreta que implementa `IBuff` (`StrengthBuff`, `SpeedBuff`, etc.)",
+          "check": "keyword",
+          "pattern": "StrengthBuff|SpeedBuff|DefenseBuff|.*Buff\\s*:\\s*IBuff",
+          "points": 3
+        },
+        {
+          "id": "active_buffs_collection",
+          "label": "BuffSystem mantiene una colección de `IBuff` activos (List o Dictionary)",
+          "check": "keyword",
+          "pattern": "List<IBuff>|Dictionary<.*IBuff|_activeBuffs|_buffs",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// IBuff.cs — contrato que todos los buffs deben cumplir\npublic interface IBuff\n{\n    string Key         { get; }   // identificador unico\n    string Description { get; }\n    void   Apply(PlayerStats stats, MovementSystem movement);\n    void   Remove(PlayerStats stats, MovementSystem movement);\n}\n\n// StrengthBuff.cs\npublic class StrengthBuff : IBuff\n{\n    public string Key         => \"strength\";\n    public string Description => \"Duplica el ataque\";\n\n    public void Apply(PlayerStats stats, MovementSystem movement)\n        => stats.attackPower *= 2f;\n\n    public void Remove(PlayerStats stats, MovementSystem movement)\n        => stats.attackPower /= 2f;\n}\n\n// SpeedBuff.cs\npublic class SpeedBuff : IBuff\n{\n    public string Key         => \"speed\";\n    public string Description => \"Aumenta velocidad en 3\";\n\n    public void Apply(PlayerStats stats, MovementSystem movement)\n        => movement.speed += 3f;\n\n    public void Remove(PlayerStats stats, MovementSystem movement)\n        => movement.speed -= 3f;\n}\n\n// BuffSystem.cs — orquesta buffs sin conocer su implementacion\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class BuffSystem : MonoBehaviour\n{\n    private PlayerStats    _stats;\n    private MovementSystem _movement;\n\n    // Registro de tipos disponibles\n    private Dictionary<string, IBuff> _registry = new Dictionary<string, IBuff>\n    {\n        { \"strength\", new StrengthBuff() },\n        { \"speed\",    new SpeedBuff()    },\n        { \"defense\",  new DefenseBuff()  }\n    };\n\n    private List<IBuff> _activeBuffs = new List<IBuff>();\n\n    private void Awake()\n    {\n        _stats    = GetComponent<PlayerStats>();\n        _movement = GetComponent<MovementSystem>();\n    }\n\n    public void ApplyBuff(string key)\n    {\n        if (!_registry.TryGetValue(key, out var buff)) return;\n        buff.Apply(_stats, _movement);\n        _activeBuffs.Add(buff);\n    }\n\n    public void RemoveBuff(string key)\n    {\n        if (!_registry.TryGetValue(key, out var buff)) return;\n        buff.Remove(_stats, _movement);\n        _activeBuffs.Remove(buff);\n    }\n\n    // Agregar \"invisibility\": crear InvisibilityBuff : IBuff\n    // y registrarla. BuffSystem.cs no cambia.\n}",
+      "alternatives": [
+        "Usar ScriptableObjects como `BuffData` para que los diseñadores configuren valores sin tocar código",
+        "Agregar duración a cada `IBuff` con `float Duration` y un `Coroutine` que llame `Remove` al expirar",
+        "Usar el patrón **Decorator** si los buffs pueden apilarse y modificarse entre sí",
+        "Implementar `IBuff.GetIcon()` y `IBuff.GetTooltip()` para que el HUD consuma la información directamente del buff"
+      ],
+      "feedback": {
+        "high": "Refactor limpio. Cada buff ahora encapsula su propia lógica de aplicar, remover y describirse. `BuffSystem` solo orquesta la colección de `IBuff` activos sin saber cómo funciona ninguno internamente. Agregar **invisibilidad** es crear `InvisibilityBuff : IBuff` y registrarla — cero modificaciones a `BuffSystem`.",
+        "mid": "Buen avance. Tienes la interfaz `IBuff`, pero si el `switch` todavía existe en algún método —aunque sea para la descripción— el problema de **Shotgun Surgery** persiste. Asegúrate de que `Description` sea una propiedad de la propia clase buff, no una cadena en `BuffSystem`.",
+        "low": "El anti-patrón aquí es **Shotgun Surgery**: un cambio conceptual (nuevo buff) requiere tocar tres `switch` en diferentes métodos. La interfaz `IBuff` agrupa los tres comportamientos (Apply, Remove, Description) en una sola clase, de modo que agregar invisibilidad solo requiere crear un archivo nuevo."
+      }
+    },
+    {
+      "id": "pat_006",
+      "difficulty": 3,
+      "genre": "Dungeon Crawler",
+      "tags": ["patrones", "god-class"],
+      "title": "IA mezclada para Easy/Medium/Hard en la misma clase",
+      "context": "Tu dungeon crawler tiene enemigos que ajustan su comportamiento según la dificultad elegida por el jugador. El problema es que toda esa lógica vive en la misma clase `EnemyAI`, con bloques **if/else if** enormes en cada método: `DecideMovement`, `DecideAttack` y `DecideRetreat`. Easy suma 50 líneas, Medium suma 80 y Hard suma 120. La clase tiene más de 400 líneas y el equipo de diseño ya no puede leer ni modificar el comportamiento de una dificultad sin arriesgarse a romper las otras dos.",
+      "scenario": "Aplica el patrón **Strategy** para extraer la lógica de cada dificultad a su propia clase intercambiable:",
+      "starterCode": "// EnemyAI.cs\nusing UnityEngine;\n\npublic class EnemyAI : MonoBehaviour\n{\n    [SerializeField] private string difficulty = \"easy\"; // \"easy\" | \"medium\" | \"hard\"\n    private Transform _player;\n\n    private void Start()\n        => _player = GameObject.FindWithTag(\"Player\").transform;\n\n    private void Update()\n    {\n        DecideMovement();\n        DecideAttack();\n    }\n\n    // ~250 lineas mezcladas por dificultad\n    private void DecideMovement()\n    {\n        if (difficulty == \"easy\")\n        {\n            // Moverse hacia el jugador lentamente sin evasion\n            // 50 lineas de logica simple\n            float dist = Vector3.Distance(transform.position, _player.position);\n            if (dist > 2f)\n            {\n                Vector3 dir = (_player.position - transform.position).normalized;\n                transform.position += dir * 1.5f * Time.deltaTime;\n            }\n        }\n        else if (difficulty == \"medium\")\n        {\n            // Moverse con prediccion de posicion del jugador\n            // 80 lineas de logica intermedia\n            Vector3 predicted = _player.position + _player.GetComponent<Rigidbody>().linearVelocity * 0.5f;\n            Vector3 dir = (predicted - transform.position).normalized;\n            transform.position += dir * 2.5f * Time.deltaTime;\n        }\n        else\n        {\n            // IA hard: flanquear, usar cobertura, coordinar con aliados\n            // 120 lineas de logica avanzada\n            // ... flanking logic, cover system, squad coordination ...\n        }\n    }\n\n    private void DecideAttack()\n    {\n        if (difficulty == \"easy\")        { /* ataque simple */ }\n        else if (difficulty == \"medium\") { /* combo de 2 golpes */ }\n        else                             { /* IA predictiva + habilidades */ }\n    }\n}",
+      "prompt": "Extrae la lógica de cada dificultad usando el patrón **Strategy** con una interfaz `IEnemyStrategy`. El `EnemyAI` inyecta la estrategia al crearse y nunca más necesita saber la dificultad.",
+      "criteria": [
+        {
+          "id": "no_difficulty_string",
+          "label": "EnemyAI ya no usa un string o enum `difficulty` internamente para ramificar comportamiento",
+          "check": "antiPattern",
+          "pattern": "if\\s*\\(difficulty\\s*==|else if\\s*\\(difficulty",
+          "points": 4
+        },
+        {
+          "id": "uses_strategy_interface",
+          "label": "Define una interfaz `IEnemyStrategy` con métodos de comportamiento (`DecideMovement`, `DecideAttack` o similar)",
+          "check": "keyword",
+          "pattern": "IEnemyStrategy|interface.*Strategy",
+          "points": 4
+        },
+        {
+          "id": "strategy_classes",
+          "label": "Existen clases de estrategia separadas (`EasyStrategy`, `MediumStrategy`, `HardStrategy`)",
+          "check": "keyword",
+          "pattern": "EasyStrategy|MediumStrategy|HardStrategy",
+          "points": 4
+        },
+        {
+          "id": "strategy_injected",
+          "label": "La estrategia se inyecta en EnemyAI desde fuera (constructor, método `SetStrategy` o desde el spawner)",
+          "check": "keyword",
+          "pattern": "SetStrategy|_strategy\\s*=|IEnemyStrategy\\s+_strategy",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// IEnemyStrategy.cs\nusing UnityEngine;\n\npublic interface IEnemyStrategy\n{\n    void DecideMovement(Transform self, Transform player);\n    void DecideAttack(Transform self, Transform player);\n}\n\n// EasyStrategy.cs\npublic class EasyStrategy : IEnemyStrategy\n{\n    public void DecideMovement(Transform self, Transform player)\n    {\n        float dist = Vector3.Distance(self.position, player.position);\n        if (dist > 2f)\n        {\n            Vector3 dir = (player.position - self.position).normalized;\n            self.position += dir * 1.5f * Time.deltaTime;\n        }\n    }\n\n    public void DecideAttack(Transform self, Transform player)\n    {\n        // Ataque simple sin combo\n    }\n}\n\n// MediumStrategy.cs\npublic class MediumStrategy : IEnemyStrategy\n{\n    public void DecideMovement(Transform self, Transform player)\n    {\n        // Prediccion de posicion del jugador\n        var rb = player.GetComponent<Rigidbody>();\n        Vector3 predicted = player.position + rb.linearVelocity * 0.5f;\n        Vector3 dir = (predicted - self.position).normalized;\n        self.position += dir * 2.5f * Time.deltaTime;\n    }\n\n    public void DecideAttack(Transform self, Transform player)\n    {\n        // Combo de 2 golpes\n    }\n}\n\n// HardStrategy.cs\npublic class HardStrategy : IEnemyStrategy\n{\n    public void DecideMovement(Transform self, Transform player)\n    {\n        // Flanquear, usar cobertura, coordinar con aliados\n    }\n\n    public void DecideAttack(Transform self, Transform player)\n    {\n        // IA predictiva + habilidades especiales\n    }\n}\n\n// EnemyAI.cs — delgado: no sabe que dificultad tiene\nusing UnityEngine;\n\npublic class EnemyAI : MonoBehaviour\n{\n    private IEnemyStrategy _strategy;\n    private Transform      _player;\n\n    private void Start()\n        => _player = GameObject.FindWithTag(\"Player\").transform;\n\n    // Inyectar desde el spawner segun la dificultad del nivel\n    public void SetStrategy(IEnemyStrategy strategy)\n        => _strategy = strategy;\n\n    private void Update()\n    {\n        _strategy?.DecideMovement(transform, _player);\n        _strategy?.DecideAttack(transform, _player);\n    }\n}\n\n// EnemySpawner.cs — unico lugar que conoce la dificultad\npublic class EnemySpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject enemyPrefab;\n\n    public void SpawnEnemy(string difficulty)\n    {\n        var go  = Instantiate(enemyPrefab);\n        var ai  = go.GetComponent<EnemyAI>();\n        IEnemyStrategy strategy = difficulty switch\n        {\n            \"easy\"   => new EasyStrategy(),\n            \"medium\" => new MediumStrategy(),\n            _        => new HardStrategy()\n        };\n        ai.SetStrategy(strategy);\n    }\n}",
+      "alternatives": [
+        "Usar ScriptableObjects como `EnemyStrategyData` para que los diseñadores configuren parámetros de cada dificultad sin tocar código",
+        "Combinar Strategy con State Machine: cada estado (Idle, Chase, Attack) tiene su propia estrategia por dificultad",
+        "Usar `[SerializeReference]` de Unity para serializar la interfaz `IEnemyStrategy` directamente en el Inspector",
+        "Implementar una `StrategyFactory` que crea la estrategia correcta basada en el `GameSettings` global"
+      ],
+      "feedback": {
+        "high": "Excelente separación de responsabilidades. `EnemyAI` ahora es una clase de 20 líneas que delega todo el comportamiento a `_strategy`. El spawner es el único lugar donde se conoce la dificultad, lo cual es correcto: la decisión de qué estrategia usar pertenece a quien crea el enemigo, no al enemigo mismo.",
+        "mid": "Buen refactor. Tienes las clases de estrategia separadas, pero si `EnemyAI` todavía guarda el string `difficulty` o tiene algún `if` interno, la clase sigue acoplada a la dificultad. El `Update` de `EnemyAI` debe ser puro: `_strategy?.DecideMovement(...)` sin condiciones.",
+        "low": "El problema de mezclar tres dificultades en una clase es que cambiar el comportamiento Hard puede romper el comportamiento Easy por accidente. Con el patrón **Strategy**, cada dificultad vive en su propia clase aislada. Modificar `HardStrategy` es imposible que afecte a `EasyStrategy`."
+      }
+    },
+    {
+      "id": "pat_007",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["patrones", "deep-inheritance"],
+      "title": "Buffs apilables modifican stats directamente: orden importa y no hay rollback",
+      "context": "Tu RPG permite que varios buffs activos modifiquen simultáneamente el mismo stat del jugador: fuerza, velocidad o defensa. El problema es que los buffs modifican `PlayerStats` **de forma directa** (`stats.attackPower *= 2f`). Cuando un buff expira, el sistema intenta revertirlo dividiendo o restando, pero si dos buffs afectan el mismo stat el **orden de aplicación y remoción importa** y los cálculos se desincronizanizan. El jugador puede quedar con estadísticas incorrectas permanentemente.",
+      "scenario": "Rediseña el sistema de stats para que múltiples buffs puedan apilarse y removerse en cualquier orden sin corromper los valores:",
+      "starterCode": "// PlayerStats.cs\nusing UnityEngine;\nusing System.Collections.Generic;\n\npublic class PlayerStats : MonoBehaviour\n{\n    // Stats que se modifican directamente — sin historial\n    public float attackPower = 10f;\n    public float moveSpeed   = 5f;\n    public float defense     = 5f;\n\n    private List<string> _activeBuffs = new List<string>();\n\n    // Buff strength: duplica ataque\n    public void ApplyStrengthBuff()\n    {\n        attackPower *= 2f; // modifica directamente\n        _activeBuffs.Add(\"strength\");\n    }\n\n    // Si ya habia otro buff que modifico attackPower,\n    // dividir por 2 no restaura el valor original correcto\n    public void RemoveStrengthBuff()\n    {\n        attackPower /= 2f; // puede quedar valor incorrecto\n        _activeBuffs.Remove(\"strength\");\n    }\n\n    public void ApplySpeedBuff()\n    {\n        moveSpeed += 3f;\n        _activeBuffs.Add(\"speed\");\n    }\n\n    public void RemoveSpeedBuff()\n    {\n        moveSpeed -= 3f; // correcto solo si no hay otros buffs de speed\n        _activeBuffs.Remove(\"speed\");\n    }\n\n    // Problema: aplicar strength + speed, luego remover strength primero\n    // puede dejar attackPower en valor incorrecto si habia otros buffs\n}",
+      "prompt": "Implementa un sistema de **modificadores acumulables** con valor base fijo y recalculo total, para que agregar o remover buffs en cualquier orden siempre produzca el stat correcto.",
+      "criteria": [
+        {
+          "id": "no_direct_mutation",
+          "label": "Los stats base (`baseAttack`, `baseSpeed`) nunca se modifican directamente por un buff",
+          "check": "keyword",
+          "pattern": "baseAttack|baseSpeed|baseDefense|_baseAttack|_baseSpeed",
+          "points": 4
+        },
+        {
+          "id": "uses_modifier_list",
+          "label": "Usa una lista o colección de modificadores (`List<StatModifier>`, `List<float>`) que se suman al base",
+          "check": "keyword",
+          "pattern": "StatModifier|_modifiers|List<.*[Mm]odifier|modifierList",
+          "points": 4
+        },
+        {
+          "id": "recalculate_method",
+          "label": "Existe un método `Recalculate()` o propiedad computada que suma base + todos los modificadores",
+          "check": "keyword",
+          "pattern": "Recalculate|recalculate|get\\s*\\{[\\s\\S]{0,200}base.*modifier|FinalValue",
+          "points": 3
+        },
+        {
+          "id": "remove_by_reference",
+          "label": "Los modificadores se remueven por referencia o ID, no dividiendo el valor acumulado",
+          "check": "antiPattern",
+          "pattern": "attackPower\\s*/=|attackPower\\s*-=|moveSpeed\\s*-=",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// StatModifier.cs — representa un modificador individual\nusing System;\n\npublic enum ModifierType { Flat, Percent }\n\npublic class StatModifier\n{\n    public readonly string       Source;     // quien aplico el buff\n    public readonly float        Value;\n    public readonly ModifierType Type;\n\n    public StatModifier(string source, float value, ModifierType type)\n    {\n        Source = source;\n        Value  = value;\n        Type   = type;\n    }\n}\n\n// CharacterStat.cs — stat inmutable con modificadores acumulables\nusing System.Collections.Generic;\nusing System.Linq;\n\npublic class CharacterStat\n{\n    private readonly float        _baseValue;\n    private readonly List<StatModifier> _modifiers = new List<StatModifier>();\n\n    public CharacterStat(float baseValue) => _baseValue = baseValue;\n\n    // El valor final SIEMPRE se recalcula desde el base\n    public float FinalValue\n    {\n        get\n        {\n            float flat    = _modifiers.Where(m => m.Type == ModifierType.Flat).Sum(m => m.Value);\n            float percent = _modifiers.Where(m => m.Type == ModifierType.Percent).Sum(m => m.Value);\n            return (_baseValue + flat) * (1f + percent);\n        }\n    }\n\n    public void AddModifier(StatModifier mod) => _modifiers.Add(mod);\n\n    // Remover por source — funciona sin importar el orden\n    public void RemoveModifiersFromSource(string source)\n        => _modifiers.RemoveAll(m => m.Source == source);\n}\n\n// PlayerStats.cs — usa CharacterStat en lugar de floats mutables\nusing UnityEngine;\n\npublic class PlayerStats : MonoBehaviour\n{\n    public CharacterStat AttackPower { get; private set; } = new CharacterStat(10f);\n    public CharacterStat MoveSpeed   { get; private set; } = new CharacterStat(5f);\n    public CharacterStat Defense     { get; private set; } = new CharacterStat(5f);\n\n    // Buff strength: +100% de ataque (multiplicativo)\n    public void ApplyStrengthBuff()\n        => AttackPower.AddModifier(new StatModifier(\"strength\", 1f, ModifierType.Percent));\n\n    // Remover strength: el base nunca cambio, resultado siempre correcto\n    public void RemoveStrengthBuff()\n        => AttackPower.RemoveModifiersFromSource(\"strength\");\n\n    private void Update()\n    {\n        // Debug — el valor final es siempre consistente\n        // Debug.Log($\"ATK: {AttackPower.FinalValue}\");\n    }\n}",
+      "alternatives": [
+        "Ordenar los modificadores por prioridad (`Order` field) para que los porcentuales siempre se apliquen después de los planos",
+        "Usar un `event Action OnStatChanged` que dispare cuando se agrega o remueve un modificador para actualizar la UI automáticamente",
+        "Implementar el patrón **Decorator** si los buffs necesitan interactuar entre sí (p. ej. un buff que duplica el efecto del siguiente)",
+        "Serializar los modificadores activos para que persistan al guardar la partida y restaurarse correctamente"
+      ],
+      "feedback": {
+        "high": "Solución robusta. El valor base nunca cambia, todos los modificadores viven en una lista separada y `FinalValue` siempre recalcula desde cero. Remover `strength` es eliminar su entrada de la lista — el orden de remoción no importa en absoluto. Este patrón es el mismo que usa Unity con `Rigidbody` y fuerzas acumuladas.",
+        "mid": "Buen enfoque al separar el valor base. Sin embargo, si la remoción todavía divide o resta del valor acumulado (`attackPower /= 2f`) en lugar de eliminar el modificador de una lista, el problema de orden persiste. El valor final debe recalcularse siempre desde `_baseValue + sum(modifiers)`.",
+        "low": "El error de raíz es mutar el stat directamente: `attackPower *= 2f`. Cuando llega el momento de remover el buff, ya no sabes cuál era el valor original. La solución es mantener el **valor base inmutable** y calcular el valor final sumando todos los modificadores activos en tiempo real."
+      }
+    },
+    {
+      "id": "pat_008",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["patrones", "god-class", "referencia-directa"],
+      "title": "Sistema de guardado que conoce a todos los sistemas para serializar",
+      "context": "Tu RPG tiene un `SaveSystem` que serializa el estado completo del juego: las estadísticas del jugador, el inventario, el registro de misiones, el progreso del mapa, los ajustes y el estado de los diálogos. Para lograrlo, `SaveSystem` guarda **referencias directas** a los seis sistemas y llama a métodos específicos en cada uno. Cuando el equipo agrega un nuevo sistema —por ejemplo, el estado de las mazmorras exploradas— hay que abrir `SaveSystem`, agregar el campo, modificar `Save()` y modificar `Load()`. Es la definición de **God Class**: una clase que sabe demasiado sobre todos los demás.",
+      "scenario": "Refactoriza el sistema de guardado para que `SaveSystem` no conozca directamente a ningún sistema específico:",
+      "starterCode": "// SaveSystem.cs\nusing UnityEngine;\nusing System.IO;\nusing System.Collections.Generic;\n\npublic class SaveSystem : MonoBehaviour\n{\n    // Referencia directa a TODOS los sistemas — acoplamiento maximo\n    [SerializeField] private PlayerStats   playerStats;\n    [SerializeField] private Inventory     inventory;\n    [SerializeField] private QuestLog      questLog;\n    [SerializeField] private MapProgress   mapProgress;\n    [SerializeField] private GameSettings  settings;\n    [SerializeField] private DialogueState dialogueState;\n    // Agregar DungeonState requiere modificar Save() y Load()\n\n    public void Save()\n    {\n        var data = new SaveData\n        {\n            playerLevel  = playerStats.Level,\n            playerHP     = playerStats.CurrentHP,\n            items        = inventory.GetAllItems(),\n            activeQuests = questLog.GetActiveQuests(),\n            visitedRooms = mapProgress.GetVisitedRooms(),\n            volume       = settings.MasterVolume,\n            lastDialogue = dialogueState.GetLastNodeId()\n        };\n        File.WriteAllText(SavePath(), JsonUtility.ToJson(data));\n    }\n\n    public void Load()\n    {\n        string json = File.ReadAllText(SavePath());\n        var data = JsonUtility.FromJson<SaveData>(json);\n\n        playerStats.Level         = data.playerLevel;\n        playerStats.CurrentHP     = data.playerHP;\n        inventory.SetItems(data.items);\n        questLog.SetQuests(data.activeQuests);\n        mapProgress.SetVisited(data.visitedRooms);\n        settings.MasterVolume     = data.volume;\n        dialogueState.SetNode(data.lastDialogue);\n    }\n\n    private string SavePath() =>\n        Path.Combine(Application.persistentDataPath, \"save.json\");\n}",
+      "prompt": "Aplica el patrón **Memento / ISaveable** para que cada sistema gestione su propio estado y `SaveSystem` solo orqueste una lista de sistemas registrados.",
+      "criteria": [
+        {
+          "id": "uses_isaveable",
+          "label": "Define una interfaz `ISaveable` con métodos `Save()` y `Load()` (o `CaptureState` / `RestoreState`)",
+          "check": "keyword",
+          "pattern": "ISaveable|interface.*Saveable|CaptureState|RestoreState",
+          "points": 4
+        },
+        {
+          "id": "no_direct_refs",
+          "label": "SaveSystem ya no tiene referencias directas a PlayerStats, Inventory, QuestLog, etc.",
+          "check": "antiPattern",
+          "pattern": "SerializeField[\\s\\S]{0,80}(?:PlayerStats|Inventory|QuestLog|MapProgress|GameSettings|DialogueState)",
+          "points": 4
+        },
+        {
+          "id": "list_of_saveables",
+          "label": "SaveSystem mantiene una `List<ISaveable>` o colección registrable",
+          "check": "keyword",
+          "pattern": "List<ISaveable>|_saveables|Register.*ISaveable|ISaveable.*Register",
+          "points": 4
+        },
+        {
+          "id": "systems_self_register",
+          "label": "Cada sistema se registra a sí mismo en SaveSystem (en `Awake` o `Start`)",
+          "check": "keyword",
+          "pattern": "SaveSystem.*Register|Register.*this|_saveables\\.Add",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// ISaveable.cs — contrato para cualquier sistema que quiera persistir\npublic interface ISaveable\n{\n    string SaveKey      { get; } // identificador unico en el JSON\n    object CaptureState();       // devuelve un objeto serializable\n    void   RestoreState(object state); // recibe el objeto deserializado\n}\n\n// SaveSystem.cs — orquesta sin conocer implementaciones\nusing System.Collections.Generic;\nusing System.IO;\nusing UnityEngine;\n\npublic class SaveSystem : MonoBehaviour\n{\n    public static SaveSystem Instance;\n\n    private readonly List<ISaveable> _saveables = new List<ISaveable>();\n\n    private void Awake() => Instance = this;\n\n    // Cada sistema se registra al iniciarse\n    public void Register(ISaveable saveable)\n        => _saveables.Add(saveable);\n\n    public void Unregister(ISaveable saveable)\n        => _saveables.Remove(saveable);\n\n    public void Save()\n    {\n        var root = new Dictionary<string, string>();\n        foreach (var s in _saveables)\n            root[s.SaveKey] = JsonUtility.ToJson(s.CaptureState());\n\n        File.WriteAllText(SavePath(), JsonUtility.ToJson(root));\n    }\n\n    public void Load()\n    {\n        if (!File.Exists(SavePath())) return;\n        var root = JsonUtility.FromJson<Dictionary<string, string>>(\n            File.ReadAllText(SavePath()));\n\n        foreach (var s in _saveables)\n        {\n            if (root.TryGetValue(s.SaveKey, out var json))\n                s.RestoreState(JsonUtility.FromJson(json, s.CaptureState().GetType()));\n        }\n    }\n\n    private string SavePath() =>\n        Path.Combine(Application.persistentDataPath, \"save.json\");\n}\n\n// PlayerStats.cs — se autoregistra, SaveSystem no lo conoce\nusing UnityEngine;\n\npublic class PlayerStats : MonoBehaviour, ISaveable\n{\n    public string SaveKey => \"playerStats\";\n    public int    Level     = 1;\n    public float  CurrentHP = 100f;\n\n    private void Awake()\n        => SaveSystem.Instance.Register(this);\n\n    private void OnDestroy()\n        => SaveSystem.Instance.Unregister(this);\n\n    [System.Serializable]\n    private struct SaveData { public int level; public float hp; }\n\n    public object CaptureState()\n        => new SaveData { level = Level, hp = CurrentHP };\n\n    public void RestoreState(object state)\n    {\n        var data = (SaveData)state;\n        Level     = data.level;\n        CurrentHP = data.hp;\n    }\n}\n\n// Agregar DungeonState: implementar ISaveable + autoregistrarse.\n// SaveSystem.cs nunca cambia.",
+      "alternatives": [
+        "Usar `Newtonsoft.Json` en lugar de `JsonUtility` para soportar tipos complejos como `Dictionary<K,V>` y `List<T>` sin wrappers",
+        "Agregar versionado al archivo de guardado (`saveVersion` field) para manejar migraciones cuando cambia la estructura",
+        "Usar `PlayerPrefs` para guardados simples en plataformas móviles donde el sistema de archivos es más restringido",
+        "Implementar guardado asíncrono con `async/await` y `File.WriteAllTextAsync` para no bloquear el hilo principal en guardados grandes"
+      ],
+      "feedback": {
+        "high": "Aplicación correcta del patrón **Memento con registro dinámico**. `SaveSystem` itera una lista de `ISaveable` sin saber qué hay dentro de cada uno. Cada sistema es dueño de su propia serialización. Agregar `DungeonState` es crear la clase, implementar `ISaveable` y autoregistrarse — el sistema de guardado no cambia.",
+        "mid": "Buen avance al introducir `ISaveable`. Sin embargo, si `SaveSystem` todavía tiene al menos una referencia directa a un sistema concreto (`[SerializeField] private PlayerStats ...`), el problema de God Class persiste para ese sistema. Todos deben autoregistrarse — ninguno debe estar hardcodeado en `SaveSystem`.",
+        "low": "La señal de una **God Class** es que para agregar algo nuevo hay que modificar la clase central. Con `ISaveable`, cada sistema se hace responsable de capturar y restaurar su propio estado. `SaveSystem` solo itera una lista — no sabe si guarda estadísticas, inventario o estado de mazmorras."
+      }
+    },
+    {
+      "id": "pat_009",
+      "difficulty": 3,
+      "genre": "Cualquiera",
+      "tags": ["patrones", "gc-pressure", "missing-pool"],
+      "title": "Object Pool genérico: crear uno nuevo para cada tipo de objeto",
+      "context": "Tu proyecto tiene tres pools manuales: `BulletPool.cs`, `EnemyPool.cs` y `ParticlePool.cs`. Cada uno implementa exactamente la misma lógica con una `Queue<T>` — obtener un objeto de la cola, activarlo, devolverlo y desactivarlo. Cuando el equipo necesita un cuarto pool para explosiones, copia y pega `BulletPool.cs`, renombra la clase y cambia el tipo. Ese código **duplicado** es un problema de mantenimiento: si hay un bug en la lógica del pool, hay que corregirlo en cuatro archivos distintos.",
+      "scenario": "Unifica los tres pools en una solución genérica reutilizable para cualquier tipo de `Component`:",
+      "starterCode": "// BulletPool.cs — logica duplicada en EnemyPool y ParticlePool\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class BulletPool : MonoBehaviour\n{\n    [SerializeField] private Bullet prefab;\n    [SerializeField] private int    initialSize = 30;\n\n    private Queue<Bullet> _available = new Queue<Bullet>();\n\n    private void Awake()\n    {\n        for (int i = 0; i < initialSize; i++)\n        {\n            Bullet b = Instantiate(prefab);\n            b.gameObject.SetActive(false);\n            _available.Enqueue(b);\n        }\n    }\n\n    public Bullet Get(Vector3 pos, Quaternion rot)\n    {\n        Bullet b = _available.Count > 0\n            ? _available.Dequeue()\n            : Instantiate(prefab);\n        b.transform.SetPositionAndRotation(pos, rot);\n        b.gameObject.SetActive(true);\n        return b;\n    }\n\n    public void Return(Bullet b)\n    {\n        b.gameObject.SetActive(false);\n        _available.Enqueue(b);\n    }\n}\n\n// EnemyPool.cs  — misma logica, solo cambia \"Bullet\" por \"Enemy\"\n// ParticlePool.cs — misma logica, solo cambia \"Bullet\" por \"ParticleEffect\"\n// ExplosionPool.cs — pendiente de crear, mismo copypaste",
+      "prompt": "Crea un `GenericPool<T>` reutilizable que reemplace a los tres pools existentes. Debe soportar cualquier tipo que herede de `Component` sin duplicar la lógica del pool.",
+      "criteria": [
+        {
+          "id": "generic_pool_class",
+          "label": "Define una clase `GenericPool<T>` con restricción `where T : Component`",
+          "check": "keyword",
+          "pattern": "GenericPool<T>|class.*Pool<T>.*where\\s+T\\s*:\\s*Component",
+          "points": 4
+        },
+        {
+          "id": "get_return_methods",
+          "label": "Implementa métodos `Get()` y `Return(T item)` en la clase genérica",
+          "check": "keyword",
+          "pattern": "public\\s+T\\s+Get|public\\s+void\\s+Return",
+          "points": 4
+        },
+        {
+          "id": "queue_internal",
+          "label": "Usa internamente una `Queue<T>` para gestionar los objetos disponibles",
+          "check": "keyword",
+          "pattern": "Queue<T>|_available|_pool",
+          "points": 3
+        },
+        {
+          "id": "no_duplicate_pools",
+          "label": "Los pools específicos (BulletPool, EnemyPool, ParticlePool) ya no duplican la lógica — usan GenericPool<T>",
+          "check": "antiPattern",
+          "pattern": "class BulletPool[\\s\\S]{0,200}Queue<Bullet>|class EnemyPool[\\s\\S]{0,200}Queue<Enemy>",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// GenericPool.cs — logica de pool escrita UNA SOLA VEZ\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class GenericPool<T> : MonoBehaviour where T : Component\n{\n    [SerializeField] protected T   prefab;\n    [SerializeField] protected int initialSize = 20;\n\n    private readonly Queue<T> _available = new Queue<T>();\n\n    protected virtual void Awake()\n    {\n        for (int i = 0; i < initialSize; i++)\n            _available.Enqueue(CreateInstance());\n    }\n\n    private T CreateInstance()\n    {\n        T obj = Instantiate(prefab, transform); // hijo del pool para orden en jerarquia\n        obj.gameObject.SetActive(false);\n        return obj;\n    }\n\n    public T Get(Vector3 pos = default, Quaternion rot = default)\n    {\n        T obj = _available.Count > 0 ? _available.Dequeue() : CreateInstance();\n        obj.transform.SetPositionAndRotation(pos, rot);\n        obj.gameObject.SetActive(true);\n        return obj;\n    }\n\n    public void Return(T obj)\n    {\n        obj.gameObject.SetActive(false);\n        _available.Enqueue(obj);\n    }\n\n    public int AvailableCount => _available.Count;\n}\n\n// BulletPool.cs — ahora es solo una declaracion de tipo\npublic class BulletPool : GenericPool<Bullet> { }\n\n// EnemyPool.cs\npublic class EnemyPool : GenericPool<Enemy> { }\n\n// ParticlePool.cs\npublic class ParticlePool : GenericPool<ParticleEffect> { }\n\n// ExplosionPool.cs — nuevo pool, CERO codigo duplicado\npublic class ExplosionPool : GenericPool<Explosion> { }\n\n// Uso en cualquier sistema:\n// _bulletPool.Get(spawnPos, spawnRot);\n// _bulletPool.Return(bullet); // cuando impacta o sale de pantalla\n\n// Alternativa sin MonoBehaviour (para pools no-Unity):\n// public class PurePool<T> where T : class, new()\n// {\n//     private readonly Queue<T> _q = new Queue<T>();\n//     private readonly Func<T>  _factory;\n//     public PurePool(Func<T> factory, int init)\n//     {\n//         _factory = factory;\n//         for (int i = 0; i < init; i++) _q.Enqueue(_factory());\n//     }\n//     public T Get()       => _q.Count > 0 ? _q.Dequeue() : _factory();\n//     public void Return(T obj) => _q.Enqueue(obj);\n// }",
+      "alternatives": [
+        "Usar `UnityEngine.Pool.ObjectPool<T>` disponible desde Unity 2021 como alternativa oficial al pool manual",
+        "Agregar un `maxSize` para que el pool no crezca indefinidamente si `Return` nunca se llama correctamente",
+        "Implementar `IPoolable` interface con `OnGet()` y `OnReturn()` para que los objetos puedan reiniciarse al salir y entrar del pool",
+        "Usar un `Dictionary<Type, object>` como pool de pools para registrar un `GenericPool<T>` por tipo desde un `PoolManager` central"
+      ],
+      "feedback": {
+        "high": "Implementación profesional. Un solo `GenericPool<T>` con `where T : Component` reemplaza tres (o más) clases idénticas. La herencia vacía (`BulletPool : GenericPool<Bullet>`) permite referenciar el pool tipado desde el Inspector sin perder type-safety. Si hay un bug en la lógica del pool, hay exactamente un lugar donde corregirlo.",
+        "mid": "Buen uso de generics. Si la clase base funciona pero los pools concretos todavía copian algún método de `GenericPool` en lugar de heredarlo, la deduplicación está incompleta. Los pools específicos deben ser clases vacías que solo declaran el tipo — la lógica vive únicamente en `GenericPool<T>`.",
+        "low": "Tener `BulletPool`, `EnemyPool` y `ParticlePool` con la misma implementación viola el principio **DRY** (Don't Repeat Yourself). Con `GenericPool<T>`, la lógica existe una sola vez. `BulletPool` pasa a ser literalmente una línea: `public class BulletPool : GenericPool<Bullet> { }`. Agregar un nuevo pool es igual de trivial."
+      }
+    }
+  ]
+}

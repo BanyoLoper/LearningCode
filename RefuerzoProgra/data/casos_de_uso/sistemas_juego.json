@@ -1,0 +1,644 @@
+{
+  "category": "sistemas-juego",
+  "title": "Sistemas de Juego",
+  "icon": "🎮",
+  "color": "#4CAF50",
+  "cases": [
+    {
+      "id": "sis_001",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "wrong-structure", "bucles-anidados"],
+      "title": "Inventario con List<Item> busca por ID con foreach en Update",
+      "context": "Tu RPG tiene un `InventorySystem` que guarda los ítems del jugador en una **`List<Item>`**. Cada frame, `Update` llama a `GetItem(string id)` para verificar si el jugador tiene activo un ítem especial (como un amuleto de velocidad). Con 200 ítems en el inventario, cada llamada recorre los 200 elementos uno por uno. El **Profiler** muestra que este foreach consume tiempo de CPU incluso cuando el inventario no cambia.",
+      "scenario": "Identifica la estructura de datos incorrecta y reemplázala por una que permita lookup en O(1):",
+      "starterCode": "// InventorySystem.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class InventorySystem : MonoBehaviour\n{\n    private List<Item> _items = new List<Item>();\n\n    // O(n) — busca elemento por elemento cada vez que se llama\n    public Item GetItem(string id)\n    {\n        foreach (Item item in _items)\n        {\n            if (item.id == id)\n                return item;\n        }\n        return null;\n    }\n\n    public void AddItem(Item item)\n    {\n        _items.Add(item);\n    }\n\n    // Se llama cada frame para verificar el ítem activo\n    private void Update()\n    {\n        Item activeAmulet = GetItem(\"speed_amulet\");\n        if (activeAmulet != null && activeAmulet.isEquipped)\n        {\n            PlayerStats.Instance.ApplySpeedBonus(activeAmulet.value);\n        }\n    }\n}",
+      "prompt": "Reemplaza la `List<Item>` por una estructura que permita buscar ítems por ID en **O(1)** y elimina el `foreach` de `Update`.",
+      "criteria": [
+        {
+          "id": "uses_dictionary",
+          "label": "Usa `Dictionary<string, Item>` para almacenar los ítems",
+          "check": "keyword",
+          "pattern": "Dictionary<string,\\s*Item>|Dictionary<string, Item>",
+          "points": 4
+        },
+        {
+          "id": "no_foreach_search",
+          "label": "No hay `foreach` para buscar por ID — usa `TryGetValue` o indexador",
+          "check": "keyword",
+          "pattern": "TryGetValue|\\[id\\]|\\[\"",
+          "points": 3
+        },
+        {
+          "id": "no_update_search",
+          "label": "Update ya no hace búsqueda lineal de ítems cada frame",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,400}foreach[\\s\\S]{0,200}item",
+          "points": 3
+        },
+        {
+          "id": "cache_active_item",
+          "label": "Cachea la referencia al ítem activo en lugar de buscarlo cada frame",
+          "check": "keyword",
+          "pattern": "_activeAmulet|_cachedItem|_equippedItem|cachedAmulet",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// InventorySystem.cs — Dictionary<string, Item> con lookup O(1)\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class InventorySystem : MonoBehaviour\n{\n    // O(1) para insertar y buscar por ID\n    private Dictionary<string, Item> _items = new Dictionary<string, Item>();\n\n    // Caché del ítem equipado — se actualiza solo cuando cambia el equipo\n    private Item _activeAmulet;\n\n    // O(1) — acceso directo por clave\n    public Item GetItem(string id)\n    {\n        _items.TryGetValue(id, out Item item);\n        return item;\n    }\n\n    public void AddItem(Item item)\n    {\n        _items[item.id] = item;\n    }\n\n    // Llamado solo cuando el jugador equipa o desequipa\n    public void OnEquipChanged()\n    {\n        _items.TryGetValue(\"speed_amulet\", out _activeAmulet);\n    }\n\n    // Update ya no busca — solo aplica el bono si hay caché válida\n    private void Update()\n    {\n        if (_activeAmulet != null && _activeAmulet.isEquipped)\n        {\n            PlayerStats.Instance.ApplySpeedBonus(_activeAmulet.value);\n        }\n    }\n}",
+      "alternatives": [
+        "Usar un C# `event` en el ítem para notificar cuando se equipa, eliminando el polling en `Update`",
+        "Guardar solo los ítems equipados en un segundo `Dictionary` para no filtrar cada vez",
+        "Usar `HashSet<string>` para verificar rápido si el jugador \"tiene\" un ítem sin necesitar la referencia completa",
+        "Implementar `ItemDatabase` como `ScriptableObject` central con el `Dictionary` precargado al inicio"
+      ],
+      "feedback": {
+        "high": "Excelente. Cambiaste `List<Item>` por `Dictionary<string, Item>` y el lookup es ahora **O(1)**. Además cacheaste la referencia al ítem equipado para que `Update` no haga ninguna búsqueda — el patrón correcto cuando los datos no cambian cada frame.",
+        "mid": "Buen avance. Usas `Dictionary` para el lookup, pero si `GetItem` sigue llamándose desde `Update` sin cachear el resultado, sigues pagando el overhead del acceso al diccionario 60 veces por segundo. Guarda la referencia en `OnEquipChanged` y úsala directamente en `Update`.",
+        "low": "El problema es que `List<Item>.foreach` es **O(n)**: con 200 ítems hace 200 comparaciones × 60 FPS = 12 000 comparaciones por segundo para encontrar un solo ítem. Un `Dictionary<string, Item>` usa una tabla hash interna y devuelve el resultado en **O(1)** sin importar cuántos ítems haya."
+      }
+    },
+    {
+      "id": "sis_002",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "hardcoding"],
+      "title": "Sistema de diálogo con texto hardcodeado en el Inspector",
+      "context": "Tu RPG tiene un `DialogueController` que muestra conversaciones entre el jugador y los NPCs. Las líneas de diálogo están escritas directamente como **strings hardcodeados** en el componente Unity, visibles en el Inspector. Cada vez que el equipo de narrativa quiere editar un diálogo o agregar soporte para otro idioma, necesita abrir la escena, encontrar el GameObject, modificar el array y volver a guardar. Con 40 NPCs, esto es **40 escenas que abrir** ante cualquier cambio de texto.",
+      "scenario": "Elimina el texto hardcodeado del componente y carga los diálogos desde datos externos:",
+      "starterCode": "// DialogueController.cs\nusing UnityEngine;\n\npublic class DialogueController : MonoBehaviour\n{\n    // Hardcodeado en el Inspector — imposible de traducir o editar sin abrir la escena\n    [SerializeField]\n    private string[] lines = {\n        \"Hola aventurero\",\n        \"Tienes una misión importante\",\n        \"Debes ir al norte y derrotar al dragón\",\n        \"Te daré esta espada si lo logras\"\n    };\n\n    private int _currentLine = 0;\n\n    public void ShowNext()\n    {\n        if (_currentLine < lines.Length)\n        {\n            DialogueUI.Instance.ShowLine(lines[_currentLine]);\n            _currentLine++;\n        }\n        else\n        {\n            DialogueUI.Instance.Close();\n        }\n    }\n\n    public void ResetDialogue()\n    {\n        _currentLine = 0;\n    }\n}",
+      "prompt": "Mueve el contenido de los diálogos a un `ScriptableObject` o archivo JSON externo. El `DialogueController` solo debe cargar y reproducir, no almacenar texto.",
+      "criteria": [
+        {
+          "id": "no_hardcoded_strings",
+          "label": "No hay strings de diálogo literales en el componente (`[SerializeField] string[]` con contenido)",
+          "check": "antiPattern",
+          "pattern": "SerializeField[\\s\\S]{0,100}string\\[\\][\\s\\S]{0,50}=\\s*\\{",
+          "points": 4
+        },
+        {
+          "id": "uses_scriptableobject_or_json",
+          "label": "Carga el diálogo desde un `ScriptableObject` o JSON (`JsonUtility`, `Resources.Load`)",
+          "check": "keyword",
+          "pattern": "ScriptableObject|JsonUtility|Resources\\.Load|TextAsset",
+          "points": 4
+        },
+        {
+          "id": "data_reference",
+          "label": "El componente tiene una referencia a datos externos, no al contenido directamente",
+          "check": "keyword",
+          "pattern": "DialogueData|DialogueSO|dialogueAsset|_data",
+          "points": 3
+        },
+        {
+          "id": "content_separated",
+          "label": "Las líneas se leen desde la fuente de datos, no están definidas en la clase",
+          "check": "keyword",
+          "pattern": "\\.lines|\\.dialogueLines|\\.entries|_data\\.",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// DialogueData.cs — ScriptableObject que contiene las líneas (editable sin abrir escena)\nusing UnityEngine;\n\n[CreateAssetMenu(fileName = \"DialogueData\", menuName = \"Dialogue/DialogueData\")]\npublic class DialogueData : ScriptableObject\n{\n    public string[] lines;\n}\n\n// DialogueController.cs — solo reproduce, no almacena texto\nusing UnityEngine;\n\npublic class DialogueController : MonoBehaviour\n{\n    // El equipo de narrativa arrastra aquí el asset correcto en el Inspector\n    [SerializeField] private DialogueData _data;\n\n    private int _currentLine = 0;\n\n    public void ShowNext()\n    {\n        if (_data == null || _currentLine >= _data.lines.Length)\n        {\n            DialogueUI.Instance.Close();\n            return;\n        }\n\n        DialogueUI.Instance.ShowLine(_data.lines[_currentLine]);\n        _currentLine++;\n    }\n\n    public void ResetDialogue()\n    {\n        _currentLine = 0;\n    }\n}",
+      "alternatives": [
+        "Cargar desde un archivo JSON en `Application.streamingAssetsPath` para diálogos editables sin recompilar",
+        "Usar `Localization Package` de Unity para soporte nativo de múltiples idiomas con tablas de strings",
+        "Almacenar diálogos en una base de datos externa (Google Sheets + exportador CSV) para trabajo colaborativo",
+        "Usar `TextAsset` en Resources para archivos JSON pequeños con `JsonUtility.FromJson<T>(textAsset.text)`"
+      ],
+      "feedback": {
+        "high": "Correcto. Separaste **datos** de **lógica**: el `ScriptableObject` contiene el contenido y el controlador solo lo reproduce. Ahora el equipo de narrativa puede editar, duplicar y organizar diálogos desde el Project window sin tocar ninguna escena.",
+        "mid": "Bien encaminado. Moviste el texto fuera del componente, pero si usas `Resources.Load` con una ruta string hardcodeada, todavía hay un acoplamiento frágil. Prefer una referencia directa `[SerializeField] private DialogueData _data` que Unity serializa de forma segura.",
+        "low": "El problema central es que el **contenido** y el **comportamiento** viven juntos en el mismo componente. Cuando cambian los diálogos, se toca código — eso rompe el principio de separación de responsabilidades. Un `ScriptableObject` es un asset de Unity: se puede editar, duplicar y versionar independientemente del código."
+      }
+    },
+    {
+      "id": "sis_003",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "hardcoding"],
+      "title": "PlayerPrefs para guardar inventario complejo con objetos anidados",
+      "context": "Tu RPG tiene un sistema de guardado basado en **`PlayerPrefs`**: cada ítem del inventario se guarda como un conjunto de claves individuales (`item_0_id`, `item_0_qty`, `item_0_durability`). Con 50 ítems el sistema genera **150+ claves de PlayerPrefs**. No es posible guardar objetos anidados (como un ítem con encantamientos que son otra lista de objetos), y en plataformas móviles `PlayerPrefs` no es confiable para datos de más de 1MB.",
+      "scenario": "Reemplaza el sistema de guardado basado en PlayerPrefs por serialización JSON a disco:",
+      "starterCode": "// SaveManager.cs\nusing UnityEngine;\nusing System.Collections.Generic;\n\npublic class SaveManager : MonoBehaviour\n{\n    public static SaveManager Instance;\n\n    private void Awake() => Instance = this;\n\n    // Genera 3 claves por ítem — inmanejable con 50 ítems\n    public void SaveInventory(List<Item> items)\n    {\n        PlayerPrefs.SetInt(\"inventory_count\", items.Count);\n\n        for (int i = 0; i < items.Count; i++)\n        {\n            PlayerPrefs.SetString($\"item_{i}_id\",       items[i].id);\n            PlayerPrefs.SetInt($\"item_{i}_qty\",         items[i].quantity);\n            PlayerPrefs.SetFloat($\"item_{i}_durability\", items[i].durability);\n        }\n\n        PlayerPrefs.Save();\n    }\n\n    // Reconstruye ítem por ítem leyendo cada clave\n    public List<Item> LoadInventory()\n    {\n        int count = PlayerPrefs.GetInt(\"inventory_count\", 0);\n        var items = new List<Item>();\n\n        for (int i = 0; i < count; i++)\n        {\n            items.Add(new Item\n            {\n                id         = PlayerPrefs.GetString($\"item_{i}_id\"),\n                quantity   = PlayerPrefs.GetInt($\"item_{i}_qty\"),\n                durability = PlayerPrefs.GetFloat($\"item_{i}_durability\")\n            });\n        }\n\n        return items;\n    }\n}",
+      "prompt": "Reemplaza `PlayerPrefs` por un sistema de guardado que serialice toda la data del juego en un archivo JSON usando `JsonUtility` y `Application.persistentDataPath`.",
+      "criteria": [
+        {
+          "id": "no_playerprefs",
+          "label": "No usa `PlayerPrefs` para guardar datos del inventario",
+          "check": "antiPattern",
+          "pattern": "PlayerPrefs\\.Set|PlayerPrefs\\.Get",
+          "points": 4
+        },
+        {
+          "id": "uses_json",
+          "label": "Serializa los datos con `JsonUtility.ToJson` o `JsonUtility.FromJson`",
+          "check": "keyword",
+          "pattern": "JsonUtility\\.ToJson|JsonUtility\\.FromJson|JsonConvert",
+          "points": 4
+        },
+        {
+          "id": "uses_persistent_path",
+          "label": "Escribe y lee desde `Application.persistentDataPath`",
+          "check": "keyword",
+          "pattern": "persistentDataPath",
+          "points": 3
+        },
+        {
+          "id": "save_data_class",
+          "label": "Define una clase contenedora serializable (`SaveData`, `GameSave`) para todo el estado",
+          "check": "keyword",
+          "pattern": "SaveData|GameSave|\\[System\\.Serializable\\]",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// SaveData.cs — clase contenedora con toda la data serializable\nusing System;\nusing System.Collections.Generic;\n\n[Serializable]\npublic class SaveData\n{\n    public List<ItemSaveData> inventory = new List<ItemSaveData>();\n    public int gold;\n    public string currentScene;\n}\n\n[Serializable]\npublic class ItemSaveData\n{\n    public string id;\n    public int quantity;\n    public float durability;\n}\n\n// SaveManager.cs — escribe y lee un solo archivo JSON\nusing UnityEngine;\nusing System.IO;\n\npublic class SaveManager : MonoBehaviour\n{\n    public static SaveManager Instance;\n    private string _savePath;\n\n    private void Awake()\n    {\n        Instance = this;\n        // Ruta segura en todas las plataformas\n        _savePath = Path.Combine(Application.persistentDataPath, \"savegame.json\");\n    }\n\n    public void Save(SaveData data)\n    {\n        string json = JsonUtility.ToJson(data, prettyPrint: true);\n        File.WriteAllText(_savePath, json);\n    }\n\n    public SaveData Load()\n    {\n        if (!File.Exists(_savePath))\n            return new SaveData();\n\n        string json = File.ReadAllText(_savePath);\n        return JsonUtility.FromJson<SaveData>(json);\n    }\n}",
+      "alternatives": [
+        "Usar `Newtonsoft.Json` (Json.NET para Unity) para serializar tipos complejos que `JsonUtility` no soporta como `Dictionary`",
+        "Encriptar el JSON con `System.Security.Cryptography.AES` antes de escribir a disco para evitar save-editing",
+        "Usar un sistema de slots múltiples con un nombre de archivo distinto por slot (`savegame_slot0.json`)",
+        "Enviar el JSON a un backend REST para guardado en la nube y soporte multiplataforma"
+      ],
+      "feedback": {
+        "high": "Correcto. Un solo `JsonUtility.ToJson(saveData)` serializa toda la estructura en una llamada, sin importar qué tan anidada sea. Con `Application.persistentDataPath` el archivo existe en todas las plataformas que Unity soporta, y puedes guardar megabytes sin restricciones.",
+        "mid": "Buen progreso. Usas JSON, pero si llamas `JsonUtility.ToJson` por cada ítem por separado, sigues con el problema de las múltiples operaciones de I/O. Define una sola clase `SaveData` con `List<ItemSaveData>` y serializa **todo de una vez** en una sola escritura a disco.",
+        "low": "`PlayerPrefs` es básicamente un archivo de configuración del sistema operativo, no un sistema de guardado de juegos. No soporta objetos anidados, tiene límites de tamaño, y leer 150 claves individuales es lento. `JsonUtility.ToJson` serializa un objeto completo con todas sus listas anidadas en **una sola llamada**."
+      }
+    },
+    {
+      "id": "sis_004",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "god-class"],
+      "title": "Quest con contador int suelto por objetivo, sin estructura de datos",
+      "context": "Tu RPG tiene un `QuestManager` con variables sueltas para cada tipo de objetivo de misión: `killCount`, `itemCount`, `talkCount`, `bossDefeated`. Verificar si la quest está completa requiere un **if gigante** que combina todas las condiciones. Agregar un nuevo tipo de objetivo (como \"llega a un lugar\") significa agregar un nuevo campo, un nuevo incrementador, y ampliar la condición de completado. Con 15 quests activas esto escala **de manera insostenible**.",
+      "scenario": "Reemplaza los contadores sueltos por una estructura de datos que represente cada objetivo de forma genérica:",
+      "starterCode": "// QuestManager.cs\nusing UnityEngine;\n\npublic class QuestManager : MonoBehaviour\n{\n    // Un par de variables por cada tipo de objetivo — no escala\n    public int killCount    = 0;\n    public int killTarget   = 5;\n    public int itemCount    = 0;\n    public int itemTarget   = 3;\n    public int talkCount    = 0;\n    public int talkTarget   = 2;\n    public bool bossDefeated = false;\n\n    public void ReportKill()       => killCount++;\n    public void ReportItemPickup() => itemCount++;\n    public void ReportDialogue()   => talkCount++;\n    public void ReportBossKill()   => bossDefeated = true;\n\n    // Condición de completado hardcodeada para cada campo\n    public bool IsQuestComplete()\n    {\n        return killCount >= killTarget\n            && itemCount >= itemTarget\n            && talkCount >= talkTarget\n            && bossDefeated;\n    }\n}",
+      "prompt": "Reemplaza las variables sueltas por una clase `QuestObjective` reutilizable y una lista de objetivos. El método `IsQuestComplete` no debe mencionar ningún tipo de objetivo específico.",
+      "criteria": [
+        {
+          "id": "quest_objective_class",
+          "label": "Define una clase o struct `QuestObjective` con campos `current`, `target` y/o `IsComplete`",
+          "check": "keyword",
+          "pattern": "QuestObjective|class Objective|struct Objective",
+          "points": 4
+        },
+        {
+          "id": "uses_list",
+          "label": "Usa una `List<QuestObjective>` en lugar de variables sueltas",
+          "check": "keyword",
+          "pattern": "List<QuestObjective>|List<Objective>",
+          "points": 3
+        },
+        {
+          "id": "generic_complete_check",
+          "label": "`IsQuestComplete` evalúa todos los objetivos genéricamente sin mencionar `killCount`, `itemCount`, etc.",
+          "check": "antiPattern",
+          "pattern": "IsQuestComplete[\\s\\S]{0,300}(?:killCount|itemCount|talkCount|bossDefeated)",
+          "points": 4
+        },
+        {
+          "id": "is_complete_property",
+          "label": "`QuestObjective` tiene una propiedad `IsComplete` que encapsula la condición",
+          "check": "keyword",
+          "pattern": "IsComplete|is_complete|isComplete",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// QuestObjective.cs — estructura reutilizable para cualquier tipo de objetivo\nusing System;\n\n[Serializable]\npublic class QuestObjective\n{\n    public string type;       // \"kill\", \"collect\", \"talk\", \"reach\"\n    public string description;\n    public int    current;\n    public int    target;\n\n    // Funciona para CUALQUIER tipo de objetivo sin casos especiales\n    public bool IsComplete => current >= target;\n\n    public void Increment(int amount = 1)\n    {\n        current = Math.Min(current + amount, target);\n    }\n}\n\n// QuestManager.cs — genérico, extensible sin tocar el código\nusing System.Collections.Generic;\nusing System.Linq;\nusing UnityEngine;\n\npublic class QuestManager : MonoBehaviour\n{\n    [SerializeField] private List<QuestObjective> _objectives = new List<QuestObjective>();\n\n    // Agregar un nuevo tipo de objetivo = agregar una entrada a la lista. Eso es todo.\n    private void Start()\n    {\n        _objectives.Add(new QuestObjective { type = \"kill\",    target = 5,  description = \"Mata 5 enemigos\" });\n        _objectives.Add(new QuestObjective { type = \"collect\", target = 3,  description = \"Recoge 3 ítems\" });\n        _objectives.Add(new QuestObjective { type = \"talk\",    target = 2,  description = \"Habla con 2 NPCs\" });\n        _objectives.Add(new QuestObjective { type = \"boss\",    target = 1,  description = \"Derrota al jefe\" });\n    }\n\n    public void ReportEvent(string type, int amount = 1)\n    {\n        var obj = _objectives.Find(o => o.type == type);\n        obj?.Increment(amount);\n    }\n\n    // No menciona ningún tipo específico — funciona para cualquier lista de objetivos\n    public bool IsQuestComplete()\n    {\n        return _objectives.All(o => o.IsComplete);\n    }\n}",
+      "alternatives": [
+        "Cargar los objetivos desde un `ScriptableObject QuestData` para definir quests en el Editor sin tocar código",
+        "Usar el **Observer pattern**: cada sistema (CombatSystem, InventorySystem) emite eventos que el QuestManager escucha",
+        "Agregar `float Progress => (float)current / target` a `QuestObjective` para mostrar barras de progreso en la UI",
+        "Serializar `List<QuestObjective>` en el sistema de guardado para mantener el progreso entre sesiones"
+      ],
+      "feedback": {
+        "high": "Diseño correcto. Con `QuestObjective` genérica y `List<QuestObjective>`, agregar un nuevo tipo de objetivo no requiere modificar ningún método — solo agregar una entrada a la lista. `IsQuestComplete` con `All(o => o.IsComplete)` funciona para cualquier combinación de objetivos sin casos especiales.",
+        "mid": "Buena estructura. Tienes la clase `QuestObjective`, pero si `IsQuestComplete` aún compara campos por nombre (`killCount`, etc.), el polimorfismo no está funcionando. El método debe iterar la lista y llamar `IsComplete` en cada objetivo sin saber qué tipo es.",
+        "low": "Con variables sueltas, agregar un nuevo objetivo de quest requiere: nuevo campo, nuevo método de reporte, y modificar `IsQuestComplete`. Son 3 puntos de cambio por cada nuevo tipo. Con `List<QuestObjective>` y una propiedad `IsComplete` en cada objetivo, agregar un nuevo tipo cuesta **cero líneas de código** en el manager."
+      }
+    },
+    {
+      "id": "sis_005",
+      "difficulty": 2,
+      "genre": "Shooter",
+      "tags": ["sistemas-juego", "wrong-structure"],
+      "title": "Cooldown de habilidades con bool isOnCooldown por habilidad",
+      "context": "Tu shooter tiene un `AbilityManager` con un par de variables (`bool`, `float`) por cada habilidad del jugador: dash, escudo, granada, ataque cargado. Agregar una nueva habilidad significa declarar 2 nuevas variables y replicar la lógica de cooldown exactamente igual. El código ya tiene **8 variables** para 4 habilidades y el método `Update` tiene 4 bloques if casi idénticos que actualizan cada timer.",
+      "scenario": "Unifica todos los cooldowns en una sola estructura de datos que funcione para cualquier número de habilidades:",
+      "starterCode": "// AbilityManager.cs\nusing UnityEngine;\n\npublic class AbilityManager : MonoBehaviour\n{\n    // Un par de variables por habilidad — 2 campos × N habilidades\n    private bool  _isDashOnCooldown;\n    private float _dashCooldownEnd;\n    private bool  _isShieldOnCooldown;\n    private float _shieldCooldownEnd;\n    private bool  _isGrenadeOnCooldown;\n    private float _grenadeCooldownEnd;\n    private bool  _isChargeOnCooldown;\n    private float _chargeCooldownEnd;\n\n    private void Update()\n    {\n        // Lógica idéntica repetida 4 veces\n        if (_isDashOnCooldown && Time.time >= _dashCooldownEnd)\n            _isDashOnCooldown = false;\n\n        if (_isShieldOnCooldown && Time.time >= _shieldCooldownEnd)\n            _isShieldOnCooldown = false;\n\n        if (_isGrenadeOnCooldown && Time.time >= _grenadeCooldownEnd)\n            _isGrenadeOnCooldown = false;\n\n        if (_isChargeOnCooldown && Time.time >= _chargeCooldownEnd)\n            _isChargeOnCooldown = false;\n    }\n\n    public bool CanUse(string ability)\n    {\n        return ability switch\n        {\n            \"dash\"   => !_isDashOnCooldown,\n            \"shield\" => !_isShieldOnCooldown,\n            \"grenade\"=> !_isGrenadeOnCooldown,\n            \"charge\" => !_isChargeOnCooldown,\n            _        => false\n        };\n    }\n\n    public void TriggerCooldown(string ability, float duration)\n    {\n        switch (ability)\n        {\n            case \"dash\":    _isDashOnCooldown    = true; _dashCooldownEnd    = Time.time + duration; break;\n            case \"shield\":  _isShieldOnCooldown  = true; _shieldCooldownEnd  = Time.time + duration; break;\n            case \"grenade\": _isGrenadeOnCooldown = true; _grenadeCooldownEnd = Time.time + duration; break;\n            case \"charge\":  _isChargeOnCooldown  = true; _chargeCooldownEnd  = Time.time + duration; break;\n        }\n    }\n}",
+      "prompt": "Reemplaza las variables sueltas por un `Dictionary<string, float>` que guarde el tiempo de fin de cooldown por habilidad. El sistema debe funcionar para cualquier habilidad sin agregar nuevas variables.",
+      "criteria": [
+        {
+          "id": "uses_dictionary",
+          "label": "Usa `Dictionary<string, float>` para almacenar los cooldowns",
+          "check": "keyword",
+          "pattern": "Dictionary<string,\\s*float>",
+          "points": 4
+        },
+        {
+          "id": "no_bool_pairs",
+          "label": "No hay pares `bool isXOnCooldown` + `float xCooldownEnd` como variables de instancia",
+          "check": "antiPattern",
+          "pattern": "private bool _is\\w+OnCooldown",
+          "points": 3
+        },
+        {
+          "id": "no_switch_by_ability",
+          "label": "`TriggerCooldown` y `CanUse` no tienen switch/if por nombre de habilidad",
+          "check": "antiPattern",
+          "pattern": "TriggerCooldown[\\s\\S]{0,300}switch|CanUse[\\s\\S]{0,200}switch",
+          "points": 3
+        },
+        {
+          "id": "time_based_check",
+          "label": "Verifica cooldown comparando `Time.time` con el valor del diccionario",
+          "check": "keyword",
+          "pattern": "Time\\.time",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// AbilityManager.cs — Dictionary universal, sin switch, extensible sin tocar código\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class AbilityManager : MonoBehaviour\n{\n    // Una sola estructura para N habilidades\n    // Valor = Time.time en que termina el cooldown (0 = disponible desde el inicio)\n    private Dictionary<string, float> _cooldownEndTimes = new Dictionary<string, float>();\n\n    // Update eliminado — CanUse comprueba en tiempo real con Time.time\n    // No hay bool que mantener en sincronía\n\n    // Funciona para CUALQUIER habilidad sin agregar código\n    public bool CanUse(string ability)\n    {\n        if (_cooldownEndTimes.TryGetValue(ability, out float endTime))\n            return Time.time >= endTime;\n\n        return true; // Si no hay registro, la habilidad está disponible\n    }\n\n    // Registra o actualiza el cooldown — una sola línea por habilidad\n    public void TriggerCooldown(string ability, float duration)\n    {\n        _cooldownEndTimes[ability] = Time.time + duration;\n    }\n\n    // Opcional: cuánto tiempo falta para que termine el cooldown (para UI)\n    public float GetRemainingCooldown(string ability)\n    {\n        if (_cooldownEndTimes.TryGetValue(ability, out float endTime))\n            return Mathf.Max(0f, endTime - Time.time);\n\n        return 0f;\n    }\n}",
+      "alternatives": [
+        "Usar una clase `Ability` con `float cooldownDuration` y `float lastUsedTime` para encapsular más datos por habilidad",
+        "Agregar `OnCooldownReady(string ability)` como C# `event` para notificar a la UI cuando una habilidad está lista",
+        "Usar `ScriptableObject AbilityDefinition` con el nombre y duración base, y el manager solo guarda el `endTime`",
+        "Mostrar el progreso de cooldown como `GetRemainingCooldown(ability) / abilityDuration` para llenar una barra circular en la UI"
+      ],
+      "feedback": {
+        "high": "Solución limpia. Con `Dictionary<string, float>` y comparación directa de `Time.time`, eliminaste el `Update` de sincronización de bools y los switch de N casos. Agregar una nueva habilidad no requiere tocar este archivo — el caller simplemente llama `TriggerCooldown(\"newAbility\", 3f)`.",
+        "mid": "Buen avance. Usas el diccionario, pero si tienes `Update` actualizando un bool por habilidad, estás duplicando información: el `float endTime` ya contiene todo lo necesario para saber si hay cooldown. Elimina los bools y verifica directamente `Time.time >= _cooldownEndTimes[ability]`.",
+        "low": "El problema es que tienes **2 variables × N habilidades** y **N bloques de Update** con lógica idéntica. Un `Dictionary<string, float>` almacena el tiempo de fin del cooldown por clave. `CanUse(ability)` se vuelve `Time.time >= _cooldownEndTimes[ability]` — una sola línea que funciona para cualquier habilidad."
+      }
+    },
+    {
+      "id": "sis_006",
+      "difficulty": 2,
+      "genre": "Tower Defense",
+      "tags": ["sistemas-juego", "hardcoding", "update-polling"],
+      "title": "Wave spawner con Invoke hardcodeado y valores mágicos",
+      "context": "Tu tower defense tiene un `WaveManager` que usa `Invoke` con tiempos y nombres de método hardcodeados para lanzar cada oleada de enemigos. La cantidad de enemigos por oleada, sus tipos y los tiempos de espera están escritos directamente en el código. Cada vez que el diseñador de niveles quiere ajustar el balance — más enemigos en oleada 3, un nuevo tipo de enemigo — debe pedirle a un programador que modifique el código y **recompile el proyecto**.",
+      "scenario": "Reemplaza los `Invoke` hardcodeados y los valores mágicos por un sistema data-driven basado en ScriptableObjects o Coroutines:",
+      "starterCode": "// WaveManager.cs\nusing UnityEngine;\n\npublic class WaveManager : MonoBehaviour\n{\n    [SerializeField] private GameObject goblinPrefab;\n    [SerializeField] private GameObject trollPrefab;\n    [SerializeField] private GameObject dragonPrefab;\n    [SerializeField] private Transform  spawnPoint;\n\n    private void Start()\n    {\n        // Tiempos y contenido hardcodeados — un Invoke por oleada\n        Invoke(\"SpawnWave1\", 5f);\n        Invoke(\"SpawnWave2\", 12f);\n        Invoke(\"SpawnWave3\", 20f);\n    }\n\n    private void SpawnWave1()\n    {\n        for (int i = 0; i < 8; i++)  Instantiate(goblinPrefab, spawnPoint.position, Quaternion.identity);\n    }\n\n    private void SpawnWave2()\n    {\n        for (int i = 0; i < 5; i++)  Instantiate(goblinPrefab, spawnPoint.position, Quaternion.identity);\n        for (int i = 0; i < 3; i++)  Instantiate(trollPrefab,  spawnPoint.position, Quaternion.identity);\n    }\n\n    private void SpawnWave3()\n    {\n        for (int i = 0; i < 10; i++) Instantiate(goblinPrefab, spawnPoint.position, Quaternion.identity);\n        for (int i = 0; i < 5; i++)  Instantiate(trollPrefab,  spawnPoint.position, Quaternion.identity);\n        Instantiate(dragonPrefab, spawnPoint.position, Quaternion.identity);\n    }\n}",
+      "prompt": "Reemplaza los `Invoke` hardcodeados por un sistema que lea la configuración de las oleadas desde `ScriptableObject` o un array de datos, y use una `Coroutine` para controlar el timing.",
+      "criteria": [
+        {
+          "id": "no_invoke",
+          "label": "No usa `Invoke` ni `InvokeRepeating` con nombre de método como string",
+          "check": "antiPattern",
+          "pattern": "Invoke\\(\"SpawnWave",
+          "points": 4
+        },
+        {
+          "id": "uses_coroutine_or_so",
+          "label": "Usa `Coroutine` con `yield return` o `ScriptableObject` para controlar el flujo",
+          "check": "keyword",
+          "pattern": "IEnumerator|yield return|StartCoroutine|ScriptableObject|WaveData",
+          "points": 4
+        },
+        {
+          "id": "data_driven_waves",
+          "label": "La configuración de oleadas (cantidad, tipo, timing) está en datos, no en métodos hardcodeados",
+          "check": "keyword",
+          "pattern": "WaveData|WaveConfig|waves\\[|_waves\\[|waveEntries",
+          "points": 3
+        },
+        {
+          "id": "no_magic_numbers",
+          "label": "No hay valores mágicos de tiempo (`5f`, `12f`, `20f`) hardcodeados en la lógica",
+          "check": "antiPattern",
+          "pattern": "Invoke\\([\\s\\S]{0,50}(?:5f|12f|20f)",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// WaveData.cs — ScriptableObject editable desde el Editor\nusing System;\nusing UnityEngine;\n\n[CreateAssetMenu(fileName = \"WaveData\", menuName = \"TowerDefense/WaveData\")]\npublic class WaveData : ScriptableObject\n{\n    public WaveEntry[] waves;\n}\n\n[Serializable]\npublic class WaveEntry\n{\n    public float        delayBeforeWave;   // segundos antes de lanzar esta oleada\n    public SpawnGroup[] groups;            // grupos de enemigos en esta oleada\n}\n\n[Serializable]\npublic class SpawnGroup\n{\n    public GameObject enemyPrefab;\n    public int        count;\n    public float      timeBetweenSpawns;  // segundos entre cada spawn del grupo\n}\n\n// WaveManager.cs — lee datos y ejecuta con Coroutine\nusing UnityEngine;\nusing System.Collections;\n\npublic class WaveManager : MonoBehaviour\n{\n    [SerializeField] private WaveData   _waveData;\n    [SerializeField] private Transform  _spawnPoint;\n\n    private void Start() => StartCoroutine(RunWaves());\n\n    private IEnumerator RunWaves()\n    {\n        foreach (WaveEntry wave in _waveData.waves)\n        {\n            yield return new WaitForSeconds(wave.delayBeforeWave);\n\n            foreach (SpawnGroup group in wave.groups)\n                yield return StartCoroutine(SpawnGroup(group));\n        }\n    }\n\n    private IEnumerator SpawnGroup(SpawnGroup group)\n    {\n        for (int i = 0; i < group.count; i++)\n        {\n            Instantiate(group.enemyPrefab, _spawnPoint.position, Quaternion.identity);\n            yield return new WaitForSeconds(group.timeBetweenSpawns);\n        }\n    }\n}",
+      "alternatives": [
+        "Agregar `OnWaveComplete` como C# `event` para que la UI muestre el número de oleada actual automáticamente",
+        "Cargar `WaveData` desde un JSON en `StreamingAssets` para que sea editable sin Unity (para balanceo en producción)",
+        "Usar `Object Pooling` para los prefabs de enemigos en lugar de `Instantiate` en cada spawn",
+        "Agregar dificultad escalable con un multiplicador `waveIndex * enemyCountMultiplier` sobre el `WaveData` base"
+      ],
+      "feedback": {
+        "high": "Diseño data-driven correcto. El `ScriptableObject WaveData` desacopla completamente el contenido del código: el diseñador puede agregar oleadas, cambiar enemigos y ajustar tiempos desde el Inspector sin tocar ningún script. La `Coroutine` reemplaza los `Invoke` con control de flujo legible y pausable.",
+        "mid": "Buen avance. Tienes la Coroutine, pero si los contadores y prefabs siguen hardcodeados como arrays `[SerializeField]` en el componente, el diseñador sigue dependiendo del programador para cambiar el layout de las oleadas. Mueve esa configuración a un `ScriptableObject` separado.",
+        "low": "El problema con `Invoke(\"SpawnWave1\", 5f)` es doble: los tiempos son **números mágicos** y el comportamiento de cada oleada está **encerrado en un método**. Agregar una oleada 4 requiere programar. Con `WaveData` como ScriptableObject y una Coroutine que lo lee, agregar una oleada es arrastrar un entry en el Inspector."
+      }
+    },
+    {
+      "id": "sis_007",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "referencia-directa"],
+      "title": "ShopSystem modifica inventario directamente sin posibilidad de revertir",
+      "context": "Tu RPG tiene una tienda donde el jugador compra ítems. El `ShopManager` llama directamente `inventory.RemoveGold(price)` y luego `inventory.AddItem(item)`. Si `AddItem` falla porque el inventario está lleno, el oro ya fue deducido y **no hay forma de revertirlo**. La operación de compra no es **atómica**: puede quedar en un estado intermedio inválido donde el jugador perdió oro sin recibir el ítem.",
+      "scenario": "Refactoriza la compra usando el Command Pattern para que sea atómica y reversible:",
+      "starterCode": "// ShopManager.cs\nusing UnityEngine;\n\npublic class ShopManager : MonoBehaviour\n{\n    [SerializeField] private InventorySystem inventory;\n\n    // Si AddItem falla, el gold ya fue removido — no hay rollback\n    public void BuyItem(ItemData item)\n    {\n        if (inventory.Gold < item.price)\n        {\n            Debug.Log(\"No tienes suficiente oro\");\n            return;\n        }\n\n        // Paso 1: deduce el oro\n        inventory.RemoveGold(item.price);\n\n        // Paso 2: agrega el ítem — puede fallar si inventario lleno\n        bool success = inventory.AddItem(item);\n\n        if (!success)\n        {\n            // El oro ya fue removido y no se puede devolver\n            Debug.LogError(\"Inventario lleno. El oro se perdió.\");\n        }\n    }\n}",
+      "prompt": "Implementa un `BuyCommand` con `Execute()` y `Undo()` que valide todas las condiciones antes de modificar cualquier dato, y permita revertir la transacción completa si algo falla.",
+      "criteria": [
+        {
+          "id": "validates_before_execute",
+          "label": "Valida TODAS las condiciones (oro suficiente + espacio en inventario) antes de modificar datos",
+          "check": "keyword",
+          "pattern": "CanExecute|Validate|HasSpace|IsFull|CanAdd",
+          "points": 4
+        },
+        {
+          "id": "has_undo",
+          "label": "Implementa un método `Undo()` o `Rollback()` que revierte la operación completa",
+          "check": "keyword",
+          "pattern": "Undo|Rollback|Revert",
+          "points": 4
+        },
+        {
+          "id": "atomic_operation",
+          "label": "La ejecución es atómica: modifica datos solo si TODAS las validaciones pasan",
+          "check": "antiPattern",
+          "pattern": "RemoveGold[\\s\\S]{0,200}AddItem[\\s\\S]{0,200}if\\s*\\(!success\\)",
+          "points": 3
+        },
+        {
+          "id": "command_class",
+          "label": "Existe una clase `BuyCommand` o `PurchaseCommand` separada del manager",
+          "check": "keyword",
+          "pattern": "BuyCommand|PurchaseCommand|class.*Command",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// ICommand.cs — interfaz base para todas las acciones reversibles\npublic interface ICommand\n{\n    bool CanExecute();\n    void Execute();\n    void Undo();\n}\n\n// BuyCommand.cs — encapsula la transacción de compra\npublic class BuyCommand : ICommand\n{\n    private readonly InventorySystem _inventory;\n    private readonly ItemData        _item;\n\n    private bool _executed = false;\n\n    public BuyCommand(InventorySystem inventory, ItemData item)\n    {\n        _inventory = inventory;\n        _item      = item;\n    }\n\n    // Valida TODAS las condiciones antes de tocar datos\n    public bool CanExecute()\n    {\n        return _inventory.Gold >= _item.price\n            && _inventory.HasSpace();\n    }\n\n    // Solo se llama si CanExecute() == true\n    public void Execute()\n    {\n        _inventory.RemoveGold(_item.price);\n        _inventory.AddItem(_item);\n        _executed = true;\n    }\n\n    // Revierte exactamente lo que Execute() hizo\n    public void Undo()\n    {\n        if (!_executed) return;\n        _inventory.RemoveItem(_item);\n        _inventory.AddGold(_item.price);\n        _executed = false;\n    }\n}\n\n// ShopManager.cs — solo crea y despacha comandos\nusing UnityEngine;\n\npublic class ShopManager : MonoBehaviour\n{\n    [SerializeField] private InventorySystem _inventory;\n\n    public void BuyItem(ItemData item)\n    {\n        var cmd = new BuyCommand(_inventory, item);\n\n        if (!cmd.CanExecute())\n        {\n            Debug.Log(\"No se puede comprar: verifica oro y espacio.\");\n            return;\n        }\n\n        cmd.Execute();\n    }\n}",
+      "alternatives": [
+        "Mantener un `Stack<ICommand>` de comandos ejecutados para permitir deshacer múltiples compras en secuencia",
+        "Agregar `OnPurchaseComplete` como C# `event` en el `BuyCommand` para notificar a la UI sin acoplamiento",
+        "Usar el mismo patrón para `SellCommand`, `DropCommand` y `CraftCommand` — todos reversibles con la misma interfaz",
+        "Registrar cada `Execute()` en un log de auditoría para detectar exploits de duplicación de ítems"
+      ],
+      "feedback": {
+        "high": "Implementación correcta del Command Pattern. `CanExecute()` garantiza la atomicidad verificando todas las condiciones antes de tocar datos, y `Undo()` invierte exactamente lo que `Execute()` hizo. La tienda es ahora transaccional: o compra todo o no compra nada.",
+        "mid": "Buen progreso. Tienes la validación previa, pero si `Execute()` no tiene un `Undo()` correspondiente, la operación sigue siendo irreversible ante errores inesperados (network fail, crash). Implementa `Undo()` aunque sea devolver el oro y remover el ítem.",
+        "low": "El bug es de **atomicidad**: una transacción de compra son dos operaciones (quitar oro + dar ítem) que deben ejecutarse como una unidad o ninguna. Al separar `RemoveGold` y `AddItem` con un `if` en el medio, el estado puede quedar corrupto. El Command Pattern agrupa las dos operaciones y provee rollback."
+      }
+    },
+    {
+      "id": "sis_008",
+      "difficulty": 3,
+      "genre": "Cualquiera",
+      "tags": ["sistemas-juego", "god-class", "update-polling"],
+      "title": "Estado de UI con booleans sueltos: isMainMenu, isLoading, isPlaying, isPaused, isGameOver",
+      "context": "Tu `UIStateManager` usa cinco **booleans sueltos** para representar el estado actual de la UI. El problema: no hay nada que impida que `isMainMenu` y `isPlaying` sean `true` al mismo tiempo, creando un **estado imposible**. Cada transición (pasar de juego a pausa) modifica múltiples booleans en secuencia — si alguna falla a mitad, la UI queda en un estado inconsistente. Con 15 pantallas diferentes el número de estados posibles explosiona a 2¹⁵.",
+      "scenario": "Reemplaza los booleans sueltos por una State Machine con `enum UIState` y transiciones explícitas:",
+      "starterCode": "// UIStateManager.cs\nusing UnityEngine;\n\npublic class UIStateManager : MonoBehaviour\n{\n    // 5 booleans = 32 combinaciones posibles, solo 5 son válidas\n    public bool isMainMenu = true;\n    public bool isLoading  = false;\n    public bool isPlaying  = false;\n    public bool isPaused   = false;\n    public bool isGameOver = false;\n\n    private void Update()\n    {\n        // Polling continuo para sincronizar la UI con los booleans\n        if (isMainMenu)  ShowMainMenu();\n        if (isLoading)   ShowLoadingScreen();\n        if (isPlaying)   ShowHUD();\n        if (isPaused)    ShowPauseMenu();\n        if (isGameOver)  ShowGameOverScreen();\n    }\n\n    public void StartGame()\n    {\n        isMainMenu = false;\n        isLoading  = true; // ¿Olvidaste poner isPlaying = false?\n    }\n\n    public void PauseGame()\n    {\n        isPaused  = true;\n        isPlaying = false; // Fácil olvidar esto\n    }\n}",
+      "prompt": "Reemplaza los booleans por un `enum UIState` y una State Machine que garantice que solo un estado es válido en cada momento, con transiciones explícitas y sin polling en `Update`.",
+      "criteria": [
+        {
+          "id": "uses_enum_state",
+          "label": "Define un `enum UIState` con los estados posibles",
+          "check": "keyword",
+          "pattern": "enum UIState|enum GameState",
+          "points": 4
+        },
+        {
+          "id": "single_state_variable",
+          "label": "Un solo campo `_currentState` reemplaza todos los booleans sueltos",
+          "check": "keyword",
+          "pattern": "_currentState|_state|currentState",
+          "points": 3
+        },
+        {
+          "id": "no_boolean_flags",
+          "label": "No hay `bool isMainMenu`, `bool isPlaying`, etc. como campos de instancia",
+          "check": "antiPattern",
+          "pattern": "bool isMainMenu|bool isPlaying|bool isPaused|bool isGameOver",
+          "points": 4
+        },
+        {
+          "id": "no_update_polling",
+          "label": "Update ya no lee booleans para mostrar pantallas — la transición activa la UI directamente",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,300}(?:isMainMenu|isPlaying|isPaused|isGameOver)",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// UIStateManager.cs — State Machine con enum, sin polling, sin estados imposibles\nusing UnityEngine;\n\npublic enum UIState\n{\n    MainMenu,\n    Loading,\n    Playing,\n    Paused,\n    GameOver\n}\n\npublic class UIStateManager : MonoBehaviour\n{\n    public static UIStateManager Instance;\n\n    // Un solo campo — solo un estado válido a la vez por definición del tipo\n    private UIState _currentState = UIState.MainMenu;\n\n    public UIState CurrentState => _currentState;\n\n    private void Awake() => Instance = this;\n\n    // No hay Update — la UI reacciona al cambio de estado, no lo pollea\n\n    private void TransitionTo(UIState newState)\n    {\n        if (_currentState == newState) return;\n\n        // Desactiva la vista actual\n        ExitState(_currentState);\n\n        _currentState = newState;\n\n        // Activa la nueva vista\n        EnterState(_currentState);\n    }\n\n    private void ExitState(UIState state)\n    {\n        switch (state)\n        {\n            case UIState.MainMenu:  HideMainMenu();       break;\n            case UIState.Loading:   HideLoadingScreen();  break;\n            case UIState.Playing:   HideHUD();            break;\n            case UIState.Paused:    HidePauseMenu();      break;\n            case UIState.GameOver:  HideGameOverScreen(); break;\n        }\n    }\n\n    private void EnterState(UIState state)\n    {\n        switch (state)\n        {\n            case UIState.MainMenu:  ShowMainMenu();       break;\n            case UIState.Loading:   ShowLoadingScreen();  break;\n            case UIState.Playing:   ShowHUD();            break;\n            case UIState.Paused:    ShowPauseMenu();      break;\n            case UIState.GameOver:  ShowGameOverScreen(); break;\n        }\n    }\n\n    // API pública con nombres de intención explícita\n    public void StartGame()   => TransitionTo(UIState.Loading);\n    public void OnLoadDone()  => TransitionTo(UIState.Playing);\n    public void PauseGame()   => TransitionTo(UIState.Paused);\n    public void ResumeGame()  => TransitionTo(UIState.Playing);\n    public void GameOver()    => TransitionTo(UIState.GameOver);\n    public void BackToMenu()  => TransitionTo(UIState.MainMenu);\n\n    // Stubs — implementar con referencias a Canvas Groups\n    private void ShowMainMenu()      {}\n    private void HideMainMenu()      {}\n    private void ShowLoadingScreen() {}\n    private void HideLoadingScreen() {}\n    private void ShowHUD()           {}\n    private void HideHUD()           {}\n    private void ShowPauseMenu()     {}\n    private void HidePauseMenu()     {}\n    private void ShowGameOverScreen(){}\n    private void HideGameOverScreen(){}\n}",
+      "alternatives": [
+        "Usar el **State Pattern** con clases `IUIState { Enter(); Exit(); }` para encapsular la lógica de cada pantalla",
+        "Emitir `UIStateManager.OnStateChanged(UIState prev, UIState next)` como C# `event` para que cada Canvas se suscriba",
+        "Usar `Animator` de Unity como State Machine visual para transiciones de UI con animaciones incluidas",
+        "Integrar con `SceneManager.LoadSceneAsync` para que las transiciones de estado sincronicen con cargas de escena"
+      ],
+      "feedback": {
+        "high": "Implementación correcta. Con `enum UIState` solo existe un estado válido a la vez — el compilador hace imposible el estado `isMainMenu=true && isPlaying=true`. El patrón `ExitState` + `EnterState` garantiza que la UI anterior siempre se esconde antes de mostrar la nueva.",
+        "mid": "Buen progreso. Tienes el enum y un campo `_currentState`, pero si `Update` sigue leyendo el estado para decidir qué mostrar, sigues con polling innecesario. La transición debe activar la pantalla directamente en `EnterState` — sin necesidad de revisar el estado cada frame.",
+        "low": "Con 5 booleans independientes hay **32 combinaciones posibles** pero solo 5 son válidas. Cualquier bug que ponga dos booleans a `true` crea un estado imposible. Un `enum` con un solo campo `_currentState` reduce eso a exactamente **5 estados posibles**, y el compilador garantiza que no puede haber ninguno más."
+      }
+    },
+    {
+      "id": "sis_009",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "referencia-directa"],
+      "title": "Achievement system: cada sistema notifica logros directamente",
+      "context": "Tu RPG tiene un `AchievementManager` que registra logros del jugador. El problema: `CombatSystem`, `QuestSystem`, `ExplorationSystem` y `ShopSystem` tienen **referencias directas** al `AchievementManager` y lo llaman explícitamente. Esto crea un acoplamiento donde cada sistema de juego necesita saber que existe un sistema de logros. Si algún día quieres agregar un sistema de **analytics** que también reaccione a los mismos eventos, debes modificar cada uno de esos sistemas para agregar otra referencia directa.",
+      "scenario": "Desacopla los sistemas de juego del AchievementManager usando eventos C# estáticos:",
+      "starterCode": "// CombatSystem.cs — tiene referencia directa al AchievementManager\nusing UnityEngine;\n\npublic class CombatSystem : MonoBehaviour\n{\n    // Referencia directa — alto acoplamiento\n    [SerializeField] private AchievementManager _achievements;\n\n    private int _killCount = 0;\n\n    public void OnEnemyKilled(Enemy enemy)\n    {\n        _killCount++;\n\n        // CombatSystem sabe que hay un AchievementManager\n        _achievements.Check(\"first_kill\");\n        if (_killCount >= 100) _achievements.Check(\"hundred_kills\");\n        if (enemy.isBoss)      _achievements.Check(\"boss_slayer\");\n    }\n}\n\n// QuestSystem.cs — mismo patrón, otra referencia directa\npublic class QuestSystem : MonoBehaviour\n{\n    [SerializeField] private AchievementManager _achievements;\n\n    public void OnQuestCompleted(Quest quest)\n    {\n        _achievements.Check(\"first_quest\");\n        if (quest.isDifficult) _achievements.Check(\"hard_quest\");\n    }\n}",
+      "prompt": "Elimina las referencias directas al `AchievementManager` usando un sistema de eventos C# estáticos. Los sistemas de juego deben emitir eventos sin saber que existe el `AchievementManager`.",
+      "criteria": [
+        {
+          "id": "no_direct_reference",
+          "label": "Los sistemas de juego ya no tienen `[SerializeField] AchievementManager` ni acceden a `Instance`",
+          "check": "antiPattern",
+          "pattern": "SerializeField[\\s\\S]{0,50}AchievementManager|AchievementManager\\.Instance",
+          "points": 4
+        },
+        {
+          "id": "uses_csharp_events",
+          "label": "Define un evento C# estático (`event Action`, `UnityEvent` estático o bus de eventos) que los sistemas emiten",
+          "check": "keyword",
+          "pattern": "event Action|event System\\.Action|GameEvents|EventBus|OnGameEvent",
+          "points": 4
+        },
+        {
+          "id": "achievement_subscribes",
+          "label": "El `AchievementManager` se suscribe al evento en lugar de ser llamado directamente",
+          "check": "keyword",
+          "pattern": "\\+=.*OnGameEvent|\\+=.*HandleEvent|Subscribe|AddListener",
+          "points": 3
+        },
+        {
+          "id": "decoupled_emitters",
+          "label": "Los sistemas emiten el evento sin importarles quién escucha",
+          "check": "keyword",
+          "pattern": "GameEvents\\.|EventBus\\.|OnKill\\?\\.|OnQuestComplete\\?\\.",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// GameEvents.cs — bus de eventos estático, sin dependencias\nusing System;\n\npublic static class GameEvents\n{\n    // Cualquier sistema puede emitir, cualquier sistema puede escuchar\n    public static event Action<string, object> OnGameEvent;\n\n    public static void Emit(string eventId, object data = null)\n    {\n        OnGameEvent?.Invoke(eventId, data);\n    }\n}\n\n// CombatSystem.cs — emite eventos sin saber que hay un AchievementManager\nusing UnityEngine;\n\npublic class CombatSystem : MonoBehaviour\n{\n    private int _killCount = 0;\n\n    public void OnEnemyKilled(Enemy enemy)\n    {\n        _killCount++;\n\n        // Emite el evento — no sabe quién escucha\n        GameEvents.Emit(\"enemy_killed\", enemy);\n        if (_killCount >= 100) GameEvents.Emit(\"hundred_kills\");\n        if (enemy.isBoss)      GameEvents.Emit(\"boss_killed\", enemy);\n    }\n}\n\n// AchievementManager.cs — escucha eventos sin que nadie sepa que existe\nusing UnityEngine;\n\npublic class AchievementManager : MonoBehaviour\n{\n    private void OnEnable()  => GameEvents.OnGameEvent += HandleEvent;\n    private void OnDisable() => GameEvents.OnGameEvent -= HandleEvent;\n\n    private void HandleEvent(string eventId, object data)\n    {\n        switch (eventId)\n        {\n            case \"enemy_killed\":   CheckAchievement(\"first_kill\");   break;\n            case \"hundred_kills\":  CheckAchievement(\"hundred_kills\"); break;\n            case \"boss_killed\":    CheckAchievement(\"boss_slayer\");   break;\n            case \"quest_complete\": CheckAchievement(\"first_quest\");   break;\n        }\n    }\n\n    private void CheckAchievement(string id)\n    {\n        // Lógica de desbloqueo de logro\n    }\n}",
+      "alternatives": [
+        "Usar `ScriptableObject` como canal de eventos (patrón de Ryan Hipple) para referencias cruzadas en el Inspector sin código",
+        "Implementar un `EventBus<T>` genérico tipado que evita el uso de `string` como identificador de evento",
+        "Agregar un `AnalyticsSystem` que también escuche `GameEvents` sin modificar ningún otro sistema",
+        "Usar `MessagePipe` o `UniRx` como librerías de mensajería reactiva para juegos Unity más complejos"
+      ],
+      "feedback": {
+        "high": "Implementación correcta del patrón Event Bus. Los sistemas de juego emiten eventos sin referencias directas, y el `AchievementManager` escucha de forma reactiva. Agregar `AnalyticsSystem` que reaccione a los mismos eventos no requiere tocar `CombatSystem` ni `QuestSystem`.",
+        "mid": "Buen enfoque. Tienes el evento estático, pero si olvidas desuscribirte en `OnDisable`, el `AchievementManager` puede recibir eventos después de ser destruido y causar errores. Siempre empareja `OnEnable += handler` con `OnDisable -= handler`.",
+        "low": "Con referencias directas, `CombatSystem` está acoplado a `AchievementManager`: si renombras la clase, cambias la firma, o quieres agregar `AnalyticsSystem`, debes modificar `CombatSystem`. Con un bus de eventos estático, `CombatSystem` no sabe — y no necesita saber — que existe ningún sistema de logros."
+      }
+    },
+    {
+      "id": "sis_010",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["sistemas-juego", "hardcoding"],
+      "title": "Crafteo con recetas hardcodeadas en código",
+      "context": "Tu RPG tiene un sistema de crafteo donde cada receta está hardcodeada como un bloque `if` en `CraftingSystem.cs`. Con 20 recetas el archivo ya tiene **200+ líneas** de condiciones y llamadas a `Remove`/`Give`. Agregar la receta de una nueva espada requiere que un programador escriba código, compile y haga deploy. El diseñador de juego no puede iterar sobre el balance sin involucrar al equipo de código en cada cambio.",
+      "scenario": "Mueve las recetas de crafteo a ScriptableObjects y haz que el CraftingSystem las lea dinámicamente:",
+      "starterCode": "// CraftingSystem.cs — 200+ líneas para 20 recetas\nusing UnityEngine;\n\npublic class CraftingSystem : MonoBehaviour\n{\n    public bool TryCraft(string recipeId)\n    {\n        if (recipeId == \"sword\")\n        {\n            if (Has(\"iron\", 2) && Has(\"wood\", 1) && Has(\"leather\", 1))\n            {\n                Give(\"sword\", 1);\n                Remove(\"iron\", 2);\n                Remove(\"wood\", 1);\n                Remove(\"leather\", 1);\n                return true;\n            }\n        }\n        else if (recipeId == \"shield\")\n        {\n            if (Has(\"wood\", 3) && Has(\"iron\", 1))\n            {\n                Give(\"shield\", 1);\n                Remove(\"wood\", 3);\n                Remove(\"iron\", 1);\n                return true;\n            }\n        }\n        else if (recipeId == \"potion\")\n        {\n            if (Has(\"herb\", 2) && Has(\"water\", 1))\n            {\n                Give(\"potion\", 1);\n                Remove(\"herb\", 2);\n                Remove(\"water\", 1);\n                return true;\n            }\n        }\n        // ... 17 recetas más exactamente igual\n        return false;\n    }\n\n    private bool Has(string itemId, int qty)      => true; // stub\n    private void Give(string itemId, int qty)     {        }\n    private void Remove(string itemId, int qty)   {        }\n}",
+      "prompt": "Define un `ScriptableObject CraftingRecipe` con los ingredientes y el resultado, y reescribe `CraftingSystem` para que cargue y valide recetas desde datos, sin ningún `if` por receta específica.",
+      "criteria": [
+        {
+          "id": "no_hardcoded_recipes",
+          "label": "No hay bloques `if (recipeId == \"sword\")` hardcodeados en el sistema",
+          "check": "antiPattern",
+          "pattern": "recipeId\\s*==\\s*\"\\w+\"|if\\s*\\(recipeId",
+          "points": 4
+        },
+        {
+          "id": "scriptableobject_recipe",
+          "label": "Define un `ScriptableObject CraftingRecipe` con los ingredientes y resultado",
+          "check": "keyword",
+          "pattern": "CraftingRecipe|ScriptableObject|CreateAssetMenu",
+          "points": 4
+        },
+        {
+          "id": "ingredient_list",
+          "label": "La receta tiene una lista de ingredientes (`List<Ingredient>`, `Ingredient[]`) con id y cantidad",
+          "check": "keyword",
+          "pattern": "Ingredient|ingredients|List<.*Ingredient|\\[\\].*ingredient",
+          "points": 3
+        },
+        {
+          "id": "generic_craft_logic",
+          "label": "`TryCraft` evalúa los ingredientes iterando la lista de la receta, sin conocer nombres específicos",
+          "check": "keyword",
+          "pattern": "foreach.*ingredient|for.*ingredients|ingredients\\.All|recipe\\.ingredients",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// CraftingRecipe.cs — ScriptableObject: una receta = un asset\nusing System;\nusing UnityEngine;\n\n[CreateAssetMenu(fileName = \"Recipe_\", menuName = \"Crafting/Recipe\")]\npublic class CraftingRecipe : ScriptableObject\n{\n    public string       recipeId;\n    public Ingredient[] inputs;\n    public ItemData     output;\n    public int          outputQuantity = 1;\n}\n\n[Serializable]\npublic class Ingredient\n{\n    public string itemId;\n    public int    quantity;\n}\n\n// CraftingSystem.cs — genérico, sin if por receta\nusing System.Linq;\nusing UnityEngine;\n\npublic class CraftingSystem : MonoBehaviour\n{\n    // Arrastra aquí todos los assets de receta desde el Project\n    [SerializeField] private CraftingRecipe[] _recipes;\n\n    public bool TryCraft(string recipeId)\n    {\n        // Busca la receta por ID\n        CraftingRecipe recipe = System.Array.Find(_recipes, r => r.recipeId == recipeId);\n        if (recipe == null) return false;\n\n        // Verifica TODOS los ingredientes sin mencionar ningún nombre específico\n        bool hasAll = recipe.inputs.All(ing => Has(ing.itemId, ing.quantity));\n        if (!hasAll) return false;\n\n        // Consume ingredientes y entrega el resultado\n        foreach (Ingredient ing in recipe.inputs)\n            Remove(ing.itemId, ing.quantity);\n\n        Give(recipe.output.id, recipe.outputQuantity);\n        return true;\n    }\n\n    private bool Has(string itemId, int qty)    => true; // implementar con InventorySystem\n    private void Give(string itemId, int qty)   {       }\n    private void Remove(string itemId, int qty) {       }\n}",
+      "alternatives": [
+        "Cargar recetas desde un JSON en `StreamingAssets` para edición en producción sin abrir el Editor de Unity",
+        "Agregar `bool canCraft` y `float craftTime` a `CraftingRecipe` para recetas con tiempo de fabricación",
+        "Mostrar en la UI qué ingredientes faltan iterando `recipe.inputs` y comparando con el inventario actual",
+        "Usar `Resources.LoadAll<CraftingRecipe>(\"Recipes\")` para cargar todas las recetas automáticamente sin array manual"
+      ],
+      "feedback": {
+        "high": "Diseño data-driven correcto. Cada `CraftingRecipe` es un asset independiente: el diseñador puede crear, duplicar y balancear recetas desde el Project window sin tocar código. `TryCraft` funciona para cualquier receta con `inputs.All(...)` sin casos especiales.",
+        "mid": "Buen avance. Tienes el ScriptableObject, pero si `TryCraft` todavía tiene un `switch` o `if` por nombre de receta para hacer algo especial, el problema persiste parcialmente. La validación debe ser completamente genérica: iterar `recipe.inputs` sin importar cuáles son.",
+        "low": "Con 20 recetas hardcodeadas tienes **200+ líneas de código** donde cambiar la receta de la espada (de 2 de hierro a 3) requiere un programador. Con `ScriptableObject CraftingRecipe`, el diseñador arrastra un asset y cambia un número en el Inspector — sin código, sin compilación."
+      }
+    },
+    {
+      "id": "sis_011",
+      "difficulty": 3,
+      "genre": "Racing",
+      "tags": ["sistemas-juego", "god-class"],
+      "title": "Replay system: no hay registro de acciones del jugador",
+      "context": "Tu juego de carreras quiere agregar un **sistema de replay** que muestre la última vuelta del jugador. El problema es que `InputHandler.cs` procesa los inputs y los aplica directamente a la física del auto, descartando los datos inmediatamente. No existe ningún registro de lo que hizo el jugador. Implementar replay ahora requiere refactorizar cómo se aplican los inputs desde cero, ya que la arquitectura actual no contempla **grabar ni reproducir** acciones.",
+      "scenario": "Refactoriza el sistema de input usando el Command Pattern para grabar y reproducir acciones del jugador:",
+      "starterCode": "// InputHandler.cs — procesa y descarta inputs inmediatamente\nusing UnityEngine;\n\npublic class InputHandler : MonoBehaviour\n{\n    [SerializeField] private CarController _car;\n\n    private void Update()\n    {\n        float steer     = Input.GetAxis(\"Horizontal\");\n        float throttle  = Input.GetAxis(\"Vertical\");\n        bool  handbrake = Input.GetButton(\"Jump\");\n\n        // Los inputs se aplican y se olvidan — no hay registro\n        _car.SetSteering(steer);\n        _car.SetThrottle(throttle);\n        _car.SetHandbrake(handbrake);\n    }\n}",
+      "prompt": "Implementa una interfaz `IPlayerCommand` con `Execute()` y `timestamp`, un sistema de grabación que almacene comandos en una lista, y un modo de reproducción que los replaye con el timing original.",
+      "criteria": [
+        {
+          "id": "iplayercommand_interface",
+          "label": "Define una interfaz o clase base `IPlayerCommand` con `Execute()` y `timestamp`",
+          "check": "keyword",
+          "pattern": "IPlayerCommand|PlayerCommand|interface.*Command",
+          "points": 4
+        },
+        {
+          "id": "recording_list",
+          "label": "Almacena los comandos en una lista durante el modo de grabación",
+          "check": "keyword",
+          "pattern": "_recording|_commands|List<IPlayerCommand>|List<.*Command",
+          "points": 3
+        },
+        {
+          "id": "playback_mode",
+          "label": "Implementa un modo de reproducción que replaye los comandos con el timing original",
+          "check": "keyword",
+          "pattern": "Playback|Replay|replay|playback|IsReplaying|_isReplaying",
+          "points": 4
+        },
+        {
+          "id": "timestamp_based",
+          "label": "Cada comando tiene un `timestamp` para reproducir con el timing correcto",
+          "check": "keyword",
+          "pattern": "timestamp|Timestamp|Time\\.time|recordTime",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// IPlayerCommand.cs — interfaz que encapsula una acción del jugador\npublic interface IPlayerCommand\n{\n    float Timestamp { get; }\n    void  Execute(CarController car);\n}\n\n// DriveCommand.cs — snapshot del estado de input en un momento dado\nusing System;\n\n[Serializable]\npublic class DriveCommand : IPlayerCommand\n{\n    public float Timestamp  { get; }\n    public float Steer      { get; }\n    public float Throttle   { get; }\n    public bool  Handbrake  { get; }\n\n    public DriveCommand(float time, float steer, float throttle, bool handbrake)\n    {\n        Timestamp = time;\n        Steer     = steer;\n        Throttle  = throttle;\n        Handbrake = handbrake;\n    }\n\n    public void Execute(CarController car)\n    {\n        car.SetSteering(Steer);\n        car.SetThrottle(Throttle);\n        car.SetHandbrake(Handbrake);\n    }\n}\n\n// InputHandler.cs — graba y reproduce\nusing System.Collections;\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class InputHandler : MonoBehaviour\n{\n    [SerializeField] private CarController _car;\n\n    private List<IPlayerCommand> _recording  = new List<IPlayerCommand>();\n    private bool                  _isRecording = false;\n    private bool                  _isReplaying = false;\n\n    public void StartRecording()\n    {\n        _recording.Clear();\n        _isRecording = true;\n    }\n\n    public void StopRecording()\n    {\n        _isRecording = false;\n    }\n\n    public void StartReplay()\n    {\n        if (_isReplaying) return;\n        StartCoroutine(PlaybackRoutine());\n    }\n\n    private IEnumerator PlaybackRoutine()\n    {\n        _isReplaying = true;\n        float startTime = Time.time;\n\n        foreach (IPlayerCommand cmd in _recording)\n        {\n            // Espera hasta que corresponda ejecutar este comando\n            float waitUntil = startTime + cmd.Timestamp;\n            yield return new WaitUntil(() => Time.time >= waitUntil);\n            cmd.Execute(_car);\n        }\n\n        _isReplaying = false;\n    }\n\n    private void Update()\n    {\n        if (_isReplaying) return; // Durante replay no procesa input real\n\n        float steer    = Input.GetAxis(\"Horizontal\");\n        float throttle = Input.GetAxis(\"Vertical\");\n        bool  brake    = Input.GetButton(\"Jump\");\n\n        var cmd = new DriveCommand(Time.time, steer, throttle, brake);\n        cmd.Execute(_car);\n\n        if (_isRecording)\n            _recording.Add(cmd);\n    }\n}",
+      "alternatives": [
+        "Serializar `List<DriveCommand>` a JSON al finalizar la carrera para guardar replays en disco entre sesiones",
+        "Usar un `CircularBuffer<DriveCommand>` de tamaño fijo para replay de los últimos N segundos (\"instant replay\")",
+        "Comprimir la grabación guardando solo cuando cambia el estado de input, no cada frame",
+        "Sincronizar el replay con el estado inicial del auto (posición, velocidad) usando un snapshot del estado físico"
+      ],
+      "feedback": {
+        "high": "Implementación correcta del Command Pattern para replay. Cada `DriveCommand` es un snapshot inmutable con `Timestamp`, la grabación es una lista ordenada de comandos, y la reproducción los replaya con `WaitUntil` respetando el timing original. El mismo código graba y reproduce cualquier sesión.",
+        "mid": "Buen progreso. Tienes la estructura de grabación, pero si la reproducción aplica todos los comandos inmediatamente sin respetar el `Timestamp`, el replay será instantáneo en lugar de a tiempo real. Usa `WaitUntil(() => Time.time >= startTime + cmd.Timestamp)` para sincronizar el timing.",
+        "low": "Sin grabar los inputs, el replay es imposible: el motor de físicas es determinístico dado el mismo input, pero si no guardaste el input nunca puedes reproducirlo. Cada `DriveCommand` es un snapshot de `{steer, throttle, handbrake, timestamp}` — con eso y el estado inicial del auto, puedes reproducir cualquier vuelta exactamente."
+      }
+    },
+    {
+      "id": "sis_012",
+      "difficulty": 3,
+      "genre": "Dungeon Crawler",
+      "tags": ["sistemas-juego", "hardcoding"],
+      "title": "Loot table con probabilidades hardcodeadas en código",
+      "context": "Tu dungeon crawler tiene un `LootSystem` que decide qué drop aparece al matar un enemigo usando una cadena de `if/else if` con probabilidades absolutas hardcodeadas. Cambiar la probabilidad de un ítem legendario del 5% al 3% requiere modificar el código y recompilar. Con 10 tipos de enemigo, cada uno con su propia tabla de loot, hay **10 métodos distintos** con cadenas de `if` difíciles de balancear y comparar entre sí.",
+      "scenario": "Reemplaza las probabilidades hardcodeadas por un ScriptableObject LootTable con pesos relativos normalizados:",
+      "starterCode": "// LootSystem.cs — probabilidades absolutas hardcodeadas\nusing UnityEngine;\n\npublic class LootSystem : MonoBehaviour\n{\n    // Probabilidades fijas: si cambia una, hay que recalcular todas las demás\n    public void SpawnLoot(Vector3 position)\n    {\n        float roll = Random.value; // 0.0 a 1.0\n\n        if (roll < 0.50f)\n        {\n            SpawnGold(position);\n        }\n        else if (roll < 0.80f)\n        {\n            SpawnPotion(position);\n        }\n        else if (roll < 0.95f)\n        {\n            SpawnWeapon(position);\n        }\n        else\n        {\n            SpawnLegendary(position);\n        }\n    }\n\n    private void SpawnGold(Vector3 pos)     { Instantiate(goldPrefab,     pos, Quaternion.identity); }\n    private void SpawnPotion(Vector3 pos)   { Instantiate(potionPrefab,   pos, Quaternion.identity); }\n    private void SpawnWeapon(Vector3 pos)   { Instantiate(weaponPrefab,   pos, Quaternion.identity); }\n    private void SpawnLegendary(Vector3 pos){ Instantiate(legendaryPrefab, pos, Quaternion.identity); }\n\n    [SerializeField] private GameObject goldPrefab;\n    [SerializeField] private GameObject potionPrefab;\n    [SerializeField] private GameObject weaponPrefab;\n    [SerializeField] private GameObject legendaryPrefab;\n}",
+      "prompt": "Crea un `ScriptableObject LootTable` con un array de `LootEntry { item, weight }` y un método `Roll()` que normalice los pesos automáticamente. El `LootSystem` debe funcionar con cualquier tabla sin código específico por ítem.",
+      "criteria": [
+        {
+          "id": "no_hardcoded_probabilities",
+          "label": "No hay probabilidades absolutas hardcodeadas (`< 0.50f`, `< 0.80f`, etc.) en la lógica de loot",
+          "check": "antiPattern",
+          "pattern": "roll\\s*<\\s*0\\.(?:50|80|95|[0-9]+)f",
+          "points": 4
+        },
+        {
+          "id": "loot_table_so",
+          "label": "Define un `ScriptableObject LootTable` con entradas de ítem y peso",
+          "check": "keyword",
+          "pattern": "LootTable|LootEntry|ScriptableObject",
+          "points": 4
+        },
+        {
+          "id": "weight_based_roll",
+          "label": "El sorteo usa pesos relativos: suma total de pesos y hace `Random.Range(0, totalWeight)`",
+          "check": "keyword",
+          "pattern": "totalWeight|weightSum|Random\\.Range.*weight|weight.*Random\\.Range",
+          "points": 3
+        },
+        {
+          "id": "generic_spawn",
+          "label": "El sistema de spawn es genérico — usa el prefab de la entrada seleccionada sin switch por tipo",
+          "check": "antiPattern",
+          "pattern": "LootSystem[\\s\\S]{0,500}(?:SpawnGold|SpawnPotion|SpawnWeapon|SpawnLegendary)",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// LootTable.cs — ScriptableObject con pesos relativos, editable sin código\nusing System;\nusing UnityEngine;\n\n[CreateAssetMenu(fileName = \"LootTable_\", menuName = \"Loot/LootTable\")]\npublic class LootTable : ScriptableObject\n{\n    public LootEntry[] entries;\n\n    // Devuelve el prefab ganador según los pesos relativos\n    public GameObject Roll()\n    {\n        if (entries == null || entries.Length == 0) return null;\n\n        // Suma total de pesos — no importa si suman 100 o 1000\n        float totalWeight = 0f;\n        foreach (LootEntry entry in entries)\n            totalWeight += entry.weight;\n\n        // Sorteo en el rango [0, totalWeight)\n        float roll = UnityEngine.Random.Range(0f, totalWeight);\n\n        // Encuentra el ganador acumulando pesos\n        float cumulative = 0f;\n        foreach (LootEntry entry in entries)\n        {\n            cumulative += entry.weight;\n            if (roll < cumulative)\n                return entry.prefab;\n        }\n\n        // Fallback: último elemento\n        return entries[entries.Length - 1].prefab;\n    }\n}\n\n[Serializable]\npublic class LootEntry\n{\n    public string     label;   // Nombre descriptivo para el Inspector\n    public GameObject prefab;\n    public float      weight;  // Peso relativo — no necesita sumar 100\n}\n\n// LootSystem.cs — completamente genérico, funciona con cualquier LootTable\nusing UnityEngine;\n\npublic class LootSystem : MonoBehaviour\n{\n    // Cada tipo de enemigo puede tener su propia tabla\n    [SerializeField] private LootTable _lootTable;\n\n    public void SpawnLoot(Vector3 position)\n    {\n        GameObject prefab = _lootTable.Roll();\n\n        if (prefab != null)\n            Instantiate(prefab, position, Quaternion.identity);\n    }\n}",
+      "alternatives": [
+        "Agregar `float dropChance` a `LootTable` para que ciertos enemigos no siempre suelten loot",
+        "Usar `Object Pooling` para los drops frecuentes (oro, pociones) para evitar `Instantiate` en cada kill",
+        "Agregar soporte para `minCount`/`maxCount` en `LootEntry` para drops con cantidad variable (1-3 monedas de oro)",
+        "Crear tablas de loot anidadas: un `LootEntry` puede apuntar a otra `LootTable` para drops con sub-categorías"
+      ],
+      "feedback": {
+        "high": "Implementación correcta. El sistema de pesos relativos es superior a las probabilidades absolutas: puedes cambiar el peso de \"legendario\" de 5 a 2 sin recalcular nada más — `Roll()` renormaliza automáticamente. Con un `ScriptableObject` por tipo de enemigo, el diseñador balancea el loot desde el Inspector.",
+        "mid": "Buen avance. Tienes el ScriptableObject, pero si los pesos se esperan que sumen exactamente 1.0 o 100, el diseñador debe hacer las cuentas manualmente. El sorteo debe sumar los pesos automáticamente y hacer `Random.Range(0, totalWeight)` — funciona con cualquier escala sin restricciones.",
+        "low": "El problema de las probabilidades absolutas (`< 0.50f`, `< 0.80f`) es que cambiar una obliga a recalcular todas las demás para que sumen 1.0. Con pesos relativos (`gold: 50, potion: 30, weapon: 15, legendary: 5`), cambiar un peso no afecta a los demás — `Roll()` hace la normalización automáticamente."
+      }
+    }
+  ]
+}
