@@ -31,10 +31,10 @@ export class SidebarManager {
   render(groups, unlockedIds, activeSectionId, getProgress) {
     this.#nav.innerHTML = '';
 
-    for (const group of groups) {
-      const groupEl = this.#renderGroup(group, unlockedIds, activeSectionId, getProgress);
+    groups.forEach((group, i) => {
+      const groupEl = this.#renderGroup(group, i + 1, unlockedIds, activeSectionId, getProgress);
       this.#nav.appendChild(groupEl);
-    }
+    });
   }
 
   /** Highlights active section without full re-render. */
@@ -46,13 +46,14 @@ export class SidebarManager {
 
   // ─── Private ─────────────────────────────────────────────────────────────────
 
-  #renderGroup(group, unlockedIds, activeSectionId, getProgress) {
+  #renderGroup(group, groupNum, unlockedIds, activeSectionId, getProgress) {
     const wrapper = document.createElement('div');
     wrapper.className = 'nav-group';
     wrapper.style.setProperty('--group-color', group.color ?? '#58a6ff');
 
     wrapper.innerHTML = `
       <div class="nav-group-header">
+        <span class="nav-group-num">${groupNum}</span>
         <span class="nav-group-icon">${group.icon}</span>
         <span class="nav-group-title">${group.title}</span>
         <button class="nav-group-toggle" aria-expanded="true" title="Colapsar grupo">▼</button>

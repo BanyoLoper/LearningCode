@@ -1,0 +1,581 @@
+{
+  "category": "optimizacion",
+  "title": "Complejidad y Optimización",
+  "icon": "📈",
+  "color": "#FF5722",
+  "cases": [
+    {
+      "id": "opt_001",
+      "difficulty": 2,
+      "genre": "Infinite Runner",
+      "tags": ["big-o", "bucles-anidados", "object-pooling"],
+      "title": "SpawnManager con O(n×m) en Update",
+      "context": "Estás en semana 6 del desarrollo de tu **infinite runner** estilo Subway Surfers. El juego genera tramos de plataforma en tiempo real y coloca obstáculos en ellos al vuelo. En pruebas tempranas todo corría a 60 FPS, pero ahora que tienes más variedad (12 tipos de obstáculo, hasta 20 plataformas activas) los testers reportan **caídas a 15–18 FPS** a partir del minuto 2. Abres el **Profiler** de Unity y el hot path apunta directo a `SpawnManager.Update`: está consumiendo 4 ms por frame él solo.",
+      "scenario": "Identifica por qué este código escala tan mal y reescríbelo:",
+      "starterCode": "// SpawnManager.cs\npublic class SpawnManager : MonoBehaviour\n{\n    [SerializeField] private List<Platform> activePlatforms;\n    [SerializeField] private List<GameObject> obstaclePrefabs;\n\n    private void Update()\n    {\n        for (int i = 0; i < activePlatforms.Count; i++)\n        {\n            for (int j = 0; j < obstaclePrefabs.Count; j++)\n            {\n                if (activePlatforms[i].NeedsObstacle() &&\n                    !activePlatforms[i].HasObstacleType(obstaclePrefabs[j].name))\n                {\n                    GameObject obs = Instantiate(\n                        obstaclePrefabs[j],\n                        activePlatforms[i].GetSpawnPoint(),\n                        Quaternion.identity\n                    );\n                    activePlatforms[i].RegisterObstacle(obs);\n                }\n            }\n        }\n    }\n}",
+      "prompt": "Reescribe el `SpawnManager` eliminando la complejidad O(n×m) por frame. Puedes cambiar la arquitectura, usar estructuras de datos distintas o introducir eventos.",
+      "criteria": [
+        {
+          "id": "no_nested_loop",
+          "label": "Elimina el bucle anidado (no hay `for` dentro de `for`)",
+          "check": "antiPattern",
+          "pattern": "(?:for |foreach )[\\s\\S]{0,600}(?:for |foreach )",
+          "points": 4
+        },
+        {
+          "id": "no_update_scan",
+          "label": "Update ya no recorre la lista de plataformas cada frame",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,500}(?:for |foreach )",
+          "points": 3
+        },
+        {
+          "id": "uses_pool",
+          "label": "Implementa alguna estructura de Object Pool (`Queue`, `Stack`, lista de inactivos)",
+          "check": "keyword",
+          "pattern": "Queue|Stack|[Pp]ool|inactive|Inactive",
+          "points": 3
+        },
+        {
+          "id": "pre_initialize",
+          "label": "Inicializa el pool o estructuras en `Awake` / `Start`, no en `Update`",
+          "check": "keyword",
+          "pattern": "Awake|Start",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// SpawnManager.cs — Object Pool con Dictionary + eventos de plataforma\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class SpawnManager : MonoBehaviour\n{\n    [SerializeField] private List<GameObject> obstaclePrefabs;\n    [SerializeField] private int poolSizePerType = 8;\n\n    // Pool separado por tipo: nombre del prefab → cola de instancias\n    private Dictionary<string, Queue<GameObject>> _pool;\n\n    private void Awake()\n    {\n        _pool = new Dictionary<string, Queue<GameObject>>();\n\n        // Toda la instanciación ocurre UNA SOLA VEZ al inicio\n        foreach (var prefab in obstaclePrefabs)\n        {\n            var queue = new Queue<GameObject>(poolSizePerType);\n            for (int i = 0; i < poolSizePerType; i++)\n            {\n                var obj = Instantiate(prefab);\n                obj.SetActive(false);\n                queue.Enqueue(obj);\n            }\n            _pool[prefab.name] = queue;\n        }\n    }\n\n    // Las plataformas llaman a este método cuando lo necesitan.\n    // Update ya no existe — CERO polling.\n    public void RequestObstacle(Platform platform, string type)\n    {\n        if (!_pool.TryGetValue(type, out var queue) || queue.Count == 0)\n            return;\n\n        GameObject obs = queue.Dequeue();\n        obs.transform.SetPositionAndRotation(\n            platform.GetSpawnPoint(), Quaternion.identity);\n        obs.SetActive(true);\n        platform.RegisterObstacle(obs);\n    }\n\n    // La plataforma llama esto al desactivarse para devolver el objeto\n    public void ReturnToPool(string type, GameObject obs)\n    {\n        obs.SetActive(false);\n        if (_pool.TryGetValue(type, out var queue))\n            queue.Enqueue(obs);\n    }\n}",
+      "alternatives": [
+        "Usar `Platform.OnReadyForObstacle` (UnityEvent o C# event) para suscribirse en lugar de polling",
+        "Corrutina con `yield return new WaitUntil(() => platform.NeedsObstacle())` para pausar entre spawns",
+        "Pre-asignar obstáculos al generar cada plataforma (spawn proactivo) en lugar de reactivo",
+        "Usar `Physics.OverlapBox` en la zona de spawn para verificar colisiones antes de colocar"
+      ],
+      "feedback": {
+        "high": "Excelente análisis. Eliminaste la complejidad **O(n×m)** y delegaste el trigger de spawn a la plataforma misma. Con un `Dictionary<string, Queue<T>>` el lookup es **O(1)** y Instantiate ya no genera garbage en runtime.",
+        "mid": "Buen progreso. Eliminaste el bucle anidado, pero revisa si `Instantiate` sigue ejecutándose en runtime: cada llamada genera un objeto en el heap y puede activar el GC, causando micro-stutters. Inicializa el pool entero en `Awake`.",
+        "low": "El problema central es que `Update` recorre **todas las plataformas × todos los prefabs** cada frame. Con 20 plataformas y 12 tipos ya son 240 iteraciones × 60 FPS = 14 400 evaluaciones por segundo. Pregúntate: ¿cada cuándo realmente necesitas colocar un obstáculo? Solo cuando la plataforma lo pide — no constantemente."
+      }
+    },
+    {
+      "id": "opt_002",
+      "difficulty": 2,
+      "genre": "RPG de Acción",
+      "tags": ["big-o", "bucles-anidados", "physics-triggers"],
+      "title": "AuraManager: buffs de área con O(n²) por frame",
+      "context": "Tu RPG de acción tiene unidades que pueden emitir **auras** (como la aura de fuerza de un jefe que potencia a sus aliados cercanos). El `AuraManager` central revisa cada frame qué unidades tienen aura activa y aplica el buff a las que están en rango. Con 5 enemigos en pantalla el juego va bien, pero en la sala del jefe con **24 unidades activas** el Profiler muestra que `AuraManager.Update` consume el **38% del tiempo de CPU** de ese frame.",
+      "scenario": "Analiza el código y propón una solución que no dependa de iterar todas las unidades cada frame:",
+      "starterCode": "// AuraManager.cs\npublic class AuraManager : MonoBehaviour\n{\n    private List<Unit> _allUnits = new List<Unit>();\n\n    public void Register(Unit u)   => _allUnits.Add(u);\n    public void Unregister(Unit u) => _allUnits.Remove(u);\n\n    // O(n²) — se ejecuta 60 veces por segundo\n    private void Update()\n    {\n        foreach (Unit caster in _allUnits)\n        {\n            if (!caster.HasAura) continue;\n\n            foreach (Unit target in _allUnits)\n            {\n                if (target == caster) continue;\n\n                float dist = Vector3.Distance(\n                    caster.transform.position,\n                    target.transform.position\n                );\n\n                if (dist <= caster.AuraRadius)\n                    target.ApplyBuff(caster.AuraType, caster.AuraPower);\n                else\n                    target.RemoveBuff(caster.AuraType);\n            }\n        }\n    }\n}",
+      "prompt": "Reescribe la lógica para que los buffs de área se apliquen y remuevan **sin iterar todas las unidades cada frame**. Pista: Unity ya tiene un sistema que detecta superposición en el espacio.",
+      "criteria": [
+        {
+          "id": "no_nested_loop",
+          "label": "Elimina el bucle anidado sobre todas las unidades",
+          "check": "antiPattern",
+          "pattern": "(?:for |foreach )[\\s\\S]{0,600}(?:for |foreach )",
+          "points": 4
+        },
+        {
+          "id": "uses_physics",
+          "label": "Usa el sistema de físicas de Unity para detectar unidades en rango (`OnTriggerEnter`, `OnTriggerExit`, `OverlapSphere`)",
+          "check": "keyword",
+          "pattern": "OnTrigger|OverlapSphere|SphereCollider",
+          "points": 4
+        },
+        {
+          "id": "event_on_change",
+          "label": "El buff se aplica/remueve solo cuando algo cambia (entra/sale del rango), no cada frame",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,400}(?:ApplyBuff|RemoveBuff|AddBuff)",
+          "points": 3
+        },
+        {
+          "id": "no_update_distance",
+          "label": "Ya no hay cálculo de `Vector3.Distance` en Update",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,500}Vector3\\.Distance",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// AuraCaster.cs — componente que va en cada unidad que puede emitir aura\nusing UnityEngine;\n\n[RequireComponent(typeof(SphereCollider))]\npublic class AuraCaster : MonoBehaviour\n{\n    private Unit _owner;\n    private SphereCollider _trigger;\n\n    private void Awake()\n    {\n        _owner   = GetComponent<Unit>();\n        _trigger = GetComponent<SphereCollider>();\n        _trigger.isTrigger = true;\n        _trigger.enabled   = false; // inactivo hasta que se active el aura\n    }\n\n    public void ActivateAura(float radius)\n    {\n        _trigger.radius  = radius;\n        _trigger.enabled = true;\n    }\n\n    public void DeactivateAura() => _trigger.enabled = false;\n\n    // Unity llama esto SOLO cuando otra unidad ENTRA al rango — O(1) por evento\n    private void OnTriggerEnter(Collider other)\n    {\n        if (other.TryGetComponent<Unit>(out var target))\n            target.ApplyBuff(_owner.AuraType, _owner.AuraPower);\n    }\n\n    // Unity llama esto SOLO cuando otra unidad SALE del rango — O(1) por evento\n    private void OnTriggerExit(Collider other)\n    {\n        if (other.TryGetComponent<Unit>(out var target))\n            target.RemoveBuff(_owner.AuraType);\n    }\n\n    // AuraManager central ya NO existe — cada unidad se gestiona a sí misma\n}",
+      "alternatives": [
+        "Usar `Physics.OverlapSphere` en un `InvokeRepeating` cada 0.2s en lugar de cada frame — reduce el costo 12×",
+        "Mantener un `HashSet<Unit> _affected` en la propia unidad emisora para un cleanup limpio al desactivar",
+        "Usar `Physics2D.OverlapCircle` si el juego es 2D — mismo principio, diferente API",
+        "Emitir un C# `event` cuando el aura se activa/desactiva para que otras unidades se suscriban reactivamente"
+      ],
+      "feedback": {
+        "high": "Perfecto. Delegaste la detección de rango al motor de físicas de Unity con `OnTriggerEnter` / `OnTriggerExit`. Ahora el costo por frame es **O(0)** para el aura — Unity solo invoca los callbacks cuando hay un cambio real de colisión.",
+        "mid": "Buen avance. Eliminaste el doble `foreach`, pero considera si aún estás calculando distancias en `Update`: cada `Vector3.Distance` es una raíz cuadrada por frame. Deja que el `SphereCollider` con `isTrigger = true` haga ese trabajo — el motor de físicas lo optimiza internamente con broadphase.",
+        "low": "Con 24 unidades, el código original hace 24×24 = **576 comparaciones de distancia × 60 FPS = 34 560 raíces cuadradas por segundo**. La solución no es optimizar el loop — es eliminarlo. Los `SphereCollider` con `isTrigger` hacen exactamente esto: Unity solo notifica cuando algo entra o sale, sin polling."
+      }
+    },
+    {
+      "id": "opt_003",
+      "difficulty": 2,
+      "genre": "Tower Defense",
+      "tags": ["big-o", "bucles-anidados", "physics-triggers", "caching"],
+      "title": "Torretas buscando el enemigo más cercano cada frame",
+      "context": "Tu tower defense (estilo Kingdom Rush) tiene un `TurretManager` central que cada frame recorre todas las torretas y, por cada torreta, recorre todos los enemigos activos para encontrar el más cercano. Al principio con 8 torretas y 15 enemigos el juego va bien, pero en las oleadas finales con **18 torretas y 45 enemigos** el FPS cae de 60 a 28. El Profiler confirma: `TurretManager.Update` ejecuta **810 `Vector3.Distance` por frame**.",
+      "scenario": "El problema está en el doble bucle del manager. Reestructura el sistema para que las torretas no necesiten escanear a todos los enemigos cada frame:",
+      "starterCode": "// TurretManager.cs\npublic class TurretManager : MonoBehaviour\n{\n    public List<Turret> AllTurrets = new List<Turret>();\n    public List<Enemy>  AllEnemies = new List<Enemy>();\n\n    // O(torretas × enemigos) — cada frame, sin excepciones\n    private void Update()\n    {\n        foreach (Turret turret in AllTurrets)\n        {\n            Enemy   closest = null;\n            float   minDist = float.MaxValue;\n\n            foreach (Enemy enemy in AllEnemies)\n            {\n                float dist = Vector3.Distance(\n                    turret.transform.position,\n                    enemy.transform.position\n                );\n\n                if (dist < turret.Range && dist < minDist)\n                {\n                    minDist = dist;\n                    closest = enemy;\n                }\n            }\n\n            turret.SetTarget(closest);\n        }\n    }\n}",
+      "prompt": "Reescribe el sistema de targeting de torretas para que **no haya un doble bucle global en Update**. Cada torreta debe encontrar su objetivo sin consultar una lista global de enemigos cada frame.",
+      "criteria": [
+        {
+          "id": "no_global_scan",
+          "label": "Las torretas ya no leen `AllEnemies` ni una lista global de enemigos en Update",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,600}AllEnemies|Update[\\s\\S]{0,600}allEnemies",
+          "points": 3
+        },
+        {
+          "id": "no_nested_loop",
+          "label": "No hay bucle anidado en Update",
+          "check": "antiPattern",
+          "pattern": "(?:for |foreach )[\\s\\S]{0,600}(?:for |foreach )",
+          "points": 4
+        },
+        {
+          "id": "uses_trigger_or_overlap",
+          "label": "Usa `OnTriggerEnter` / `OnTriggerExit` o `Physics.OverlapSphere` para detectar enemigos en rango",
+          "check": "keyword",
+          "pattern": "OnTriggerEnter|OnTriggerExit|OverlapSphere|SphereCollider",
+          "points": 4
+        },
+        {
+          "id": "caches_target",
+          "label": "Cachea el objetivo actual y solo lo recalcula cuando es necesario",
+          "check": "keyword",
+          "pattern": "_currentTarget|_target|currentTarget|cachedTarget",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Turret.cs — cada torreta gestiona su propio rango con un SphereCollider trigger\nusing System.Collections.Generic;\nusing UnityEngine;\n\n[RequireComponent(typeof(SphereCollider))]\npublic class Turret : MonoBehaviour\n{\n    [SerializeField] private float fireRate = 1f;\n    // El radio del SphereCollider = rango de la torreta (configúralo en el Inspector)\n\n    private float _fireCooldown;\n    private Enemy _currentTarget;\n    private readonly HashSet<Enemy> _enemiesInRange = new HashSet<Enemy>();\n\n    private void Awake()\n    {\n        // Asegúrate de que el SphereCollider esté marcado como isTrigger en el Inspector\n        GetComponent<SphereCollider>().isTrigger = true;\n    }\n\n    // Unity llama esto cuando un enemigo ENTRA al rango — no polling\n    private void OnTriggerEnter(Collider other)\n    {\n        if (other.TryGetComponent<Enemy>(out var enemy))\n        {\n            _enemiesInRange.Add(enemy);\n            if (_currentTarget == null) _currentTarget = enemy;\n        }\n    }\n\n    // Unity llama esto cuando un enemigo SALE del rango — no polling\n    private void OnTriggerExit(Collider other)\n    {\n        if (other.TryGetComponent<Enemy>(out var enemy))\n        {\n            _enemiesInRange.Remove(enemy);\n            if (_currentTarget == enemy) PickNewTarget();\n        }\n    }\n\n    // Solo recalcula el objetivo cuando el actual muere o sale del rango\n    private void PickNewTarget()\n    {\n        _currentTarget = null;\n        float minDist = float.MaxValue;\n        foreach (Enemy e in _enemiesInRange) // SOLO los que están en rango\n        {\n            float d = Vector3.Distance(transform.position, e.transform.position);\n            if (d < minDist) { minDist = d; _currentTarget = e; }\n        }\n    }\n\n    private void Update()\n    {\n        // Limpieza si el enemigo fue destruido sin salir del trigger\n        if (_currentTarget != null && !_currentTarget.IsAlive)\n        {\n            _enemiesInRange.Remove(_currentTarget);\n            PickNewTarget();\n        }\n        if (_currentTarget == null) return;\n\n        transform.LookAt(_currentTarget.transform);\n        _fireCooldown -= Time.deltaTime;\n        if (_fireCooldown <= 0f)\n        {\n            Shoot(_currentTarget);\n            _fireCooldown = 1f / fireRate;\n        }\n    }\n\n    private void Shoot(Enemy target) { /* lanzar proyectil desde pool */ }\n\n    // TurretManager central ya no necesita Update — se puede eliminar\n}",
+      "alternatives": [
+        "Usar `Physics.OverlapSphere` dentro de la propia torreta en un `InvokeRepeating` cada 0.15s — menos callbacks pero igual de eficiente",
+        "Suscribir cada torreta al evento `Enemy.OnSpawned` y `Enemy.OnDied` para mantener la lista local de enemigos activos",
+        "Usar `SortedSet<Enemy>` con un `IComparer` por distancia para mantener siempre el objetivo más cercano actualizado",
+        "Implementar un `EnemyPathNode` que notifique a las torretas cercanas al pasar por checkpoints del camino"
+      ],
+      "feedback": {
+        "high": "Excelente. Cada torreta ahora gestiona su propio `HashSet<Enemy>` de enemigos en rango, y el cálculo de objetivo solo ocurre cuando algo **cambia** (entra, sale, muere). En lugar de 810 `Distance` por frame tienes 0 en frames sin cambios.",
+        "mid": "Bien encaminado. Eliminaste el manager global, pero si sigues llamando `OverlapSphere` en `Update`, considera reducir la frecuencia con `InvokeRepeating` o cambiar a un `SphereCollider` trigger — que es exactamente lo que OverlapSphere hace internamente, pero más eficiente porque Unity lo integra en la fase de broadphase.",
+        "low": "Imagina 18 torretas × 45 enemigos = **810 raíces cuadradas por frame × 60 FPS = 48 600 operaciones por segundo** solo para targeting. La clave es que no necesitas buscar el objetivo constantemente — solo cuando un enemigo entra o sale del rango. El `SphereCollider` con `isTrigger` hace exactamente eso."
+      }
+    },
+    {
+      "id": "opt_004",
+      "difficulty": 3,
+      "genre": "Top-down Shooter",
+      "tags": ["big-o", "bucles-anidados", "physics-layers", "object-pooling"],
+      "title": "Colisión manual de proyectiles: O(balas × enemigos) en Update",
+      "context": "Tu shooter top-down estilo **Enter the Gungeon** tiene un `ProjectileManager` que revisa cada frame si alguna bala ha tocado a algún enemigo. El jugador puede disparar ráfagas de 8 balas por segundo, y en combates intensos hay 80–100 proyectiles activos simultáneamente (balas del jugador + balas enemigas). Con 30 enemigos activos el Profiler muestra **2 400–3 000 llamadas a `Vector3.Distance` por frame**. En dispositivos móviles el juego ya no supera los 22 FPS.",
+      "scenario": "El `ProjectileManager` hace colisión manual en Update. Reescribe el sistema de proyectiles para que Unity maneje la detección de colisiones:",
+      "starterCode": "// ProjectileManager.cs\npublic class ProjectileManager : MonoBehaviour\n{\n    public static ProjectileManager Instance;\n    public List<Projectile> ActiveProjectiles = new List<Projectile>();\n    public List<Enemy>      ActiveEnemies     = new List<Enemy>();\n\n    private void Awake() => Instance = this;\n\n    // O(balas × enemigos) — hot path principal del juego\n    private void Update()\n    {\n        for (int i = ActiveProjectiles.Count - 1; i >= 0; i--)\n        {\n            Projectile p = ActiveProjectiles[i];\n            if (!p.gameObject.activeSelf) continue;\n\n            for (int j = ActiveEnemies.Count - 1; j >= 0; j--)\n            {\n                Enemy e = ActiveEnemies[j];\n                float dist = Vector3.Distance(\n                    p.transform.position,\n                    e.transform.position\n                );\n\n                if (dist < p.HitRadius + e.ColliderRadius)\n                {\n                    e.TakeDamage(p.Damage);\n                    ActiveProjectiles.RemoveAt(i);\n                    Destroy(p.gameObject);\n                    break;\n                }\n            }\n        }\n    }\n}",
+      "prompt": "Elimina `ProjectileManager` como sistema de colisión central. Cada proyectil debe detectar sus propias colisiones usando el motor de físicas de Unity, con un pool para evitar `Instantiate`/`Destroy` en runtime.",
+      "criteria": [
+        {
+          "id": "no_manual_distance",
+          "label": "Elimina los chequeos manuales de `Vector3.Distance` para colisión",
+          "check": "antiPattern",
+          "pattern": "Vector3\\.Distance[\\s\\S]{0,200}HitRadius|HitRadius[\\s\\S]{0,200}Vector3\\.Distance",
+          "points": 4
+        },
+        {
+          "id": "uses_physics_collision",
+          "label": "Usa el sistema de colisiones de Unity (`OnTriggerEnter`, `OnTriggerEnter2D`, `OnCollisionEnter`)",
+          "check": "keyword",
+          "pattern": "OnTriggerEnter|OnCollisionEnter",
+          "points": 4
+        },
+        {
+          "id": "no_destroy",
+          "label": "No llama a `Destroy` en runtime — devuelve el proyectil a un pool",
+          "check": "antiPattern",
+          "pattern": "Destroy\\(",
+          "points": 3
+        },
+        {
+          "id": "uses_layer",
+          "label": "Menciona o configura Layers / Layer Collision Matrix para filtrar colisiones",
+          "check": "keyword",
+          "pattern": "[Ll]ayer|LayerMask|CompareTag",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// Projectile.cs — colisión delegada al motor, pool para evitar GC\nusing UnityEngine;\n\n[RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]\npublic class Projectile : MonoBehaviour\n{\n    public float Damage { get; private set; }\n    public float Speed  { get; private set; }\n\n    private Rigidbody2D _rb;\n\n    private void Awake()\n    {\n        _rb = GetComponent<Rigidbody2D>();\n        _rb.gravityScale = 0f;\n        // CircleCollider2D: isTrigger = true (configúralo en el Inspector)\n        // Layer del GameObject: \"Projectile\"\n        // En Edit > Project Settings > Physics 2D > Layer Collision Matrix:\n        //   \"Projectile\" solo interactúa con \"Enemy\" — el resto ignorado\n    }\n\n    // El pool llama esto en lugar de Instantiate en runtime\n    public void Launch(Vector2 direction, float damage, float speed)\n    {\n        Damage = damage;\n        Speed  = speed;\n        _rb.linearVelocity = direction.normalized * speed;\n    }\n\n    // Unity invoca esto SOLO cuando toca un objeto en layer \"Enemy\"\n    // CERO loops manuales — el motor de físicas hace broadphase + narrowphase\n    private void OnTriggerEnter2D(Collider2D other)\n    {\n        if (other.TryGetComponent<Enemy>(out var enemy))\n            enemy.TakeDamage(Damage);\n\n        ReturnToPool();\n    }\n\n    private void ReturnToPool()\n    {\n        _rb.linearVelocity = Vector2.zero;\n        gameObject.SetActive(false); // el ProjectilePool lo recoge\n    }\n}\n\n// ProjectilePool.cs — gestiona el ciclo de vida sin Instantiate/Destroy\npublic class ProjectilePool : MonoBehaviour\n{\n    [SerializeField] private Projectile prefab;\n    [SerializeField] private int initialSize = 80;\n    private Queue<Projectile> _available = new Queue<Projectile>();\n\n    private void Awake()\n    {\n        for (int i = 0; i < initialSize; i++)\n        {\n            var p = Instantiate(prefab);\n            p.gameObject.SetActive(false);\n            _available.Enqueue(p);\n        }\n    }\n\n    public Projectile Get(Vector2 pos, Vector2 dir, float dmg, float spd)\n    {\n        var p = _available.Count > 0 ? _available.Dequeue() : Instantiate(prefab);\n        p.transform.position = pos;\n        p.gameObject.SetActive(true);\n        p.Launch(dir, dmg, spd);\n        return p;\n    }\n\n    public void Return(Projectile p) => _available.Enqueue(p);\n}",
+      "alternatives": [
+        "Usar `Physics2D.Raycast` o `Physics2D.CircleCast` por frame para proyectiles muy rápidos (evita el tunneling)",
+        "Usar `Rigidbody2D.collisionDetectionMode = CollisionDetectionMode2D.Continuous` para balas rápidas",
+        "Configurar `ContactFilter2D` en lugar de Layer Collision Matrix para más control granular por proyectil",
+        "Usar `ECS` (Entities + Physics) de Unity DOTS para escenas con 500+ proyectiles simultáneos"
+      ],
+      "feedback": {
+        "high": "Implementación profesional. Delegaste la colisión al motor de físicas con `OnTriggerEnter2D`, eliminaste `Instantiate`/`Destroy` en runtime con un pool, y mencionaste la Layer Collision Matrix — que es clave para que Unity descarte colisiones irrelevantes en broadphase antes de hacer narrowphase.",
+        "mid": "Buen enfoque. Eliminaste el bucle manual y usas `OnTriggerEnter2D`, pero si aún llamas `Destroy(gameObject)`, el Garbage Collector se activa cada vez que una bala impacta. Con 100 balas activas en combate intenso, eso puede causar hitches de 1–3ms. Implementa un pool simple con `SetActive(false)`.",
+        "low": "Con 100 balas × 30 enemigos ya son **3 000 `Vector3.Distance` (raíces cuadradas) por frame**. La solución fundamental es no hacer detección de colisiones manualmente: Unity tiene un motor de físicas con broadphase (AABB tree) que descarta la mayoría de pares sin calcular distancias. Solo necesitas un `CircleCollider2D` con `isTrigger = true` y `OnTriggerEnter2D`."
+      }
+    },
+    {
+      "id": "opt_005",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["optimizacion", "missing-cache"],
+      "title": "GetComponent en cada Update del jugador",
+      "context": "`PlayerController.cs` llama `GetComponent<Rigidbody>()` y `GetComponent<Animator>()` en `Update` y `FixedUpdate` cada frame. Aunque el componente existe en el mismo GameObject, **`GetComponent` realiza una búsqueda interna** en la lista de componentes del objeto en cada llamada, lo que genera decenas de miles de búsquedas redundantes por minuto. El **Profiler** muestra estos accesos como un costo silencioso que suma varios milisegundos en sesiones largas.",
+      "scenario": "El jugador se siente responsivo pero el Profiler revela un costo oculto. Identifica el antipatrón y reescribe el controlador cacheando los componentes correctamente:",
+      "starterCode": "// PlayerController.cs\npublic class PlayerController : MonoBehaviour\n{\n    [SerializeField] private float speed = 5f;\n    [SerializeField] private float jumpForce = 8f;\n\n    private void Update()\n    {\n        float h = Input.GetAxis(\"Horizontal\");\n        GetComponent<Rigidbody>().velocity = new Vector3(h * speed, GetComponent<Rigidbody>().velocity.y, 0f);\n\n        if (Input.GetButtonDown(\"Jump\"))\n            GetComponent<Animator>().SetTrigger(\"Jump\");\n    }\n\n    private void FixedUpdate()\n    {\n        if (Input.GetButton(\"Jump\"))\n            GetComponent<Rigidbody>().AddForce(Vector3.up * jumpForce, ForceMode.Impulse);\n    }\n}",
+      "prompt": "Reescribe `PlayerController` cacheando los componentes en `Awake` con campos privados. Ningún `GetComponent` debe ejecutarse después de `Awake`.",
+      "criteria": [
+        {
+          "id": "no_getcomponent_update",
+          "label": "No hay `GetComponent` dentro de `Update` ni `FixedUpdate`",
+          "check": "antiPattern",
+          "pattern": "(?:Update|FixedUpdate)[\\s\\S]{0,600}GetComponent",
+          "points": 5
+        },
+        {
+          "id": "cache_in_awake",
+          "label": "Los componentes se obtienen una sola vez en `Awake` o `Start`",
+          "check": "keyword",
+          "pattern": "Awake|Start",
+          "points": 3
+        },
+        {
+          "id": "uses_cached_fields",
+          "label": "Usa campos privados cacheados (`_rb`, `_anim`, `_rigidbody`, `_animator` o similar)",
+          "check": "keyword",
+          "pattern": "_rb|_anim|_rigidbody|_animator",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// PlayerController.cs — componentes cacheados en Awake\nusing UnityEngine;\n\npublic class PlayerController : MonoBehaviour\n{\n    [SerializeField] private float speed = 5f;\n    [SerializeField] private float jumpForce = 8f;\n\n    // Campos privados: GetComponent se llama UNA SOLA VEZ\n    private Rigidbody _rb;\n    private Animator  _anim;\n\n    private void Awake()\n    {\n        _rb   = GetComponent<Rigidbody>();\n        _anim = GetComponent<Animator>();\n    }\n\n    private void Update()\n    {\n        float h = Input.GetAxis(\"Horizontal\");\n        _rb.velocity = new Vector3(h * speed, _rb.velocity.y, 0f);\n\n        if (Input.GetButtonDown(\"Jump\"))\n            _anim.SetTrigger(\"Jump\");\n    }\n\n    private void FixedUpdate()\n    {\n        if (Input.GetButton(\"Jump\"))\n            _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);\n    }\n}",
+      "alternatives": [
+        "Asignar las referencias desde el **Inspector** con `[SerializeField]` en lugar de `GetComponent` — elimina la búsqueda en runtime completamente",
+        "Usar `TryGetComponent<T>` en `Awake` para obtener la referencia y manejar el caso en que el componente no exista",
+        "Si el componente puede cambiar en runtime (por ejemplo, al cambiar de estado), cachear en `OnEnable` y limpiar en `OnDisable`",
+        "Usar `RequireComponent(typeof(Rigidbody))` para garantizar en tiempo de diseño que el componente siempre estará presente"
+      ],
+      "feedback": {
+        "high": "Perfecto. Cachear en `Awake` es la solución canónica en Unity. **`GetComponent`** es una búsqueda lineal en la lista de componentes del `GameObject` — llamarla en `Update` a 60 FPS equivale a más de 3 600 búsquedas por minuto por cada llamada. Con campos privados `_rb` y `_anim` el acceso es directo y de costo constante.",
+        "mid": "Buen progreso. Eliminaste algunas llamadas a `GetComponent` en `Update`, pero asegúrate de que **ninguna** quede en métodos que se ejecutan por frame (`Update`, `FixedUpdate`, `LateUpdate`). Revisa todos los métodos de ciclo de vida.",
+        "low": "El problema es que `GetComponent<T>()` no es gratis: Unity recorre la lista de componentes del `GameObject` en cada llamada. Llamarlo en `Update` y `FixedUpdate` significa hacerlo **120+ veces por segundo**. La solución es obtener la referencia una sola vez en `Awake` y guardarla en un campo privado como `_rb` o `_anim`."
+      }
+    },
+    {
+      "id": "opt_006",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["optimizacion", "missing-cache", "god-class"],
+      "title": "FindObjectOfType en cada enemigo al spawnear y en Update",
+      "context": "`EnemyAI.cs` llama `FindObjectOfType<GameManager>()` tanto en `Start` como en cada `Update` para verificar el estado del juego. **`FindObjectOfType` es una de las operaciones más costosas de Unity**: recorre todos los objetos de la escena comparando tipos. Con 30 enemigos activos el **Profiler** muestra `FindObjectOfType` como **hot path** principal, consumiendo hasta el 25% del tiempo de CPU por frame.",
+      "scenario": "Con 30 enemigos en escena el juego se vuelve lento. Localiza las llamadas costosas y reescribe `EnemyAI` para que la referencia al `GameManager` se obtenga correctamente una sola vez:",
+      "starterCode": "// EnemyAI.cs\npublic class EnemyAI : MonoBehaviour\n{\n    private void Start()\n    {\n        // Primera búsqueda al spawnear\n        var gm = FindObjectOfType<GameManager>();\n        gm.RegisterEnemy(this);\n    }\n\n    private void Update()\n    {\n        // Segunda búsqueda — cada frame, por cada enemigo\n        var gm = FindObjectOfType<GameManager>();\n        if (gm.IsGameOver) return;\n\n        MoveTowardsPlayer();\n        AttackIfInRange();\n    }\n\n    private void MoveTowardsPlayer() { /* lógica de movimiento */ }\n    private void AttackIfInRange()   { /* lógica de ataque    */ }\n}",
+      "prompt": "Reescribe `EnemyAI` para que `FindObjectOfType<GameManager>()` no se llame nunca en `Update`. Cachea la referencia correctamente o usa un patrón **Singleton** estático.",
+      "criteria": [
+        {
+          "id": "no_find_in_update",
+          "label": "No hay `FindObjectOfType` dentro de `Update`",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,400}FindObjectOfType",
+          "points": 5
+        },
+        {
+          "id": "cache_in_awake",
+          "label": "La referencia al `GameManager` se obtiene en `Awake` o `Start`, no en `Update`",
+          "check": "keyword",
+          "pattern": "Awake|Start",
+          "points": 3
+        },
+        {
+          "id": "uses_singleton_or_cache",
+          "label": "Usa un `Singleton` estático, campo cacheado `_manager` o inyección de dependencia",
+          "check": "keyword",
+          "pattern": "Instance|_manager|_gameManager",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// GameManager.cs — Singleton estático: costo de búsqueda = cero\nusing UnityEngine;\n\npublic class GameManager : MonoBehaviour\n{\n    public static GameManager Instance { get; private set; }\n\n    public bool IsGameOver { get; private set; }\n\n    private void Awake()\n    {\n        if (Instance != null && Instance != this)\n        {\n            Destroy(gameObject);\n            return;\n        }\n        Instance = this;\n        DontDestroyOnLoad(gameObject);\n    }\n\n    public void RegisterEnemy(EnemyAI enemy) { /* lógica de registro */ }\n}\n\n// EnemyAI.cs — accede al Singleton directamente, sin búsqueda\nusing UnityEngine;\n\npublic class EnemyAI : MonoBehaviour\n{\n    private GameManager _gameManager;\n\n    private void Awake()\n    {\n        // FindObjectOfType ocurre UNA SOLA VEZ y solo si el Singleton no está listo\n        _gameManager = GameManager.Instance;\n    }\n\n    private void Start()\n    {\n        _gameManager.RegisterEnemy(this);\n    }\n\n    private void Update()\n    {\n        // Acceso O(1) — sin búsqueda en la escena\n        if (_gameManager.IsGameOver) return;\n\n        MoveTowardsPlayer();\n        AttackIfInRange();\n    }\n\n    private void MoveTowardsPlayer() { /* lógica de movimiento */ }\n    private void AttackIfInRange()   { /* lógica de ataque    */ }\n}",
+      "alternatives": [
+        "Pasar la referencia al `GameManager` por **inyección de dependencia** desde el spawner: `enemyAI.Init(gameManager)` — evita cualquier búsqueda global",
+        "Usar `ServiceLocator` pattern en lugar de Singleton para desacoplar más el código",
+        "Suscribir `EnemyAI` a un evento `GameManager.OnGameOver` en lugar de verificar `IsGameOver` cada frame",
+        "Usar `ScriptableObject` como canal de datos compartido entre `GameManager` y los enemigos, sin referencias directas"
+      ],
+      "feedback": {
+        "high": "Excelente. Con el patrón **Singleton** estático, `GameManager.Instance` es un acceso a un campo estático — **O(1)** sin ninguna búsqueda en la escena. Con 30 enemigos eliminaste 1 800 llamadas a `FindObjectOfType` por segundo.",
+        "mid": "Buen avance. Cacheaste la referencia en `Start` o `Awake`, lo cual ya elimina el problema principal. Si quieres ir un paso más allá, implementa el **Singleton** en `GameManager` para que cualquier clase pueda acceder via `GameManager.Instance` sin necesitar `FindObjectOfType` nunca.",
+        "low": "**`FindObjectOfType`** recorre **todos los objetos de la escena** buscando el tipo pedido. Con 30 enemigos llamándolo en `Update`, son 30 × 60 = **1 800 recorridos completos de la escena por segundo**. La solución es obtener la referencia una sola vez en `Awake` y guardarla en `_gameManager` — o mejor aún, usar un **Singleton** estático."
+      }
+    },
+    {
+      "id": "opt_007",
+      "difficulty": 2,
+      "genre": "Top-down Shooter",
+      "tags": ["optimizacion", "gc-pressure"],
+      "title": "HUD que concatena strings con + en cada frame",
+      "context": "`HUDManager.cs` construye el texto del HUD con concatenación de strings usando `+` dentro de `Update`. En C#, cada concatenación con `+` **crea un nuevo objeto `string` en el heap** porque los strings son inmutables. A 60 FPS esto genera **basura en el heap 60 veces por segundo**, lo que fuerza al **Garbage Collector** a ejecutarse frecuentemente. En móvil esto se manifiesta como **hitches visibles cada 2-3 segundos** cuando el GC pausa el hilo principal.",
+      "scenario": "El HUD se ve bien pero el Profiler muestra GC.Alloc constante. Reescribe `HUDManager` para eliminar las allocations por frame:",
+      "starterCode": "// HUDManager.cs\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class HUDManager : MonoBehaviour\n{\n    [SerializeField] private Text scoreText;\n    [SerializeField] private Text healthText;\n\n    private int _score;\n    private int _multiplier;\n    private int _hp;\n\n    private void Update()\n    {\n        // Cada + crea un string nuevo en el heap — 60 veces por segundo\n        scoreText.text  = \"Score: \" + _score + \" x\" + _multiplier;\n        healthText.text = \"HP: \" + _hp;\n    }\n\n    public void AddScore(int points) { _score += points * _multiplier; }\n    public void SetHealth(int hp)    { _hp = hp; }\n}",
+      "prompt": "Elimina las allocations de `string` en `Update`. Usa `StringBuilder` o suscríbete a eventos para actualizar el HUD **solo cuando los valores cambian**, no cada frame.",
+      "criteria": [
+        {
+          "id": "no_concat_in_update",
+          "label": "No hay concatenación de strings con `+` dentro de `Update`",
+          "check": "antiPattern",
+          "pattern": "Update[\\s\\S]{0,500}\"[^\"]*\"\\s*\\+|Update[\\s\\S]{0,500}\\+\\s*\"[^\"]*\"",
+          "points": 4
+        },
+        {
+          "id": "uses_stringbuilder",
+          "label": "Usa `StringBuilder` para construir el texto sin allocations",
+          "check": "keyword",
+          "pattern": "StringBuilder",
+          "points": 4
+        },
+        {
+          "id": "event_driven_or_conditional",
+          "label": "Actualiza el HUD solo cuando el valor cambia (evento o comparación con valor previo)",
+          "check": "keyword",
+          "pattern": "event|OnScoreChanged|OnHealthChanged|_lastScore",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// HUDManager.cs — sin allocations: StringBuilder + actualización por evento\nusing System.Text;\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class HUDManager : MonoBehaviour\n{\n    [SerializeField] private Text scoreText;\n    [SerializeField] private Text healthText;\n\n    // StringBuilder reutilizable — no crea nuevos objetos en cada uso\n    private readonly StringBuilder _sb = new StringBuilder(64);\n\n    // Valores anteriores para detectar cambios\n    private int _lastScore;\n    private int _lastMultiplier;\n    private int _lastHp;\n\n    // Eventos a los que otros sistemas publican cambios\n    public static event System.Action<int, int> OnScoreChanged;\n    public static event System.Action<int>      OnHealthChanged;\n\n    private void OnEnable()\n    {\n        OnScoreChanged  += UpdateScoreUI;\n        OnHealthChanged += UpdateHealthUI;\n    }\n\n    private void OnDisable()\n    {\n        OnScoreChanged  -= UpdateScoreUI;\n        OnHealthChanged -= UpdateHealthUI;\n    }\n\n    // Solo se ejecuta cuando el score cambia — NO cada frame\n    private void UpdateScoreUI(int score, int multiplier)\n    {\n        _sb.Clear();\n        _sb.Append(\"Score: \").Append(score).Append(\" x\").Append(multiplier);\n        scoreText.text = _sb.ToString(); // una sola allocation al asignar\n    }\n\n    // Solo se ejecuta cuando la vida cambia — NO cada frame\n    private void UpdateHealthUI(int hp)\n    {\n        _sb.Clear();\n        _sb.Append(\"HP: \").Append(hp);\n        healthText.text = _sb.ToString();\n    }\n\n    // Otros sistemas llaman esto para notificar cambios\n    public static void NotifyScoreChanged(int score, int mult) =>\n        OnScoreChanged?.Invoke(score, mult);\n\n    public static void NotifyHealthChanged(int hp) =>\n        OnHealthChanged?.Invoke(hp);\n\n    // Update ya NO existe — cero polling, cero GC por HUD\n}",
+      "alternatives": [
+        "Usar `string.Format` con caché o `TextMeshPro` que tiene soporte interno para actualización eficiente de texto",
+        "Implementar el patrón **Observer** con una clase `GameState` como `ScriptableObject` que notifica a suscriptores cuando cambia",
+        "Comparar el valor nuevo con `_lastScore` antes de actualizar el `Text` — solo llama `ToString()` cuando hay un cambio real",
+        "Usar `int.ToString()` directamente sin concatenación cuando el texto es un solo número (sin allocation extra en .NET moderno)"
+      ],
+      "feedback": {
+        "high": "Excelente. Combinaste **`StringBuilder`** reutilizable con un sistema de **eventos** para actualizar el HUD solo cuando los datos cambian. El resultado es cero allocations por frame en el HUD y cero llamadas en `Update` — el GC no tiene trabajo que hacer aquí.",
+        "mid": "Buen avance. Usaste `StringBuilder` o eliminaste `Update`, pero si aún asignas `scoreText.text` cada frame aunque el valor no haya cambiado, sigues generando una allocation de string por asignación. Agrega una comparación con el valor anterior (`_lastScore`) o usa eventos.",
+        "low": "En C#, `\"Score: \" + _score + \" x\" + _multiplier` crea **4 strings temporales** en el heap en cada evaluación. A 60 FPS son **240 allocations por segundo** solo para el HUD. El **Garbage Collector** eventualmente tiene que limpiar todo eso, causando los hitches. La solución: `StringBuilder.Append()` reutiliza un buffer interno sin crear objetos nuevos."
+      }
+    },
+    {
+      "id": "opt_008",
+      "difficulty": 2,
+      "genre": "Puzzle",
+      "tags": ["optimizacion", "wrong-structure", "bucles-anidados"],
+      "title": "TileGrid busca tiles con List<Tile> en Update",
+      "context": "`TileGrid.cs` almacena todos los tiles del tablero en una `List<Tile>`. El método `GetTileAt(Vector2Int pos)` recorre la lista con `foreach` buscando el tile que coincide con la posición. Este método se llama **4-6 veces por frame** en `Update` para validar movimientos del jugador. Con un tablero de 20×20 tiles (400 elementos) esto implica hasta **2 400 iteraciones por frame** para una operación que debería ser instantánea.",
+      "scenario": "El juego de puzzle va lento en tableros grandes. Analiza la estructura de datos usada y reescríbela para que la búsqueda de tiles sea O(1):",
+      "starterCode": "// TileGrid.cs\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class TileGrid : MonoBehaviour\n{\n    private List<Tile> _tiles = new List<Tile>();\n\n    public void AddTile(Tile tile) => _tiles.Add(tile);\n\n    // O(n) — recorre hasta 400 tiles para encontrar uno\n    public Tile GetTileAt(Vector2Int pos)\n    {\n        foreach (Tile t in _tiles)\n        {\n            if (t.GridPosition == pos)\n                return t;\n        }\n        return null;\n    }\n\n    private void Update()\n    {\n        // Se llama 4-6 veces por frame para validar movimientos\n        Vector2Int selected = GetSelectedPosition();\n        Tile current  = GetTileAt(selected);\n        Tile above    = GetTileAt(selected + Vector2Int.up);\n        Tile below    = GetTileAt(selected + Vector2Int.down);\n        Tile right    = GetTileAt(selected + Vector2Int.right);\n        Tile left     = GetTileAt(selected + Vector2Int.left);\n\n        ValidateSwap(current, above, below, right, left);\n    }\n\n    private Vector2Int GetSelectedPosition() => Vector2Int.zero; // placeholder\n    private void ValidateSwap(Tile c, Tile u, Tile d, Tile r, Tile l) { }\n}",
+      "prompt": "Reemplaza `List<Tile>` con una estructura de datos que permita búsqueda **O(1)** por posición. Ningún `foreach` debe recorrer todos los tiles para encontrar uno.",
+      "criteria": [
+        {
+          "id": "no_foreach_scan",
+          "label": "No hay `foreach` ni `for` que recorra `_tiles` para buscar por posición",
+          "check": "antiPattern",
+          "pattern": "foreach[\\s\\S]{0,200}_tiles|for[\\s\\S]{0,200}_tiles\\.Count",
+          "points": 5
+        },
+        {
+          "id": "uses_dictionary",
+          "label": "Usa `Dictionary<Vector2Int, Tile>` o estructura equivalente para lookup O(1)",
+          "check": "keyword",
+          "pattern": "Dictionary",
+          "points": 4
+        },
+        {
+          "id": "uses_trygetvalue",
+          "label": "Usa `TryGetValue`, `ContainsKey` o acceso directo al `Dictionary` en `GetTileAt`",
+          "check": "keyword",
+          "pattern": "TryGetValue|ContainsKey|_tileMap",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// TileGrid.cs — Dictionary para lookup O(1) por posición\nusing System.Collections.Generic;\nusing UnityEngine;\n\npublic class TileGrid : MonoBehaviour\n{\n    // Clave: posición en la grilla — Valor: Tile en esa posición\n    // Lookup O(1) en lugar de O(n)\n    private Dictionary<Vector2Int, Tile> _tileMap =\n        new Dictionary<Vector2Int, Tile>();\n\n    public void AddTile(Tile tile)\n    {\n        _tileMap[tile.GridPosition] = tile;\n    }\n\n    // O(1) — acceso directo por clave\n    public Tile GetTileAt(Vector2Int pos)\n    {\n        _tileMap.TryGetValue(pos, out Tile tile);\n        return tile; // null si no existe\n    }\n\n    private void Update()\n    {\n        Vector2Int selected = GetSelectedPosition();\n\n        // Cada GetTileAt es ahora O(1) — sin recorrer nada\n        Tile current = GetTileAt(selected);\n        Tile above   = GetTileAt(selected + Vector2Int.up);\n        Tile below   = GetTileAt(selected + Vector2Int.down);\n        Tile right   = GetTileAt(selected + Vector2Int.right);\n        Tile left    = GetTileAt(selected + Vector2Int.left);\n\n        ValidateSwap(current, above, below, right, left);\n    }\n\n    // Para mover un tile: actualizar la clave en el Dictionary\n    public void MoveTile(Tile tile, Vector2Int newPos)\n    {\n        _tileMap.Remove(tile.GridPosition);\n        tile.GridPosition = newPos;\n        _tileMap[newPos] = tile;\n    }\n\n    private Vector2Int GetSelectedPosition() => Vector2Int.zero;\n    private void ValidateSwap(Tile c, Tile u, Tile d, Tile r, Tile l) { }\n}",
+      "alternatives": [
+        "Usar un array 2D `Tile[,] _grid` indexado directamente: `_grid[pos.x, pos.y]` — acceso O(1) y más eficiente en memoria que un Dictionary",
+        "Usar `Tile[]` con un índice calculado `pos.y * width + pos.x` — mismo principio que el array 2D pero con una sola dimensión",
+        "Mantener ambas estructuras (`List` para iteración y `Dictionary` para lookup) si necesitas iterar todos los tiles en otros sistemas",
+        "Si las posiciones son contiguas y conocidas en tiempo de diseño, pre-construir el `Dictionary` en `Awake` con `Capacity` definido para evitar rehashing"
+      ],
+      "feedback": {
+        "high": "Perfecto. Con `Dictionary<Vector2Int, Tile>` cada `GetTileAt` es **O(1)** — acceso por hash de la clave. En un tablero de 400 tiles pasaste de hasta 2 400 iteraciones por frame a exactamente **5 lookups por frame**, independientemente del tamaño del tablero.",
+        "mid": "Buen cambio de estructura. Usaste `Dictionary` pero revisa que `GetTileAt` no tenga un fallback con `foreach` en caso de no encontrar el tile — eso reintroduciría el problema. `TryGetValue` retorna `false` y deja `tile` como `null` cuando la clave no existe.",
+        "low": "El problema no es el algoritmo de búsqueda — es la **estructura de datos**. Una `List<Tile>` requiere recorrer todos sus elementos para encontrar uno por posición: **O(n)**. Un `Dictionary<Vector2Int, Tile>` usa una tabla hash y encuentra cualquier tile en **O(1)** sin importar cuántos haya. Con 400 tiles y 5 búsquedas por frame pasas de 2 000 iteraciones a 5 lookups."
+      }
+    },
+    {
+      "id": "opt_009",
+      "difficulty": 2,
+      "genre": "Platformer",
+      "tags": ["optimizacion", "missing-cache", "update-polling"],
+      "title": "CameraFollow busca al jugador con FindWithTag cada LateUpdate",
+      "context": "`CameraFollow.cs` llama `GameObject.FindWithTag(\"Player\")` en `LateUpdate` cada frame para obtener el `Transform` del jugador. La lógica detrás es que el jugador puede morir y respawnear como un objeto nuevo, por lo que la cámara necesita encontrarlo de nuevo. Aunque funciona correctamente, **`FindWithTag` recorre todos los GameObjects de la escena** comparando tags — una operación costosa que ocurre 60 veces por segundo de forma completamente innecesaria.",
+      "scenario": "La cámara sigue al jugador correctamente pero el Profiler muestra `FindWithTag` como llamada constante. Reescribe `CameraFollow` para que la búsqueda ocurra solo cuando es necesaria:",
+      "starterCode": "// CameraFollow.cs\nusing UnityEngine;\n\npublic class CameraFollow : MonoBehaviour\n{\n    [SerializeField] private Vector3 offset = new Vector3(0f, 2f, -10f);\n    [SerializeField] private float smoothSpeed = 5f;\n\n    private void LateUpdate()\n    {\n        // FindWithTag recorre toda la escena — 60 veces por segundo\n        GameObject player = GameObject.FindWithTag(\"Player\");\n        if (player == null) return;\n\n        Vector3 desired = player.transform.position + offset;\n        transform.position = Vector3.Lerp(\n            transform.position, desired, smoothSpeed * Time.deltaTime);\n    }\n}",
+      "prompt": "Reescribe `CameraFollow` para que `FindWithTag` no se ejecute en `LateUpdate` cada frame. Cachea el `Transform` del jugador y solo búscalo de nuevo cuando sea necesario.",
+      "criteria": [
+        {
+          "id": "no_findwithtag_in_update",
+          "label": "No hay `FindWithTag` dentro de `LateUpdate` ni `Update`",
+          "check": "antiPattern",
+          "pattern": "(?:LateUpdate|Update)[\\s\\S]{0,400}FindWithTag",
+          "points": 5
+        },
+        {
+          "id": "cache_in_start",
+          "label": "El `Transform` del jugador se obtiene en `Start` o `Awake`",
+          "check": "keyword",
+          "pattern": "Start|Awake",
+          "points": 3
+        },
+        {
+          "id": "uses_cached_target",
+          "label": "Usa un campo cacheado (`_target`, `_player`, o asignación condicional `target =`)",
+          "check": "keyword",
+          "pattern": "_target|_player|target =",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// CameraFollow.cs — cachea el Transform y solo busca si es null\nusing UnityEngine;\n\npublic class CameraFollow : MonoBehaviour\n{\n    [SerializeField] private Vector3 offset     = new Vector3(0f, 2f, -10f);\n    [SerializeField] private float   smoothSpeed = 5f;\n\n    // Transform cacheado — FindWithTag ocurre como máximo una vez por vida del jugador\n    private Transform _target;\n\n    private void Start()\n    {\n        FindPlayer();\n    }\n\n    // Método público: el spawner llama esto cuando el jugador respawnea\n    public void FindPlayer()\n    {\n        GameObject player = GameObject.FindWithTag(\"Player\");\n        if (player != null)\n            _target = player.transform;\n    }\n\n    private void LateUpdate()\n    {\n        // Si el target fue destruido (muerte del jugador), _target queda como null en Unity\n        if (_target == null) return;\n\n        Vector3 desired = _target.position + offset;\n        transform.position = Vector3.Lerp(\n            transform.position, desired, smoothSpeed * Time.deltaTime);\n    }\n}",
+      "alternatives": [
+        "El spawner del jugador asigna directamente `cameraFollow.SetTarget(player.transform)` — elimina `FindWithTag` completamente",
+        "Usar un `static Transform PlayerTransform` en el propio `PlayerController` que la cámara puede leer directamente sin búsqueda",
+        "Suscribir `CameraFollow` al evento `PlayerSpawner.OnPlayerSpawned` para recibir la referencia automáticamente al respawnear",
+        "Usar **Cinemachine** de Unity que maneja el seguimiento de objetivo con soporte nativo para cambio de objetivo en runtime"
+      ],
+      "feedback": {
+        "high": "Excelente solución. Cachear `_target` en `Start` y exponer `FindPlayer()` para que el spawner lo llame al respawnear es el patrón correcto. `LateUpdate` ahora solo hace una verificación de null y un `Lerp` — sin ninguna búsqueda en la escena.",
+        "mid": "Buen avance. Cacheaste la referencia en `Start`, pero si no hay un mecanismo para actualizar `_target` cuando el jugador respawnea, la cámara perderá al jugador al morir. Expón un método `FindPlayer()` o suscríbete al evento de respawn del spawner.",
+        "low": "**`GameObject.FindWithTag`** recorre **todos los GameObjects de la escena** comparando su tag con el string dado. Llamarlo en `LateUpdate` a 60 FPS es una búsqueda linear completa 60 veces por segundo. La solución es obtener el `Transform` del jugador **una sola vez** en `Start` y guardarlo en `_target` — solo volver a buscarlo si `_target == null`."
+      }
+    },
+    {
+      "id": "opt_010",
+      "difficulty": 3,
+      "genre": "Estrategia",
+      "tags": ["optimizacion", "gc-pressure"],
+      "title": "200 props estáticos generan 200 draw calls individuales",
+      "context": "El mapa de estrategia tiene 200 rocas y árboles decorativos, cada uno como un `GameObject` independiente con su propio `MeshRenderer`. El **Frame Debugger** muestra **200+ draw calls** solo por props decorativos. El GPU está subutilizado porque el **CPU** pasa la mayor parte del tiempo enviando comandos de dibujado individuales al driver de gráficos — un cuello de botella clásico de **CPU-bound rendering**. En PC de gama media el juego ya no supera los 35 FPS en el mapa grande.",
+      "scenario": "El artista colocó 200 props en la escena y el rendimiento se degradó. Analiza el problema de draw calls y propón dos soluciones arquitecturales distintas:",
+      "starterCode": "// PropSpawner.cs — instancia 200 props individualmente en runtime\nusing UnityEngine;\n\npublic class PropSpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject[] propPrefabs;\n    [SerializeField] private Transform[]  spawnPoints;\n\n    private void Start()\n    {\n        // Crea 200 GameObjects separados — 200 draw calls individuales\n        for (int i = 0; i < spawnPoints.Length; i++)\n        {\n            GameObject prop = Instantiate(\n                propPrefabs[i % propPrefabs.Length],\n                spawnPoints[i].position,\n                spawnPoints[i].rotation\n            );\n            // Sin batching, sin instanciación GPU\n        }\n    }\n}",
+      "prompt": "Reescribe el sistema de props para reducir los 200 draw calls a 1-5. Implementa **Static Batching** o **GPU Instancing** con `Graphics.DrawMeshInstanced`. Explica en comentarios por qué cada técnica reduce los draw calls.",
+      "criteria": [
+        {
+          "id": "no_individual_instantiate_loop",
+          "label": "No hay un `for` / `foreach` que llame `Instantiate` para crear GameObjects individuales sin batching",
+          "check": "antiPattern",
+          "pattern": "Instantiate[\\s\\S]{0,200}for\\s*\\(|for\\s*\\([\\s\\S]{0,200}Instantiate",
+          "points": 3
+        },
+        {
+          "id": "uses_batching_or_instancing",
+          "label": "Usa `static`, `Static`, `DrawMeshInstanced`, `enableInstancing` o `StaticBatchingUtility`",
+          "check": "keyword",
+          "pattern": "static |Static|DrawMeshInstanced|enableInstancing|StaticBatchingUtility",
+          "points": 5
+        }
+      ],
+      "idealSolution": "// PropManager.cs — dos estrategias para reducir draw calls\nusing UnityEngine;\n\npublic class PropManager : MonoBehaviour\n{\n    // ── ESTRATEGIA A: Static Batching ─────────────────────────────────────────\n    // Para props que NUNCA se mueven. Unity combina sus meshes en un solo buffer\n    // en tiempo de build/carga → 200 objetos = 1-2 draw calls.\n    //\n    // Opción 1: marcar como Static en el Inspector (\"Static\" checkbox).\n    // Opción 2: hacerlo en código:\n    [SerializeField] private GameObject[] staticPropPrefabs;\n    [SerializeField] private Transform[]  spawnPoints;\n\n    private void Start()\n    {\n        GameObject[] instances = new GameObject[spawnPoints.Length];\n        for (int i = 0; i < spawnPoints.Length; i++)\n        {\n            instances[i] = Instantiate(\n                staticPropPrefabs[i % staticPropPrefabs.Length],\n                spawnPoints[i].position,\n                spawnPoints[i].rotation\n            );\n            // Marcar como Static en runtime para que Unity los agrupe\n            instances[i].isStatic = true;\n        }\n        // Combinar todos los meshes estáticos en un solo draw call\n        StaticBatchingUtility.Combine(instances, gameObject);\n    }\n}\n\n// ── ESTRATEGIA B: GPU Instancing con DrawMeshInstanced ────────────────────────\n// Para props con el mismo mesh+material. La GPU dibuja todas las instancias\n// en UN SOLO draw call usando una matriz de transformaciones.\n// Requiere que el material tenga \"Enable GPU Instancing\" activado.\nusing UnityEngine;\n\npublic class PropInstancer : MonoBehaviour\n{\n    [SerializeField] private Mesh     propMesh;\n    [SerializeField] private Material propMaterial; // debe tener enableInstancing = true\n    [SerializeField] private Transform[] spawnPoints;\n\n    private Matrix4x4[] _matrices;\n\n    private void Awake()\n    {\n        // Precalcular las matrices de transformación — sin crear GameObjects\n        _matrices = new Matrix4x4[spawnPoints.Length];\n        for (int i = 0; i < spawnPoints.Length; i++)\n        {\n            _matrices[i] = Matrix4x4.TRS(\n                spawnPoints[i].position,\n                spawnPoints[i].rotation,\n                Vector3.one\n            );\n        }\n        // Activar GPU Instancing en el material\n        propMaterial.enableInstancing = true;\n    }\n\n    private void Update()\n    {\n        // 1 draw call para TODAS las instancias — la GPU las procesa en paralelo\n        Graphics.DrawMeshInstanced(propMesh, 0, propMaterial, _matrices);\n    }\n}",
+      "alternatives": [
+        "Usar **Sprite Atlas** combinado con **Sprite Renderer batching** si los props son 2D — mismo principio, API diferente",
+        "Combinar los meshes de props en un solo mesh en la herramienta de modelado (Blender) antes de importar — reduce draw calls sin código",
+        "Usar **LOD Groups** con props de bajo poly a distancia + **Occlusion Culling** para que Unity no envíe draw calls de objetos no visibles",
+        "Usar **ECS/DOTS** con `RenderMeshUtility` para escenas con miles de props y máximo rendimiento de instanciación"
+      ],
+      "feedback": {
+        "high": "Implementación profesional. Entendiste la diferencia entre **Static Batching** (combina meshes en CPU, ideal para props que no se mueven) y **GPU Instancing** con `DrawMeshInstanced` (la GPU dibuja N copias con una sola llamada, ideal para props idénticos). Cualquiera de los dos reduce 200 draw calls a 1-2.",
+        "mid": "Buen análisis. Implementaste una de las dos estrategias correctamente. Recuerda que **Static Batching** requiere que los objetos sean `isStatic = true` y no se muevan en runtime; **GPU Instancing** requiere que el material tenga `enableInstancing = true` y que todos los props compartan el mismo mesh y material.",
+        "low": "El problema es que cada `MeshRenderer` independiente genera un **draw call** separado: el CPU prepara los datos, los envía al driver, y el GPU los dibuja — 200 veces por frame. La solución es agrupar: **Static Batching** hace que Unity combine los meshes de objetos estáticos en uno solo; **GPU Instancing** hace que el GPU dibuje N copias del mismo mesh con un solo comando. Ambos pasan de 200 draw calls a 1-2."
+      }
+    },
+    {
+      "id": "opt_011",
+      "difficulty": 3,
+      "genre": "Survival",
+      "tags": ["optimizacion", "update-polling"],
+      "title": "Spawn periódico con contador float en Update en lugar de Coroutine",
+      "context": "`WaveSpawner.cs` acumula `Time.deltaTime` en un `float _timer` dentro de `Update` y compara contra el intervalo de spawn cada frame. El código funciona correctamente, pero **`Update` se ejecuta 60 veces por segundo** aunque el spawn solo ocurra una vez cada 5-10 segundos. Esto es **polling puro**: el sistema pregunta \"¿es hora?\" miles de veces para obtener un \"sí\" muy pocas veces. En un juego con decenas de sistemas similares este overhead acumulado es significativo.",
+      "scenario": "El spawner funciona pero consume ciclos de CPU innecesariamente entre oleadas. Reescríbelo para que el código de spawn solo se active cuando realmente es necesario:",
+      "starterCode": "// WaveSpawner.cs\nusing UnityEngine;\n\npublic class WaveSpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject enemyPrefab;\n    [SerializeField] private Transform[] spawnPoints;\n    [SerializeField] private float spawnInterval = 5f;\n    [SerializeField] private int   enemiesPerWave = 10;\n\n    private float _timer = 0f;\n\n    // Update se ejecuta 60 veces por segundo aunque el spawn sea cada 5 segundos\n    private void Update()\n    {\n        _timer += Time.deltaTime;\n\n        if (_timer >= spawnInterval)\n        {\n            _timer = 0f;\n            SpawnWave();\n        }\n    }\n\n    private void SpawnWave()\n    {\n        for (int i = 0; i < enemiesPerWave; i++)\n        {\n            Transform sp = spawnPoints[i % spawnPoints.Length];\n            Instantiate(enemyPrefab, sp.position, sp.rotation);\n        }\n    }\n}",
+      "prompt": "Reemplaza el patrón de polling con `_timer` en `Update` por una **Coroutine** con `WaitForSeconds` o `InvokeRepeating`. El método `Update` debe desaparecer o quedar vacío.",
+      "criteria": [
+        {
+          "id": "no_timer_in_update",
+          "label": "No hay acumulación de `_timer += Time.deltaTime` en `Update`",
+          "check": "antiPattern",
+          "pattern": "_timer[\\s\\S]{0,100}Time\\.deltaTime|Time\\.deltaTime[\\s\\S]{0,100}_timer",
+          "points": 4
+        },
+        {
+          "id": "uses_coroutine_or_invoke",
+          "label": "Usa `IEnumerator` con `WaitForSeconds`, `InvokeRepeating` o `StartCoroutine`",
+          "check": "keyword",
+          "pattern": "IEnumerator|WaitForSeconds|InvokeRepeating|StartCoroutine",
+          "points": 5
+        }
+      ],
+      "idealSolution": "// WaveSpawner.cs — Coroutine: cero overhead entre spawns\nusing System.Collections;\nusing UnityEngine;\n\npublic class WaveSpawner : MonoBehaviour\n{\n    [SerializeField] private GameObject enemyPrefab;\n    [SerializeField] private Transform[] spawnPoints;\n    [SerializeField] private float spawnInterval  = 5f;\n    [SerializeField] private int   enemiesPerWave = 10;\n\n    private void Start()\n    {\n        // Iniciar el bucle de spawn — Update ya NO existe\n        StartCoroutine(SpawnLoop());\n    }\n\n    // IEnumerator: se ejecuta solo cuando WaitForSeconds termina\n    // Entre spawns el hilo principal no toca este código\n    private IEnumerator SpawnLoop()\n    {\n        while (true)\n        {\n            yield return new WaitForSeconds(spawnInterval); // suspende aquí\n            SpawnWave(); // solo se ejecuta cuando el tiempo llegó\n        }\n    }\n\n    private void SpawnWave()\n    {\n        for (int i = 0; i < enemiesPerWave; i++)\n        {\n            Transform sp = spawnPoints[i % spawnPoints.Length];\n            Instantiate(enemyPrefab, sp.position, sp.rotation);\n        }\n    }\n\n    // Alternativa más simple con InvokeRepeating (sin Coroutine):\n    // private void Start() =>\n    //     InvokeRepeating(nameof(SpawnWave), spawnInterval, spawnInterval);\n}",
+      "alternatives": [
+        "Usar `InvokeRepeating(nameof(SpawnWave), delay, interval)` — una línea, sin Coroutine, mismo resultado",
+        "Usar un **evento de tiempo** del motor o un scheduler externo si el juego tiene muchos sistemas con intervalos distintos",
+        "Si el intervalo cambia dinámicamente, recalcular con `yield return new WaitForSeconds(GetNextInterval())` dentro del bucle de Coroutine",
+        "Usar `UniTask.Delay` (con el paquete UniTask) para una alternativa async/await más ergonómica que las Coroutines de Unity"
+      ],
+      "feedback": {
+        "high": "Perfecto. Con `IEnumerator` y `WaitForSeconds`, Unity suspende la Coroutine y **no ejecuta ningún código** entre spawns — literalmente cero overhead. El scheduler de Coroutines de Unity reanuda el método exactamente cuando el tiempo expira, sin polling.",
+        "mid": "Buen cambio. Si usaste `InvokeRepeating` o `StartCoroutine`, ya eliminaste el polling. Si aún tienes un `Update` con un contador, revisa que lo hayas eliminado completamente — ambos sistemas no deben coexistir o estarás haciendo trabajo doble.",
+        "low": "El patrón `_timer += Time.deltaTime` en `Update` es **polling**: preguntar 60 veces por segundo si ha llegado el momento. Con `WaitForSeconds(5f)` en una **Coroutine**, Unity registra una alarma interna y solo despierta el código cuando los 5 segundos pasan — exactamente **0 comprobaciones** entre spawns. La diferencia: 300 comprobaciones por spawn vs. 0."
+      }
+    },
+    {
+      "id": "opt_012",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["optimizacion", "gc-pressure"],
+      "title": "Log de combate concatenando strings con += en cada hit",
+      "context": "`CombatLog.cs` acumula mensajes de combate con `_log += message + \"\\n\"`. En C#, los `string` son **inmutables**: cada `+=` crea un nuevo objeto `string` en el heap copiando todo el contenido anterior más el nuevo mensaje. En combates intensos hay **10-20 mensajes por segundo**, cada uno generando una copia completa del log acumulado. Perfilando la sesión: el **GC se ejecuta cada 5-6 segundos** causando un freeze visible de 30-80ms que interrumpe la jugabilidad.",
+      "scenario": "El sistema de log funciona pero causa stutters regulares en combate. Reescríbelo para eliminar las allocations de string por cada mensaje recibido:",
+      "starterCode": "// CombatLog.cs\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class CombatLog : MonoBehaviour\n{\n    [SerializeField] private Text logText;\n    [SerializeField] private int  maxMessages = 20;\n\n    private string _log = \"\";\n\n    // Llamado 10-20 veces por segundo en combate intenso\n    public void AddMessage(string message)\n    {\n        // Cada += crea un string nuevo en el heap con todo el contenido anterior\n        _log += message + \"\\n\";\n\n        // Actualizar la UI — ToString() implícito sobre un string ya es O(n)\n        logText.text = _log;\n    }\n}",
+      "prompt": "Reemplaza la concatenación con `+=` por `StringBuilder`. Llama `ToString()` **solo al renderizar** el texto en la UI, no en cada mensaje. Opcionalmente, limita el log a las últimas N líneas.",
+      "criteria": [
+        {
+          "id": "no_string_concat",
+          "label": "No hay `_log +=` ni `log +=` para acumular strings",
+          "check": "antiPattern",
+          "pattern": "_log\\s*\\+=|log\\s*\\+=",
+          "points": 5
+        },
+        {
+          "id": "uses_stringbuilder",
+          "label": "Usa `StringBuilder` para acumular los mensajes",
+          "check": "keyword",
+          "pattern": "StringBuilder",
+          "points": 4
+        },
+        {
+          "id": "uses_append",
+          "label": "Usa `Append` o `AppendLine` para añadir mensajes sin allocations",
+          "check": "keyword",
+          "pattern": "Append|AppendLine",
+          "points": 3
+        },
+        {
+          "id": "tostring_on_render",
+          "label": "Llama `ToString()` solo al asignar a la UI, no en cada mensaje",
+          "check": "keyword",
+          "pattern": "ToString",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// CombatLog.cs — StringBuilder: cero allocations por mensaje\nusing System.Collections.Generic;\nusing System.Text;\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class CombatLog : MonoBehaviour\n{\n    [SerializeField] private Text logText;\n    [SerializeField] private int  maxMessages = 20;\n\n    // StringBuilder reutilizable — el buffer interno crece pero no se recrea\n    private readonly StringBuilder _sb = new StringBuilder(2048);\n\n    // Queue para mantener solo las últimas N líneas\n    private readonly Queue<string> _messages = new Queue<string>();\n\n    // Llamado 10-20 veces por segundo — sin allocations de string aquí\n    public void AddMessage(string message)\n    {\n        _messages.Enqueue(message);\n\n        // Limitar a maxMessages líneas — Dequeue libera la referencia más antigua\n        if (_messages.Count > maxMessages)\n            _messages.Dequeue();\n\n        RefreshUI();\n    }\n\n    // Reconstruye el StringBuilder solo cuando hay un cambio\n    private void RefreshUI()\n    {\n        _sb.Clear(); // limpia sin new allocation\n\n        foreach (string msg in _messages)\n            _sb.AppendLine(msg); // Append: O(longitud del mensaje), no O(total)\n\n        // ToString() crea UN string para la UI — una sola allocation por refresh\n        logText.text = _sb.ToString();\n    }\n\n    public void ClearLog()\n    {\n        _messages.Clear();\n        _sb.Clear();\n        logText.text = string.Empty;\n    }\n}",
+      "alternatives": [
+        "Usar `Queue<string>` con límite de N mensajes y reconstruir el `StringBuilder` solo al mostrar en pantalla (lazy rendering)",
+        "Suscribir la UI a un evento `CombatLog.OnMessageAdded` y actualizar el `Text` solo cuando la UI está visible en pantalla",
+        "Usar `TextMeshPro` con `SetText(string)` que internamente evita algunas allocations adicionales de la API antigua `Text`",
+        "Poolear los strings de mensaje si siempre tienen el mismo formato (`\"{name} recibió {dmg} daño\"`) usando `string.Format` con caché"
+      ],
+      "feedback": {
+        "high": "Implementación completa. Usaste **`StringBuilder`** con `AppendLine` para acumular sin allocations, una **`Queue<string>`** para limitar el log a N líneas, y `ToString()` solo al renderizar. Con 15 mensajes por segundo pasaste de 15 allocations crecientes de string a **1 allocation de tamaño fijo por render**.",
+        "mid": "Buen uso de `StringBuilder`. Si aún llamas `ToString()` en cada `AddMessage` y asignas `logText.text` en cada mensaje, considera si realmente necesitas refrescar la UI 15 veces por segundo — bastaría con refrescar en `LateUpdate` o solo cuando el panel está visible.",
+        "low": "El problema de `_log += message + \"\\n\"` es doble: primero `message + \"\\n\"` crea un string temporal, luego `_log +=` crea **una copia completa del log acumulado** más el nuevo mensaje. Con un log de 50 líneas y 15 mensajes por segundo, el GC tiene que limpiar **megabytes de strings temporales por minuto**. `StringBuilder.AppendLine()` escribe directamente en un buffer interno — sin copias, sin allocations."
+      }
+    }
+  ]
+}

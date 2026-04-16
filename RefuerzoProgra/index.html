@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>POO en C# para Unity — Refuerzo</title>
   <link rel="stylesheet" href="css/styles.css">
+  <!-- CodeMirror 5 — syntax highlighting for C# code editors -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
   <!-- SweetAlert2 for unlock notifications -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </head>
@@ -15,8 +18,14 @@
     <div class="header-left">
       <h1>🎮 POO en C# para Unity</h1>
     </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="teoria">📚 Teoría</button>
+      <button class="mode-tab"        data-mode="practica">⌨️ Práctica</button>
+    </div>
+
     <div style="display:flex;gap:0.5rem;align-items:center;">
-      <button id="btn-help" title="Instrucciones">Ayuda?</button>
+      <button id="btn-help" title="Instrucciones">INSTRUCCIONES</button>
       <button id="btn-bug"  title="Reportar un bug">🐛 Bug</button>
     </div>
     <div class="header-right">
@@ -60,6 +69,9 @@
 
   </main>
 
+  <!-- ═══ Practice Section (populated by PracticeManager.js) ═════════════ -->
+  <section id="practice-main" aria-label="Sección de práctica"></section>
+
   <!-- ═══ Panel Restore Buttons (desktop) ════════════════════════════════ -->
   <button id="btn-restore-sidebar" class="panel-restore-btn panel-restore-left"  title="Mostrar secciones">▶</button>
   <button id="btn-restore-docs"    class="panel-restore-btn panel-restore-right" title="Mostrar documentación">◀</button>
@@ -89,15 +101,26 @@
   <!-- Help modal — SweetAlert2 -->
   <script>
     document.getElementById('btn-help').addEventListener('click', () => {
+      const isTeoria = document.querySelector('.mode-tab.active')?.dataset.mode === 'teoria';
       Swal.fire({
-        title: '📖 Instrucciones',
-        html: `
-          <ul style="text-align:left;padding-left:1.2rem;line-height:1.8;margin:0">
-            <li>Responde las preguntas para <strong>desbloquear temas</strong>.</li>
-            <li>Cada sección tiene <strong>20 preguntas</strong> pero solo debes responder <strong>5 correctas</strong> para pasar al siguiente nivel.</li>
-            <li>Al final de cada sección hay un <strong>examen final de 20 preguntas</strong>.</li>
-            <li>Puedes navegar en la <strong>documentación de la derecha</strong> en todo momento.</li>
-          </ul>`,
+        title: isTeoria ? '📖 Teoría — Instrucciones' : '⌨️ Práctica — Instrucciones',
+        html: isTeoria
+          ? `<ul style="text-align:left;padding-left:1.2rem;line-height:1.8;margin:0">
+               <li>Responde las preguntas para <strong>desbloquear temas</strong>.</li>
+               <li>Cada sección tiene <strong>20 preguntas</strong> pero solo debes responder <strong>5 correctas</strong> para pasar al siguiente nivel.</li>
+               <li>Al final de cada sección hay un <strong>examen final de 20 preguntas</strong>.</li>
+               <li>Puedes navegar en la <strong>documentación de la derecha</strong> en todo momento.</li>
+             </ul>`
+          : `<p style="text-align:left;line-height:1.8;margin:0 0 1rem">
+               Se te presentarán <strong>casos de uso reales</strong> del desarrollo de videojuegos.
+               Usa tus conocimientos de la Teoría para resolverlos.
+             </p>
+             <ul style="text-align:left;padding-left:1.2rem;line-height:1.8;margin:0">
+               <li>No existe una única respuesta correcta — hay múltiples soluciones válidas.</li>
+               <li>Al evaluar recibirás <strong>retroalimentación sobre tu razonamiento</strong> y qué otras opciones podrías haber usado.</li>
+               <li>Después de evaluar puedes ver una <strong>solución de referencia</strong> y alternativas.</li>
+               <li>El objetivo es que veas un <strong>panorama más amplio</strong> de la programación de videojuegos.</li>
+             </ul>`,
         confirmButtonText: 'Entendido',
       });
     });
@@ -177,6 +200,31 @@
     });
   </script>
 
+  <!-- Mode tab switching (Teoría / Práctica) — module to allow PracticeManager import -->
+  <script type="module">
+    import { PracticeManager } from './js/PracticeManager.js';
+
+    const practiceMain = document.getElementById('practice-main');
+    const manager      = new PracticeManager(practiceMain);
+
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', async () => {
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const isTeoria = tab.dataset.mode === 'teoria';
+        document.getElementById('app-main').style.display        = isTeoria ? '' : 'none';
+        document.getElementById('btn-restore-sidebar').style.display = 'none';
+        document.getElementById('btn-restore-docs').style.display    = 'none';
+        practiceMain.classList.toggle('active', !isTeoria);
+
+        if (!isTeoria && !manager._initialized) {
+          await manager.init();
+        }
+      });
+    });
+  </script>
+
   <!-- Desktop panel toggles & mobile nav -->
   <script>
     const appMain = document.getElementById('app-main');
@@ -234,6 +282,10 @@
       }
     });
   </script>
+
+  <!-- CodeMirror JS + C# mode (clike) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
 
   <!-- App entry point — type="module" enables ES6 imports -->
   <script type="module" src="js/app.js?v=8"></script>

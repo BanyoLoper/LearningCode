@@ -1,0 +1,485 @@
+{
+  "category": "eventos",
+  "title": "Comunicación y Eventos",
+  "icon": "📡",
+  "color": "#00ACC1",
+  "cases": [
+    {
+      "id": "evn_001",
+      "difficulty": 2,
+      "genre": "RPG",
+      "tags": ["eventos", "referencia-directa"],
+      "title": "HealthSystem llama UIManager.UpdateHUD() directamente al recibir daño",
+      "context": "Tu RPG tiene un `HealthSystem` que mantiene los puntos de vida del jugador. Al recibir daño o curarse, llama directamente a `uiManager.UpdateHUD()` con los valores actuales. En escenas de prueba sin UIManager en la jerarquía, el juego lanza **NullReferenceException** inmediatamente. Además, al intentar hacer **tests unitarios** de `HealthSystem` en aislamiento, el sistema no puede funcionar porque exige una dependencia concreta que no existe en el contexto de prueba.",
+      "scenario": "Desacopla HealthSystem de UIManager usando un evento C# en lugar de llamada directa:",
+      "starterCode": "// HealthSystem.cs\nusing UnityEngine;\n\npublic class HealthSystem : MonoBehaviour\n{\n    [SerializeField] private UIManager uiManager; // referencia directa — acoplamiento fuerte\n    [SerializeField] private int maxHP = 100;\n\n    private int _currentHP;\n\n    private void Start()\n    {\n        _currentHP = maxHP;\n        uiManager.UpdateHUD(_currentHP, maxHP); // NullReferenceException si no hay UIManager\n    }\n\n    public void TakeDamage(int amount)\n    {\n        _currentHP = Mathf.Max(0, _currentHP - amount);\n        uiManager.UpdateHUD(_currentHP, maxHP); // acoplado: UIManager debe existir siempre\n    }\n\n    public void Heal(int amount)\n    {\n        _currentHP = Mathf.Min(maxHP, _currentHP + amount);\n        uiManager.UpdateHUD(_currentHP, maxHP); // imposible de testear sin UIManager\n    }\n}\n\n// UIManager.cs\npublic class UIManager : MonoBehaviour\n{\n    public void UpdateHUD(int current, int max)\n    {\n        // actualiza barras, textos, etc.\n    }\n}",
+      "prompt": "Reescribe `HealthSystem` para que use un `event Action<int,int>` en lugar de llamar a `UIManager` directamente. `UIManager` debe suscribirse al evento sin que `HealthSystem` lo conozca.",
+      "criteria": [
+        {
+          "id": "declares_event",
+          "label": "Declara un evento C# tipado (`event Action` o `event UnityAction`) en HealthSystem",
+          "check": "keyword",
+          "pattern": "event\\s+Action|event\\s+UnityAction",
+          "points": 4
+        },
+        {
+          "id": "no_direct_reference",
+          "label": "HealthSystem ya no tiene referencia a UIManager ni llama a UpdateHUD directamente",
+          "check": "antiPattern",
+          "pattern": "UIManager|UpdateHUD",
+          "points": 4
+        },
+        {
+          "id": "uimanager_subscribes",
+          "label": "UIManager se suscribe al evento con `+=` desde su propio script",
+          "check": "keyword",
+          "pattern": "OnHealthChanged|\\+= ",
+          "points": 3
+        },
+        {
+          "id": "event_invoked",
+          "label": "El evento se invoca con null-check (`?.Invoke`) en TakeDamage y Heal",
+          "check": "keyword",
+          "pattern": "\\.Invoke|\\?\\.",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// HealthSystem.cs — emite evento, no conoce a UIManager\nusing System;\nusing UnityEngine;\n\npublic class HealthSystem : MonoBehaviour\n{\n    [SerializeField] private int maxHP = 100;\n    private int _currentHP;\n\n    // Cualquier interesado puede suscribirse — sin referencia directa\n    public event Action<int, int> OnHealthChanged;\n\n    private void Start()\n    {\n        _currentHP = maxHP;\n        OnHealthChanged?.Invoke(_currentHP, maxHP);\n    }\n\n    public void TakeDamage(int amount)\n    {\n        _currentHP = Mathf.Max(0, _currentHP - amount);\n        OnHealthChanged?.Invoke(_currentHP, maxHP); // dispara el evento\n    }\n\n    public void Heal(int amount)\n    {\n        _currentHP = Mathf.Min(maxHP, _currentHP + amount);\n        OnHealthChanged?.Invoke(_currentHP, maxHP);\n    }\n}\n\n// UIManager.cs — se suscribe al evento, sin que HealthSystem lo conozca\nusing UnityEngine;\n\npublic class UIManager : MonoBehaviour\n{\n    [SerializeField] private HealthSystem healthSystem;\n\n    private void OnEnable()\n    {\n        healthSystem.OnHealthChanged += UpdateHUD;\n    }\n\n    private void OnDisable()\n    {\n        healthSystem.OnHealthChanged -= UpdateHUD; // evita memory leak\n    }\n\n    private void UpdateHUD(int current, int max)\n    {\n        // actualiza barras, textos, etc.\n        Debug.Log($\"HP: {current}/{max}\");\n    }\n}",
+      "alternatives": [
+        "Usar `UnityEvent<int,int>` serializable en lugar de `Action<int,int>` para configurar suscriptores desde el Inspector",
+        "Implementar un `HealthEventChannel` (ScriptableObject) como canal de eventos para desacoplar completamente sin referencias en la escena",
+        "Usar el patrón Observer con una interfaz `IHealthObserver` que UIManager implemente y HealthSystem mantenga una lista",
+        "Crear un `EventBus<HealthChangedEvent>` global que cualquier sistema pueda escuchar sin conocer el emisor"
+      ],
+      "feedback": {
+        "high": "Excelente. `HealthSystem` ahora emite `OnHealthChanged` sin saber quién escucha. UIManager se suscribe con `+=` en `OnEnable` y se desuscribe en `OnDisable`. El sistema es completamente **testeable en aislamiento** y acepta múltiples suscriptores (barra de vida, sonido, achievement) sin modificar una línea de `HealthSystem`.",
+        "mid": "Buen avance. Declaraste el evento y lo invocas correctamente, pero revisa si sigues teniendo la referencia a `UIManager` en `HealthSystem`: si es así, el desacoplamiento es solo parcial. `HealthSystem` no debería importar ni conocer `UIManager` en absoluto — deja que `UIManager` se suscriba desde su propio `OnEnable`.",
+        "low": "El problema central es el **acoplamiento fuerte**: `HealthSystem` solo puede funcionar si `UIManager` existe en la escena. Con un `event Action<int,int> OnHealthChanged`, `HealthSystem` solo emite un señal — no le importa si hay 0 o 10 suscriptores. Esto permite testear la lógica de vida sin ninguna UI presente."
+      }
+    },
+    {
+      "id": "evn_002",
+      "difficulty": 2,
+      "genre": "Dungeon Crawler",
+      "tags": ["eventos", "referencia-directa"],
+      "title": "BroadcastMessage para notificar que el enemigo murió",
+      "context": "Tu dungeon crawler notifica la muerte de enemigos con `BroadcastMessage(\"OnEnemyDied\")` en todos los componentes del prefab. El sistema funciona, pero el Profiler revela que cada muerte dispara **reflection** sobre decenas de componentes buscando el método por nombre como string. Agregar un nuevo sistema que reaccione a muertes (logros, estadísticas, drops) requiere que ese sistema esté en los hijos del mismo GameObject, lo que es **arquitecturalmente imposible** para sistemas globales como un `AchievementManager`.",
+      "scenario": "Reemplaza BroadcastMessage por un evento estático tipado que cualquier sistema global pueda escuchar:",
+      "starterCode": "// EnemyDeath.cs\nusing System.Linq;\nusing UnityEngine;\n\npublic class EnemyDeath : MonoBehaviour\n{\n    private Enemy _enemy;\n\n    private void Awake() => _enemy = GetComponent<Enemy>();\n\n    public void Die()\n    {\n        // BroadcastMessage: recorre TODOS los componentes hijos por reflection\n        // No tipado, lento, imposible de depurar en tiempo de compilación\n        BroadcastMessage(\"OnEnemyDied\", SendMessageOptions.DontRequireReceiver);\n\n        // También notifica al padre — doble recorrido\n        transform.parent?.BroadcastMessage(\"OnEnemyDied\",\n            SendMessageOptions.DontRequireReceiver);\n\n        Destroy(gameObject);\n    }\n}\n\n// LootDropper.cs — necesita estar en un hijo para recibir BroadcastMessage\npublic class LootDropper : MonoBehaviour\n{\n    // Debe ser hijo del Enemy para recibir el mensaje — acoplamiento estructural\n    private void OnEnemyDied()\n    {\n        // genera loot\n    }\n}",
+      "prompt": "Reemplaza `BroadcastMessage` por un `static event Action<Enemy>` en `EnemyDeath`. `LootDropper` y otros sistemas deben suscribirse directamente sin importar su posición en la jerarquía.",
+      "criteria": [
+        {
+          "id": "static_event",
+          "label": "Declara un evento estático (`public static event Action<Enemy>`) en EnemyDeath",
+          "check": "keyword",
+          "pattern": "static\\s+event",
+          "points": 4
+        },
+        {
+          "id": "no_broadcast",
+          "label": "Elimina todas las llamadas a BroadcastMessage y SendMessage",
+          "check": "antiPattern",
+          "pattern": "BroadcastMessage|SendMessage",
+          "points": 4
+        },
+        {
+          "id": "typed_enemy_param",
+          "label": "El evento pasa el enemigo concreto como parámetro (`Action<Enemy>`), no un string",
+          "check": "keyword",
+          "pattern": "Action<Enemy>|Action<EnemyDeath>",
+          "points": 3
+        },
+        {
+          "id": "subscriber_independent",
+          "label": "LootDropper u otro suscriptor se registra directamente en el evento estático sin ser hijo del Enemy",
+          "check": "keyword",
+          "pattern": "OnEnemyDied\\s*\\+=|\\+=\\s*OnEnemyDied|\\+=\\s*Handle",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// EnemyDeath.cs — evento estático tipado, sin reflection\nusing System;\nusing UnityEngine;\n\npublic class EnemyDeath : MonoBehaviour\n{\n    // Evento estático: cualquier sistema global puede suscribirse\n    public static event Action<Enemy> OnEnemyDied;\n\n    private Enemy _enemy;\n    private void Awake() => _enemy = GetComponent<Enemy>();\n\n    public void Die()\n    {\n        // Invocación O(n) sobre suscriptores registrados — tipada, depurable\n        OnEnemyDied?.Invoke(_enemy);\n        gameObject.SetActive(false); // pooling en lugar de Destroy\n    }\n}\n\n// LootDropper.cs — puede vivir en cualquier lugar de la jerarquía\npublic class LootDropper : MonoBehaviour\n{\n    private void OnEnable()  => EnemyDeath.OnEnemyDied += HandleEnemyDied;\n    private void OnDisable() => EnemyDeath.OnEnemyDied -= HandleEnemyDied;\n\n    private void HandleEnemyDied(Enemy enemy)\n    {\n        // recibe el enemigo concreto — acceso directo a sus propiedades\n        Debug.Log($\"Dropping loot for {enemy.name}\");\n    }\n}\n\n// AchievementManager.cs — sistema global que no necesita ser hijo de nadie\npublic class AchievementManager : MonoBehaviour\n{\n    private void OnEnable()  => EnemyDeath.OnEnemyDied += CheckAchievements;\n    private void OnDisable() => EnemyDeath.OnEnemyDied -= CheckAchievements;\n\n    private void CheckAchievements(Enemy enemy)\n    {\n        // lógica de logros basada en el tipo de enemigo\n    }\n}",
+      "alternatives": [
+        "Usar `ScriptableObject` como canal de eventos (`EnemyDeathChannel.Raise(enemy)`) para configurar suscriptores desde el Inspector",
+        "Implementar un `EventBus<EnemyDiedEvent>` genérico para centralizar todos los eventos del juego",
+        "Usar `UnityEvent<Enemy>` serializable en el componente `EnemyDeath` para suscribir desde el Inspector sin código",
+        "Combinar el evento estático con un `struct EnemyDiedEvent` que contenga datos adicionales (posición, tipo, valor de experiencia)"
+      ],
+      "feedback": {
+        "high": "Implementación limpia. El evento estático `OnEnemyDied` es tipado, compilable y rápido — sin reflection. Cualquier sistema global puede suscribirse desde `OnEnable` independientemente de su posición en la jerarquía. La limpieza en `OnDisable` previene memory leaks cuando los suscriptores se destruyen.",
+        "mid": "Buen progreso. Eliminaste `BroadcastMessage` y declaraste el evento, pero verifica que el evento sea `static`: sin `static`, cada instancia de `EnemyDeath` tendría su propio evento y los suscriptores globales como `AchievementManager` nunca lo recibirían. El `static` es lo que permite la comunicación global.",
+        "low": "`BroadcastMessage` usa **reflection en tiempo de ejecución**: recorre todos los componentes de los hijos buscando el método `OnEnemyDied` como string. Esto es lento, no detecta errores de nombre en compilación y obliga a que los suscriptores sean hijos del GameObject. Un `static event Action<Enemy>` resuelve los tres problemas de una vez."
+      }
+    },
+    {
+      "id": "evn_003",
+      "difficulty": 2,
+      "genre": "Puzzle",
+      "tags": ["eventos", "referencia-directa"],
+      "title": "Puerta que necesita código para conectarse al switch",
+      "context": "Tu juego de puzzles tiene puertas que se abren cuando el jugador activa un switch. `DoorController` tiene una **referencia serializada** al `SwitchController` y llama a su propiedad directamente desde `Open()`. Cuando el diseñador quiere conectar una trampa adicional al mismo switch, necesita que un programador modifique `DoorController.cs` y recompile. El acoplamiento entre objetos de juego hace que **añadir nuevos comportamientos requiera tocar código existente**, violando el principio Open/Closed.",
+      "scenario": "Reemplaza la referencia directa al switch por un UnityEvent configurable desde el Inspector:",
+      "starterCode": "// DoorController.cs\nusing UnityEngine;\n\npublic class DoorController : MonoBehaviour\n{\n    // Referencia directa — acoplamiento fuerte en código\n    [SerializeField] private SwitchController switchController;\n\n    private Animator _animator;\n    private void Awake() => _animator = GetComponent<Animator>();\n\n    public void Open()\n    {\n        _animator.SetTrigger(\"Open\");\n\n        // Para conectar una trampa también hay que modificar este método\n        switchController.OnActivated(); // acoplado al tipo concreto SwitchController\n    }\n\n    public void Close()\n    {\n        _animator.SetTrigger(\"Close\");\n        switchController.OnDeactivated();\n    }\n}\n\n// SwitchController.cs\npublic class SwitchController : MonoBehaviour\n{\n    public void OnActivated()   { /* lógica del switch */ }\n    public void OnDeactivated() { /* lógica del switch */ }\n}",
+      "prompt": "Reemplaza la referencia a `SwitchController` por un `UnityEvent` en `DoorController` para que los diseñadores conecten cualquier objeto desde el Inspector sin tocar código.",
+      "criteria": [
+        {
+          "id": "uses_unity_event",
+          "label": "Declara al menos un `UnityEvent` (o `UnityEvent<T>`) en DoorController",
+          "check": "keyword",
+          "pattern": "UnityEvent",
+          "points": 4
+        },
+        {
+          "id": "no_switch_reference",
+          "label": "DoorController ya no tiene referencia directa a SwitchController",
+          "check": "antiPattern",
+          "pattern": "SwitchController",
+          "points": 4
+        },
+        {
+          "id": "event_invoked_on_open",
+          "label": "El UnityEvent se invoca con `.Invoke()` dentro de Open() y/o Close()",
+          "check": "keyword",
+          "pattern": "\\.Invoke\\(\\)",
+          "points": 3
+        },
+        {
+          "id": "serialized_event",
+          "label": "El UnityEvent tiene [SerializeField] para ser configurable desde el Inspector",
+          "check": "keyword",
+          "pattern": "\\[SerializeField\\]",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// DoorController.cs — UnityEvent configurable en el Inspector\nusing UnityEngine;\nusing UnityEngine.Events;\n\npublic class DoorController : MonoBehaviour\n{\n    // Configurable desde el Inspector: arrastra cualquier objeto y elige el método\n    [SerializeField] private UnityEvent OnDoorOpened;\n    [SerializeField] private UnityEvent OnDoorClosed;\n\n    private Animator _animator;\n    private void Awake() => _animator = GetComponent<Animator>();\n\n    public void Open()\n    {\n        _animator.SetTrigger(\"Open\");\n        OnDoorOpened.Invoke(); // notifica a todos los conectados en el Inspector\n    }\n\n    public void Close()\n    {\n        _animator.SetTrigger(\"Close\");\n        OnDoorClosed.Invoke();\n    }\n}\n\n// SwitchController.cs — no cambia; el Inspector lo conecta\npublic class SwitchController : MonoBehaviour\n{\n    public void OnActivated()   { Debug.Log(\"Switch activado\"); }\n    public void OnDeactivated() { Debug.Log(\"Switch desactivado\"); }\n}\n\n// TrapController.cs — nueva trampa conectada SOLO desde el Inspector, sin tocar DoorController.cs\npublic class TrapController : MonoBehaviour\n{\n    public void Activate()   { Debug.Log(\"Trampa activada\"); }\n    public void Deactivate() { Debug.Log(\"Trampa desactivada\"); }\n}\n\n// En el Inspector de DoorController:\n// OnDoorOpened -> SwitchController.OnActivated\n// OnDoorOpened -> TrapController.Activate   (añadido sin modificar código)",
+      "alternatives": [
+        "Usar C# `event Action` para mayor rendimiento si los suscriptores se registran por código en lugar del Inspector",
+        "Crear un `ScriptableObject` canal de eventos (`DoorOpenedChannel`) para conectar objetos entre escenas diferentes",
+        "Implementar el patrón Mediator con un `RoomManager` que coordine puertas, switches y trampas sin que se conozcan entre sí",
+        "Usar `UnityEvent<bool>` para unificar Open y Close en un solo evento paramétrico"
+      ],
+      "feedback": {
+        "high": "Perfecto uso de `UnityEvent`. El diseñador ahora puede conectar `SwitchController`, `TrapController`, `ParticleSystem` o cualquier método público desde el Inspector, sin modificar una línea de `DoorController.cs`. Esto es el principio **Open/Closed** en acción: abierto para extensión, cerrado para modificación.",
+        "mid": "Buen avance. Declaraste `UnityEvent` y lo invocas en `Open()`, pero verifica que hayas eliminado completamente la referencia a `SwitchController`: si sigue en el código, el desacoplamiento es parcial. El poder del `UnityEvent` es que `DoorController` no necesita conocer ningún tipo concreto.",
+        "low": "El problema es que `DoorController.cs` sabe demasiado: conoce `SwitchController` por tipo concreto. Si el diseñador quiere conectar una trampa, un programador debe abrir el código y añadirla. Con `UnityEvent`, `DoorController` solo publica `OnDoorOpened.Invoke()` — el Inspector es quien conecta qué objetos reaccionan, sin tocar código."
+      }
+    },
+    {
+      "id": "evn_004",
+      "difficulty": 2,
+      "genre": "Cualquiera",
+      "tags": ["eventos", "memory-leak"],
+      "title": "Suscripción a evento en Start sin desuscribirse en OnDisable → memory leak",
+      "context": "Tu `EnemyTracker` se suscribe al evento `OnWaveStarted` del `GameManager` en `Start`. Cuando el enemigo muere o la escena se recarga, el GameObject se destruye pero **el delegate sigue registrado** apuntando a un objeto destruido en memoria. La próxima vez que el evento se dispara, Unity lanza **NullReferenceException** o, peor, ejecuta lógica en un objeto zombie. Con oleadas frecuentes y múltiples enemigos, los **memory leaks** se acumulan y el juego se degrada progresivamente.",
+      "scenario": "Corrige el ciclo de vida de la suscripción para que el delegate se elimine cuando el objeto se destruye:",
+      "starterCode": "// EnemyTracker.cs\nusing UnityEngine;\n\npublic class EnemyTracker : MonoBehaviour\n{\n    private void Start()\n    {\n        // Suscripción sin desuscripción — memory leak garantizado\n        GameManager.Instance.OnWaveStarted += HandleWaveStarted;\n\n        // Si el Enemy se destruye antes de que OnWaveStarted se dispare,\n        // el delegate apunta a un objeto destruido\n    }\n\n    // También suscrito en Start, jamás eliminado\n    private void Start2_AlsoProblematic()\n    {\n        GameManager.Instance.OnEnemyKilled += HandleEnemyKilled;\n        GameManager.Instance.OnGameOver    += HandleGameOver;\n    }\n\n    private void HandleWaveStarted(int waveNumber)\n    {\n        Debug.Log($\"Wave {waveNumber} started — Enemy reacting\");\n    }\n\n    private void HandleEnemyKilled(int count) { }\n    private void HandleGameOver() { }\n}",
+      "prompt": "Corrige `EnemyTracker` para que se suscriba en `OnEnable` y se desuscriba en `OnDisable`, eliminando el memory leak y las NullReferenceException al destruir el objeto.",
+      "criteria": [
+        {
+          "id": "subscribe_on_enable",
+          "label": "La suscripción ocurre en `OnEnable`, no en `Start` o `Awake`",
+          "check": "keyword",
+          "pattern": "OnEnable",
+          "points": 3
+        },
+        {
+          "id": "unsubscribe_on_disable",
+          "label": "La desuscripción (`-=`) ocurre en `OnDisable` o `OnDestroy`",
+          "check": "keyword",
+          "pattern": "OnDisable|OnDestroy",
+          "points": 4
+        },
+        {
+          "id": "uses_minus_equals",
+          "label": "Usa el operador `-=` para desuscribirse del evento",
+          "check": "keyword",
+          "pattern": "-=",
+          "points": 4
+        },
+        {
+          "id": "no_start_subscription",
+          "label": "No hay suscripciones con `+=` dentro de `Start` que no tengan su `-=` correspondiente",
+          "check": "antiPattern",
+          "pattern": "void Start\\(\\)[\\s\\S]{0,400}\\+=",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// EnemyTracker.cs — ciclo de vida de suscripción correctamente manejado\nusing UnityEngine;\n\npublic class EnemyTracker : MonoBehaviour\n{\n    // OnEnable/OnDisable se llaman tanto al activar/desactivar\n    // como al crear/destruir el GameObject — patrón simétrico\n    private void OnEnable()\n    {\n        GameManager.Instance.OnWaveStarted  += HandleWaveStarted;\n        GameManager.Instance.OnEnemyKilled  += HandleEnemyKilled;\n        GameManager.Instance.OnGameOver     += HandleGameOver;\n    }\n\n    // Espejo exacto de OnEnable: cualquier += tiene su -=\n    private void OnDisable()\n    {\n        GameManager.Instance.OnWaveStarted  -= HandleWaveStarted;\n        GameManager.Instance.OnEnemyKilled  -= HandleEnemyKilled;\n        GameManager.Instance.OnGameOver     -= HandleGameOver;\n    }\n\n    private void HandleWaveStarted(int waveNumber)\n    {\n        Debug.Log($\"Wave {waveNumber} started — Enemy reacting\");\n    }\n\n    private void HandleEnemyKilled(int count) { }\n    private void HandleGameOver() { }\n}\n\n// Tip adicional: si GameManager puede ser null al desactivarse (cambio de escena),\n// protege la desuscripción:\n// private void OnDisable()\n// {\n//     if (GameManager.Instance == null) return;\n//     GameManager.Instance.OnWaveStarted -= HandleWaveStarted;\n// }",
+      "alternatives": [
+        "Usar `OnDestroy` en lugar de `OnDisable` si el objeto no se desactiva pero sí se destruye frecuentemente",
+        "Guardar el delegate en una variable local para garantizar que el `-=` elimina exactamente la instancia registrada",
+        "Usar un `WeakReference` al subscriber para que el GC pueda coleccionar objetos destruidos sin desuscripción explícita",
+        "Implementar un `EventBus` que limpie automáticamente delegates nulos antes de invocar, como mecanismo de defensa"
+      ],
+      "feedback": {
+        "high": "Correcto y simétrico. `OnEnable` y `OnDisable` forman un par exacto: cada `+=` tiene su `-=`. Este patrón funciona tanto para objetos que se destruyen como para objetos que se desactivan temporalmente (pooling), y es el más robusto para el ciclo de vida de GameObjects en Unity.",
+        "mid": "Bien encaminado. Añadiste la desuscripción, pero si la pusiste en `OnDestroy` y el objeto puede desactivarse sin destruirse (por ejemplo, en un object pool), el delegate sigue registrado durante el tiempo que el objeto está inactivo. Prefiere `OnEnable` / `OnDisable` — se llaman tanto en activate/deactivate como en create/destroy.",
+        "low": "Cuando un MonoBehaviour se destruye, C# no sabe que ese delegate apunta a un objeto muerto. El evento del `GameManager` sigue teniendo la referencia en su lista de invocación. Al dispararse el evento, intenta ejecutar `HandleWaveStarted` en un objeto destruido: **NullReferenceException**. La solución es siempre desuscribirse (`-=`) antes de que el objeto desaparezca."
+      }
+    },
+    {
+      "id": "evn_005",
+      "difficulty": 2,
+      "genre": "Cualquiera",
+      "tags": ["eventos", "referencia-directa"],
+      "title": "Cada script llama AudioSource.PlayClipAtPoint con referencia directa al clip",
+      "context": "Tu juego tiene 15 scripts diferentes (`PlayerAttack`, `EnemyDeath`, `UIButton`, etc.) que reproducen sonidos llamando directamente a `AudioSource.PlayClipAtPoint`. Cada uno tiene su propia `[SerializeField] AudioClip` y controla el volumen localmente. Cuando el productor pide **silenciar todos los sonidos durante una cutscene** o ajustar el volumen global de efectos, es necesario modificar los 15 archivos. Además, **testear la lógica de ataque** sin que suene el audio resulta imposible sin comentar código.",
+      "scenario": "Centraliza el sistema de audio con una interfaz de servicio y eventos tipados para desacoplar la lógica de negocio del audio:",
+      "starterCode": "// PlayerAttack.cs\nusing UnityEngine;\n\npublic class PlayerAttack : MonoBehaviour\n{\n    [SerializeField] private AudioClip attackClip;   // referencia directa\n    [SerializeField] private float     volume = 1f;\n\n    public void Attack()\n    {\n        // Lógica de ataque + audio mezclados — imposible separar\n        AudioSource.PlayClipAtPoint(attackClip, transform.position, volume);\n        // ... daño, animación, etc.\n    }\n}\n\n// EnemyDeath.cs\npublic class EnemyDeath : MonoBehaviour\n{\n    [SerializeField] private AudioClip deathClip;\n    [SerializeField] private float     volume = 0.8f;\n\n    public void Die()\n    {\n        AudioSource.PlayClipAtPoint(deathClip, transform.position, volume);\n        // Silenciar durante cutscene requiere modificar ESTE archivo\n    }\n}\n\n// UIButton.cs\npublic class UIButton : MonoBehaviour\n{\n    [SerializeField] private AudioClip clickClip;\n\n    public void OnClick()\n    {\n        AudioSource.PlayClipAtPoint(clickClip, Camera.main.transform.position);\n    }\n}",
+      "prompt": "Crea una interfaz `IAudioService` y un `AudioManager` que centralice la reproducción. Los scripts emiten eventos o llaman al servicio; el audio se activa/silencia desde un único punto.",
+      "criteria": [
+        {
+          "id": "audio_service_interface",
+          "label": "Define una interfaz `IAudioService` con al menos un método `PlaySFX`",
+          "check": "keyword",
+          "pattern": "IAudioService|interface\\s+IAudio",
+          "points": 4
+        },
+        {
+          "id": "no_play_clip_direct",
+          "label": "Los scripts de juego ya no llaman a `AudioSource.PlayClipAtPoint` directamente",
+          "check": "antiPattern",
+          "pattern": "AudioSource\\.PlayClipAtPoint",
+          "points": 4
+        },
+        {
+          "id": "central_mute",
+          "label": "El AudioManager tiene un mecanismo para silenciar/activar todos los efectos globalmente",
+          "check": "keyword",
+          "pattern": "mute|Mute|_muted|isMuted|SetMute|sfxVolume",
+          "points": 3
+        },
+        {
+          "id": "scriptable_or_event",
+          "label": "Usa AudioClip como ScriptableObject, evento tipado, o registro de clips por enum/string para desacoplar la referencia al clip",
+          "check": "keyword",
+          "pattern": "ScriptableObject|AudioEvent|AudioClipSO|SoundEffect|SoundID",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// IAudioService.cs — contrato de audio, testeable con mocks\npublic interface IAudioService\n{\n    void PlaySFX(AudioEvent audioEvent, Vector3 position);\n    void SetSFXMute(bool muted);\n}\n\n// AudioEvent.cs — ScriptableObject que encapsula el clip y sus parámetros\nusing UnityEngine;\n\n[CreateAssetMenu(menuName = \"Audio/AudioEvent\")]\npublic class AudioEvent : ScriptableObject\n{\n    public AudioClip clip;\n    [Range(0f, 1f)] public float volume = 1f;\n    [Range(0.9f, 1.1f)] public float pitchVariance = 0.05f;\n\n    public void Play(AudioSource source)\n    {\n        source.pitch  = Random.Range(1f - pitchVariance, 1f + pitchVariance);\n        source.volume = volume;\n        source.PlayOneShot(clip);\n    }\n}\n\n// AudioManager.cs — implementa IAudioService, punto único de control\nusing UnityEngine;\n\npublic class AudioManager : MonoBehaviour, IAudioService\n{\n    public static IAudioService Instance { get; private set; }\n\n    [SerializeField] private AudioSource sfxSource;\n    private bool _muted;\n\n    private void Awake()\n    {\n        Instance = this;\n        DontDestroyOnLoad(gameObject);\n    }\n\n    public void PlaySFX(AudioEvent audioEvent, Vector3 position)\n    {\n        if (_muted || audioEvent == null) return;\n        audioEvent.Play(sfxSource); // un AudioSource centralizado\n    }\n\n    public void SetSFXMute(bool muted) => _muted = muted;\n}\n\n// PlayerAttack.cs — ya no conoce AudioSource ni AudioClip de Unity\nusing UnityEngine;\n\npublic class PlayerAttack : MonoBehaviour\n{\n    [SerializeField] private AudioEvent attackSound; // ScriptableObject\n\n    public void Attack()\n    {\n        // Lógica de ataque pura\n        AudioManager.Instance.PlaySFX(attackSound, transform.position);\n    }\n}\n\n// CutsceneManager.cs — silencia globalmente con una línea\npublic class CutsceneManager : MonoBehaviour\n{\n    public void StartCutscene() => AudioManager.Instance.SetSFXMute(true);\n    public void EndCutscene()   => AudioManager.Instance.SetSFXMute(false);\n}",
+      "alternatives": [
+        "Usar `event Action<AudioEvent>` estático en lugar de llamada directa al `AudioManager`, para que el servicio se suscriba sin que los scripts lo conozcan",
+        "Implementar múltiples canales de audio (`MusicChannel`, `SFXChannel`, `VoiceChannel`) con volumen independiente usando `AudioMixer` de Unity",
+        "Usar `Addressables` para cargar `AudioClip` bajo demanda en lugar de referencias serializadas, reduciendo el tamaño del build inicial",
+        "Adoptar un patrón de inyección de dependencias para pasar `IAudioService` a los scripts, facilitando mocks en tests unitarios"
+      ],
+      "feedback": {
+        "high": "Arquitectura de audio profesional. La interfaz `IAudioService` permite mockear el audio en tests unitarios, el `AudioEvent` ScriptableObject encapsula clip + parámetros reutilizables, y `SetSFXMute` silencia todo el juego desde `CutsceneManager` con una sola línea. Ningún script de juego importa `AudioSource` directamente.",
+        "mid": "Buen avance. Centralizaste la reproducción en `AudioManager`, pero si los scripts siguen teniendo `[SerializeField] AudioClip` propios y pasan el clip al manager, el desacoplamiento es parcial: cambiar parámetros de un sonido sigue requiriendo modificar cada prefab. Usa `AudioEvent` ScriptableObject como unidad de configuración reutilizable.",
+        "low": "Con 15 scripts llamando `AudioSource.PlayClipAtPoint` directamente, silenciar el audio durante una cutscene requiere 15 modificaciones. El principio es simple: **un único punto de entrada para el audio**. Cualquier script publica una petición (`PlaySFX(attackSound)`) y el `AudioManager` decide si reproducirla, a qué volumen y con qué mezcla."
+      }
+    },
+    {
+      "id": "evn_006",
+      "difficulty": 2,
+      "genre": "Fighter",
+      "tags": ["eventos", "update-polling"],
+      "title": "Combo system detecta secuencia de botones con if/if/if en Update",
+      "context": "Tu juego de peleas detecta combos con `if` anidados en `Update`, comparando el input actual con variables de estado del frame anterior. Funciona para tres ataques seguidos, pero añadir un nuevo combo de 4 botones requiere **añadir otro nivel de anidamiento** y reescribir la lógica de ventana de tiempo. Con 10 combos distintos el `Update` se convierte en un árbol de `if` imposible de mantener. Los **diseñadores de combate no pueden definir combos sin tocar código C#**.",
+      "scenario": "Reemplaza el árbol de ifs por una Queue de inputs con ventana de tiempo y un Dictionary de combos registrados:",
+      "starterCode": "// ComboSystem.cs\nusing UnityEngine;\n\npublic class ComboSystem : MonoBehaviour\n{\n    private string _lastInput     = \"\";\n    private string _lastLastInput = \"\";\n    private float  _lastTime;\n    private float  _lastLastTime;\n\n    private void Update()\n    {\n        // Detectar combos: difícil de extender, imposible para diseñadores\n        if (Input.GetButtonDown(\"Attack\"))\n        {\n            if (_lastInput == \"Attack\" && Time.time - _lastTime < 0.3f)\n            {\n                if (_lastLastInput == \"Attack\" && Time.time - _lastLastTime < 0.6f)\n                {\n                    TriggerCombo(\"TripleAttack\");\n                }\n            }\n            _lastLastInput = _lastInput;\n            _lastLastTime  = _lastTime;\n            _lastInput     = \"Attack\";\n            _lastTime      = Time.time;\n        }\n\n        // Añadir un combo con \"Attack, Special, Jump\" requiere más ifs anidados\n        if (Input.GetButtonDown(\"Special\"))\n        {\n            if (_lastInput == \"Attack\" && Time.time - _lastTime < 0.3f)\n            {\n                TriggerCombo(\"FinisherMove\");\n            }\n            _lastInput = \"Special\";\n            _lastTime  = Time.time;\n        }\n    }\n\n    private void TriggerCombo(string comboName)\n    {\n        Debug.Log($\"Combo: {comboName}\");\n    }\n}",
+      "prompt": "Reescribe el sistema de combos usando una `Queue<string>` con ventana de tiempo y un `Dictionary` de secuencias registradas. Emite un evento `OnComboExecuted` cuando se detecta un combo.",
+      "criteria": [
+        {
+          "id": "uses_queue",
+          "label": "Usa `Queue<string>` (o similar) para almacenar el historial de inputs recientes",
+          "check": "keyword",
+          "pattern": "Queue<string>|Queue<InputAction>|inputHistory|_inputBuffer",
+          "points": 4
+        },
+        {
+          "id": "uses_dictionary",
+          "label": "Registra combos en un `Dictionary` donde la clave es la secuencia de botones",
+          "check": "keyword",
+          "pattern": "Dictionary<|_combos|comboMap|comboDict",
+          "points": 4
+        },
+        {
+          "id": "combo_event",
+          "label": "Emite un evento C# (`event Action<string>` o similar) cuando se detecta un combo",
+          "check": "keyword",
+          "pattern": "OnComboExecuted|event\\s+Action",
+          "points": 3
+        },
+        {
+          "id": "no_nested_ifs",
+          "label": "No hay ifs anidados para detectar secuencias (el árbol de if/if/if desaparece)",
+          "check": "antiPattern",
+          "pattern": "if\\s*\\([\\s\\S]{0,200}if\\s*\\([\\s\\S]{0,200}if\\s*\\(",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// ComboSystem.cs — Queue + Dictionary + evento tipado\nusing System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing UnityEngine;\n\npublic class ComboSystem : MonoBehaviour\n{\n    // Cualquier sistema puede escuchar combos ejecutados\n    public event Action<string> OnComboExecuted;\n\n    [SerializeField] private float comboWindow = 0.5f; // segundos entre inputs\n\n    // Historial circular de inputs recientes con timestamp\n    private readonly Queue<(string input, float time)> _inputBuffer\n        = new Queue<(string, float)>();\n\n    // Combos registrados: secuencia → nombre del combo\n    private readonly Dictionary<string[], string> _combos\n        = new Dictionary<string[], string>(new SequenceComparer());\n\n    private void Awake()\n    {\n        // Los combos se registran aquí o desde un ScriptableObject externo\n        _combos[new[] { \"Attack\", \"Attack\", \"Attack\" }] = \"TripleAttack\";\n        _combos[new[] { \"Attack\", \"Special\" }]           = \"FinisherMove\";\n        _combos[new[] { \"Jump\", \"Attack\", \"Special\" }]   = \"AerialFinisher\";\n    }\n\n    private void Update()\n    {\n        // Limpiar inputs expirados\n        while (_inputBuffer.Count > 0 &&\n               Time.time - _inputBuffer.Peek().time > comboWindow)\n            _inputBuffer.Dequeue();\n\n        // Registrar input del frame\n        if (Input.GetButtonDown(\"Attack\"))  RecordInput(\"Attack\");\n        if (Input.GetButtonDown(\"Special\")) RecordInput(\"Special\");\n        if (Input.GetButtonDown(\"Jump\"))    RecordInput(\"Jump\");\n    }\n\n    private void RecordInput(string inputName)\n    {\n        _inputBuffer.Enqueue((inputName, Time.time));\n        CheckCombos();\n    }\n\n    private void CheckCombos()\n    {\n        string[] current = _inputBuffer.Select(e => e.input).ToArray();\n\n        foreach (var kvp in _combos)\n        {\n            // Verificar si el buffer termina con la secuencia del combo\n            if (current.Length >= kvp.Key.Length &&\n                current.Skip(current.Length - kvp.Key.Length)\n                       .SequenceEqual(kvp.Key))\n            {\n                OnComboExecuted?.Invoke(kvp.Value);\n                _inputBuffer.Clear();\n                return;\n            }\n        }\n    }\n}\n\n// IComparer necesario para usar string[] como clave de Dictionary\npublic class SequenceComparer : IEqualityComparer<string[]>\n{\n    public bool Equals(string[] x, string[] y)   => x.SequenceEqual(y);\n    public int  GetHashCode(string[] obj)          => obj.Aggregate(17, (h, s) => h * 31 + s.GetHashCode());\n}",
+      "alternatives": [
+        "Cargar definiciones de combos desde un `ScriptableObject` para que los diseñadores editen secuencias sin tocar código C#",
+        "Usar una máquina de estados finita (FSM) donde cada estado representa un input en la secuencia, con transiciones por tiempo",
+        "Implementar el patrón Command para encapsular cada input como objeto y reproducirlos para replay o detección retroactiva",
+        "Usar Input System de Unity con `InputActionMap` y binding sequences para combos configurables desde el editor"
+      ],
+      "feedback": {
+        "high": "Excelente arquitectura. La `Queue<(string, float)>` mantiene el historial con timestamps, el `Dictionary` permite registrar combos sin modificar `CheckCombos`, y `OnComboExecuted` desacopla la detección de la ejecución. Añadir un combo de 5 botones es una línea en `Awake` — sin tocar la lógica central.",
+        "mid": "Buen progreso. Eliminaste los ifs anidados y usas una estructura de historial, pero si tu `CheckCombos` sigue siendo una serie de `if` fijos por combo, el diseñador sigue sin poder añadir combos sin código. El `Dictionary<string[], string>` permite registrar secuencias arbitrarias y verificarlas con `SequenceEqual` de forma genérica.",
+        "low": "El problema de los ifs anidados es que la **complejidad crece con cada combo**: 3 combos = 3 niveles de anidamiento, 10 combos = código imposible de leer. Con una `Queue` de inputs y un `Dictionary` de secuencias, `CheckCombos` es siempre el mismo código independientemente de cuántos combos existan. La detección es datos, no código."
+      }
+    },
+    {
+      "id": "evn_007",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["eventos", "referencia-directa"],
+      "title": "Event Bus global para desacoplar logros, estadísticas y UI",
+      "context": "Tu RPG tiene `AchievementSystem`, `StatsTracker` y `HUD` que se notifican mutuamente con referencias directas: el `AchievementSystem` conoce `StatsTracker` y `HUD`, `StatsTracker` conoce `AchievementSystem`. Esta **red de dependencias circulares** hace que añadir un nuevo sistema de analytics requiera modificar múltiples clases existentes. Reordenar los scripts en el Inspector puede provocar errores de inicialización por **dependencias de orden en Awake**.",
+      "scenario": "Implementa un EventBus genérico estático que permita publicar y escuchar eventos tipados sin que los sistemas se conozcan entre sí:",
+      "starterCode": "// AchievementSystem.cs — conoce StatsTracker y HUD directamente\nusing UnityEngine;\n\npublic class AchievementSystem : MonoBehaviour\n{\n    [SerializeField] private StatsTracker statsTracker; // referencia directa\n    [SerializeField] private HUD          hud;          // referencia directa\n\n    private void Start()\n    {\n        // Debe inicializarse DESPUÉS de StatsTracker — orden frágil\n        statsTracker.OnEnemyKilled += HandleEnemyKilled;\n    }\n\n    private void HandleEnemyKilled(int totalKills)\n    {\n        if (totalKills == 100)\n        {\n            hud.ShowAchievement(\"Centurion\"); // acoplado a HUD\n        }\n    }\n}\n\n// StatsTracker.cs — también conoce AchievementSystem\npublic class StatsTracker : MonoBehaviour\n{\n    public System.Action<int> OnEnemyKilled;\n    private int _kills;\n\n    [SerializeField] private AchievementSystem achievements; // referencia cruzada\n\n    public void RegisterKill()\n    {\n        _kills++;\n        OnEnemyKilled?.Invoke(_kills);\n        // Para analytics habría que añadir otra referencia aquí\n    }\n}",
+      "prompt": "Crea un `EventBus<T>` genérico estático con métodos `Publish`, `Subscribe` y `Unsubscribe`. Los sistemas publican/escuchan eventos tipados (`EnemyKilledEvent`) sin referencias entre sí.",
+      "criteria": [
+        {
+          "id": "generic_event_bus",
+          "label": "Implementa `EventBus<T>` genérico con diccionario de delegates por tipo",
+          "check": "keyword",
+          "pattern": "EventBus<T>|EventBus<|class EventBus",
+          "points": 4
+        },
+        {
+          "id": "publish_subscribe_methods",
+          "label": "Expone métodos estáticos `Publish`, `Subscribe` y `Unsubscribe`",
+          "check": "keyword",
+          "pattern": "Publish|Subscribe|Unsubscribe",
+          "points": 4
+        },
+        {
+          "id": "typed_event_structs",
+          "label": "Define structs o clases de eventos tipados (`EnemyKilledEvent`, `ItemPickedEvent`)",
+          "check": "keyword",
+          "pattern": "EnemyKilledEvent|ItemPickedEvent|struct.*Event|class.*Event",
+          "points": 3
+        },
+        {
+          "id": "no_cross_references",
+          "label": "AchievementSystem y StatsTracker ya no tienen referencias directas entre sí",
+          "check": "antiPattern",
+          "pattern": "\\[SerializeField\\][\\s\\S]{0,100}StatsTracker|\\[SerializeField\\][\\s\\S]{0,100}AchievementSystem",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// EventBus.cs — bus genérico estático, sin dependencias externas\nusing System;\nusing System.Collections.Generic;\n\npublic static class EventBus<T>\n{\n    private static readonly Dictionary<Type, Action<T>> _handlers\n        = new Dictionary<Type, Action<T>>();\n\n    public static void Subscribe(Action<T> handler)\n    {\n        Type key = typeof(T);\n        if (!_handlers.ContainsKey(key)) _handlers[key] = null;\n        _handlers[key] += handler;\n    }\n\n    public static void Unsubscribe(Action<T> handler)\n    {\n        Type key = typeof(T);\n        if (_handlers.ContainsKey(key)) _handlers[key] -= handler;\n    }\n\n    public static void Publish(T eventData)\n    {\n        Type key = typeof(T);\n        if (_handlers.TryGetValue(key, out var action))\n            action?.Invoke(eventData);\n    }\n}\n\n// Eventos tipados como structs — inmutables, sin garbage\npublic readonly struct EnemyKilledEvent\n{\n    public readonly int   TotalKills;\n    public readonly string EnemyType;\n    public EnemyKilledEvent(int kills, string type) { TotalKills = kills; EnemyType = type; }\n}\n\npublic readonly struct ItemPickedEvent\n{\n    public readonly string ItemId;\n    public ItemPickedEvent(string id) { ItemId = id; }\n}\n\n// StatsTracker.cs — publica eventos, no conoce a nadie\nusing UnityEngine;\n\npublic class StatsTracker : MonoBehaviour\n{\n    private int _kills;\n\n    public void RegisterKill(string enemyType)\n    {\n        _kills++;\n        // Publica — no importa quién escucha\n        EventBus<EnemyKilledEvent>.Publish(new EnemyKilledEvent(_kills, enemyType));\n    }\n}\n\n// AchievementSystem.cs — escucha eventos, no conoce a StatsTracker\nusing UnityEngine;\n\npublic class AchievementSystem : MonoBehaviour\n{\n    private void OnEnable()\n    {\n        EventBus<EnemyKilledEvent>.Subscribe(OnEnemyKilled);\n        EventBus<ItemPickedEvent>.Subscribe(OnItemPicked);\n    }\n\n    private void OnDisable()\n    {\n        EventBus<EnemyKilledEvent>.Unsubscribe(OnEnemyKilled);\n        EventBus<ItemPickedEvent>.Unsubscribe(OnItemPicked);\n    }\n\n    private void OnEnemyKilled(EnemyKilledEvent e)\n    {\n        if (e.TotalKills == 100) Debug.Log(\"Achievement: Centurion\");\n    }\n\n    private void OnItemPicked(ItemPickedEvent e) { }\n}\n\n// AnalyticsSystem.cs — se añade SIN modificar StatsTracker ni AchievementSystem\npublic class AnalyticsSystem : MonoBehaviour\n{\n    private void OnEnable()  => EventBus<EnemyKilledEvent>.Subscribe(TrackKill);\n    private void OnDisable() => EventBus<EnemyKilledEvent>.Unsubscribe(TrackKill);\n    private void TrackKill(EnemyKilledEvent e) { /* enviar a analytics */ }\n}",
+      "alternatives": [
+        "Usar `ScriptableObject` como canal de eventos por tipo (`EnemyKilledChannel.Raise()`) para evitar el bus estático global y facilitar el testing",
+        "Implementar un bus basado en `Type` usando `Dictionary<Type, Delegate>` para soportar distintos tipos de eventos en una sola clase",
+        "Usar el paquete `MessagePipe` de la Asset Store para un bus de mensajes de alto rendimiento con soporte para DI",
+        "Combinar `EventBus` con `UniRx` (Observable) para filtrar, transformar y combinar flujos de eventos de forma declarativa"
+      ],
+      "feedback": {
+        "high": "Implementación de nivel profesional. `EventBus<T>` genérico permite publicar y suscribirse a cualquier tipo de evento sin referencias entre sistemas. Los structs `readonly` para los eventos evitan garbage en el heap. Añadir `AnalyticsSystem` no requirió tocar ningún sistema existente — el principio Open/Closed en acción.",
+        "mid": "Buen diseño. Tienes el bus funcional y los sistemas desacoplados, pero si los eventos son clases en lugar de structs, cada `Publish` genera una asignación en el heap. En sistemas con alta frecuencia (kills cada segundo, items frecuentes), usa `readonly struct` para que los eventos vivan en el stack y no presionen al Garbage Collector.",
+        "low": "Las referencias cruzadas entre `AchievementSystem`, `StatsTracker` y `HUD` crean un triángulo de dependencias: cambiar uno puede romper los otros. Un `EventBus<T>` invierte el flujo: los sistemas **publican hechos** (`EnemyKilledEvent`) sin saber quién escucha. Los interesados se suscriben sin saber quién publica. Añadir analytics es una suscripción nueva — sin modificar nada existente."
+      }
+    },
+    {
+      "id": "evn_008",
+      "difficulty": 3,
+      "genre": "RPG",
+      "tags": ["eventos", "referencia-directa", "update-polling"],
+      "title": "UI de stats que se actualiza en Update aunque los valores no hayan cambiado",
+      "context": "Tu `StatsUI` reasigna 8 componentes `Text` en cada `Update`, incluyendo HP, ataque, defensa y velocidad del jugador. A **60 FPS, son 480 asignaciones de string por segundo**, aunque los valores no hayan cambiado. En Unity, asignar `Text.text` genera **garbage en el heap** si el string cambia (boxing, concatenaciones), activando el Garbage Collector con micro-pauses visibles. El problema se agrava en móviles donde el GC puede pausar el juego hasta **3–5 ms**.",
+      "scenario": "Convierte StatsUI a un modelo reactivo: PlayerStats emite eventos cuando los valores cambian, StatsUI actualiza solo cuando hay un cambio real:",
+      "starterCode": "// StatsUI.cs — polling en Update, 480 asignaciones por segundo\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class StatsUI : MonoBehaviour\n{\n    [SerializeField] private PlayerStats player;\n\n    [SerializeField] private Text hpText;\n    [SerializeField] private Text attackText;\n    [SerializeField] private Text defenseText;\n    [SerializeField] private Text speedText;\n    [SerializeField] private Text levelText;\n    [SerializeField] private Text experienceText;\n    [SerializeField] private Text goldText;\n    [SerializeField] private Text killsText;\n\n    // Reasigna 8 Text.text CADA FRAME aunque los valores no hayan cambiado\n    private void Update()\n    {\n        hpText.text         = player.hp.ToString();\n        attackText.text     = player.attack.ToString();\n        defenseText.text    = player.defense.ToString();\n        speedText.text      = player.speed.ToString();\n        levelText.text      = player.level.ToString();\n        experienceText.text = player.experience.ToString();\n        goldText.text       = player.gold.ToString();\n        killsText.text      = player.kills.ToString();\n    }\n}",
+      "prompt": "Reescribe `PlayerStats` para que emita un evento `OnStatChanged(StatType, int)` cuando un stat cambie. `StatsUI` debe suscribirse y actualizar solo el `Text` correspondiente.",
+      "criteria": [
+        {
+          "id": "stat_changed_event",
+          "label": "PlayerStats declara un evento que notifica cambios de stat (`event Action<StatType, int>` o similar)",
+          "check": "keyword",
+          "pattern": "OnStatChanged|event\\s+Action<StatType|event\\s+Action<Stat",
+          "points": 4
+        },
+        {
+          "id": "no_update_polling",
+          "label": "StatsUI ya no tiene método Update que lea stats del jugador cada frame",
+          "check": "antiPattern",
+          "pattern": "void Update\\(\\)[\\s\\S]{0,400}player\\.hp|void Update\\(\\)[\\s\\S]{0,400}hpText",
+          "points": 4
+        },
+        {
+          "id": "stat_enum",
+          "label": "Define un enum `StatType` para identificar cada stat (HP, Attack, Defense, etc.)",
+          "check": "keyword",
+          "pattern": "enum StatType|StatType\\.",
+          "points": 3
+        },
+        {
+          "id": "selective_update",
+          "label": "StatsUI actualiza solo el Text del stat que cambió, no todos los 8 cada vez",
+          "check": "keyword",
+          "pattern": "switch|Dictionary<StatType|_statTexts\\[|case StatType",
+          "points": 3
+        }
+      ],
+      "idealSolution": "// StatType.cs — enum para identificar cada stat\npublic enum StatType { HP, Attack, Defense, Speed, Level, Experience, Gold, Kills }\n\n// PlayerStats.cs — emite evento solo cuando un valor cambia\nusing System;\nusing UnityEngine;\n\npublic class PlayerStats : MonoBehaviour\n{\n    public event Action<StatType, int> OnStatChanged;\n\n    private int _hp;\n    public int HP\n    {\n        get => _hp;\n        set { if (_hp == value) return; _hp = value; OnStatChanged?.Invoke(StatType.HP, _hp); }\n    }\n\n    private int _attack;\n    public int Attack\n    {\n        get => _attack;\n        set { if (_attack == value) return; _attack = value; OnStatChanged?.Invoke(StatType.Attack, _attack); }\n    }\n\n    private int _defense;\n    public int Defense\n    {\n        get => _defense;\n        set { if (_defense == value) return; _defense = value; OnStatChanged?.Invoke(StatType.Defense, _defense); }\n    }\n\n    // ... mismo patrón para Speed, Level, Experience, Gold, Kills\n}\n\n// StatsUI.cs — reactivo, sin Update, actualiza solo el stat cambiado\nusing System.Collections.Generic;\nusing UnityEngine;\nusing UnityEngine.UI;\n\npublic class StatsUI : MonoBehaviour\n{\n    [SerializeField] private PlayerStats player;\n\n    [SerializeField] private Text hpText;\n    [SerializeField] private Text attackText;\n    [SerializeField] private Text defenseText;\n    // ... resto de Text fields\n\n    // Mapa directo: stat → componente Text correspondiente\n    private Dictionary<StatType, Text> _statTexts;\n\n    private void Awake()\n    {\n        _statTexts = new Dictionary<StatType, Text>\n        {\n            { StatType.HP,      hpText      },\n            { StatType.Attack,  attackText  },\n            { StatType.Defense, defenseText },\n            // ...\n        };\n    }\n\n    private void OnEnable()\n    {\n        player.OnStatChanged += UpdateStat;\n        // Forzar refresco inicial completo\n        UpdateStat(StatType.HP,     player.HP);\n        UpdateStat(StatType.Attack, player.Attack);\n        // ...\n    }\n\n    private void OnDisable()\n    {\n        player.OnStatChanged -= UpdateStat;\n    }\n\n    // Solo se llama cuando un stat CAMBIA — O(1), sin polling\n    private void UpdateStat(StatType stat, int value)\n    {\n        if (_statTexts.TryGetValue(stat, out var text))\n            text.text = value.ToString();\n    }\n}",
+      "alternatives": [
+        "Usar `ReactiveProperty<int>` de UniRx para encapsular cada stat con observable integrado, sin necesidad de definir eventos manualmente",
+        "Cachear el string formateado en `PlayerStats` y compararlo con el último asignado antes de reasignar `Text.text`, como optimización mínima sin refactoring",
+        "Usar `TextMeshPro` con `SetText(value)` que internamente evita re-layout si el contenido no ha cambiado visualmente",
+        "Implementar `INotifyPropertyChanged` del sistema `System.ComponentModel` para integración con data binding de UI frameworks"
+      ],
+      "feedback": {
+        "high": "Excelente diseño reactivo. Las propiedades de `PlayerStats` solo emiten `OnStatChanged` cuando el valor **realmente cambia** (guard `if (_hp == value) return`). `StatsUI` usa un `Dictionary<StatType, Text>` para actualizar en **O(1)** el único `Text` afectado. En combate normal, el evento se dispara quizás 2–3 veces por segundo en lugar de 480.",
+        "mid": "Buen avance. Emites el evento cuando el stat cambia y `StatsUI` lo escucha correctamente. Verifica si aún tienes `Update` en `StatsUI`: si sigue ahí aunque sea para algo pequeño, revisa si es realmente necesario o si puede convertirse en una reacción a un evento. El objetivo es que `StatsUI` no haga nada a menos que sea notificada.",
+        "low": "Asignar `Text.text` 8 veces por frame cuando los stats no cambian es trabajo desperdiciado — y genera **garbage** cuando el string cambia (cada `int.ToString()` es una nueva string en el heap). La solución no es optimizar el `Update`, es **eliminar el `Update`**: que `PlayerStats` avise cuando algo cambia, y `StatsUI` reaccione exactamente entonces."
+      }
+    },
+    {
+      "id": "evn_009",
+      "difficulty": 3,
+      "genre": "Cualquiera",
+      "tags": ["eventos", "god-class"],
+      "title": "Comunicación entre escenas: pasar datos con DontDestroyOnLoad en un objeto",
+      "context": "Tu juego usa un `GameDataCarrier` con `DontDestroyOnLoad` para transportar datos entre escenas: score, nombre del jugador, personaje seleccionado, configuración de dificultad y último checkpoint. Con múltiples flujos de carga (reiniciar nivel, volver al menú, continuar partida), es difícil saber **qué instancia del carrier está vigente** si se carga la escena más de una vez. Depurar **datos corruptos entre escenas** requiere rastrear manualmente qué copia del objeto sobrevivió.",
+      "scenario": "Reemplaza el GameDataCarrier singleton con DontDestroyOnLoad por ScriptableObjects como canales de datos compartidos:",
+      "starterCode": "// GameDataCarrier.cs — objeto Dios que persiste de forma opaca\nusing UnityEngine;\n\npublic class GameDataCarrier : MonoBehaviour\n{\n    public static GameDataCarrier Instance;\n\n    // Todos los datos del juego mezclados en una clase\n    public int    score;\n    public string playerName;\n    public int    selectedCharacter;\n    public float  difficultyMultiplier;\n    public bool   isHardMode;\n    public string lastCheckpointId;\n    public int    currentLevel;\n    public int    remainingLives;\n    public float  playTime;\n\n    private void Awake()\n    {\n        if (Instance != null)\n        {\n            Destroy(gameObject); // ¿cuál es el vigente? difícil de saber\n            return;\n        }\n        Instance = this;\n        DontDestroyOnLoad(gameObject); // persiste para siempre, invisible\n    }\n\n    // Todos los sistemas acceden a esta clase God directamente\n    // Añadir datos nuevos engrosa esta clase indefinidamente\n}",
+      "prompt": "Reemplaza `GameDataCarrier` por ScriptableObjects especializados (`PlayerProgressSO`, `GameSettingsSO`) como canales de datos que cualquier escena puede referenciar sin singletons.",
+      "criteria": [
+        {
+          "id": "uses_scriptable_object",
+          "label": "Define al menos un ScriptableObject (`[CreateAssetMenu]`) para transportar datos entre escenas",
+          "check": "keyword",
+          "pattern": "ScriptableObject|CreateAssetMenu",
+          "points": 4
+        },
+        {
+          "id": "no_dont_destroy",
+          "label": "Elimina `DontDestroyOnLoad` como mecanismo de persistencia de datos",
+          "check": "antiPattern",
+          "pattern": "DontDestroyOnLoad",
+          "points": 4
+        },
+        {
+          "id": "no_singleton_pattern",
+          "label": "No usa patrón Singleton estático (`static Instance`, `static GameDataCarrier`) para los datos",
+          "check": "antiPattern",
+          "pattern": "static\\s+GameDataCarrier|static\\s+Instance\\s*=\\s*this",
+          "points": 3
+        },
+        {
+          "id": "separated_responsibilities",
+          "label": "Separa los datos en múltiples ScriptableObjects por responsabilidad (progreso, configuración, etc.)",
+          "check": "keyword",
+          "pattern": "PlayerProgress|GameSettings|SessionData|CheckpointData",
+          "points": 2
+        }
+      ],
+      "idealSolution": "// PlayerProgressSO.cs — canal de datos de progreso del jugador\nusing UnityEngine;\n\n[CreateAssetMenu(menuName = \"Game/PlayerProgress\")]\npublic class PlayerProgressSO : ScriptableObject\n{\n    public int    score;\n    public string playerName;\n    public int    selectedCharacter;\n    public string lastCheckpointId;\n    public int    currentLevel;\n    public int    remainingLives;\n    public float  playTime;\n\n    // Reset explícito al iniciar nueva partida — comportamiento predecible\n    public void ResetForNewGame()\n    {\n        score            = 0;\n        lastCheckpointId = string.Empty;\n        currentLevel     = 1;\n        remainingLives   = 3;\n        playTime         = 0f;\n    }\n}\n\n// GameSettingsSO.cs — canal de configuración separado\n[CreateAssetMenu(menuName = \"Game/GameSettings\")]\npublic class GameSettingsSO : ScriptableObject\n{\n    public float difficultyMultiplier = 1f;\n    public bool  isHardMode;\n}\n\n// GameManager.cs en la escena — referencia el SO directamente\nusing UnityEngine;\n\npublic class GameManager : MonoBehaviour\n{\n    // Referencia al asset en el proyecto — siempre el mismo, en toda escena\n    [SerializeField] private PlayerProgressSO playerProgress;\n    [SerializeField] private GameSettingsSO   gameSettings;\n\n    public void SaveCheckpoint(string checkpointId)\n    {\n        playerProgress.lastCheckpointId = checkpointId;\n        // El SO es el mismo asset en memoria — accesible desde cualquier escena\n        // sin DontDestroyOnLoad, sin singletons, sin búsqueda por nombre\n    }\n\n    public void AddScore(int points)\n    {\n        playerProgress.score += points;\n    }\n}\n\n// HUD.cs — accede al mismo SO sin conocer a GameManager\npublic class HUD : MonoBehaviour\n{\n    [SerializeField] private PlayerProgressSO playerProgress;\n\n    private void OnEnable()\n    {\n        // Lee del SO directamente — sin referencias a GameManager ni carrier\n        UpdateScoreDisplay(playerProgress.score);\n    }\n\n    private void UpdateScoreDisplay(int score) { /* actualiza UI */ }\n}\n\n// NOTA: Los ScriptableObjects NO persisten cambios al cerrar el editor\n// Para persistencia real, serializa el SO a JSON en Application.persistentDataPath\n// usando JsonUtility.ToJson(playerProgress)",
+      "alternatives": [
+        "Combinar ScriptableObjects con `JsonUtility.ToJson` / `FromJson` para persistencia real entre sesiones de juego",
+        "Usar `PlayerPrefs` para datos simples (score, nivel) cuando no se necesita la flexibilidad de un SO",
+        "Implementar un `SaveSystem` que serialice los ScriptableObjects a disco con `BinaryFormatter` o `Newtonsoft.Json`",
+        "Usar el paquete `Scriptable Object Architecture` de Ryan Hipple para SO con eventos integrados (`GameEvent`, `GameEventListener`)"
+      ],
+      "feedback": {
+        "high": "Arquitectura limpia. Los `ScriptableObject` son assets del proyecto — Unity los carga una sola vez en memoria y cualquier escena puede referenciarlos directamente. No hay ambigüedad de instancia, no hay `DontDestroyOnLoad` opaco, y las responsabilidades están separadas: progreso vs. configuración. El `ResetForNewGame()` hace explícito lo que antes era ambiguo.",
+        "mid": "Buen avance. Usas ScriptableObjects para los datos, pero si sigues con un Singleton que los gestiona con `DontDestroyOnLoad`, el problema de ambigüedad de instancia persiste. El poder del SO como canal es que **el propio asset es el canal**: cualquier script en cualquier escena que referencie el mismo asset SO accede a los mismos datos — sin intermediario singleton.",
+        "low": "El problema de `DontDestroyOnLoad` es que crea objetos **invisibles e implícitos** entre escenas: si la escena se carga dos veces, hay dos instancias y el `Destroy(gameObject)` decide arbitrariamente cuál persiste. Un `ScriptableObject` es un asset del proyecto: siempre es el mismo, siempre está accesible, y su ciclo de vida es explícito y controlable desde el editor."
+      }
+    }
+  ]
+}
