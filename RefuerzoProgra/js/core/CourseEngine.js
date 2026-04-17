@@ -89,9 +89,17 @@ export class CourseEngine {
     this.#activeSectionId = sectionId;
     this.#sessionCorrect = 0;
     this.#sessionTotal = 0;
-    this.#usedIds = new Set();
     this.#wrongAttempts = 0;
     this.#isMasterQuest = masterQuest;
+
+    // Pre-populate usedIds with already-answered questions so they are skipped
+    // on re-entry. MasterQuest always shows the full pool.
+    if (masterQuest) {
+      this.#usedIds = new Set();
+    } else {
+      const answered = this.#tracker.getSectionProgress(sectionId).answeredQuestions;
+      this.#usedIds = new Set(Object.keys(answered));
+    }
 
     this.#evalPanel.clear();
 
@@ -113,6 +121,17 @@ export class CourseEngine {
   async #nextQuestion() {
     const q = this.#pickQuestion();
     if (!q) {
+      // If we haven't answered a single question this session, the pool was already
+      // empty from the pre-fill — meaning all questions have been explored before.
+      if (!this.#isMasterQuest && this.#sessionCorrect === 0 && this.#sessionTotal === 0) {
+        const sectionData = this.#loadedSections.get(this.#activeSectionId);
+        const totalQ = sectionData?.questions?.length ?? 0;
+        const uniqueAnswered = this.#tracker.getUniqueAnswered(this.#activeSectionId);
+        if (totalQ > 0 && uniqueAnswered >= totalQ) {
+          this.#showAllExploredMessage();
+          return;
+        }
+      }
       await this.#onSectionComplete();
       return;
     }
@@ -170,6 +189,7 @@ export class CourseEngine {
 
     setTimeout(async () => {
       this.#evalPanel.markCorrect();
+      this.#renderSidebar(); // keep progress bar / question count in sync after every answer
       if (unlocked) await this.#handleUnlock(unlocked);
       setTimeout(() => this.#nextQuestion(), 400);
     }, 1200);
@@ -303,6 +323,11 @@ export class CourseEngine {
       default:
         return { correct: false };
     }
+  }
+
+  #showAllExploredMessage() {
+    const sectionId = this.#activeSectionId;
+    this.#evalPanel.showAllExplored(() => this.startMasterQuest(sectionId));
   }
 
   #getAllSectionConfigs() {
