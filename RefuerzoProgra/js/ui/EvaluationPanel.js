@@ -147,6 +147,26 @@ export class EvaluationPanel {
     this.#currentContainer.innerHTML = `<div class="panel-message">${html}</div>`;
   }
 
+  /**
+   * Shows the "all questions explored" completion state.
+   * @param {function} onMasterQuest - called when the user clicks the Master Quest CTA
+   */
+  showAllExplored(onMasterQuest) {
+    this.#currentContainer.innerHTML = `
+      <div class="panel-message">
+        <div class="section-complete all-explored">
+          <div class="complete-icon">🏅</div>
+          <h2>¡Ya exploraste todas las preguntas!</h2>
+          <p>Has respondido cada pregunta de esta sección al menos una vez.</p>
+          <p>Para repasar todas desde cero, inicia el <strong>Master Quest</strong>.</p>
+          <button class="btn-start-mq-cta">⚔️ Iniciar Master Quest</button>
+        </div>
+      </div>
+    `;
+    this.#currentContainer.querySelector('.btn-start-mq-cta')
+      ?.addEventListener('click', () => onMasterQuest?.());
+  }
+
   #renderHistoryItem(question, correct, _lastAnswer = null) {
     const item = document.createElement('div');
     item.className = `history-item ${correct ? 'history-correct' : 'history-wrong'}`;

@@ -143,6 +143,7 @@ async function boot() {
     });
     if (result.isConfirmed) {
       progressTracker.reset();
+      await pushRemoteProgress({}); // also wipe the D1 record
       window.location.reload();
     }
   });

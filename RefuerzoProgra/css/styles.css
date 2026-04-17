@@ -1081,6 +1081,26 @@ code, pre { font-family: var(--font-mono); }
   font-size: 0.9rem;
 }
 
+/* ─── All-Explored CTA Button ───────────────── */
+.btn-start-mq-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.4rem;
+  background: color-mix(in srgb, #FFD700 15%, transparent);
+  border: 1px solid #FFD700;
+  border-radius: var(--radius-md);
+  color: #FFD700;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-start-mq-cta:hover {
+  background: color-mix(in srgb, #FFD700 25%, transparent);
+}
+
 /* ─── Exam Item in Sidebar ───────────────────── */
 .nav-exam-item {
   border-style: dashed;
