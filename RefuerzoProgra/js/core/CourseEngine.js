@@ -92,18 +92,24 @@ export class CourseEngine {
     this.#wrongAttempts = 0;
     this.#isMasterQuest = masterQuest;
 
-    // Pre-populate usedIds with already-answered questions so they are skipped
-    // on re-entry. MasterQuest always shows the full pool.
-    if (masterQuest) {
-      this.#usedIds = new Set();
-    } else {
-      const answered = this.#tracker.getSectionProgress(sectionId).answeredQuestions;
-      this.#usedIds = new Set(Object.keys(answered));
-    }
+    // Pre-populate usedIds with CORRECTLY answered IDs so they are skipped on
+    // re-entry. Wrong-only attempts stay in the pool. MasterQuest = full pool.
+    const correctIds = masterQuest
+      ? []
+      : this.#tracker.getCorrectlyAnsweredIds(sectionId);
+    this.#usedIds = new Set(correctIds);
 
     this.#evalPanel.clear();
 
+    // Restore history panel with correctly answered questions from previous sessions.
+    // Wrong answers from past sessions are intentionally omitted — they re-enter the pool.
     const secData = this.#loadedSections.get(sectionId);
+    if (!masterQuest && correctIds.length > 0 && secData?.questions) {
+      const correctSet = new Set(correctIds);
+      const restoredQuestions = secData.questions.filter(q => correctSet.has(q.id));
+      this.#evalPanel.restoreHistory(restoredQuestions);
+    }
+
     const totalQ = secData?.questions?.length ?? 0;
 
     this.#evalPanel.showMessage(`
@@ -205,6 +211,9 @@ export class CourseEngine {
     } else {
       this.#sessionTotal++;
       this.#evalPanel.showExplanation(answer);
+      // Return this question to the pool — it stays "unanswered" until the user
+      // gets it right. It will surface again at a random point in the session.
+      this.#usedIds.delete(this.#currentQuestion.id);
       setTimeout(() => this.#nextQuestion(), 2000);
     }
   }

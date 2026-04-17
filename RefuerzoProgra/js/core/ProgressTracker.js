@@ -73,9 +73,17 @@ export class ProgressTracker {
     this.#save();
   }
 
-  /** Returns the number of distinct questions answered (at least one attempt). */
+  /** Returns the number of distinct questions answered CORRECTLY at least once. */
   getUniqueAnswered(sectionId) {
-    return Object.keys(this.getSectionProgress(sectionId).answeredQuestions).length;
+    return Object.values(this.getSectionProgress(sectionId).answeredQuestions)
+      .filter(q => q.correct > 0).length;
+  }
+
+  /** Returns the IDs of questions answered correctly at least once. */
+  getCorrectlyAnsweredIds(sectionId) {
+    return Object.entries(this.getSectionProgress(sectionId).answeredQuestions)
+      .filter(([, v]) => v.correct > 0)
+      .map(([id]) => id);
   }
 
   /** Records a single answer result for a question. */

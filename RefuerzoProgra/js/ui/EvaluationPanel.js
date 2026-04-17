@@ -142,6 +142,19 @@ export class EvaluationPanel {
     this.#activeHandler = null;
   }
 
+  /**
+   * Restores correctly-answered questions into the history panel when re-entering
+   * a section. Only called for questions answered correctly in past sessions.
+   * Wrong answers from past sessions are NOT included — they re-enter the pool.
+   * @param {object[]} questions - correctly answered question objects
+   */
+  restoreHistory(questions) {
+    // Render in reverse order so the first question in the array ends up on top
+    for (let i = questions.length - 1; i >= 0; i--) {
+      this.#renderHistoryItem(questions[i], true);
+    }
+  }
+
   /** Shows a loading/waiting message in the current question area. */
   showMessage(html) {
     this.#currentContainer.innerHTML = `<div class="panel-message">${html}</div>`;
