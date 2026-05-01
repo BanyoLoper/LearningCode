@@ -80,21 +80,59 @@
     <input type="email" id="buy-email" class="buy-input"
            placeholder="tu@correo.com" autocomplete="email" required>
 
-    <button id="btn-pay" class="btn-pay" disabled>
-      Próximamente — Pagar con Stripe
-    </button>
+    <button id="btn-pay" class="btn-pay">Pagar con Stripe →</button>
 
     <div id="buy-msg" class="buy-msg" role="status" aria-live="polite"></div>
     <a class="buy-foot" href="/login.html">← Volver al login</a>
   </div>
 
   <script>
+    const emailEl = document.getElementById('buy-email');
+    const btn     = document.getElementById('btn-pay');
+    const msg     = document.getElementById('buy-msg');
+
     // Pre-fill email if it came from the login page
     const pending = sessionStorage.getItem('pending_email');
-    if (pending) document.getElementById('buy-email').value = pending;
+    if (pending) emailEl.value = pending;
 
-    // TODO: Stripe Checkout integration — POST to /api/stripe/checkout
-    // with { email } and redirect to data.url. Will be enabled in next step.
+    // Show cancel notice if user came back from a cancelled Stripe session
+    if (new URLSearchParams(location.search).get('canceled') === '1') {
+      msg.textContent = 'Pago cancelado. Puedes intentarlo de nuevo cuando quieras.';
+      msg.style.color = '#f39c12';
+    }
+
+    btn.addEventListener('click', async () => {
+      const email = emailEl.value.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = 'Ingresa un correo electrónico válido.';
+        emailEl.focus();
+        return;
+      }
+
+      msg.textContent = '';
+      btn.disabled    = true;
+      btn.textContent = 'Redirigiendo a Stripe…';
+
+      try {
+        const res  = await fetch('/api/stripe/checkout', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.url) {
+          throw new Error(data.error || 'No se pudo iniciar el pago.');
+        }
+        sessionStorage.setItem('pending_email', email);
+        window.location.href = data.url;
+      } catch (err) {
+        msg.style.color = '#e74c3c';
+        msg.textContent = err.message;
+        btn.disabled    = false;
+        btn.textContent = 'Pagar con Stripe →';
+      }
+    });
   </script>
 </body>
 </html>

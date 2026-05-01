@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡Pago confirmado! — Refuerzo de Programación</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; margin: 0;
+      background: #1a1a2e; color: #e0e0e0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .ok-card {
+      background: #16213e; padding: 2.5rem; border-radius: 12px;
+      max-width: 480px; width: 90%; text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .ok-card .check { font-size: 4rem; line-height: 1; }
+    .ok-card h1     { color: #16a085; margin: 1rem 0 .5rem; }
+    .ok-card p      { color: #b0b0c0; line-height: 1.6; }
+    .ok-card .hint {
+      background: #0f1729; padding: 1rem; border-radius: 6px;
+      margin: 1.5rem 0; font-size: .95rem; line-height: 1.6;
+    }
+    .ok-card .btn {
+      display: inline-block; margin-top: 1rem; padding: .85rem 1.75rem;
+      background: #16a085; color: #fff; text-decoration: none;
+      border-radius: 6px; font-weight: 600;
+    }
+    .ok-card .btn:hover { background: #13876f; }
+  </style>
+</head>
+<body>
+  <div class="ok-card">
+    <div class="check">✅</div>
+    <h1>¡Pago confirmado!</h1>
+    <p>Gracias por tu compra. En breve recibirás un correo con el enlace de acceso al curso.</p>
+    <div class="hint">
+      📬 Revisa tu bandeja de entrada (y la carpeta de spam, por si acaso).<br>
+      El enlace puede tardar <strong>hasta 1 minuto</strong> en llegar.
+    </div>
+    <a class="btn" href="/login.html">Ir al login →</a>
+  </div>
+</body>
+</html>
