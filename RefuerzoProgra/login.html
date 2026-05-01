@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso — Refuerzo de Programación</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; margin: 0;
+      background: #1a1a2e; color: #e0e0e0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .auth-card {
+      background: #16213e; padding: 2.5rem; border-radius: 12px;
+      max-width: 420px; width: 90%;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+    }
+    .auth-card h1   { margin: 0 0 .5rem; font-size: 1.5rem; }
+    .auth-card p    { color: #b0b0c0; line-height: 1.5; margin: .5rem 0 0; }
+    .auth-card label{ display: block; margin: 1.5rem 0 .35rem; font-weight: 600; }
+    .auth-card input{
+      width: 100%; padding: .75rem; border: 1px solid #2a3a5e;
+      border-radius: 6px; background: #0f1729; color: #e0e0e0;
+      font-size: 1rem; box-sizing: border-box;
+    }
+    .auth-card input:focus { outline: 2px solid #16a085; outline-offset: 1px; }
+    .auth-card button {
+      width: 100%; margin-top: 1.25rem; padding: .85rem;
+      background: #16a085; color: #fff; border: none;
+      border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer;
+    }
+    .auth-card button:hover:not(:disabled) { background: #13876f; }
+    .auth-card button:disabled             { opacity: .6; cursor: wait; }
+    .auth-msg { margin-top: 1rem; min-height: 1.5rem; font-size: .9rem; }
+    .auth-msg.ok  { color: #16a085; }
+    .auth-msg.err { color: #e74c3c; }
+    .auth-foot {
+      margin-top: 1.5rem; font-size: .85rem;
+      color: #7a89a3; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <h1>🎮 Refuerzo de Programación</h1>
+    <p>Ingresa tu correo para recibir un enlace de acceso.</p>
+
+    <form id="login-form" novalidate>
+      <label for="email">Correo electrónico</label>
+      <input type="email" id="email" name="email" required
+             autocomplete="email" placeholder="tu@correo.com">
+      <button type="submit" id="btn-submit">Continuar →</button>
+    </form>
+
+    <div id="msg" class="auth-msg" role="status" aria-live="polite"></div>
+    <p class="auth-foot">¿Aún no tienes acceso? Te llevaremos a la pantalla de compra.</p>
+  </div>
+
+  <script>
+    const form = document.getElementById('login-form');
+    const btn  = document.getElementById('btn-submit');
+    const msg  = document.getElementById('msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      msg.textContent = '';
+      msg.className   = 'auth-msg';
+      btn.disabled    = true;
+      btn.textContent = 'Enviando…';
+
+      try {
+        const res  = await fetch('/api/auth/request', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ email }),
+        });
+        const data = await res.json();
+
+        if (data.paid === false) {
+          sessionStorage.setItem('pending_email', email);
+          window.location.href = data.checkoutPath || '/comprar.html';
+          return;
+        }
+
+        if (data.sent) {
+          msg.className   = 'auth-msg ok';
+          msg.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar.';
+          if (data.devLink) {
+            console.log('[DEV] Magic link:', data.devLink);
+            msg.innerHTML += `<br><small>(Modo dev) <a href="${data.devLink}" style="color:#16a085">Abrir enlace</a></small>`;
+          }
+        } else {
+          msg.className   = 'auth-msg err';
+          msg.textContent = data.error || 'No se pudo enviar el correo. Intenta de nuevo.';
+        }
+      } catch (err) {
+        msg.className   = 'auth-msg err';
+        msg.textContent = 'Error de red: ' + err.message;
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = 'Continuar →';
+      }
+    });
+  </script>
+</body>
+</html>

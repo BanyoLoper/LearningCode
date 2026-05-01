@@ -1,0 +1,16 @@
+# Wrangler config for local dev. Production secrets/bindings live in the
+# Cloudflare Pages dashboard (Settings → Environment variables / Bindings).
+#
+# Usage:
+#   npx wrangler pages dev .                                  # serve site + Functions
+#   npx wrangler d1 execute refuerzo-progra-db --file=db/schema.sql --local
+#   npx wrangler d1 execute refuerzo-progra-db --file=db/schema.sql --remote
+
+name                   = "refuerzo-progra"
+compatibility_date     = "2025-04-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "refuerzo-progra-db"
+database_id   = "b44f68d8-b612-4aa0-8215-cac27a253a05"

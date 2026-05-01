@@ -12,16 +12,26 @@ import { SidebarManager }     from './ui/SidebarManager.js';
 
 // ─── Remote sync helpers ──────────────────────────────────────────────────────
 
-/** Fetches the authenticated user email from the Cloudflare Zero Trust header via Worker. */
+/** Fetches the authenticated user email. On 401 redirects to /login.html. */
 async function fetchUserEmail() {
   try {
     const res = await fetch('/api/me');
+    if (res.status === 401) {
+      window.location.replace('/login.html');
+      return new Promise(() => {}); // halt boot until the page navigates away
+    }
     if (!res.ok) return null;
     const { email } = await res.json();
     return email ?? null;
   } catch {
     return null;
   }
+}
+
+/** Clears the server session cookie and redirects to login. */
+async function logout() {
+  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
+  window.location.replace('/login.html');
 }
 
 /** Fetches the user's remote progress from D1. Returns {} on any failure. */
@@ -127,6 +137,9 @@ async function boot() {
 
   // Hide loading overlay
   document.getElementById('loading-overlay').style.display = 'none';
+
+  // Logout button — clears session and goes back to /login.html
+  document.getElementById('btn-logout')?.addEventListener('click', logout);
 
   // Reset button (dev helper)
   document.getElementById('btn-reset')?.addEventListener('click', async () => {
