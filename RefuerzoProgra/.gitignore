@@ -21,3 +21,6 @@ Thumbs.db
 .env.*
 !.env.example
 .dev.vars
+
+# One-off SQL seeds with personal data (emails) — keep out of history
+db/seed_*.sql
