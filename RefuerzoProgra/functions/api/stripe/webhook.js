@@ -93,6 +93,7 @@ export async function onRequestPost(context) {
     subject:  tpl.subject, text: tpl.text, html: tpl.html,
     from:     env.MAIL_FROM      || 'noreply@spotdoggames.com',
     fromName: env.MAIL_FROM_NAME || 'Refuerzo Progra',
+    apiKey:   env.RESEND_API_KEY,
     isDev,
   });
 
@@ -104,6 +105,7 @@ export async function onRequestPost(context) {
       subject:  adminTpl.subject, text: adminTpl.text, html: adminTpl.html,
       from:     env.MAIL_FROM      || 'noreply@spotdoggames.com',
       fromName: env.MAIL_FROM_NAME || 'Refuerzo Progra',
+      apiKey:   env.RESEND_API_KEY,
       isDev,
     });
   }

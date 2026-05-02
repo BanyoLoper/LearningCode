@@ -60,6 +60,7 @@ export async function onRequestPost(context) {
     subject, text, html,
     from:     env.MAIL_FROM      || 'noreply@spotdoggames.com',
     fromName: env.MAIL_FROM_NAME || 'Refuerzo Progra',
+    apiKey:   env.RESEND_API_KEY,
     isDev,
   });
 

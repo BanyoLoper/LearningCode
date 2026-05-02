@@ -1,11 +1,16 @@
 /**
- * mail.js — Sends transactional emails via MailChannels (Cloudflare-native, free).
+ * mail.js — Sends transactional emails via Resend (free tier: 3,000/mo).
  *
- * MailChannels rejects requests from non-Cloudflare IPs, so in local dev
- * (DEV_EMAIL set) we log the message to console instead of hitting the API.
+ * In local dev (isDev=true) we log to console instead of hitting the API,
+ * so you don't need a real RESEND_API_KEY to develop.
+ *
+ * Production requires:
+ *   - RESEND_API_KEY  (secret in Pages dashboard)
+ *   - MAIL_FROM       (e.g. noreply@spotdoggames.com — domain must be verified in Resend)
+ *   - MAIL_FROM_NAME  (display name shown in inbox)
  */
 
-const MAILCHANNELS_URL = 'https://api.mailchannels.net/tx/v1/send';
+const RESEND_URL = 'https://api.resend.com/emails';
 
 // ─── Send ───────────────────────────────────────────────────────────────────
 
@@ -13,7 +18,7 @@ const MAILCHANNELS_URL = 'https://api.mailchannels.net/tx/v1/send';
  * Sends an email. Returns { ok: boolean, devLog?: string }.
  * In dev mode (isDev=true) it logs to console and returns ok=true without sending.
  */
-export async function sendMail({ to, subject, html, text, from, fromName, isDev = false }) {
+export async function sendMail({ to, subject, html, text, from, fromName, apiKey, isDev = false }) {
   if (isDev) {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log(`[DEV MAIL] To:      ${to}`);
@@ -25,23 +30,29 @@ export async function sendMail({ to, subject, html, text, from, fromName, isDev 
     return { ok: true, devLog: text || html };
   }
 
-  const res = await fetch(MAILCHANNELS_URL, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+  if (!apiKey) {
+    console.error('[Resend] Missing RESEND_API_KEY');
+    return { ok: false };
+  }
+
+  const res = await fetch(RESEND_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type':  'application/json',
+    },
     body: JSON.stringify({
-      personalizations: [{ to: [{ email: to }] }],
-      from:    { email: from, name: fromName },
+      from:    `${fromName} <${from}>`,
+      to:      [to],
       subject,
-      content: [
-        { type: 'text/plain', value: text || stripHtml(html) },
-        { type: 'text/html',  value: html || `<p>${text}</p>` },
-      ],
+      text:    text || stripHtml(html),
+      html:    html || `<p>${text}</p>`,
     }),
   });
 
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    console.error(`[MailChannels] ${res.status}: ${body}`);
+    console.error(`[Resend] ${res.status}: ${body}`);
     return { ok: false };
   }
   return { ok: true };
