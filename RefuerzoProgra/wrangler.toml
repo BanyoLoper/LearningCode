@@ -33,7 +33,7 @@ database_id   = "b44f68d8-b612-4aa0-8215-cac27a253a05"
 
 [env.preview.vars]
 APP_URL                = "https://feat-paywall.gamingcode.pages.dev"
-MAIL_FROM              = "noreply@bny.agency"
+MAIL_FROM              = "noreply@spotdoggames.com"
 MAIL_FROM_NAME         = "Refuerzo Progra"
 ADMIN_EMAIL            = "spotdoggames@gmail.com"
 MAGIC_LINK_TTL_MINUTES = "15"
