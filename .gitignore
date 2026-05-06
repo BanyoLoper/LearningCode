@@ -21,3 +21,4 @@ future-features/
 
 .dev.vars*
 !.dev.vars.example
+.claude
