@@ -43,3 +43,12 @@ STRIPE_PRICE_ID        = "price_1TSFq40qSw2OszNusQP7XAFx"
 binding       = "DB"
 database_name = "refuerzo-progra-db"
 database_id   = "b44f68d8-b612-4aa0-8215-cac27a253a05"
+
+# Top-level (production)
+[vars]
+APP_URL                = "https://gamingcode.pages.dev"
+MAIL_FROM              = "noreply@spotdoggames.com"
+MAIL_FROM_NAME         = "Refuerzo Progra"
+ADMIN_EMAIL            = "spotdoggames@gmail.com"
+MAGIC_LINK_TTL_MINUTES = "15"
+STRIPE_PRICE_ID        = "price_1TTC3d1W5C8tk7CW3qNpVaMH"
