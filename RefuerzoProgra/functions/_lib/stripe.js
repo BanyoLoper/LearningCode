@@ -24,6 +24,7 @@ export async function createCheckoutSession({ secretKey, priceId, email, success
   params.set('client_reference_id',      email);
   params.set('metadata[email]',          email);
   params.set('payment_intent_data[metadata][email]', email);
+  params.set('allow_promotion_codes',    'true');
 
   const res = await fetch(`${STRIPE_API}/checkout/sessions`, {
     method: 'POST',
