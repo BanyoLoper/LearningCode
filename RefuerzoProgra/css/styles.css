@@ -577,7 +577,15 @@ code, pre { font-family: var(--font-mono); }
   gap: 0.75rem;
   padding: 0.65rem 0.9rem;
 }
-.nav-icon { font-size: 1.3rem; width: 1.5rem; text-align: center; }
+.nav-icon {
+  font-size: 1.3rem;
+  width: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--section-color, var(--text-main));
+}
 .nav-item-info { flex: 1; min-width: 0; }
 .nav-title { display: block; font-size: 0.9rem; font-weight: 600; }
 .nav-score { display: block; font-size: 0.7rem; color: var(--text-muted); }
@@ -958,7 +966,8 @@ code, pre { font-family: var(--font-mono); }
   transition: var(--transition);
 }
 .doc-entry-header:hover { background: var(--bg-hover); }
-.doc-entry-title { font-size: 0.82rem; font-weight: 600; }
+.doc-entry-title { font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; }
+.doc-entry-title .icon { width: 0.95rem; height: 0.95rem; color: var(--section-color, var(--blue)); flex-shrink: 0; }
 .doc-entry-toggle { font-size: 0.65rem; color: var(--text-muted); transition: transform var(--transition); }
 .doc-entry.collapsed .doc-entry-toggle { transform: rotate(-90deg); }
 .doc-entry.collapsed .doc-entry-body { display: none; }
@@ -1316,3 +1325,132 @@ code, pre { font-family: var(--font-mono); }
     border-top-color: var(--blue);
   }
 }
+
+/* ─────────────────────────────────────────────
+   SVG sprite icons — minimalist outline + neon glow
+   ───────────────────────────────────────────── */
+.icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+  color: currentColor;
+  fill: none;
+  stroke: currentColor;
+  transition: filter var(--transition), color var(--transition), transform var(--transition);
+  pointer-events: none;
+}
+.icon-sm { font-size: 0.85em; }
+.icon-lg { font-size: 1.5em; }
+
+/* Hover glow on interactive parents */
+button:not(:disabled):hover > .icon,
+button:not(:disabled):hover .icon,
+a:hover .icon,
+.mode-tab:hover .icon,
+.nav-item.unlocked:hover .nav-icon .icon,
+.nav-item.unlocked:hover .nav-icon > .icon,
+#mobile-nav button:hover .icon {
+  filter:
+    drop-shadow(0 0 4px currentColor)
+    drop-shadow(0 0 1px currentColor);
+}
+
+/* Active / selected glow (slightly stronger, slightly larger) */
+.mode-tab.active .icon,
+.nav-item.active .nav-icon .icon,
+.nav-item.active .nav-icon > .icon,
+#mobile-nav button.active .icon,
+.icon-active {
+  filter:
+    drop-shadow(0 0 6px currentColor)
+    drop-shadow(0 0 2px currentColor);
+}
+
+/* Section/group icons inherit color from --section-color or --group-color */
+.nav-item .nav-icon { color: var(--section-color, var(--text-main)); }
+.nav-group-header .nav-group-icon { color: var(--group-color, var(--blue)); }
+.doc-section-header .doc-icon { color: var(--section-color, var(--blue)); }
+.section-start-icon { color: var(--section-color, var(--blue)); }
+.unlock-icon { color: var(--section-color, var(--blue)); }
+
+/* Big celebration/legendary icons keep their flavor color */
+.legendary-complete .complete-icon { color: #FFD700; }
+.section-complete:not(.legendary-complete) .complete-icon { color: var(--blue); }
+.all-explored .complete-icon { color: #FFD700; }
+.legendary-badge-text .icon { color: #FFD700; }
+.legendary-marker { color: #FFD700; display: inline-flex; align-items: center; }
+.legendary-marker .icon { width: 0.85em; height: 0.85em; }
+
+/* Locked sections: muted icon */
+.nav-item.locked .nav-icon { color: var(--text-muted); }
+
+/* Sidebar nav-icon: ensure svg is properly sized inside the centering wrapper */
+.nav-icon .icon, .nav-icon > .icon { width: 1.3rem; height: 1.3rem; }
+.nav-group-icon .icon { width: 1rem; height: 1rem; }
+.doc-icon .icon { width: 1.1rem; height: 1.1rem; }
+
+/* Hint lightbulb */
+.hint-number .icon { color: var(--yellow); width: 1em; height: 1em; vertical-align: -0.18em; margin-right: 0.25em; }
+
+/* Master Quest */
+.btn-master-quest .icon { width: 1rem; height: 1rem; }
+.master-quest-banner { display: inline-flex; align-items: center; gap: 0.45rem; }
+.master-quest-banner .icon { width: 1rem; height: 1rem; }
+.btn-start-mq-cta .icon { width: 1.05rem; height: 1.05rem; }
+
+/* Practice genre tag */
+.practice-genre { display: inline-flex; align-items: center; gap: 0.3rem; }
+.practice-genre .icon { width: 0.9rem; height: 0.9rem; }
+
+/* Header & tab icons */
+.mode-tab { display: inline-flex; align-items: center; gap: 0.4rem; }
+.mode-tab .icon { width: 1rem; height: 1rem; }
+#btn-help, #btn-bug { display: inline-flex; align-items: center; gap: 0.4rem; }
+#btn-help .icon, #btn-bug .icon { width: 0.9rem; height: 0.9rem; }
+#app-header h1 { display: inline-flex; align-items: center; gap: 0.5rem; }
+#app-header h1 .icon { width: 1.1rem; height: 1.1rem; color: var(--blue); }
+
+/* Documentation panel header */
+#documentation-panel h2 { display: inline-flex; align-items: center; gap: 0.4rem; }
+#documentation-panel h2 .icon { width: 1.1rem; height: 1.1rem; color: var(--blue); }
+
+/* Doc group title icon */
+.doc-group-title { display: inline-flex; align-items: center; gap: 0.4rem; }
+.doc-group-title .icon { width: 0.9rem; height: 0.9rem; color: var(--text-muted); }
+
+/* Mobile nav: SVG sits where emoji used to */
+#mobile-nav button .icon { width: 1.4rem; height: 1.4rem; }
+
+/* SweetAlert title icon (unlock dialogs etc.) */
+.swal2-title .icon { width: 1.1rem; height: 1.1rem; vertical-align: -0.15em; margin-right: 0.35rem; }
+
+/* Big history check/x */
+.history-icon .icon { width: 0.95rem; height: 0.95rem; vertical-align: -0.15em; }
+
+/* Criteria pass/fail icons */
+.criteria-check .icon { width: 0.95rem; height: 0.95rem; }
+.criteria-pass .criteria-check { color: var(--green); }
+.criteria-fail .criteria-check { color: var(--red); }
+
+/* Login / comprar / success page hero icons */
+.auth-card h1, .buy-card h1 { display: inline-flex; align-items: center; gap: 0.5rem; }
+.auth-card h1 .icon, .buy-card h1 .icon { width: 1.4rem; height: 1.4rem; color: var(--blue); }
+.ok-card .check { display: inline-flex; align-items: center; justify-content: center; }
+.ok-card .check .icon { width: 4rem; height: 4rem; color: var(--green); filter: drop-shadow(0 0 8px currentColor); }
+.ok-card .hint { display: flex; align-items: flex-start; gap: 0.6rem; text-align: left; }
+.ok-card .hint .icon { width: 1.2rem; height: 1.2rem; color: var(--blue); flex-shrink: 0; margin-top: 2px; }
+
+/* Bug disclaimer warning icon */
+.bug-disclaimer { display: flex; align-items: flex-start; gap: 0.4rem; }
+.bug-disclaimer .icon { width: 0.95rem; height: 0.95rem; color: var(--yellow); flex-shrink: 0; margin-top: 2px; }
+
+/* Error overlay */
+.error-icon .icon { width: 3rem; height: 3rem; color: var(--red); }
+
+/* Reduce hover/active glow for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .icon { transition: none; }
+}
+

@@ -1,4 +1,5 @@
 import { formatText } from '../core/TextFormatter.js';
+import { icon } from '../ui/Icon.js';
 
 /**
  * IdentificationHandler — Renders and validates identification questions.
@@ -58,7 +59,7 @@ export class IdentificationHandler {
 
     const hint = document.createElement('div');
     hint.className = 'hint-item';
-    hint.innerHTML = `<span class="hint-number">💡 Pista ${hintIndex + 1}:</span> ${question.hints[hintIndex]}`;
+    hint.innerHTML = `<span class="hint-number">${icon('lightbulb')} Pista ${hintIndex + 1}:</span> ${question.hints[hintIndex]}`;
     hintsEl.appendChild(hint);
 
     const input = container.querySelector('.answer-input');

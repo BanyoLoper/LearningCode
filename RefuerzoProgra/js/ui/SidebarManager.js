@@ -1,3 +1,5 @@
+import { icon } from './Icon.js';
+
 /**
  * SidebarManager — Left sidebar navigation.
  * Renders sections grouped by their parent group (course structure).
@@ -54,7 +56,7 @@ export class SidebarManager {
     wrapper.innerHTML = `
       <div class="nav-group-header">
         <span class="nav-group-num">${groupNum}</span>
-        <span class="nav-group-icon">${group.icon}</span>
+        <span class="nav-group-icon">${icon(group.icon)}</span>
         <span class="nav-group-title">${group.title}</span>
         <button class="nav-group-toggle" aria-expanded="true" title="Colapsar grupo">▼</button>
       </div>
@@ -100,7 +102,7 @@ export class SidebarManager {
     if (!isUnlocked) {
       item.innerHTML = `
         <div class="nav-item-main">
-          <span class="nav-icon">🔒</span>
+          <span class="nav-icon">${icon('lock')}</span>
           <div class="nav-item-info">
             <span class="nav-title">${section.title}</span>
             <span class="nav-score">Bloqueado</span>
@@ -117,12 +119,12 @@ export class SidebarManager {
 
     item.innerHTML = `
       <div class="nav-item-main">
-        <span class="nav-icon">${section.icon}</span>
+        <span class="nav-icon">${icon(section.icon)}</span>
         <div class="nav-item-info">
           <span class="nav-title">${section.title}</span>
           <span class="nav-score">${uniqueAnswered} / ${totalQuestionsAvailable} preguntas</span>
         </div>
-        <button class="btn-master-quest" title="Master Quest — todas las preguntas en una sesión">⚔️</button>
+        <button class="btn-master-quest" title="Master Quest — todas las preguntas en una sesión">${icon('swords')}</button>
       </div>
       <div class="nav-mini-progress" title="${pct}% de preguntas exploradas">
         <div class="nav-mini-bar" style="width:${pct}%"></div>
@@ -157,7 +159,7 @@ export class SidebarManager {
     if (!isUnlocked) {
       item.innerHTML = `
         <div class="nav-item-main">
-          <span class="nav-icon">🔒</span>
+          <span class="nav-icon">${icon('lock')}</span>
           <div class="nav-item-info">
             <span class="nav-title">${exam.title}</span>
             <span class="nav-score">Completa todas las secciones</span>
@@ -174,7 +176,7 @@ export class SidebarManager {
 
     item.innerHTML = `
       <div class="nav-item-main">
-        <span class="nav-icon">${exam.icon}${hasLegendary ? ' 💛' : ''}</span>
+        <span class="nav-icon">${icon(exam.icon)}${hasLegendary ? ` <span class="legendary-marker">${icon('heart')}</span>` : ''}</span>
         <div class="nav-item-info">
           <span class="nav-title">${exam.title}</span>
           <span class="nav-score">${bestSession ? `Mejor: ${bestSession.score}%` : 'Sin intentos'}</span>
@@ -202,7 +204,7 @@ export class SidebarManager {
         <span class="session-num">#${num}</span>
         <span class="session-date">${this.#formatDate(s.date)}</span>
         <span class="session-score score-${this.#scoreClass(s.score)}">
-          ${s.legendary ? '💛 ' : ''}${s.score}%
+          ${s.legendary ? `<span class="legendary-marker">${icon('heart')}</span> ` : ''}${s.score}%
         </span>
         <span class="session-detail">${s.correct}/${s.total}</span>
       </div>

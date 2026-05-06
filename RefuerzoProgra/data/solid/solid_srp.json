@@ -1,7 +1,7 @@
 {
   "id": "solid_srp",
   "title": "SRP — Single Responsibility",
-  "icon": "🏛️",
+  "icon": "construction",
   "color": "#4CAF50",
   "documentation": {
     "sections": [

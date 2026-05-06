@@ -1,7 +1,7 @@
 {
   "id": "ternario_null",
   "title": "Operador Ternario y Null Operators",
-  "icon": "❓",
+  "icon": "help-circle",
   "color": "#E64A19",
   "documentation": {
     "sections": [

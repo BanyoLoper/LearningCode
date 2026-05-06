@@ -1,7 +1,7 @@
 {
   "id": "lifecycle_completo",
   "title": "Ciclo de Vida Completo",
-  "icon": "🔄",
+  "icon": "refresh",
   "color": "#00ACC1",
   "documentation": {
     "sections": [

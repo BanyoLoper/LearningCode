@@ -1,7 +1,7 @@
 {
   "id": "diagramas_secuencia",
   "title": "Diagramas de Secuencia UML",
-  "icon": "↔️",
+  "icon": "arrows-h",
   "color": "#37474F",
   "documentation": {
     "sections": [

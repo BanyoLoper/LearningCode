@@ -1,7 +1,7 @@
 {
   "category": "async",
   "title": "Corrutinas y Async",
-  "icon": "⏱️",
+  "icon": "timer",
   "color": "#00BCD4",
   "cases": [
     {

@@ -1,7 +1,7 @@
 {
   "id": "traslaciones",
   "title": "Traslaciones y Movimiento",
-  "icon": "➡️",
+  "icon": "arrow-right",
   "color": "#E65100",
   "documentation": {
     "sections": [

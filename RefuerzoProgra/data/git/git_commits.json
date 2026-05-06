@@ -1,7 +1,7 @@
 {
   "id": "git_commits",
   "title": "Staging y Commits",
-  "icon": "📝",
+  "icon": "pencil",
   "color": "#F05032",
   "documentation": {
     "sections": [

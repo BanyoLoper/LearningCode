@@ -1,7 +1,7 @@
 {
   "id": "iteracion",
   "title": "Iteración de Colecciones",
-  "icon": "🔄",
+  "icon": "refresh",
   "color": "#4CAF50",
   "documentation": {
     "sections": [

@@ -1,7 +1,7 @@
 {
   "id": "rigidbody_fisica",
   "title": "Física con Rigidbody",
-  "icon": "⚽",
+  "icon": "circle",
   "color": "#FF9800",
   "documentation": {
     "sections": [

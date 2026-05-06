@@ -1,7 +1,7 @@
 {
   "id": "cf_exam",
   "title": "Examen Final: Control de Flujo",
-  "icon": "🎓",
+  "icon": "graduation-cap",
   "documentation": { "sections": [] },
   "questions": [
     {

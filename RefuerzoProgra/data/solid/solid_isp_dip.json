@@ -1,7 +1,7 @@
 {
   "id": "solid_isp_dip",
   "title": "ISP/DIP — Segregación e Inversión",
-  "icon": "🔌",
+  "icon": "plug",
   "color": "#388E3C",
   "documentation": {
     "sections": [

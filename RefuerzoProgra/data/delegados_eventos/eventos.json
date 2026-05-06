@@ -1,7 +1,7 @@
 {
   "id": "eventos",
   "title": "Eventos (event)",
-  "icon": "🔔",
+  "icon": "bell",
   "color": "#8E24AA",
   "documentation": {
     "sections": [

@@ -1,7 +1,7 @@
 {
   "id": "git_init",
   "title": "Configuración e Init",
-  "icon": "🐙",
+  "icon": "git",
   "color": "#F05032",
   "documentation": {
     "sections": [

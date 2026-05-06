@@ -1,7 +1,7 @@
 {
   "id": "diagramas_flujo",
   "title": "Diagramas de Flujo",
-  "icon": "🔷",
+  "icon": "diamond",
   "color": "#546E7A",
   "documentation": {
     "sections": [

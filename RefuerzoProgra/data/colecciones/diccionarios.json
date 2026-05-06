@@ -1,7 +1,7 @@
 {
   "id": "diccionarios",
   "title": "Diccionarios",
-  "icon": "📖",
+  "icon": "book-open",
   "color": "#009688",
   "documentation": {
     "sections": [

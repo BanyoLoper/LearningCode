@@ -1,7 +1,7 @@
 {
   "id": "solid_ocp_lsp",
   "title": "OCP/LSP — Open/Closed y Liskov",
-  "icon": "🔓",
+  "icon": "unlock",
   "color": "#43A047",
   "documentation": {
     "sections": [

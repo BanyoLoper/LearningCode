@@ -1,7 +1,7 @@
 {
   "id": "virtual_override",
   "title": "Virtual y Override",
-  "icon": "🔧",
+  "icon": "wrench",
   "color": "#3F51B5",
   "documentation": {
     "sections": [

@@ -1,7 +1,7 @@
 {
   "id": "quaterniones",
   "title": "Rotaciones y Quaterniones",
-  "icon": "🔄",
+  "icon": "refresh",
   "color": "#00838F",
   "documentation": {
     "sections": [

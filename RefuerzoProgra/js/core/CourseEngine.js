@@ -1,3 +1,5 @@
+import { icon } from '../ui/Icon.js';
+
 /**
  * CourseEngine — Central state machine and orchestrator.
  * Bug fixes v2: double-session recording fixed by resetting counters after endSession.
@@ -114,10 +116,10 @@ export class CourseEngine {
 
     this.#evalPanel.showMessage(`
       <div class="section-start-card" style="--section-color:${sec.color ?? '#58a6ff'}">
-        <span class="section-start-icon">${sec.icon}</span>
+        <span class="section-start-icon">${icon(sec.icon)}</span>
         <h2>${sec.title}</h2>
         <p>${sec.description}</p>
-        ${masterQuest ? `<div class="master-quest-banner">⚔️ Master Quest — ${totalQ} preguntas</div>` : ''}
+        ${masterQuest ? `<div class="master-quest-banner">${icon('swords')} Master Quest — ${totalQ} preguntas</div>` : ''}
       </div>
     `);
 
@@ -165,16 +167,16 @@ export class CourseEngine {
     if (legendary) {
       this.#evalPanel.showMessage(`
         <div class="section-complete legendary-complete">
-          <div class="complete-icon">💛</div>
+          <div class="complete-icon">${icon('heart')}</div>
           <h2>¡LEGENDARIO!</h2>
           <p>Completaste el Master Quest con un <strong>100%</strong> de aciertos.</p>
-          <p class="legendary-badge-text">🏆 Insignia Legendaria desbloqueada</p>
+          <p class="legendary-badge-text">${icon('trophy')} Insignia Legendaria desbloqueada</p>
         </div>
       `);
     } else {
       this.#evalPanel.showMessage(`
         <div class="section-complete">
-          <div class="complete-icon">🎉</div>
+          <div class="complete-icon">${icon('party')}</div>
           <h2>¡Sección completada!</h2>
           <p>Has respondido todas las preguntas de esta sesión.</p>
           <p>Puedes repasar otras secciones desde el menú lateral.</p>
@@ -231,10 +233,10 @@ export class CourseEngine {
     this.#renderSidebar();
 
     await Swal.fire({
-      title: `🔓 ¡${newSection.isExam ? 'Examen' : 'Sección'} Desbloqueado!`,
+      title: `${icon('unlock')} ¡${newSection.isExam ? 'Examen' : 'Sección'} Desbloqueado!`,
       html: `
         <div class="unlock-content">
-          <span class="unlock-icon">${newSection.icon}</span>
+          <span class="unlock-icon" style="--section-color:${newSection.color ?? '#58a6ff'}">${icon(newSection.icon)}</span>
           <h3>${newSection.title}</h3>
           <p>${newSection.description}</p>
           ${newSection.isExam ? '<p><em>Selecciona el examen en el menú lateral para comenzar.</em></p>' : '<p>La documentación está disponible en el panel derecho.</p>'}

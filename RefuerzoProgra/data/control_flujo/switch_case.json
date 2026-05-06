@@ -1,7 +1,7 @@
 {
   "id": "switch_case",
   "title": "Switch / Case",
-  "icon": "🔀",
+  "icon": "shuffle",
   "color": "#F44336",
   "documentation": {
     "sections": [

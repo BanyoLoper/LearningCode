@@ -1,7 +1,7 @@
 {
   "id": "git_branches",
   "title": "Branches",
-  "icon": "🌿",
+  "icon": "git-branch",
   "color": "#F05032",
   "documentation": {
     "sections": [

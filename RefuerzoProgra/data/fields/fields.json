@@ -1,7 +1,7 @@
 {
   "id": "fields",
   "title": "Campos",
-  "icon": "📦",
+  "icon": "box",
   "documentation": {
     "sections": [
       {
@@ -12,7 +12,8 @@
       },
       {
         "id": "analogy",
-        "title": "🎮 Analogía con Unity",
+        "titleIcon": "gamepad",
+        "title": "Analogía con Unity",
         "type": "analogy",
         "content": "Piensa en un Enemy: tiene <strong>Health</strong> (cuánta vida le queda), <strong>Speed</strong> (qué tan rápido se mueve), <strong>Name</strong> (cómo se llama). Esas son sus propiedades — sus campos. El Goblin1 tiene Health=100 y el Goblin2 tiene Health=75: cada objeto tiene <em>su propia copia</em> del campo Health."
       },

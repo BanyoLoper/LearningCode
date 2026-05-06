@@ -1,3 +1,5 @@
+import { icon } from './Icon.js';
+
 /**
  * DocumentationPanel — Progressive documentation panel.
  * Sections are added as the user unlocks them.
@@ -37,7 +39,7 @@ export class DocumentationPanel {
 
     block.innerHTML = `
       <div class="doc-section-header">
-        <span class="doc-icon">${sectionConfig.icon}</span>
+        <span class="doc-icon">${icon(sectionConfig.icon)}</span>
         <h3>${sectionConfig.title}</h3>
         <button class="doc-section-toggle" aria-expanded="true" title="Colapsar sección">▼</button>
       </div>
@@ -162,7 +164,7 @@ export class DocumentationPanel {
     groupEl.id = `doc-group-${groupId}`;
     groupEl.innerHTML = `
       <div class="doc-group-header">
-        <span class="doc-group-title">📐 ${this.#guessGroupTitle(groupId)}</span>
+        <span class="doc-group-title">${icon('book-open')} ${this.#guessGroupTitle(groupId)}</span>
         <button class="doc-group-toggle" aria-expanded="true" title="Colapsar grupo">▼</button>
       </div>
       <div class="doc-group-body"></div>
@@ -188,10 +190,11 @@ export class DocumentationPanel {
   }
 
   #renderDocEntry(entry) {
+    const titlePrefix = entry.titleIcon ? `${icon(entry.titleIcon)} ` : '';
     return `
       <div class="doc-entry doc-type-${entry.type}">
         <div class="doc-entry-header">
-          <span class="doc-entry-title">${entry.title}</span>
+          <span class="doc-entry-title">${titlePrefix}${entry.title}</span>
           <span class="doc-entry-toggle">▼</span>
         </div>
         <div class="doc-entry-body">

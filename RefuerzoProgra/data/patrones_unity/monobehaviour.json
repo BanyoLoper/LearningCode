@@ -1,7 +1,7 @@
 {
   "id": "monobehaviour",
   "title": "MonoBehaviour",
-  "icon": "🎮",
+  "icon": "gamepad",
   "color": "#FF5722",
   "documentation": {
     "sections": [

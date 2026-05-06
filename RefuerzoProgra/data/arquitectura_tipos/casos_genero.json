@@ -1,7 +1,7 @@
 {
   "id": "casos_genero",
   "title": "Casos de Uso por Género de Videojuego",
-  "icon": "🎯",
+  "icon": "target",
   "color": "#1A237E",
   "documentation": {
     "sections": [

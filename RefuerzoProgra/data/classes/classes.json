@@ -1,7 +1,7 @@
 {
   "id": "classes",
   "title": "Clases",
-  "icon": "🏗️",
+  "icon": "construction",
   "documentation": {
     "sections": [
       {
@@ -12,7 +12,8 @@
       },
       {
         "id": "analogy",
-        "title": "🎮 Analogía con Unity",
+        "titleIcon": "gamepad",
+        "title": "Analogía con Unity",
         "type": "analogy",
         "content": "Imagina que necesitas 50 enemigos en tu juego. La <strong>clase Enemy</strong> es como un <em>prefab</em> en Unity: es el plano que describe cómo será cada enemigo. El prefab no es un enemigo real en la escena — para eso tienes que <em>instanciarlo</em> (arrastrarlo a la escena o con <code>Instantiate()</code>). Cada goblin que ves en pantalla es una <strong>instancia</strong> de esa clase."
       },
@@ -35,7 +36,8 @@
       },
       {
         "id": "unity-note",
-        "title": "📌 Nota para Unity",
+        "titleIcon": "pin",
+        "title": "Nota para Unity",
         "type": "note",
         "content": "No todos los scripts necesitan heredar de <code>MonoBehaviour</code>. Para datos puros sin lógica de Unity, usa clases normales. Agrega <code>[System.Serializable]</code> si quieres que esa clase aparezca en el Inspector."
       }

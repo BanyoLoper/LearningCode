@@ -4,6 +4,7 @@
  * inside #practice-main with CodeMirror editors for syntax-highlighted
  * C# code input and evaluation feedback.
  */
+import { icon } from './ui/Icon.js';
 
 /** Maps practice tags → where to find the topic in the Theory section */
 const TAG_THEORY_MAP = {
@@ -115,7 +116,7 @@ export class PracticeManager {
         <div class="practice-card">
           <div class="practice-meta">
             <span class="practice-difficulty">${stars}</span>
-            <span class="practice-genre">🎮 ${c.genre}</span>
+            <span class="practice-genre">${icon('gamepad')} ${c.genre}</span>
             ${tagsHtml}
           </div>
           <h2 class="practice-title">${c.title}</h2>
@@ -244,7 +245,7 @@ export class PracticeManager {
 
     const criteriaHtml = results.map(r => `
       <div class="criteria-row ${r.passed ? 'criteria-pass' : 'criteria-fail'}">
-        <span class="criteria-check">${r.passed ? '✅' : '❌'}</span>
+        <span class="criteria-check">${r.passed ? icon('check') : icon('x')}</span>
         <span class="criteria-label-text">${r.label}</span>
         <span class="criteria-pts ${r.passed ? 'score-high' : 'score-low'}">
           ${r.passed ? '+' + r.points : '0'}&nbsp;pts

@@ -6,14 +6,14 @@
     {
       "id": "poo",
       "title": "POO Fundamentals",
-      "icon": "📐",
+      "icon": "ruler",
       "description": "Los 4 pilares de la Programación Orientada a Objetos en C#",
       "color": "#4CAF50",
       "sections": [
         {
           "id": "classes",
           "title": "Clases",
-          "icon": "🏗️",
+          "icon": "construction",
           "description": "El plano que define la estructura de tus objetos",
           "dataFile": "data/classes/classes.json",
           "color": "#4CAF50",
@@ -23,7 +23,7 @@
         {
           "id": "objects",
           "title": "Objetos",
-          "icon": "🎮",
+          "icon": "gamepad",
           "description": "Instancias concretas de tus clases en memoria",
           "dataFile": "data/objects/objects.json",
           "color": "#2196F3",
@@ -33,7 +33,7 @@
         {
           "id": "fields",
           "title": "Campos",
-          "icon": "📦",
+          "icon": "box",
           "description": "Variables que pertenecen a una clase y definen su estado",
           "dataFile": "data/fields/fields.json",
           "color": "#FF9800",
@@ -43,7 +43,7 @@
         {
           "id": "methods",
           "title": "Métodos",
-          "icon": "⚙️",
+          "icon": "gear",
           "description": "Funciones que definen el comportamiento de una clase",
           "dataFile": "data/methods/methods.json",
           "color": "#9C27B0",
@@ -54,7 +54,7 @@
       "exam": {
         "id": "poo_exam",
         "title": "Examen Final: POO",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos de código para certificar tu dominio de POO en C# para Unity",
         "dataFile": "data/poo/exam.json",
         "color": "#FFD700",
@@ -65,14 +65,14 @@
     {
       "id": "control_flujo",
       "title": "Control de Flujo",
-      "icon": "🔀",
+      "icon": "shuffle",
       "description": "Condicionales, bucles y control del flujo de ejecución en C#",
       "color": "#FF5722",
       "sections": [
         {
           "id": "condicionales",
           "title": "Condicionales",
-          "icon": "🔀",
+          "icon": "shuffle",
           "description": "if, else if, else y el operador ternario",
           "dataFile": "data/control_flujo/condicionales.json",
           "color": "#FF5722",
@@ -82,7 +82,7 @@
         {
           "id": "switch_case",
           "title": "Switch / Case",
-          "icon": "🔀",
+          "icon": "shuffle",
           "description": "Selección múltiple con switch y case",
           "dataFile": "data/control_flujo/switch_case.json",
           "color": "#F44336",
@@ -92,7 +92,7 @@
         {
           "id": "bucles",
           "title": "Bucles",
-          "icon": "🔁",
+          "icon": "repeat",
           "description": "for, while y do-while para repetir acciones",
           "dataFile": "data/control_flujo/bucles.json",
           "color": "#E91E63",
@@ -102,7 +102,7 @@
         {
           "id": "break_continue",
           "title": "Break y Continue",
-          "icon": "⏭️",
+          "icon": "skip-forward",
           "description": "Control de flujo dentro de los bucles",
           "dataFile": "data/control_flujo/break_continue.json",
           "color": "#9C27B0",
@@ -113,7 +113,7 @@
       "exam": {
         "id": "cf_exam",
         "title": "Examen Final: Control de Flujo",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos de código para dominar el control de flujo en C#",
         "dataFile": "data/control_flujo/exam.json",
         "color": "#FFD700",
@@ -124,14 +124,14 @@
     {
       "id": "colecciones",
       "title": "Colecciones",
-      "icon": "📦",
+      "icon": "box",
       "description": "Arrays, Listas y Diccionarios para manejar grupos de datos",
       "color": "#3F51B5",
       "sections": [
         {
           "id": "arrays",
           "title": "Arrays",
-          "icon": "🗂️",
+          "icon": "folder",
           "description": "Arreglos de tamaño fijo para almacenar múltiples valores",
           "dataFile": "data/colecciones/arrays.json",
           "color": "#3F51B5",
@@ -141,7 +141,7 @@
         {
           "id": "listas",
           "title": "Listas",
-          "icon": "📋",
+          "icon": "clipboard",
           "description": "List<T>: colecciones dinámicas de tamaño variable",
           "dataFile": "data/colecciones/listas.json",
           "color": "#2196F3",
@@ -151,7 +151,7 @@
         {
           "id": "diccionarios",
           "title": "Diccionarios",
-          "icon": "📖",
+          "icon": "book-open",
           "description": "Dictionary<K,V>: acceso rápido por clave",
           "dataFile": "data/colecciones/diccionarios.json",
           "color": "#009688",
@@ -161,7 +161,7 @@
         {
           "id": "iteracion",
           "title": "Iteración",
-          "icon": "🔄",
+          "icon": "refresh",
           "description": "foreach y patrones para recorrer colecciones",
           "dataFile": "data/colecciones/iteracion.json",
           "color": "#4CAF50",
@@ -172,7 +172,7 @@
       "exam": {
         "id": "col_exam",
         "title": "Examen Final: Colecciones",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos de código para dominar arrays, listas y diccionarios",
         "dataFile": "data/colecciones/exam.json",
         "color": "#FFD700",
@@ -183,14 +183,14 @@
     {
       "id": "herencia",
       "title": "Herencia y Polimorfismo",
-      "icon": "🧬",
+      "icon": "dna",
       "description": "Herencia, virtual/override, clases abstractas e interfaces",
       "color": "#673AB7",
       "sections": [
         {
           "id": "herencia",
           "title": "Herencia",
-          "icon": "🧬",
+          "icon": "dna",
           "description": "Reutiliza y extiende clases con la relación 'es un'",
           "dataFile": "data/herencia/herencia.json",
           "color": "#673AB7",
@@ -200,7 +200,7 @@
         {
           "id": "virtual_override",
           "title": "Virtual y Override",
-          "icon": "🔧",
+          "icon": "wrench",
           "description": "Polimorfismo en acción: redefinir comportamiento",
           "dataFile": "data/herencia/virtual_override.json",
           "color": "#3F51B5",
@@ -210,7 +210,7 @@
         {
           "id": "clases_abstractas",
           "title": "Clases Abstractas",
-          "icon": "📋",
+          "icon": "clipboard",
           "description": "Contratos parciales que obligan a implementar comportamiento",
           "dataFile": "data/herencia/clases_abstractas.json",
           "color": "#E91E63",
@@ -220,7 +220,7 @@
         {
           "id": "interfaces",
           "title": "Interfaces",
-          "icon": "🔌",
+          "icon": "plug",
           "description": "Contratos puros que permiten herencia múltiple de comportamiento",
           "dataFile": "data/herencia/interfaces.json",
           "color": "#00BCD4",
@@ -231,7 +231,7 @@
       "exam": {
         "id": "her_exam",
         "title": "Examen Final: Herencia y Polimorfismo",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos de código para dominar herencia, polimorfismo e interfaces",
         "dataFile": "data/herencia/exam.json",
         "color": "#FFD700",
@@ -242,14 +242,14 @@
     {
       "id": "patrones_unity",
       "title": "Patrones Unity",
-      "icon": "🎮",
+      "icon": "gamepad",
       "description": "MonoBehaviour, Componentes, Prefabs y ScriptableObjects",
       "color": "#4CAF50",
       "sections": [
         {
           "id": "monobehaviour",
           "title": "MonoBehaviour",
-          "icon": "🎮",
+          "icon": "gamepad",
           "description": "Ciclo de vida de Unity: Awake, Start, Update y más",
           "dataFile": "data/patrones_unity/monobehaviour.json",
           "color": "#FF5722",
@@ -259,7 +259,7 @@
         {
           "id": "componentes",
           "title": "Componentes",
-          "icon": "🧩",
+          "icon": "puzzle",
           "description": "GetComponent, RequireComponent y composición en Unity",
           "dataFile": "data/patrones_unity/componentes.json",
           "color": "#9C27B0",
@@ -269,7 +269,7 @@
         {
           "id": "prefabs",
           "title": "Prefabs e Instanciación",
-          "icon": "🏭",
+          "icon": "factory",
           "description": "Instantiate, Destroy y spawning de GameObjects",
           "dataFile": "data/patrones_unity/prefabs.json",
           "color": "#FF9800",
@@ -279,7 +279,7 @@
         {
           "id": "scriptableobjects",
           "title": "ScriptableObjects",
-          "icon": "📄",
+          "icon": "file-text",
           "description": "Datos compartidos y configuración desacoplada del escenario",
           "dataFile": "data/patrones_unity/scriptableobjects.json",
           "color": "#00BCD4",
@@ -290,7 +290,7 @@
       "exam": {
         "id": "unity_exam",
         "title": "Examen Final: Patrones Unity",
-        "icon": "🎮",
+        "icon": "gamepad",
         "description": "20 desafíos de código para dominar los patrones de Unity",
         "dataFile": "data/patrones_unity/exam.json",
         "color": "#FFD700",
@@ -301,14 +301,14 @@
     {
       "id": "git",
       "title": "Git",
-      "icon": "🐙",
+      "icon": "git",
       "description": "Control de versiones con Git: init, commits, branches y trabajo remoto con GitHub",
       "color": "#F05032",
       "sections": [
         {
           "id": "git_init",
           "title": "Configuración e Init",
-          "icon": "🐙",
+          "icon": "git",
           "description": "git init, git clone, git config y el archivo .gitignore en proyectos Unity",
           "dataFile": "data/git/git_init.json",
           "color": "#F05032",
@@ -318,7 +318,7 @@
         {
           "id": "git_commits",
           "title": "Staging y Commits",
-          "icon": "📝",
+          "icon": "pencil",
           "description": "git add, git commit, git status, git diff y buenas prácticas de mensajes",
           "dataFile": "data/git/git_commits.json",
           "color": "#E53935",
@@ -328,7 +328,7 @@
         {
           "id": "git_branches",
           "title": "Branches",
-          "icon": "🌿",
+          "icon": "git-branch",
           "description": "git branch, git switch, git merge, fast-forward vs three-way merge y conflictos",
           "dataFile": "data/git/git_branches.json",
           "color": "#C62828",
@@ -338,7 +338,7 @@
         {
           "id": "git_remote",
           "title": "Trabajo Remoto",
-          "icon": "☁️",
+          "icon": "cloud",
           "description": "git remote, git push, git pull, git fetch, origin y Pull Requests en GitHub",
           "dataFile": "data/git/git_remote.json",
           "color": "#B71C1C",
@@ -349,7 +349,7 @@
       "exam": {
         "id": "git_exam",
         "title": "Examen Final: Git",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos: secuencias de comandos, interpretar git log, resolver escenarios de conflicto y flujos de trabajo",
         "dataFile": "data/git/exam.json",
         "color": "#FFD700",
@@ -360,14 +360,14 @@
     {
       "id": "ciclo_vida",
       "title": "Ciclo de Vida MonoBehaviour e IEnumerator",
-      "icon": "🔄",
+      "icon": "refresh",
       "description": "Orden de ejecución de MonoBehaviour, métodos de física, colisión, editor y corrutinas",
       "color": "#00ACC1",
       "sections": [
         {
           "id": "lifecycle_completo",
           "title": "Ciclo de Vida Completo",
-          "icon": "🔄",
+          "icon": "refresh",
           "description": "Orden exacto: Awake, OnEnable, Start, FixedUpdate, Update, LateUpdate, OnDisable, OnDestroy",
           "dataFile": "data/ciclo_vida/lifecycle_completo.json",
           "color": "#00ACC1",
@@ -377,7 +377,7 @@
         {
           "id": "lifecycle_fisica",
           "title": "Métodos de Física y Colisión",
-          "icon": "💥",
+          "icon": "burst",
           "description": "OnCollisionEnter/Stay/Exit, OnTriggerEnter/Stay/Exit — diferencias y casos de uso",
           "dataFile": "data/ciclo_vida/lifecycle_fisica.json",
           "color": "#00897B",
@@ -387,7 +387,7 @@
         {
           "id": "lifecycle_editor",
           "title": "Métodos de Editor y Validación",
-          "icon": "🔧",
+          "icon": "wrench",
           "description": "Reset, OnValidate, OnDrawGizmos, OnDrawGizmosSelected, OnApplicationPause/Quit",
           "dataFile": "data/ciclo_vida/lifecycle_editor.json",
           "color": "#0097A7",
@@ -397,7 +397,7 @@
         {
           "id": "ienumerator",
           "title": "IEnumerator y Corrutinas",
-          "icon": "⏱️",
+          "icon": "timer",
           "description": "IEnumerator, yield return, StartCoroutine, StopCoroutine y tipos de espera",
           "dataFile": "data/ciclo_vida/ienumerator.json",
           "color": "#006064",
@@ -408,7 +408,7 @@
       "exam": {
         "id": "lifecycle_exam",
         "title": "Examen Final: Ciclo de Vida MonoBehaviour",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos: predecir orden de ejecución, elegir el método correcto, depurar corrutinas",
         "dataFile": "data/ciclo_vida/exam.json",
         "color": "#FFD700",
@@ -419,14 +419,14 @@
     {
       "id": "estructuras_datos",
       "title": "Estructuras de Datos",
-      "icon": "📊",
+      "icon": "chart-bar",
       "description": "Tipos de datos, Arrays vs Listas, Stacks, Queues y Listas Enlazadas en C# para Unity",
       "color": "#3F51B5",
       "sections": [
         {
           "id": "tipos_datos",
           "title": "Tipos de Datos",
-          "icon": "🔢",
+          "icon": "hash",
           "description": "Primitivos vs referencia, int/float/bool/string, value types vs reference types, boxing/unboxing",
           "dataFile": "data/estructuras_datos/tipos_datos.json",
           "color": "#3F51B5",
@@ -436,7 +436,7 @@
         {
           "id": "arrays_vs_listas",
           "title": "Arrays vs Listas",
-          "icon": "📋",
+          "icon": "clipboard",
           "description": "Tamaño fijo vs dinámico, acceso O(1) vs inserción O(n), cuándo usar cada uno en Unity",
           "dataFile": "data/estructuras_datos/arrays_vs_listas.json",
           "color": "#3949AB",
@@ -446,7 +446,7 @@
         {
           "id": "stacks",
           "title": "Stacks (Pilas)",
-          "icon": "📚",
+          "icon": "books",
           "description": "LIFO, Push/Pop/Peek, Stack<T> en C#: undo/redo, historial de estados, navegación de menús",
           "dataFile": "data/estructuras_datos/stacks.json",
           "color": "#283593",
@@ -456,7 +456,7 @@
         {
           "id": "queues",
           "title": "Queues (Colas)",
-          "icon": "🚶",
+          "icon": "users",
           "description": "FIFO, Enqueue/Dequeue, Queue<T> en C#: cola de eventos, AI turn queue, spawning ordenado",
           "dataFile": "data/estructuras_datos/queues.json",
           "color": "#1A237E",
@@ -466,7 +466,7 @@
         {
           "id": "listas_enlazadas",
           "title": "Listas Enlazadas",
-          "icon": "🔗",
+          "icon": "link",
           "description": "Nodos y next-pointers, inserción O(1) vs acceso O(n), LinkedList<T>, inventarios y entity lists",
           "dataFile": "data/estructuras_datos/listas_enlazadas.json",
           "color": "#0D47A1",
@@ -477,7 +477,7 @@
       "exam": {
         "id": "estructuras_exam",
         "title": "Examen Final: Estructuras de Datos",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos: elegir la estructura correcta para cada escenario de videojuego",
         "dataFile": "data/estructuras_datos/exam.json",
         "color": "#FFD700",
@@ -488,14 +488,14 @@
     {
       "id": "pensamiento",
       "title": "Pensamiento Computacional",
-      "icon": "🧠",
+      "icon": "brain",
       "description": "Pseudocódigo, diagramas de flujo, diagramas de clases UML y diagramas de secuencia",
       "color": "#607D8B",
       "sections": [
         {
           "id": "pseudocodigo",
           "title": "Pseudocódigo",
-          "icon": "📝",
+          "icon": "pencil",
           "description": "Representar algoritmos en lenguaje natural estructurado antes de escribir código real",
           "dataFile": "data/pensamiento/pseudocodigo.json",
           "color": "#607D8B",
@@ -505,7 +505,7 @@
         {
           "id": "diagramas_flujo",
           "title": "Diagramas de Flujo",
-          "icon": "🔷",
+          "icon": "diamond",
           "description": "Símbolos estándar, decisiones, bucles y trazado de flujos de ejecución",
           "dataFile": "data/pensamiento/diagramas_flujo.json",
           "color": "#546E7A",
@@ -515,7 +515,7 @@
         {
           "id": "diagramas_clases",
           "title": "Diagramas de Clases UML",
-          "icon": "📐",
+          "icon": "ruler",
           "description": "Clases, atributos, métodos y relaciones: herencia, composición, agregación, dependencia",
           "dataFile": "data/pensamiento/diagramas_clases.json",
           "color": "#455A64",
@@ -525,7 +525,7 @@
         {
           "id": "diagramas_secuencia",
           "title": "Diagramas de Secuencia UML",
-          "icon": "↔️",
+          "icon": "arrows-h",
           "description": "Mensajes entre objetos, orden de llamadas y ciclo de vida de objetos",
           "dataFile": "data/pensamiento/diagramas_secuencia.json",
           "color": "#37474F",
@@ -536,7 +536,7 @@
       "exam": {
         "id": "pensamiento_exam",
         "title": "Examen Final: Pensamiento Computacional",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos de lectura e interpretación de diagramas y pseudocódigo",
         "dataFile": "data/pensamiento/exam.json",
         "color": "#FFD700",
@@ -547,14 +547,14 @@
     {
       "id": "data_driven",
       "title": "Data Driven Design",
-      "icon": "🗃️",
+      "icon": "archive",
       "description": "Separación de datos y lógica usando JSON, ScriptableObjects y Dictionary como base de datos en memoria",
       "color": "#00897B",
       "sections": [
         {
           "id": "ddd_intro",
           "title": "Introducción a Data Driven",
-          "icon": "🗃️",
+          "icon": "archive",
           "description": "Hardcoding vs Data Driven, ventajas para el equipo y tuning sin recompilar",
           "dataFile": "data/data_driven/ddd_intro.json",
           "color": "#00897B",
@@ -564,7 +564,7 @@
         {
           "id": "json_unity",
           "title": "JSON en Unity",
-          "icon": "📄",
+          "icon": "file-text",
           "description": "JsonUtility.FromJson, JsonUtility.ToJson, [System.Serializable] y Resources.Load",
           "dataFile": "data/data_driven/json_unity.json",
           "color": "#00796B",
@@ -574,7 +574,7 @@
         {
           "id": "diccionarios_datos",
           "title": "Diccionarios como Base de Datos",
-          "icon": "🗄️",
+          "icon": "database",
           "description": "Dictionary<K,V> como caché en memoria, lookups O(1) y patrones de acceso de datos",
           "dataFile": "data/data_driven/diccionarios_datos.json",
           "color": "#00695C",
@@ -584,7 +584,7 @@
         {
           "id": "so_datos",
           "title": "ScriptableObjects como Datos",
-          "icon": "📦",
+          "icon": "box",
           "description": "[CreateAssetMenu], ScriptableObject como contenedor de datos reutilizable en el Inspector",
           "dataFile": "data/data_driven/so_datos.json",
           "color": "#004D40",
@@ -595,7 +595,7 @@
       "exam": {
         "id": "data_driven_exam",
         "title": "Examen Final: Data Driven Design",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre JSON, ScriptableObjects, Dictionary y diseño orientado a datos",
         "dataFile": "data/data_driven/exam.json",
         "color": "#FFD700",
@@ -606,14 +606,14 @@
     {
       "id": "optimizacion",
       "title": "Complejidad y Optimización",
-      "icon": "📈",
+      "icon": "chart-up",
       "description": "Big O, operadores bitwise, operadores null, y técnicas de optimización específicas de Unity",
       "color": "#FF5722",
       "sections": [
         {
           "id": "big_o",
           "title": "Complejidad Algorítmica (Big O)",
-          "icon": "📈",
+          "icon": "chart-up",
           "description": "O(1), O(n), O(n²), O(log n) y su impacto en el rendimiento de videojuegos",
           "dataFile": "data/optimizacion/big_o.json",
           "color": "#FF5722",
@@ -623,7 +623,7 @@
         {
           "id": "operadores",
           "title": "Operadores Bitwise",
-          "icon": "⚡",
+          "icon": "bolt",
           "description": "AND, OR, XOR, NOT, desplazamiento de bits y sus usos en flags y máscaras",
           "dataFile": "data/optimizacion/operadores.json",
           "color": "#F4511E",
@@ -633,7 +633,7 @@
         {
           "id": "ternario_null",
           "title": "Operadores Ternario y Null",
-          "icon": "❓",
+          "icon": "help-circle",
           "description": "Operador ternario (?:), null-coalescing (??), null-conditional (?.) y ??=",
           "dataFile": "data/optimizacion/ternario_null.json",
           "color": "#E64A19",
@@ -643,7 +643,7 @@
         {
           "id": "optimizacion_codigo",
           "title": "Optimización de Código en Unity",
-          "icon": "🚀",
+          "icon": "rocket",
           "description": "Cache de componentes, Object Pooling, StringBuilder, evitar FindObjectOfType en Update",
           "dataFile": "data/optimizacion/optimizacion_codigo.json",
           "color": "#BF360C",
@@ -654,7 +654,7 @@
       "exam": {
         "id": "optimizacion_exam",
         "title": "Examen Final: Complejidad y Optimización",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre Big O, operadores y optimización de rendimiento en Unity",
         "dataFile": "data/optimizacion/exam.json",
         "color": "#FFD700",
@@ -665,14 +665,14 @@
     {
       "id": "arquitectura_tipos",
       "title": "Arquitectura y Tipos",
-      "icon": "🏗️",
+      "icon": "construction",
       "description": "POCO, structs vs classes, MonoBehaviour como fachada y casos de uso por género de videojuego",
       "color": "#5C6BC0",
       "sections": [
         {
           "id": "poco",
           "title": "Clases Normales y POCO",
-          "icon": "🏗️",
+          "icon": "construction",
           "description": "Plain Old C# Object: cuándo no heredar de MonoBehaviour, unit testing y separación de lógica",
           "dataFile": "data/arquitectura_tipos/poco.json",
           "color": "#5C6BC0",
@@ -682,7 +682,7 @@
         {
           "id": "structs",
           "title": "Structs en C#",
-          "icon": "📦",
+          "icon": "box",
           "description": "Value types vs reference types, cuándo usar struct, campos readonly y limitaciones",
           "dataFile": "data/arquitectura_tipos/structs.json",
           "color": "#3949AB",
@@ -692,7 +692,7 @@
         {
           "id": "mono_uso",
           "title": "Uso Correcto de MonoBehaviour",
-          "icon": "🎮",
+          "icon": "gamepad",
           "description": "MonoBehaviour como coordinador/fachada, anti-patrones comunes y diseño limpio",
           "dataFile": "data/arquitectura_tipos/mono_uso.json",
           "color": "#283593",
@@ -702,7 +702,7 @@
         {
           "id": "casos_genero",
           "title": "Patrones por Género de Juego",
-          "icon": "🕹️",
+          "icon": "joystick",
           "description": "Arquitecturas recomendadas para RPG, plataformas, puzzle, shooters y juegos de estrategia",
           "dataFile": "data/arquitectura_tipos/casos_genero.json",
           "color": "#1A237E",
@@ -713,7 +713,7 @@
       "exam": {
         "id": "arquitectura_exam",
         "title": "Examen Final: Arquitectura y Tipos",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre POCO, structs, MonoBehaviour y arquitectura de juegos",
         "dataFile": "data/arquitectura_tipos/exam.json",
         "color": "#FFD700",
@@ -724,14 +724,14 @@
     {
       "id": "vectores_math",
       "title": "Vectores y Matemáticas",
-      "icon": "📐",
+      "icon": "ruler",
       "description": "Vector2/3, dot product, cross product, cinemática, fuerzas y Quaternions para Unity",
       "color": "#00BCD4",
       "sections": [
         {
           "id": "vectores",
           "title": "Vectores y Posiciones",
-          "icon": "📐",
+          "icon": "ruler",
           "description": "Vector2/Vector3, magnitude, normalized, Distance, dot product y cross product",
           "dataFile": "data/vectores_math/vectores.json",
           "color": "#00BCD4",
@@ -741,7 +741,7 @@
         {
           "id": "cinematica",
           "title": "Cinemática",
-          "icon": "🏃",
+          "icon": "walk",
           "description": "Velocidad, aceleración, desplazamiento y ecuaciones cinemáticas aplicadas a Unity",
           "dataFile": "data/vectores_math/cinematica.json",
           "color": "#0097A7",
@@ -751,7 +751,7 @@
         {
           "id": "fuerzas",
           "title": "Fuerzas y F=ma",
-          "icon": "💪",
+          "icon": "dumbbell",
           "description": "Segunda ley de Newton, tipos de fuerza, fricción y su aplicación con Rigidbody.AddForce",
           "dataFile": "data/vectores_math/fuerzas.json",
           "color": "#00838F",
@@ -761,7 +761,7 @@
         {
           "id": "quaterniones",
           "title": "Quaterniones y Rotaciones",
-          "icon": "🔄",
+          "icon": "refresh",
           "description": "Quaternion.Euler, LookRotation, Slerp, FromToRotation y conversión con ángulos de Euler",
           "dataFile": "data/vectores_math/quaterniones.json",
           "color": "#006064",
@@ -772,7 +772,7 @@
       "exam": {
         "id": "matematicas_exam",
         "title": "Examen Final: Vectores y Matemáticas",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre vectores, cinemática, fuerzas y quaterniones en Unity",
         "dataFile": "data/vectores_math/exam.json",
         "color": "#FFD700",
@@ -783,14 +783,14 @@
     {
       "id": "fisica_unity",
       "title": "Física Aplicada en Unity",
-      "icon": "⚽",
+      "icon": "circle",
       "description": "Rigidbody, tiros parabólicos, Lerp/Slerp/SmoothDamp y traslaciones con Space.Self/World",
       "color": "#FF9800",
       "sections": [
         {
           "id": "rigidbody_fisica",
           "title": "Física con Rigidbody",
-          "icon": "⚽",
+          "icon": "circle",
           "description": "AddForce, isKinematic, constraints, ForceMode y FixedUpdate vs Update para física",
           "dataFile": "data/fisica_unity/rigidbody_fisica.json",
           "color": "#FF9800",
@@ -800,7 +800,7 @@
         {
           "id": "tiros_parabolicos",
           "title": "Tiros Parabólicos",
-          "icon": "🏹",
+          "icon": "bow",
           "description": "Velocidad inicial, ángulo de lanzamiento, tiempo de vuelo y alcance máximo",
           "dataFile": "data/fisica_unity/tiros_parabolicos.json",
           "color": "#F57C00",
@@ -810,7 +810,7 @@
         {
           "id": "lerp_suavizado",
           "title": "Lerp, Slerp y SmoothDamp",
-          "icon": "〰️",
+          "icon": "wave",
           "description": "Vector3.Lerp, Quaternion.Slerp, SmoothDamp y MoveTowards para movimiento suavizado",
           "dataFile": "data/fisica_unity/lerp_suavizado.json",
           "color": "#EF6C00",
@@ -820,7 +820,7 @@
         {
           "id": "traslaciones",
           "title": "Traslaciones y Movimiento",
-          "icon": "➡️",
+          "icon": "arrow-right",
           "description": "Transform.Translate, Space.Self vs Space.World, CharacterController.Move y rb.MovePosition",
           "dataFile": "data/fisica_unity/traslaciones.json",
           "color": "#E65100",
@@ -831,7 +831,7 @@
       "exam": {
         "id": "fisica_exam",
         "title": "Examen Final: Física en Unity",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre Rigidbody, trayectorias parabólicas, suavizado y movimiento",
         "dataFile": "data/fisica_unity/exam.json",
         "color": "#FFD700",
@@ -842,14 +842,14 @@
     {
       "id": "delegados_eventos",
       "title": "Delegados y Eventos",
-      "icon": "📡",
+      "icon": "satellite",
       "description": "delegate, event, multicast, Action/Func y UnityEvent para comunicación desacoplada",
       "color": "#9C27B0",
       "sections": [
         {
           "id": "delegados",
           "title": "Delegados",
-          "icon": "📡",
+          "icon": "satellite",
           "description": "Declaración de delegate, instanciación, invocación y delegados como parámetros",
           "dataFile": "data/delegados_eventos/delegados.json",
           "color": "#9C27B0",
@@ -859,7 +859,7 @@
         {
           "id": "eventos",
           "title": "Eventos C#",
-          "icon": "🔔",
+          "icon": "bell",
           "description": "Keyword event, patrón publicador-suscriptor, suscripción con += y desuscripción con -=",
           "dataFile": "data/delegados_eventos/eventos.json",
           "color": "#8E24AA",
@@ -869,7 +869,7 @@
         {
           "id": "action_func",
           "title": "Action, Func y Lambdas",
-          "icon": "λ",
+          "icon": "lambda",
           "description": "Action<T>, Func<T,TResult>, Predicate<T> y expresiones lambda con =>",
           "dataFile": "data/delegados_eventos/action_func.json",
           "color": "#7B1FA2",
@@ -879,7 +879,7 @@
         {
           "id": "eventos_unity",
           "title": "UnityEvent",
-          "icon": "🎮",
+          "icon": "gamepad",
           "description": "UnityEvent, UnityEvent<T>, AddListener, RemoveListener e integración con el Inspector",
           "dataFile": "data/delegados_eventos/eventos_unity.json",
           "color": "#6A1B9A",
@@ -890,7 +890,7 @@
       "exam": {
         "id": "eventos_exam",
         "title": "Examen Final: Delegados y Eventos",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre delegate, event, Action/Func, lambdas y UnityEvent",
         "dataFile": "data/delegados_eventos/exam.json",
         "color": "#FFD700",
@@ -901,14 +901,14 @@
     {
       "id": "solid",
       "title": "SOLID y Buenas Prácticas",
-      "icon": "✅",
+      "icon": "shield-check",
       "description": "Los 5 principios SOLID y convenciones de código limpio en C# para Unity",
       "color": "#4CAF50",
       "sections": [
         {
           "id": "solid_srp",
           "title": "SRP — Responsabilidad Única",
-          "icon": "1️⃣",
+          "icon": "circle-1",
           "description": "Single Responsibility Principle: una clase, un motivo de cambio",
           "dataFile": "data/solid/solid_srp.json",
           "color": "#4CAF50",
@@ -918,7 +918,7 @@
         {
           "id": "solid_ocp_lsp",
           "title": "OCP y LSP",
-          "icon": "🔒",
+          "icon": "lock",
           "description": "Open/Closed Principle y Liskov Substitution Principle aplicados en C# para Unity",
           "dataFile": "data/solid/solid_ocp_lsp.json",
           "color": "#43A047",
@@ -928,7 +928,7 @@
         {
           "id": "solid_isp_dip",
           "title": "ISP y DIP",
-          "icon": "🔌",
+          "icon": "plug",
           "description": "Interface Segregation y Dependency Inversion: interfaces pequeñas e inyección de dependencias",
           "dataFile": "data/solid/solid_isp_dip.json",
           "color": "#388E3C",
@@ -938,7 +938,7 @@
         {
           "id": "buenas_practicas",
           "title": "Buenas Prácticas C# Unity",
-          "icon": "✨",
+          "icon": "sparkles",
           "description": "Naming conventions, [SerializeField], comentarios XML, DRY, YAGNI y herencia vs composición",
           "dataFile": "data/solid/buenas_practicas.json",
           "color": "#2E7D32",
@@ -949,7 +949,7 @@
       "exam": {
         "id": "solid_exam",
         "title": "Examen Final: SOLID y Buenas Prácticas",
-        "icon": "🎓",
+        "icon": "graduation-cap",
         "description": "20 desafíos sobre los 5 principios SOLID y convenciones de código limpio en Unity",
         "dataFile": "data/solid/exam.json",
         "color": "#FFD700",

@@ -1,7 +1,7 @@
 {
   "id": "git_remote",
   "title": "Trabajo Remoto",
-  "icon": "☁️",
+  "icon": "cloud",
   "color": "#F05032",
   "documentation": {
     "sections": [

@@ -1,7 +1,7 @@
 {
   "id": "methods",
   "title": "Métodos",
-  "icon": "⚙️",
+  "icon": "gear",
   "documentation": {
     "sections": [
       {
@@ -12,7 +12,8 @@
       },
       {
         "id": "analogy",
-        "title": "🎮 Analogía con Unity",
+        "titleIcon": "gamepad",
+        "title": "Analogía con Unity",
         "type": "analogy",
         "content": "Si los campos son los <em>stats</em> de tu personaje (vida, velocidad, daño), los métodos son sus <em>acciones</em>: <strong>Jump()</strong>, <strong>Attack()</strong>, <strong>TakeDamage(int amount)</strong>. Los métodos de Unity como <strong>Start()</strong> y <strong>Update()</strong> son métodos que tu clase hereda de MonoBehaviour y que el motor llama automáticamente."
       },

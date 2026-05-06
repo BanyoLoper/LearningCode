@@ -9,6 +9,7 @@ import { CourseEngine }       from './core/CourseEngine.js';
 import { EvaluationPanel }    from './ui/EvaluationPanel.js';
 import { DocumentationPanel } from './ui/DocumentationPanel.js';
 import { SidebarManager }     from './ui/SidebarManager.js';
+import { icon }               from './ui/Icon.js';
 
 // ─── Remote sync helpers ──────────────────────────────────────────────────────
 
@@ -167,7 +168,7 @@ boot().catch(err => {
   const overlay = document.getElementById('loading-overlay');
   overlay.innerHTML = `
     <div class="error-message">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon">${icon('alert')}</div>
       <h2>Error al cargar el curso</h2>
       <p>Asegúrate de abrir el proyecto desde un servidor web local.</p>
       <p>Ejecuta <code>serve.bat</code> en esta carpeta y accede a:</p>

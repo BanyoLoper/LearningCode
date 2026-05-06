@@ -1,7 +1,7 @@
 {
   "id": "big_o",
   "title": "Complejidad Algorítmica (Big O)",
-  "icon": "📈",
+  "icon": "chart-up",
   "color": "#FF5722",
   "documentation": {
     "sections": [

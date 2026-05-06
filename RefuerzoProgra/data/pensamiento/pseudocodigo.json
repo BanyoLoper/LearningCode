@@ -1,7 +1,7 @@
 {
   "id": "pseudocodigo",
   "title": "Pseudocódigo",
-  "icon": "📝",
+  "icon": "pencil",
   "color": "#607D8B",
   "documentation": {
     "sections": [

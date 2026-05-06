@@ -1,7 +1,7 @@
 {
   "id": "objects",
   "title": "Objetos",
-  "icon": "🎮",
+  "icon": "gamepad",
   "documentation": {
     "sections": [
       {
@@ -12,7 +12,8 @@
       },
       {
         "id": "analogy",
-        "title": "🎮 Analogía con Unity",
+        "titleIcon": "gamepad",
+        "title": "Analogía con Unity",
         "type": "analogy",
         "content": "Si la clase <strong>Enemy</strong> es el prefab, entonces cada goblin que aparece en tu escena es un <strong>objeto</strong>. Goblin1 tiene 100 HP y está en la posición (2, 0, 5). Goblin2 tiene 80 HP y está en (−3, 0, 7). Ambos son instancias de la misma clase Enemy, pero cada uno tiene <em>sus propios datos</em> independientes."
       },

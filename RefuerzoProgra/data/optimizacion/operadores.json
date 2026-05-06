@@ -1,7 +1,7 @@
 {
   "id": "operadores",
   "title": "Operadores y Expresiones",
-  "icon": "⚙️",
+  "icon": "gear",
   "color": "#F4511E",
   "documentation": {
     "sections": [

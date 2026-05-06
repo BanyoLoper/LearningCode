@@ -1,7 +1,7 @@
 {
   "id": "prefabs",
   "title": "Prefabs e Instanciación",
-  "icon": "🏭",
+  "icon": "factory",
   "color": "#FF9800",
   "documentation": {
     "sections": [

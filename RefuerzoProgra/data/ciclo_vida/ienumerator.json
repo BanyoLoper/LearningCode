@@ -1,7 +1,7 @@
 {
   "id": "ienumerator",
   "title": "IEnumerator y Corrutinas",
-  "icon": "⏱️",
+  "icon": "timer",
   "color": "#00ACC1",
   "documentation": {
     "sections": [

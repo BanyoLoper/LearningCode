@@ -1,7 +1,7 @@
 {
   "id": "lerp_suavizado",
   "title": "Lerp, Slerp y Suavizado",
-  "icon": "〰️",
+  "icon": "wave",
   "color": "#F57C00",
   "documentation": {
     "sections": [

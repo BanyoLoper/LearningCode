@@ -1,7 +1,7 @@
 {
   "id": "json_unity",
   "title": "JSON en Unity",
-  "icon": "📄",
+  "icon": "file-text",
   "color": "#00796B",
   "documentation": {
     "sections": [

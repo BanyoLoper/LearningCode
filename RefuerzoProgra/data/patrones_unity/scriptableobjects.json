@@ -1,7 +1,7 @@
 {
   "id": "scriptableobjects",
   "title": "ScriptableObjects",
-  "icon": "📄",
+  "icon": "file-text",
   "documentation": {
     "sections": [
       {
@@ -35,7 +35,8 @@
       },
       {
         "id": "so-analogy",
-        "title": "🎮 Analogía: SO como Config File",
+        "titleIcon": "gamepad",
+        "title": "Analogía: SO como Config File",
         "type": "analogy",
         "content": "Piensa en los ScriptableObjects como <strong>archivos de configuración tipados</strong>. En lugar de guardar las estadísticas de armas en un JSON o hardcodearlas en el código, creas un <code>WeaponData.asset</code> por cada arma. Los diseñadores del juego pueden editar los valores directamente en el Inspector de Unity sin tocar código. Si tienes 50 guerreros en la escena y todos usan la misma <code>EspadadeMadera.asset</code>, cambiar el daño en ese asset actualiza todos al instante."
       }

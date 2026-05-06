@@ -1,7 +1,7 @@
 {
   "id": "so_datos",
   "title": "ScriptableObjects como Datos",
-  "icon": "📋",
+  "icon": "clipboard",
   "color": "#004D40",
   "documentation": {
     "sections": [

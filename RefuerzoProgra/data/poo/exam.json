@@ -1,7 +1,7 @@
 {
   "id": "poo_exam",
   "title": "Examen Final: POO Fundamentals",
-  "icon": "🎓",
+  "icon": "graduation-cap",
   "isExam": true,
   "questions": [
     {

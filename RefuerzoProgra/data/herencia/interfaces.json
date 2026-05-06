@@ -1,7 +1,7 @@
 {
   "id": "interfaces",
   "title": "Interfaces",
-  "icon": "🔌",
+  "icon": "plug",
   "documentation": {
     "sections": [
       {
@@ -35,7 +35,8 @@
       },
       {
         "id": "unity-pattern",
-        "title": "🎮 Patrón Unity con Interfaces",
+        "titleIcon": "gamepad",
+        "title": "Patrón Unity con Interfaces",
         "type": "analogy",
         "content": "En Unity es muy común usar interfaces para hacer código genérico. En lugar de hacer <code>GetComponent&lt;Enemy&gt;()</code> (que solo funciona con Enemy), usas <code>GetComponent&lt;IDamageable&gt;()</code> que funciona con <strong>cualquier cosa damageable</strong> — Enemy, Player, BreakableBox, etc:<br><pre>void OnTriggerEnter(Collider other) {\n    IDamageable target = other.GetComponent&lt;IDamageable&gt;();\n    if (target != null)\n        target.TakeDamage(damage);\n    // ¡No importa qué tipo de objeto es!\n}</pre>"
       }

@@ -1,7 +1,7 @@
 {
   "id": "lifecycle_editor",
   "title": "Métodos de Editor y Validación",
-  "icon": "🔧",
+  "icon": "wrench",
   "color": "#00ACC1",
   "documentation": {
     "sections": [

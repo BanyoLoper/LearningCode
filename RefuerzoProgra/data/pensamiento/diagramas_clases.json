@@ -1,7 +1,7 @@
 {
   "id": "diagramas_clases",
   "title": "Diagramas de Clases UML",
-  "icon": "📐",
+  "icon": "ruler",
   "color": "#455A64",
   "documentation": {
     "sections": [

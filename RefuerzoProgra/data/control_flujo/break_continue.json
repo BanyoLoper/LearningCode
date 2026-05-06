@@ -1,7 +1,7 @@
 {
   "id": "break_continue",
   "title": "Break y Continue",
-  "icon": "⏭️",
+  "icon": "skip-forward",
   "documentation": {
     "sections": [
       {
@@ -30,7 +30,8 @@
       },
       {
         "id": "unity-pattern",
-        "title": "🎮 Patrones en Unity",
+        "titleIcon": "gamepad",
+        "title": "Patrones en Unity",
         "type": "analogy",
         "content": "En Unity es muy común usar <strong>continue</strong> para saltarse enemigos muertos en un loop:<br><pre>foreach (Enemy e in enemies) {\n    if (e.IsDead) continue;  // Ignora muertos\n    e.UpdateAI();            // Solo procesa vivos\n}</pre><br>Y <strong>break</strong> para encontrar el primer enemigo cercano y dejar de buscar:<br><pre>Enemy nearest = null;\nforeach (Enemy e in enemies) {\n    if (Vector3.Distance(transform.position, e.transform.position) < 5f) {\n        nearest = e;\n        break;  // Encontramos uno, no necesitamos seguir\n    }\n}</pre>"
       }

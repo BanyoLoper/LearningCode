@@ -16,17 +16,17 @@
   <!-- ═══ Header ═══════════════════════════════════════════════════════════ -->
   <header id="app-header">
     <div class="header-left">
-      <h1>🎮 POO en C# para Unity</h1>
+      <h1><svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-gamepad"/></svg> POO en C# para Unity</h1>
     </div>
 
     <div class="mode-tabs">
-      <button class="mode-tab active" data-mode="teoria">📚 Teoría</button>
-      <button class="mode-tab"        data-mode="practica">⌨️ Práctica</button>
+      <button class="mode-tab active" data-mode="teoria"><svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-book"/></svg> Teoría</button>
+      <button class="mode-tab"        data-mode="practica"><svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-keyboard"/></svg> Práctica</button>
     </div>
 
     <div style="display:flex;gap:0.5rem;align-items:center;">
       <button id="btn-help" title="Instrucciones">INSTRUCCIONES</button>
-      <button id="btn-bug"  title="Reportar un bug">🐛 Bug</button>
+      <button id="btn-bug"  title="Reportar un bug"><svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-bug"/></svg> Bug</button>
     </div>
     <div class="header-right">
       <span id="user-email" class="user-email" title=""></span>
@@ -60,7 +60,7 @@
 
     <!-- Right: Documentation -->
     <aside id="documentation-panel" aria-label="Documentación del curso">
-      <h2><button id="btn-toggle-docs" class="panel-toggle-btn" title="Colapsar documentación" aria-label="Colapsar documentación">▶</button>📚 Documentación</h2>
+      <h2><button id="btn-toggle-docs" class="panel-toggle-btn" title="Colapsar documentación" aria-label="Colapsar documentación">▶</button><svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-book"/></svg> Documentación</h2>
       <div id="documentation-content">
         <p class="doc-placeholder">
           Responde preguntas correctamente para desbloquear la documentación de cada sección.
@@ -80,15 +80,15 @@
   <!-- ═══ Mobile Navigation Bar ════════════════════════════════════════════ -->
   <nav id="mobile-nav" aria-label="Navegación móvil">
     <button data-panel="sidebar" aria-label="Secciones">
-      <span>📋</span>
+      <svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-list-checks"/></svg>
       <span>Secciones</span>
     </button>
     <button data-panel="evaluation" class="active" aria-label="Evaluación">
-      <span>🎮</span>
+      <svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-target"/></svg>
       <span>Evaluación</span>
     </button>
     <button data-panel="docs" aria-label="Documentación">
-      <span>📚</span>
+      <svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-book"/></svg>
       <span>Docs</span>
     </button>
   </nav>
@@ -101,10 +101,15 @@
 
   <!-- Help modal — SweetAlert2 -->
   <script>
+    const SVG_BOOK_OPEN = '<svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-book-open"/></svg>';
+    const SVG_KEYBOARD  = '<svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-keyboard"/></svg>';
+    const SVG_BUG       = '<svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-bug"/></svg>';
+    const SVG_ALERT     = '<svg class="icon" aria-hidden="true"><use href="assets/icons/sprite.svg#icon-alert"/></svg>';
+
     document.getElementById('btn-help').addEventListener('click', () => {
       const isTeoria = document.querySelector('.mode-tab.active')?.dataset.mode === 'teoria';
       Swal.fire({
-        title: isTeoria ? '📖 Teoría — Instrucciones' : '⌨️ Práctica — Instrucciones',
+        title: isTeoria ? `${SVG_BOOK_OPEN} Teoría — Instrucciones` : `${SVG_KEYBOARD} Práctica — Instrucciones`,
         html: isTeoria
           ? `<ul style="text-align:left;padding-left:1.2rem;line-height:1.8;margin:0">
                <li>Responde las preguntas para <strong>desbloquear temas</strong>.</li>
@@ -135,7 +140,7 @@
 
     document.getElementById('btn-bug').addEventListener('click', () => {
       Swal.fire({
-        title: '🐛 Reportar Bug',
+        title: `${SVG_BUG} Reportar Bug`,
         html: `
           <div class="bug-form">
             <label for="swal-bug-type">Tipo de bug</label>
@@ -152,8 +157,8 @@
               placeholder="Describe el problema con el mayor detalle posible…"></textarea>
 
             <p class="bug-disclaimer">
-              ⚠️ Los bugs serán revisados en un lapso menor de 2 días.
-              Reportes falsos o bromas de issues podrán revocar tu acceso a la aplicación.
+              ${SVG_ALERT} <span>Los bugs serán revisados en un lapso menor de 2 días.
+              Reportes falsos o bromas de issues podrán revocar tu acceso a la aplicación.</span>
             </p>
           </div>`,
         confirmButtonText: 'Enviar reporte',
