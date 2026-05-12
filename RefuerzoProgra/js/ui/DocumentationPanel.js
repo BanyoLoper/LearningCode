@@ -80,32 +80,37 @@ export class DocumentationPanel {
   }
 
   /**
-   * Collapses all doc sections and groups, then expands and scrolls to the target section.
+   * Hides every section except the target one, hides empty groups,
+   * and ensures the target section's body is expanded.
    * Called when the user clicks a section in the sidebar.
    */
   focusSection(sectionId) {
     const target = this.#container.querySelector(`#doc-${sectionId}`);
     if (!target) return;
 
-    // Collapse all section bodies and reset their toggles
-    this.#container.querySelectorAll('.doc-section-body').forEach(body => {
-      body.style.display = 'none';
-    });
-    this.#container.querySelectorAll('.doc-section-toggle').forEach(t => {
-      t.setAttribute('aria-expanded', 'false');
-      t.textContent = '▶';
+    // Hide every section except the target
+    this.#container.querySelectorAll('.doc-section').forEach(section => {
+      section.style.display = section === target ? '' : 'none';
     });
 
-    // Expand all group bodies (keep groups open so the section is visible)
-    this.#container.querySelectorAll('.doc-group-body').forEach(body => {
-      body.style.display = '';
-    });
-    this.#container.querySelectorAll('.doc-group-toggle').forEach(t => {
-      t.setAttribute('aria-expanded', 'true');
-      t.textContent = '▼';
+    // Hide groups that don't contain the target (avoids orphan group headers)
+    this.#container.querySelectorAll('.doc-group').forEach(group => {
+      group.style.display = group.contains(target) ? '' : 'none';
     });
 
-    // Expand the target section
+    // Ensure the visible group is expanded
+    const parentGroup = target.closest('.doc-group');
+    if (parentGroup) {
+      const groupBody = parentGroup.querySelector('.doc-group-body');
+      const groupToggle = parentGroup.querySelector('.doc-group-toggle');
+      if (groupBody) groupBody.style.display = '';
+      if (groupToggle) {
+        groupToggle.setAttribute('aria-expanded', 'true');
+        groupToggle.textContent = '▼';
+      }
+    }
+
+    // Ensure the target section's body is expanded
     const targetBody = target.querySelector('.doc-section-body');
     const targetToggle = target.querySelector('.doc-section-toggle');
     if (targetBody) targetBody.style.display = '';

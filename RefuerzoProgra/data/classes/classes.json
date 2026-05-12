@@ -24,6 +24,16 @@
         "content": "// Clase básica de C#\npublic class Enemy\n{\n    public int Health = 100;\n    public string Name = \"Goblin\";\n\n    public void Attack()\n    {\n        Debug.Log($\"{Name} ataca!\");\n    }\n}\n\n// Script de Unity (hereda de MonoBehaviour)\npublic class PlayerController : MonoBehaviour\n{\n    void Start() { }\n    void Update() { }\n}"
       },
       {
+        "id": "class-variants",
+        "title": "Variantes de Clase en Unity",
+        "type": "list",
+        "items": [
+          "<strong>Clase normal (POCO)</strong> — <em>Plain Old C# Object</em>. No hereda de <code>MonoBehaviour</code> ni de ninguna clase de Unity. Se instancia con <code>new MiClase()</code> sin necesitar un <code>GameObject</code>. Ideal para datos y lógica pura (<code>PlayerStats</code>, <code>DamageFormula</code>, <code>Inventory</code>) y facilita el <em>unit testing</em>.",
+          "<strong>Struct</strong> — Tipo por valor (<em>value type</em>): vive en el stack y se copia completo al asignarse. No soporta herencia ni puede ser <code>null</code>. Ideal para datos pequeños e inmutables como <code>Vector3</code>, <code>Color</code> o <code>HitResult</code>. Evita presión al <strong>Garbage Collector</strong>.",
+          "<strong>Clase MonoBehaviour</strong> — Hereda de <code>MonoBehaviour</code> y se adjunta como componente a un <code>GameObject</code>. Da acceso al ciclo de vida de Unity (<code>Start</code>, <code>Update</code>, <code>OnCollisionEnter</code>) y a <code>transform</code>, <code>gameObject</code>, etc. Se agrega con <code>AddComponent</code>, no con <code>new</code>."
+        ]
+      },
+      {
         "id": "special-classes",
         "title": "Tipos Especiales de Clases",
         "type": "list",

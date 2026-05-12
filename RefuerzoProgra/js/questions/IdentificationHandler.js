@@ -36,12 +36,20 @@ export class IdentificationHandler {
       if (e.key === 'Enter') btn.click();
     });
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const value = input.value.trim();
       if (!value) return;
       btn.disabled = true;
-      onSubmit(value);
-      btn.disabled = false;
+      const originalText = btn.textContent;
+      // Only show "Evaluando…" if the validation actually takes time (LLM fallback).
+      const labelTimer = setTimeout(() => { btn.textContent = 'Evaluando…'; }, 200);
+      try {
+        await onSubmit(value);
+      } finally {
+        clearTimeout(labelTimer);
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     });
 
     // Auto-focus so the student can type immediately
