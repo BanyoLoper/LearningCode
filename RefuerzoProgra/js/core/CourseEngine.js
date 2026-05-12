@@ -1,4 +1,5 @@
 import { icon } from '../ui/Icon.js';
+import { fuzzyMatch } from './answerNormalizer.js';
 
 /**
  * CourseEngine — Central state machine and orchestrator.
@@ -74,9 +75,9 @@ export class CourseEngine {
     this.#sidebar.setActive(sectionId);
   }
 
-  handleAnswer(answer) {
+  async handleAnswer(answer) {
     if (!this.#currentQuestion) return;
-    const { correct } = this.#validateAnswer(answer, this.#currentQuestion);
+    const { correct } = await this.#validateAnswer(answer, this.#currentQuestion);
     correct ? this.#onCorrect(answer) : this.#onWrong(answer);
   }
 
@@ -313,24 +314,49 @@ export class CourseEngine {
     return picked;
   }
 
-  #validateAnswer(answer, question) {
+  async #validateAnswer(answer, question) {
     switch (question.type) {
       case 'multiple_choice':
         return { correct: answer === question.correctIndex };
-      case 'identification':
-        return {
-          correct: question.acceptedAnswers.some(
-            a => a.toLowerCase() === String(answer).trim().toLowerCase()
-          )
-        };
+
+      case 'identification': {
+        const accepted = question.acceptedAnswers ?? [];
+        // 1. Fast local match: normalized equality + token containment.
+        if (accepted.some(a => fuzzyMatch(answer, a))) return { correct: true };
+        // 2. Semantic fallback: ask the Workers AI grader.
+        const llm = await this.#semanticValidate({
+          question: question.question,
+          acceptedAnswers: accepted,
+          studentAnswer: answer,
+        });
+        return { correct: llm.correct };
+      }
+
       case 'code_writing': {
         const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, ' ');
         const a = norm(answer);
         if (a === norm(question.expectedAnswer)) return { correct: true };
         return { correct: (question.alternateAnswers ?? []).map(norm).includes(a) };
       }
+
       default:
         return { correct: false };
+    }
+  }
+
+  /** Calls the Cloudflare Pages Function that grades the answer with an LLM. */
+  async #semanticValidate({ question, acceptedAnswers, studentAnswer }) {
+    try {
+      const res = await fetch('/api/validate-answer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, acceptedAnswers, studentAnswer }),
+      });
+      if (!res.ok) return { correct: false };
+      const data = await res.json();
+      return { correct: data?.correct === true };
+    } catch {
+      return { correct: false };
     }
   }
 

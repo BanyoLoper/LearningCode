@@ -28,6 +28,10 @@ binding       = "DB"
 database_name = "refuerzo-progra-db"
 database_id   = "b44f68d8-b612-4aa0-8215-cac27a253a05"
 
+# Workers AI binding — used by /api/validate-answer to grade open-ended answers.
+[ai]
+binding = "AI"
+
 # ─── Preview (feat/paywall and other feature branches) ──────────────────────
 # Public, non-secret variables for the paywall preview environment.
 
@@ -43,6 +47,9 @@ STRIPE_PRICE_ID        = "price_1TSFq40qSw2OszNusQP7XAFx"
 binding       = "DB"
 database_name = "refuerzo-progra-db"
 database_id   = "b44f68d8-b612-4aa0-8215-cac27a253a05"
+
+[env.preview.ai]
+binding = "AI"
 
 # Top-level (production)
 [vars]
