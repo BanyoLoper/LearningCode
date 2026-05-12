@@ -245,9 +245,7 @@ export class CourseEngine {
       background: '#16213e',
       color: '#e0e0e0',
       confirmButtonText: '¡Vamos!',
-      confirmButtonColor: newSection.color ?? '#4CAF50',
-      timer: 8000,
-      timerProgressBar: true
+      confirmButtonColor: newSection.color ?? '#4CAF50'
     });
   }
 
