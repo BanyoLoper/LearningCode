@@ -340,7 +340,7 @@
       "instruction": "Completa el condicional que verifica si la lista `inventario` contiene el item \"LlaveDorada\" antes de usarla:",
       "codeTemplate": "if (inventario.__________(\"LlaveDorada\"))\n{\n    AbrirPuerta();\n}",
       "expectedAnswer": "Contains",
-      "alternateAnswers": [],
+      "alternateAnswers": ["contains"],
       "placeholder": "¿Qué método verifica si existe un elemento?",
       "hints": [
         "Necesitas un método que devuelva true o false.",

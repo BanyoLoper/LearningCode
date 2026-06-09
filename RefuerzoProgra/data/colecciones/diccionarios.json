@@ -324,7 +324,7 @@
       "instruction": "Completa el condicional que verifica si el diccionario `mapa` tiene la clave `\"boss_room\"` antes de cargar ese nivel:",
       "codeTemplate": "if (mapa.__________(\"boss_room\"))\n{\n    LoadLevel(\"boss_room\");\n}",
       "expectedAnswer": "ContainsKey",
-      "alternateAnswers": [],
+      "alternateAnswers": ["containsKey", "containskey"],
       "placeholder": "¿Qué método verifica si existe la clave?",
       "hints": [
         "Necesitas verificar si la clave existe antes de acceder.",

@@ -272,7 +272,7 @@
       "instruction": "Completa el condicional para que el jugador muera cuando su salud sea menor o igual a cero:",
       "codeTemplate": "if (health ______ 0)\n{\n    Die();\n}",
       "expectedAnswer": "<= 0)",
-      "alternateAnswers": ["<= 0) {", "<=0)"],
+      "alternateAnswers": ["<= ", " <="],
       "placeholder": "Escribe el operador y valor...",
       "hints": [
         "Necesitas verificar si health es 0 o menos",
